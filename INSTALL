@@ -1,0 +1,48 @@
+Basic instructions to install the ND PHP Framework
+
+
+1. Debian Installation
+
+ Perform the following commands as super-user:
+
+  # apt-get install php5-mysql php5-mcrypt
+  # php5enmod mcrypt
+  # service apache2 restart
+  # mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -p mysql
+
+
+2. Apache Settings
+
+ Set 'AllowOverride all' on project VirtualHost directory.
+
+
+3. PHP Settings
+
+ Edit the /etc/php5/apache2/php.ini file and set the following variables:
+
+  max_input_vars = 20000
+  auto_detect_line_endings = On
+  memory_limit = 256M
+
+ If the project is balanced with multiple web-servers, also set:
+
+  session.use_trans_sid = 1
+
+
+4. Database Configuration
+
+ Create a new database and user under MySQL / MariaDB, granting all privileges
+ to the user under the created database.
+
+
+5. ND PHP Framework Settings
+
+ If the installation process displays a warning stating that there are no write
+ permissions on certain directories or files, grant that the user running the
+ web-server can write on these directories or files.
+
+ Always grant that system timezone is the same as set on the active
+ Configuration timezone. Also grant that the DBMS is operating under the
+ same timezone as the web-server.
+
+

@@ -1,0 +1,92 @@
+/*
+ *
+ * uWAT - uCodev Web Accessibility Tools
+ * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Author:  Pedro A. Hortas
+ * Module:  uWAT CSS
+ * Version: 0.1b
+ * Email:   pah@ucodev.org
+ * Date:    2016/06/04
+ * License: GPLv3
+ *
+ * URL: http://www.ucodev.org
+ * 
+ */
+
+#accessibility_menu {
+        font-size: 0px;
+        position: fixed;
+        top: 3px;
+        left: 45%;
+        padding: 0;
+        margin: 0;
+        z-index: 9999;
+        outline: 0;
+}
+
+#accessibility_menu img {
+        height: 32px;
+        width: 32px;
+}
+
+#accessibility_menu_table {
+        border: hidden;
+        border-collapse: collapse;
+        outline: 0;
+}
+#accessibility_menu_table_body {
+        border: hidden;
+        border-collapse: collapse;
+        outline: 0;
+}
+#accessibility_menu_table_row {
+        border: hidden;
+        border-collapse: collapse;
+        outline: 0;
+}
+#accessibility_menu_table_row_division {
+        border: hidden;
+        border-collapse: collapse;
+	padding-right: 10px;
+        padding-top: 5px;
+        outline: 0;
+}
+#accessibility_button_contrast, #accessibility_button_enlarge, #accessibility_button_reduce {
+        border: hidden;
+        border-collapse: collapse;
+        outline: 0;
+}
+#accessibility_button_reload {
+	padding-left: 3px;
+        border: hidden;
+        border-collapse: collapse;
+        outline: 0;
+}
+#accessibility_button_enlarge:hover, #accessibility_button_reduce:hover, #accessibility_button_contrast:hover, #accessibility_button_reload:hover {
+	-webkit-transform:scale(1.25); /* Safari and Chrome */
+	-moz-transform:scale(1.25); /* Firefox */
+	-ms-transform:scale(1.25); /* IE 9 */
+	-o-transform:scale(1.25); /* Opera */
+	transform:scale(1.25);
+}
+#accessibility_menu_button_link {
+	border: hidden;
+	border-collapse: collapse;
+	outline: 0;
+}
+

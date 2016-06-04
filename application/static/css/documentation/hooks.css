@@ -1,0 +1,113 @@
+/*
+ * This file is part of ND PHP Framework.
+ *
+ * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
+ * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/*
+ * ND PHP Framework (www.nd-php.org) - Contributor Agreement
+ *
+ * When contributing material to this project, please read, accept, sign
+ * and send us the Contributor Agreement located in the file NDCA.pdf
+ * inside the documentation/ directory.
+ *
+ */
+ 
+body {
+	font-family: arial, verdana;
+}
+
+i {
+	border-bottom: 1px dotted black;
+}
+
+fieldset {
+	background-color: #eeeeee;
+	margin-bottom: 30px;
+	border-radius: 15px;
+	padding-top: 45px;
+	padding-bottom: 50px;
+	font-family: monospace;
+	font-size: 110%;
+}
+
+a {
+	font-size: 90%;
+}
+
+legend {
+	border: 1px solid black;
+	color: blue;
+	background-color: white;
+	font-family: monospace;
+	font-weight: bold;
+	font-size: 130%;
+	border-radius: 5px;
+	margin-left: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
+table {
+	border: none;
+}
+
+td {
+	padding-left: 15px;
+	padding-right: 15px;
+	padding-bottom: 8px;
+	vertical-align: top;
+}
+
+.visibility {
+	font-size: 110%;
+	font-family: monospace;
+	color: green;
+}
+
+.keyword {
+	font-size: 110%;
+	font-family: monospace;
+	font-weight: bold;
+	color: black;
+}
+
+.name {
+	font-size: 110%;
+	font-family: monospace;
+	color: #444444;
+	font-weight: lighter;
+}
+
+.comment {
+	font-size: 110%;
+	font-family: monospace;
+	color: gray;
+}
+
+.constant {
+	font-size: 110%;
+	font-family: monospace;
+	color: purple;
+}
+
+.special {
+	color: red;
+}

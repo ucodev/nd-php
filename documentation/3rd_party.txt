@@ -1,0 +1,342 @@
+
+The list of 3rd party projects, frameworks, libraries, content or tools used by ND PHP Framework and their respective home pages and licenses.
+
+ Index	Project			License Acronym
+
+ 1.	PHP			(PHP)
+ 2.	mPDF 			(GPLv2)
+ 3.	PHPMailer		(GPLv2.1)
+ 4.	jQuery			(MIT)
+ 5.	jQuery UI		(MIT)
+ 6.	jQuery UI Timepicker 	(MIT, GPLv2)
+ 7.	jQuery Validate plugin	(MIT)
+ 8.	jQuery blockUI plugin	(MIT, GPLv3)
+ 9.	jQuery Timer plugin	(MIT)
+ 10.	Prototype		(MIT)
+ 11.	script.aculo.us		(MIT)
+ 12.	ModalBox		(MIT)
+ 13.	TinyMCE			(GPLv2.1)
+ 14.	EditArea		(GPLv2.1, Apache 2.0, BSD)
+ 15.	base64.js		(MIT)
+ 16.	utf8.js			(Custom, See below)
+ 17.	json2.js		(Public Domain)
+ 18.	Flat theme Iconset	(Custom, See below)
+ 19.	Free Grey Cloud Icons	(CC BY 3.0 US)
+ 20.	uWeb			(GPLv3)
+ 21.	uWAT			(GPLv3)
+
+
+
+=========================
+1.  PHP
+=========================
+
+  Author:	Rasmus Lerdorf, Zend Technologies, The PHP Group and others
+
+  URLs:		http://php.net
+
+  License:	PHP License
+
+=========================
+
+
+=========================
+2.  mPDF
+=========================
+
+  Author:	Ian Back
+
+  URLs:		https://github.com/mpdf/mpdf
+
+  License:	GNU General Public License, version 2
+
+=========================
+
+
+=========================
+3.  PHPMailer
+=========================
+
+  Author:	Brent R. Matzelle (original founder), and others
+
+  URLs:		https://github.com/PHPMailer/PHPMailer
+
+  License:	GNU Lesser General Public License, version 2.1
+
+=========================
+
+
+=========================
+4.  jQuery
+=========================
+
+  Author:	jQuery Foundation
+
+  URLs:		https://jquery.org
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+5.  jQuery UI
+=========================
+
+  Author:	jQuery Foundation
+
+  URLs:		https://jqueryui.com
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+6.  jQuery UI Timepicker
+=========================
+
+  Author:	Francois Gelinas
+
+  URLs:		http://fgelinas.com/code/timepicker
+
+  License:	MIT License or GNU General Public License version 2
+
+=========================
+
+
+=========================
+7.  jQuery Validate plugin
+=========================
+
+  Author:	Jörn Zaefferer
+
+  URLs:		http://jqueryvalidation.org/
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+8.  jQuery blockUI plugin
+=========================
+
+  Author:	M. Alsup
+
+  URLs:		http://malsup.com/jquery/block/
+
+  License:	GNU General Public License, version 3
+		MIT License
+
+=========================
+
+
+=========================
+9.  jQuery Timer plugin
+=========================
+
+  Author:	Walmik Deshpande
+
+  URLs:		http://jquerytimer.com/
+		https://github.com/walmik/timer.jquery
+
+  Licenses:	MIT License
+
+=========================
+
+
+=========================
+10. Prototype
+=========================
+
+  Author:	Sam Stephenson
+
+  URLs:		http://prototypejs.org
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+11.  script.aculo.us
+=========================
+
+  Author:
+
+  URLs:		http://script.aculo.us
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+12.  ModalBox
+=========================
+
+  Author:	Andrew Okonetchnikov
+
+  URLs:		https://github.com/okonet/modalbox
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+13. TinyMCE
+=========================
+
+  Author:	Ephox Corporation
+
+  URLs:		https://www.tinymce.com/
+
+  License:	GNU Lesser General Public License, version 2.1
+
+=========================
+
+
+=========================
+14. EditArea
+=========================
+
+  Author:	Christophe Dolivet
+
+  URLs:		http://www.cdolivet.com/editarea/
+
+  License:	GNU Lesser General Public License, version 2.1
+		Apache License, Version 2.0
+		BSD License (3-clause)
+
+=========================
+
+
+=========================
+15. base64.js
+=========================
+
+  Author:	Nick Galbreath
+
+  URLs:		http://code.google.com/p/stringencoders/source/browse/#svn/trunk/javascript
+
+  License:	MIT License
+
+=========================
+
+
+=========================
+16. utf8.js
+=========================
+
+  Author:	Webtoolkit.info
+
+  URLs:		http://www.webtoolkit.info/
+
+  License:	Custom (see below)
+
+  As long as you leave the copyright notice of the original script, or link 
+  back to this website, you can use any of the content published on this
+  website free of charge for any use: commercial or noncommercial. However,
+  under the license they are released through there are limitations to what
+  you may or may not do.
+
+  You Can:
+
+    * Use the resources in your personal work, in whole or part.
+    * Use the resources in your commercial work, in whole or part.
+    * Modify the work to your personal preference.
+    * Share the resources with others, under the following terms:
+        - Link to the resource webpage, not the download file.
+        - Use an excerpt from the webpage if necessary (don’t copy the full
+        article and display it on your site)
+
+  You Can Not:
+
+    * You can NOT sell the resources directly for profit (eg. Selling the items
+      on stock resource websites)
+    * You can NOT copy the full webpage and display it on your own website.
+      (Use an excerpt by all means, but please link to the original resource
+      download page – not the actual file.)
+
+=========================
+
+
+=========================
+17. json2.js
+=========================
+
+  Author:	Douglas Crockford
+
+  URLs:		https://github.com/douglascrockford/JSON-js
+		http://javascript.crockford.com/jsmin.html
+
+  License:	Public Domain
+
+=========================
+
+
+=========================
+18. Flat theme Iconset (fat icons)
+=========================
+
+  Author:	Designerz Base
+
+  URLs:		http://www.designerzbase.com/
+		https://www.iconfinder.com/iconsets/faticons
+		http://finest.graphics/
+
+  License:	Custom (see below)
+
+  All resources on Finest.graphics are FREE for use.
+
+  You can remix the work , use it for personal or comercial use.
+  * PLEASE DO NOT SELL * the resources on marketplaces.
+  * DO NOT REDESTRIBUTE /LICENSE or TAKE CREDIT for the resources you download.
+  -Link back is not required but highly recommended.
+  -If you have any questions use the Contact Form
+
+  The finest.graphics Team
+
+=========================
+
+
+=========================
+19. Free Grey Cloud Icons
+=========================
+
+  Author:	Aha-Soft
+
+  URLs:		http://www.aha-soft.com/free-icons/free-grey-cloud-icons/
+
+  License:	Creative Commons - Attribution 3.0 United States - CC BY 3.0 US
+
+=========================
+
+
+=========================
+20. uWeb
+=========================
+
+  Author:	Pedro A. Hortas
+
+  URLs:		https://github.com/ucodev/uweb
+
+  License:	GNU General Public License, version 3
+
+=========================
+
+
+=========================
+21. uWAT
+=========================
+
+  Author:	Pedro A. Hortas
+
+  URLs:		https://github.com/ucodev/utilities/tree/master/web/uwat
+
+  License:	GNU General Public License, version 3
+
+=========================
+
