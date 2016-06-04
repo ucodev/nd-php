@@ -1,3 +1,9 @@
+v0.01c1:
+
+ - Fixed parse error on install.php controller.
+ - Updated INSTALL file with further instructions regarding permissions.
+
+
 v0.01c:
 
  - Default password encryption mechanism changed to Blowfish.

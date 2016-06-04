@@ -43,7 +43,6 @@
  *
  * * Units support on views (including right/left configuration).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
- * * Default password encryption must be changed to blowfish.
  * * [IN_PROGRESS] Database Sharding (per user)
  * * Add special extra field/query pairs to _field_resolve() and _field_value_mangle()
  * * Add a rollback context menu button on Logging (on View and Quick View) [currently only a Quick Rollback button is present on Listing/Result].
