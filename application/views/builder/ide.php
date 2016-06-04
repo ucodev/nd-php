@@ -50,7 +50,10 @@
  	<script type="text/javascript">
    		jQuery(function() {
    			jQuery(document).tooltip();
+   			jQuery(document).tooltip('disable');
    		});
+
+   		var tooltip_status = false;
  	</script>
 </head>
 <body>
@@ -67,7 +70,7 @@
 			<legend>Controller Pool</legend>
 			<div id="obj_menu_entry_a" class="object" oncontextmenu="ndphp.ide.menu_entry_edit_controller(event, this);" onclick="ndphp.ide.menu_entry_load_fields(this);" draggable="true" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="generic" />
-				<span id="title" class="title menu_obj" onClick="ndphp.ide.dialog_show(this, 'menu');" title="This is a Generic Controller type. You can drag it into the 'Application Model -> Controllers' container. You can then select the instantiated controller and a Fields container will be displayed, where you can drag fields from the Fields Pool into the 'Application Model -> Fields' container. The Controller name will create a database table and each Field will create a database column under that table.">Generic</span><br />
+				<span id="title" class="title menu_obj" onClick="ndphp.ide.dialog_show(this, 'menu');" title="This is a Generic Controller type. You can drag it into the 'Application Model -> Controllers' container. Then, if you select the instantiated controller, a Fields container will be displayed where you can drag fields from the Fields Pool into the 'Application Model -> Fields' container. The Controller name will create a database table and each Field will create a database column under that table.">Generic</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">entry name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
@@ -89,6 +92,7 @@
 				<span id="name" onClick="ndphp.ide.name_click(this);">entry name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
+			<input type="button" class="button_cfg_tooltip" onClick="if (tooltip_status) { jQuery(function() { jQuery(document).tooltip('disable'); }); jQuery(this).val('Enable Tooltips'); tooltip_status = false; } else { jQuery(function() { jQuery(document).tooltip('enable'); }); jQuery(this).val('Disable Tooltips'); tooltip_status = true; }" value="Enable Tooltips" />
 		</fieldset>
 		<fieldset id="fields" class="pool pool_fields">
 			<legend>Fields Pool</legend>
@@ -411,7 +415,6 @@
 </textarea>
 			</fieldset>
 			<div id="actions" class="actions">
-				<!-- <input type="button" class="button_action" onClick="window.open('<?=base_url()?>index.php/configuration');" value="Config" /> -->
 				<input type="button" class="button_action" onClick="ndphp.ide.check();" value="Check" />
 				<input type="button" class="button_action" onClick="ndphp.ide.save();" value="Save" />
 				<input type="button" class="button_action" onClick="ndphp.ide.deploy();" value="Deploy" />

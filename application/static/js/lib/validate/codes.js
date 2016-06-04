@@ -56,7 +56,7 @@ validation.code.pt.nib = function(nib) {
 		control = result.toString();
 
 	return (nib.substring(19, 21) == control);
-}
+};
 
 validation.code.pt.vat = function(nif) {
 	var sum = 0;
@@ -81,8 +81,10 @@ validation.code.pt.vat = function(nif) {
 		return true;
 
 	return false;
-}
+};
+
+validation.code.eu = {};
 
 validation.code.eu.vat = function(vat) {
 	return validation.code.pt.vat(vat);
-}
+};

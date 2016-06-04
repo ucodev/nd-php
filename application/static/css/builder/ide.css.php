@@ -336,6 +336,15 @@ fieldset {
 	font-weight: bold;
 }
 
+.button_cfg_tooltip {
+	display: inline-block;
+	font-size: 80%;
+	margin-top: 12px;
+	margin-right: 10px;
+	padding: 5px 20px 5px 20px;
+	font-weight: bold;
+	float: right;
+}
 #actions {
 	display: table;
 	margin: 0 auto;

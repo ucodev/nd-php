@@ -89,6 +89,8 @@
 									</a>
 								<?php endif; ?>
 							<?php endforeach; ?>
+						<?php elseif ($view['fields'][$field]['input_type'] == 'file' && isset($view['fields'][$field]['base64_format'])): ?>
+							<img alt="<?=filter_html($value, $config['charset'])?>" style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;" src="<?=$view['fields'][$field]['base64_format']?>" />
 						<?php else: ?>
 							<?php if ($field == 'id'): ?>
 									<a href="<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($value, $config['charset'])?>">

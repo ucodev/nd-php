@@ -339,7 +339,7 @@
 					/* If any required field is empty, switch to the corresponding tab */
 					for (i = 0; i < required_fields_tab_map.length; i ++) {
 						for (j = 0; j < required_fields_tab_map[i].length; j ++) {
-							if (jQuery('[name="' + required_fields_tab_map[i][j] + '"]').val() == '') {
+							if (jQuery('input[name="' + required_fields_tab_map[i][j] + '"]').val() == '') {
 								/* Switch to the field's tab */
 								jQuery('#entry_tabs').tabs('option', 'active', i);
 

@@ -1,0 +1,8 @@
+v0.01b:
+
+ - Fixed incorrect input selector on create and edit data views.
+ - Added toggle support for tooltips on IDE Builder.
+ - Exporting entry views to PDF now supports image rendering of _file_* fields.
+ - Fixed javascript code validation API.
+ - Updated README.md.
+ - Added this ChangeLog.txt file.

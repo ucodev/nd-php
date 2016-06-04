@@ -82,7 +82,7 @@
  * FIXME:
  *
  * * On insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
- * * Export to pdf is not rendering images from _file_* fields.
+ * * Export to pdf (on listing/results) is not rendering images from _file_* fields.
  * * Advanced search: "Different than" option for mixed searches is currently bugged (due to the enclosure hack) and shall not be used as it'll return incorrect results
  * * Scheduler processing routines shall be moved to a separate worker (thread).
  * * Next run value of scheduler must always be computed to reference a timestamp in the future.
@@ -7192,6 +7192,37 @@ class ND_Controller extends UW_Controller {
 
 		if ($export) {
 			if ($export == 'pdf') {
+				/* Pre-process any exceptions for pdf export */
+				foreach ($data['view']['fields'] as $field => $meta) {
+					/* In order to allow the pdf export library to render image files stored in _file_* fields,
+					 * we need to provide the image file contents in base64 format.
+					 * This is required because the export library will act as a different client, thus will have no valid
+					 * session that will allow it to fetch files from the files.php controller.
+					 */
+					if ($meta['input_type'] == 'file') {
+						/* Get file extension */
+						$file_type = end(explode('.', $data['view']['result_array'][0][$field]));
+
+						/* Check if this file type is configured to be rendered as an image */
+						if (!in_array($file_type, $this->_image_file_rendering_ext))
+							continue;
+
+						/* Craft the file location */
+						$file_path = SYSTEM_BASE_DIR . '/uploads/' . $this->_session_data['user_id'] . '/' . $this->_name . '/' . $id . '/' . $field . '/' . openssl_digest($data['view']['result_array'][0][$field], 'sha256');
+						
+						/* Get file contents */
+						if (($file_contents = file_get_contents($file_path)) === false)
+							continue;
+
+						/* If the contents of the file are encrypted ... */
+						if ($this->_encrypted_uploaded_files === true)
+							$file_contents = $this->encrypt->decode($file_contents);
+
+						/* Convert file content to base64 format */
+						$data['view']['fields'][$field]['base64_format'] = 'data:image/' . $file_type . ';base64,' . base64_encode($file_contents);
+					}
+				}
+
 				if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/exportview.php')) {
 					$view_data = $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/exportview', $data, true);
 				} else {
