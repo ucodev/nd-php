@@ -1,3 +1,11 @@
+v0.01c2:
+
+ - Removed non-required dependencies from install.php controller.
+ - Fixed some file validations under install.php controller.
+ - Improved generation of application encryption key.
+ - Updated INSTALL file with further instructions regarding permissions.
+
+
 v0.01c1:
 
  - Fixed parse error on install.php controller.

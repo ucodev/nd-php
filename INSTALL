@@ -42,9 +42,13 @@ Basic instructions to install the ND PHP Framework
  web-server can write on these directories or files. Typically, the following
  will solve the issues:
 
+  # chown -R root:root nd-php/
+  # chown -R www-data:www-data nd-php/application/controllers
+  # chown -R www-data:www-data nd-php/application/static/images/menu
   # chown -R www-data:www-data nd-php/backups/
   # chown -R www-data:www-data nd-php/install/
   # chown -R www-data:www-data nd-php/uploads/
+  # chown -R www-data:www-data nd-php/user/config
 
  Always grant that system timezone is the same as set on the active
  Configuration timezone. Also grant that the DBMS is operating under the

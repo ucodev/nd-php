@@ -53,13 +53,10 @@ class Install extends UW_Controller {
 	/* Required PHP extensions */
 	private $_extensions_required = array(
 		'curl',
-		'ereg',
 		'gd',
 		'hash',
 		'json',
 		'mcrypt',
-		'mysql',
-		'mysqli',
 		'openssl',
 		'pcre',
 		'PDO',
@@ -109,7 +106,7 @@ class Install extends UW_Controller {
 		foreach ($this->_dir_writable_required as $dir) {
 			$fp = fopen(SYSTEM_BASE_DIR . '/' . $dir . '/test.write', 'w');
 
-			if ($fp === FALSE) {
+			if ($fp === false) {
 				array_push($non_writable, SYSTEM_BASE_DIR . '/' . $dir);
 				continue;
 			}
@@ -129,7 +126,7 @@ class Install extends UW_Controller {
 		foreach ($this->_file_writable_required as $file) {
 			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
-			if ($fp === FALSE) {
+			if ($fp === false) {
 				array_push($non_writable, SYSTEM_BASE_DIR . '/' . $file);
 				continue;
 			}
@@ -275,7 +272,7 @@ class Install extends UW_Controller {
 		$fp = fopen(SYSTEM_BASE_DIR . '/user/config/database.php', 'w');
 
 		/* Check if we can open the file for writing */
-		if ($fp === NULL) {
+		if ($fp === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/database.php');
 		}
@@ -307,7 +304,7 @@ class Install extends UW_Controller {
 			"\n";
 
 		/* Write the configuration data to database configuration file */
-		if (fwrite($fp, $database_config) === FALSE) {
+		if (fwrite($fp, $database_config) === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/database.php');
 		}
@@ -527,7 +524,7 @@ class Install extends UW_Controller {
 		$fp = fopen(SYSTEM_BASE_DIR . '/user/config/session.php', 'w');
 
 		/* Check if we can open the file for writing */
-		if ($fp === NULL) {
+		if ($fp === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php');
 		}
@@ -558,7 +555,7 @@ class Install extends UW_Controller {
 
 
 		/* Write the configuration data to session configuration file */
-		if (fwrite($fp, $session_config) === FALSE) {
+		if (fwrite($fp, $session_config) === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php');
 		}
@@ -576,7 +573,7 @@ class Install extends UW_Controller {
 		$fp = fopen(SYSTEM_BASE_DIR . '/user/config/encrypt.php', 'w');
 
 		/* Check if we can open the file for writing */
-		if ($fp === NULL) {
+		if ($fp === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/encrypt.php');
 		}
@@ -588,11 +585,11 @@ class Install extends UW_Controller {
 			"/* Encryption settings */\n" .
 			'$encrypt' . "['cipher']	= MCRYPT_RIJNDAEL_256;\n" .
 			'$encrypt' . "['mode']		= MCRYPT_MODE_CBC;\n" .
-			'$encrypt' . "['key']		= '" . openssl_digest(SYSTEM_BASE_DIR . mt_rand(100000, 999999) . date('Y-m-d H:i:s') . mt_rand(100000, 999999), 'md5') . "';\n" . /* FIXME: This needs a fix infosec guys, please contribute :) */
+			'$encrypt' . "['key']		= '" . openssl_digest(openssl_random_pseudo_bytes(32), 'md5') . "';\n" .
 			"\n";
 
 		/* Write the configuration data to session configuration file */
-		if (fwrite($fp, $encryption_config) === FALSE) {
+		if (fwrite($fp, $encryption_config) === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/encrypt.php');
 		}
