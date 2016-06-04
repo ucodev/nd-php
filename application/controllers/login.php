@@ -74,8 +74,7 @@ class Login extends UW_Controller {
     		return preg_match("/^[_a-z0-9-]+(\.[_a-z0-9+-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i", $email);
 	}
 
-	public function __construct()
-	{
+	public function __construct() {
 		parent::__construct();
 
 		$this->_viewhname = get_class();
@@ -97,8 +96,7 @@ class Login extends UW_Controller {
 		/* NOTE: Maintenance mode verification is placed after session_setup() completes */
 	}
 
-	public function login($referer = NULL)
-	{
+	public function login($referer = NULL) {
 		$data['config'] = array();
 		$data['config']['charset'] = $this->_charset;
 		$data['config']['theme'] = $this->_get_theme();
@@ -134,8 +132,7 @@ class Login extends UW_Controller {
 		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/login_form', $data);
 	}
 
-	public function index()
-	{
+	public function index() {
 		$this->login();
 	}
 	
@@ -325,7 +322,7 @@ class Login extends UW_Controller {
 				/* Crypt Blowfish */
 				$passwd_digest = crypt($_POST['password'], substr($row['password'], 0, 29));
 			} else if (strlen($row['password']) == 128) {
-				/* SHA512 */
+				/* SHA512 (deprecated... still here for backward compatibility) */
 				$passwd_digest = openssl_digest($_POST['password'], 'sha512');
 			} else {
 				/* Unrecognized hash */
@@ -382,7 +379,7 @@ class Login extends UW_Controller {
 
 		/* If logging is enabled, log this LOGIN entry */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('LOGIN' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('LOGIN' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'LOGIN',
@@ -406,11 +403,10 @@ class Login extends UW_Controller {
 		}
 	}
 
-	public function logout()
-	{
+	public function logout() {
 		/* If logging is enabled, log this LOGOUT request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('LOGOUT' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('LOGOUT' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'LOGOUT',

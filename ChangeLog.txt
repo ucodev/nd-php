@@ -1,3 +1,12 @@
+v0.01c:
+
+ - Default password encryption mechanism changed to Blowfish.
+ - Fixed some issues with user password changes.
+ - Transaction IDs (from loggin) digests are now being hashed with SHA-1.
+ - Users API Keys are now 40 characters long (from 32).
+ - String truncate (on views) increased from 32 to 40 characters.
+
+
 v0.01b:
 
  - Fixed incorrect input selector on create and edit data views.

@@ -124,7 +124,7 @@ class ND_Controller extends UW_Controller {
 	protected $_accounting = true;
 
 	/* Truncate strings settings */
-	protected $_string_truncate_len = 32;
+	protected $_string_truncate_len = 40;
 	protected $_string_truncate_trail = 5;
 	protected $_string_truncate_sep = '...';
 
@@ -3939,7 +3939,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, log this listing request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('VIEW' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('VIEW' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'VIEW',
@@ -4164,7 +4164,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, log this listing request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('LIST' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('LIST' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'LIST',
@@ -4369,7 +4369,7 @@ class ND_Controller extends UW_Controller {
 		 */
 		/* If logging is enabled, log this search request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('LIST' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('LIST' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'LIST',
@@ -4903,7 +4903,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, log this search request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('SEARCH' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('SEARCH' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'SEARCH',
@@ -5045,7 +5045,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, log this search result request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('RESULT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('RESULT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'RESULT',
@@ -5787,7 +5787,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, log this search request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('RESULT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('RESULT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'RESULT',
@@ -5926,7 +5926,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('EXPORT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('EXPORT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'EXPORT',
@@ -6443,7 +6443,7 @@ class ND_Controller extends UW_Controller {
 			/* Temporarily add the 'id' field to POST data */
 			$_POST['id'] = $last_id;
 
-			$log_transaction_id = openssl_digest('INSERT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('INSERT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			foreach ($_POST as $pfield => $pvalue) {
 				$this->db->insert('logging', array(
@@ -6764,7 +6764,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'READ',
@@ -7042,7 +7042,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->_logging === true && $export === NULL) {
-			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'READ',
@@ -7055,7 +7055,7 @@ class ND_Controller extends UW_Controller {
 				'users_id' => $this->_session_data['user_id']
 			));
 		} else if ($this->_logging === true && $export !== NULL) {
-			$log_transaction_id = openssl_digest('EXPORT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('EXPORT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'EXPORT',
@@ -7597,7 +7597,7 @@ class ND_Controller extends UW_Controller {
 		if ($this->_logging === true) {
 			$changed_fields = $this->post_changed_fields_data($this->_name, $_POST['id'], $_POST);
 
-			$log_transaction_id = openssl_digest('UPDATE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('UPDATE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			foreach ($changed_fields as $cfield) {
 				$this->db->insert('logging', array(
@@ -7887,7 +7887,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'READ',
@@ -8116,7 +8116,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('DELETE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('DELETE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'DELETE',

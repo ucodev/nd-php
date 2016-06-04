@@ -75,8 +75,8 @@ class Users extends ND_Controller {
 		 */
 		$POST['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $POST['password'], false);
 
-		/* Convert password to hash. TODO: FIXME: Blowfish is supported, but isn't being handled here. */
-		$POST['password'] = openssl_digest($POST['password'], 'sha512');
+		/* Convert password to hash */
+		$POST['password'] = password_hash($POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
 	}
 
 	protected function _hook_insert_post(&$id, &$POST, &$fields, $hook_pre_return) {
@@ -116,7 +116,7 @@ class Users extends ND_Controller {
 			 * data again).
 			 */
 
-			if (strlen($this->session->userdata('privenckey')) != 256) {
+			if (strlen(base64_decode($this->session->userdata('privenckey'))) != 256) {
 				/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
 				 * to be changed.
 				 */
@@ -125,10 +125,10 @@ class Users extends ND_Controller {
 			}
 
 			/* Re-encrypt the user private encryption key with the new password */
-			$POST['privenckey'] = $this->encrypt->encrypt($this->session->userdata('privenckey'), $POST['password'], false);
+			$POST['privenckey'] = $this->encrypt->encrypt(base64_decode($this->session->userdata('privenckey')), $POST['password'], false);
 
-			/* TODO: FIXME: Blowfish is supported, but isn't being handled here. */
-			$POST['password'] = openssl_digest($POST['password'], 'sha512');
+			/* hash new password */
+			$POST['password'] = password_hash($POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
 		}
 
 		/* Grant that users_id is set */
@@ -139,7 +139,7 @@ class Users extends ND_Controller {
 		/* Always update user session data after any user changes are performed */
 
 		/* Query the database */
-		$this->db->select('users.id AS user_id,users.username AS username,users.email AS email,_file_photo AS photo,rel_users_roles.roles_id AS roles_id,timezones.timezone AS timezone');
+		$this->db->select('users.id AS user_id,users.username AS username,users.email AS email,users._file_photo AS photo,rel_users_roles.roles_id AS roles_id,timezones.timezone AS timezone,users.privenckey');
 		$this->db->from('users');
 		$this->db->join('rel_users_roles', 'rel_users_roles.users_id = users.id', 'left');
 		$this->db->join('timezones', 'users.timezones_id = timezones.id', 'left');
@@ -165,6 +165,7 @@ class Users extends ND_Controller {
 			$this->_session_data['photo'] = $row['photo'] ? (base_url() . 'index.php/files/access/users/' . $id . '/_file_photo/' . $row['photo']) : NULL;
 			$this->_session_data['email'] = $row['email'];
 			$this->_session_data['timezone'] = $row['timezone'];
+			$this->_session_data['privenckey'] = base64_encode($row['privenckey']);
 			/* FIXME: Missing database variable? */
 			$this->_session_data['roles'] = $user_roles;
 

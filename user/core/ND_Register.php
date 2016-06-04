@@ -405,7 +405,7 @@ class ND_Register extends UW_Controller {
 
 		/* If logging is enabled, log this registration request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest(date('Y-m-d H:i:s') . mt_rand(100000, 999999), 'md5');
+			$log_transaction_id = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'REGISTER',
@@ -588,7 +588,7 @@ class ND_Register extends UW_Controller {
 		$userdata['first_name'] = htmlentities($_POST['first_name'], ENT_QUOTES, $this->_charset);
 		$userdata['last_name'] = htmlentities($_POST['last_name'], ENT_QUOTES, $this->_charset);
 		$userdata['username'] = $_POST['username'];
-		$userdata['password'] = openssl_digest($_POST['password'], 'sha512');
+		$userdata['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
 		$userdata['email'] = $_POST['email'];
 		$userdata['phone'] = $_POST['phone'];
 
@@ -604,7 +604,7 @@ class ND_Register extends UW_Controller {
 		$userdata['locked'] = 1;
 		$userdata['expire'] = '2030-12-31 23:59:59';
 		$userdata['registered'] = date('Y-m-d H:i:s');
-		$userdata['confirm_email_hash'] = openssl_digest($_POST['username'] . $_POST['password'] . $userdata['registered'], 'md5');
+		$userdata['confirm_email_hash'] = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 		$userdata['confirm_phone_token'] = mt_rand(100000, 999999);
 
 		$data['config'] = array();
@@ -799,7 +799,7 @@ class ND_Register extends UW_Controller {
 		}
 
 		$plain_password = $this->rand_string(24);
-		$userdata['password'] = openssl_digest($plain_password, 'sha512');
+		$userdata['password'] = password_hash($plain_password, PASSWORD_BCRYPT, array('cost' => 10));
 
 		$this->db->where('id', $rawdata['id']);
 		$this->db->update('users', $userdata);
@@ -1010,7 +1010,7 @@ class ND_Register extends UW_Controller {
 	private function user_active_process($users_id) {
 		/* Update users_id and apikey on users table */
 		$userdata['users_id'] = $users_id;
-		$userdata['apikey'] = openssl_digest($POST['username'] . $POST['password'] . mt_rand(100000, 999999), 'md5');
+		$userdata['apikey'] = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 		$userdata['acct_last_reset'] = date('Y-m-d H:i:s');
 
 		$this->db->trans_begin();

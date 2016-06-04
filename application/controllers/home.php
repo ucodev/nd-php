@@ -47,7 +47,7 @@ class Home extends ND_Controller {
 	public function home_generic() {
 		/* If logging is enabled, log this listing request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('VIEW' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('VIEW' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'VIEW',
@@ -88,7 +88,7 @@ class Home extends ND_Controller {
 	public function result_global_generic() {
 		/* If logging is enabled, log this listing request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('RESULT GLOBAL' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'md5');
+			$log_transaction_id = openssl_digest('RESULT GLOBAL' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'RESULT GLOBAL',

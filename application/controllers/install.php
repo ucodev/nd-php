@@ -436,8 +436,8 @@ class Install extends UW_Controller {
 		$this->db->where('id', 1);
 
 		$this->db->update('users', array(
-			'password' => openssl_digest($this->ndphp->safe_b64decode(rawurldecode($password)), 'sha512'),
-			'apikey' => openssl_digest($POST['username'] . $POST['password'] . mt_rand(100000, 999999), 'md5'),
+			'password' => password_hash($this->ndphp->safe_b64decode(rawurldecode($password)), PASSWORD_BCRYPT, array('cost' => 10));
+			'apikey' => openssl_digest(openssl_random_pseudo_bytes(256), 'sha1'),
 			'email' => $this->ndphp->safe_b64decode(rawurldecode($email)),
 			'phone_confirmed' => true,
 			'email_confirmed' => true,
