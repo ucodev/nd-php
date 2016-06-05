@@ -1,5 +1,6 @@
 chown -R root:root .
-chown -R www-data:www-data ./application/controllers
+chown www-data:www-data ./application/controllers
+chown -R www-data:www-data ./application/controllers/lib
 chown -R www-data:www-data ./application/static/images/menu
 chown -R www-data:www-data ./backups/
 chown -R www-data:www-data ./install/

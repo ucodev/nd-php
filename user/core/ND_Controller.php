@@ -6266,6 +6266,11 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_data', $data);
 		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_footer', $data);
+		}
 	}
 
 	public function insert($retid = false) {
@@ -6984,6 +6989,11 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_data', $data);
 		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_footer', $data);
+		}
 	}
 
 	public function view_generic($id = 0, $export = NULL) {
@@ -7370,6 +7380,11 @@ class ND_Controller extends UW_Controller {
 				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_data', $data);
 			} else {
 				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_data', $data);
+			}
+			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_footer.php')) {
+				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_footer', $data);
+			} else {
+				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_footer', $data);
 			}
 		}		
 	}
@@ -8074,6 +8089,11 @@ class ND_Controller extends UW_Controller {
 			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_data', $data);
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_data', $data);
+		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_footer', $data);
 		}
 	}
 

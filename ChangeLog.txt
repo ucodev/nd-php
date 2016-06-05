@@ -1,9 +1,18 @@
+v0.01d (2016-06-05):
+
+ - Modal ajax controller handlers now also load view footers.
+ - Javascript from Create and Edit views are now on view footers.
+ - Added .gitkeep to install/updates.
+ - Updated install/perm_setup.sh.inc file.
+ - Renamed INSTALL to INSTALL.txt to avoid FAT/NTFS name collisions.
+
+
 v0.01c3 (2016-06-05):
 
  - Fixed key paddings for mcrypt_*()
  - Stripped trailing pads from mcrypt_decrypt() to allow correct json_decode() behavior.
  - Added the install/perm_setup.sh.inc file.
- - Update INSTALL file.
+ - Updated INSTALL file.
  - Added support for PHP 7.
 
 
