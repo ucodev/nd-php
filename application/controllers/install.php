@@ -585,7 +585,7 @@ class Install extends UW_Controller {
 			"/* Encryption settings */\n" .
 			'$encrypt' . "['cipher']	= MCRYPT_RIJNDAEL_256;\n" .
 			'$encrypt' . "['mode']		= MCRYPT_MODE_CBC;\n" .
-			'$encrypt' . "['key']		= '" . openssl_digest(openssl_random_pseudo_bytes(32), 'md5') . "';\n" .
+			'$encrypt' . "['key']		= '" . openssl_digest(openssl_random_pseudo_bytes(256), 'md5') . "';\n" .
 			"\n";
 
 		/* Write the configuration data to session configuration file */

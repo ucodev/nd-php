@@ -50,6 +50,10 @@ Basic instructions to install the ND PHP Framework
   # chown -R www-data:www-data nd-php/uploads/
   # chown -R www-data:www-data nd-php/user/config
 
+ or run the following command (exactly as stated, with all the dots):
+
+  # . ./install/perm_setup.sh.inc
+
  Always grant that system timezone is the same as set on the active
  Configuration timezone. Also grant that the DBMS is operating under the
  same timezone as the web-server.

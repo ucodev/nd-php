@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 03/06/2016
+ * Date: 05/06/2016
  * License: GPLv3
  */
 
@@ -44,6 +44,9 @@ class UW_Encrypt extends UW_Base {
 	public function encrypt($m, $k, $b64_encode = true) {
 		global $config;
 
+		/* Pad key */
+		$k = substr(str_pad($k, $this->_n_size, "\0"), 0, $this->_n_size);
+
 		$n = mcrypt_create_iv($this->_n_size, MCRYPT_RAND);
 		$c = mcrypt_encrypt($config['encrypt']['cipher'], $k, $m, $config['encrypt']['mode'], $n);
 
@@ -58,6 +61,9 @@ class UW_Encrypt extends UW_Base {
 
 	public function decrypt($c, $k, $b64_decode = true) {
 		global $config;
+
+		/* Pad key */
+		$k = substr(str_pad($k, $this->_n_size, "\0"), 0, $this->_n_size);
 
 		if ($b64_decode === true)
 			$c = base64_decode($c);
@@ -262,7 +268,12 @@ class UW_Session extends UW_Base {
 			if ($this->_encryption === true) {
 				$cipher = new UW_Encrypt;
 
-				$this->_session_data = json_decode($cipher->decrypt($_SESSION['data'], $config['encrypt']['key']), true);
+				/* NOTE: mcrypt_decrypt() returns a padded $m with trailing \0 to match $k length...
+				 *       We need to rtrim() those \0, but only when we're sure they weren't there
+				 *		 in the first place (which in this case, they were not because it's an JSON
+				 *		 encoded string).
+				 */
+				$this->_session_data = json_decode(rtrim($cipher->decrypt($_SESSION['data'], $config['encrypt']['key']), "\0"), true);
 			} else {
 				/* Unencrypted session */
 				$this->_session_data = json_decode($_SESSION['data'], true);
