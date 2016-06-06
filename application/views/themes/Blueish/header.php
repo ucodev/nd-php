@@ -210,7 +210,7 @@
 					</td>
 					<?php $access_key = 1; foreach ($view['mainmenu'] as $entry): ?>
 						<td class="mainmenu_left_entry">
-							<a title="<?=filter_html(ucfirst($entry[1]), $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($entry[0], $config['charset'])?>" onclick="ndphp.ajax.load_body_menu(event, '<?=filter_html_js_str($entry[0], $config['charset'])?>', '<?=filter_html_js_str($entry[1], $config['charset'])?>');" class='mainmenu_left_entry' accesskey="<?=$access_key?>">
+							<a title="<?=$entry[2] ? filter_html($entry[2], $config['charset']) : filter_html(ucfirst($entry[1]), $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($entry[0], $config['charset'])?>" onclick="ndphp.ajax.load_body_menu(event, '<?=filter_html_js_str($entry[0], $config['charset'])?>', '<?=filter_html_js_str($entry[1], $config['charset'])?>');" class='mainmenu_left_entry' accesskey="<?=$access_key?>">
 								<?=filter_html(ucfirst($entry[1]), $config['charset'])?>
 							</a>
 						</td>

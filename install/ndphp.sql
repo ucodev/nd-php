@@ -82,7 +82,7 @@ DROP TABLE IF EXISTS `_help_tfhd`;
 CREATE TABLE `_help_tfhd` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `table_name` varchar(64) NOT NULL,
-  `field_name` varchar(64) NOT NULL,
+  `field_name` varchar(64) DEFAULT NULL,
   `field_units` varchar(32) DEFAULT NULL,
   `help_description` varchar(4096) NOT NULL,
   `help_url` varchar(1024) NOT NULL DEFAULT '#',

@@ -3195,8 +3195,31 @@ class ND_Controller extends UW_Controller {
 				if ((substr($table, 0, 4) == 'rel_') || (substr($table, 0, 6) == 'mixed_') || ($table[0] == '_'))
 					continue;
 
+				/* Get help data */
+				$help_description = '';
+
+				$this->db->select('help_description');
+				$this->db->from('_help_tfhd');
+				$this->db->where('table_name', $table);
+				$this->db->is_null('field_name');
+				$qh = $this->db->get();
+
+				if ($qh->num_rows()) {
+					$row_help = $qh->row_array();
+					$help_description = $row_help['help_description'];
+				}
+
 				/* Insert element into $entries, resolving the aliased name, if any. */
-				array_push($entries, array($table, isset($this->_aliased_menu_entries[$table]) ? $this->_aliased_menu_entries[$table] : $table));
+				/* Format of menu entry is:
+				 *
+				 *  +-------------+-------------------+
+				 *  |  $entry[0]  |  Table name       |
+				 *  |  $entry[1]  |  View alias       |
+				 *  |  $entry[2]  |  Help description |
+				 *  +-------------+-------------------+
+				 *
+				 */
+				array_push($entries, array($table, isset($this->_aliased_menu_entries[$table]) ? $this->_aliased_menu_entries[$table] : $table, $help_description));
 			}
 		}
 

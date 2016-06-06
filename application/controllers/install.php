@@ -177,6 +177,15 @@ class Install extends UW_Controller {
 	public function __construct() {
 		parent::__construct();
 
+		/* Grant that PHP version is suitable */
+		$php_version = explode('.', phpversion());
+
+		if (intval($php_version[0]) < 5 || (intval($php_version[0]) == 5 && intval($php_version[1]) < 6)) {
+			header('HTTP/1.1 501 Not Implemented');
+			die(NDPHP_LANG_MOD_ATTN_PHP_VERSION);
+		}
+
+		/* Check if the framework is already installed */
 		if (($fp = @fopen(SYSTEM_BASE_DIR . '/install/' . $this->_inst_ctl_file, 'r')) !== false) {
 			@fclose($fp);
 			header('HTTP/1.1 403 Forbidden');

@@ -16,7 +16,7 @@
 
 ## Does it run in any version of PHP?
 
- It requires PHP version 5.5.0 or greater. It also runs under PHP 7.
+ It requires PHP version 5.6.0 or greater. It also runs under PHP 7.
 
 ## Do I need to install a lot of dependencies?
 
