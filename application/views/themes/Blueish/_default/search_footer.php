@@ -52,3 +52,58 @@
  */
 
  ?>
+
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		/* Field specific handlers and modifiers */
+		<?php foreach ($view['fields'] as $field => $meta): ?>
+			<?php if ($meta['type'] == 'separator') continue; ?>
+			<?php if (in_array($field, $config['hidden_fields'])) continue; ?>
+
+			/* Hide conditions divs */
+			jQuery("#search_cond_field_<?=filter_js_special($field, $config['charset'])?>").hide();
+
+			var checkbox_<?=filter_js_special($field, $config['charset'])?> = false;
+
+			/* FIXME: Not the best approach... To be redesigned */
+			jQuery("#search_criteria_checkbox_<?=filter_js_special($field, $config['charset'])?>").click(function() {
+				if (checkbox_<?=filter_js_special($field, $config['charset'])?>) {
+					checkbox_<?=filter_js_special($field, $config['charset'])?> = false;
+					jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").nd_animate_hide(800);
+				} else {
+					checkbox_<?=filter_js_special($field, $config['charset'])?> = true;
+					jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").nd_animate_show(800);
+				}
+			});
+
+			/* Datetime, date and time fields require special handlers/modifiers */
+			<?php if ($meta['type'] == 'datetime'): ?>
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker('option', 'dateFormat', 'yy-mm-dd');
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from_time").timepicker();
+
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker('option', 'dateFormat', 'yy-mm-dd');
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to_time").timepicker();
+			<?php elseif ($meta['type'] == 'date'): ?>
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker('option', 'dateFormat', 'yy-mm-dd');
+
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker('option', 'dateFormat', 'yy-mm-dd');
+			<?php elseif ($meta['type'] == 'time'): ?>
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").timepicker();
+
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").timepicker();
+			<?php endif; ?>
+
+			/* Search fields are hidden by default */
+			jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").hide();
+		<?php endforeach; ?>
+	});
+
+	function search_expand_options(opt_div, btn_div) {
+		jQuery("#" + btn_div).hide();
+		jQuery("#" + opt_div).show();
+	}
+</script>

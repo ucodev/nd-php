@@ -80,6 +80,7 @@
  *
  * FIXME:
  *
+ * * Memcached tab under Configuration menu should be hidden when FEATURE_SYSTEM_MEMCACHED is disabled.
  * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
  * * On insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * * Export to pdf (on listing/results) is not rendering images from _file_* fields.

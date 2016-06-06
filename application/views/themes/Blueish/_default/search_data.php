@@ -57,159 +57,43 @@
 
 	<!-- Begin of Advanced Search -->
 	<div id="search_advanced">
-		<script type="text/javascript">
-			function search_expand_options(opt_div, btn_div) {
-				jQuery("#" + btn_div).hide();
-				jQuery("#" + opt_div).show();
-			}
-		</script>
 		<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/result" name="advsearchform" id="advsearchform" method="post">
 		<div class="search_criteria_fields">
 			<fieldset class="search_criteria_fieldset">
 			<legend class="search_criteria_legend"><?=filter_html(NDPHP_LANG_MOD_BLOCK_SEARCH_ADV_CRITERIA, $config['charset'])?></legend>
 			<div class="search_criteria_fields_inner">
-			<?php
-				foreach ($view['fields'] as $field => $value):
+			<?php foreach ($view['fields'] as $field => $meta): ?>
+				<?php
 					/* Ignore fields without meta data */
 					if (!isset($view['fields'][$field]))
 						continue;
 
+					/* Ignore hidden fields */
+					if (in_array($field, $config['hidden_fields']))
+						continue;
+
+					/* Ignore separators */
 					if ($view['fields'][$field]['type'] == 'separator')
 						continue;
-			?>
-					<style>
-						/* FIXME:
-						 *
-						 * This style must be moved into the main.css
-						 *
-						 *
-						 */
-						div.search_criteria_checkbox_<?=filter_css_special($field, $config['charset'])?> {
-							display: inline-block;
-							float: right;
-							margin-right: 10px;
-						}
-						.search_criteria_checkbox_<?=filter_css_special($field, $config['charset'])?> {
-							width: 70px;
-							height: 20px;
-
-							background: #333;
-							margin: 5px auto;
-
-							position: relative;
-						}
-
-						.search_criteria_checkbox_<?=filter_css_special($field, $config['charset'])?>:after {
-							content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_OFF, $config['charset'])?>';
-							
-							font: 12px/18px Arial, sans-serif;
-							top: 1px;
-							
-							color: #000;
-							position: absolute;
-							right: 10px;
-							z-index: 0;
-							font-weight: bold;
-							text-shadow: 1px 1px 0px rgba(255,255,255,.15);
-						}
-
-						.search_criteria_checkbox_<?=filter_css_special($field, $config['charset'])?>:before {
-							content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_ON, $config['charset'])?>';
-							
-							font: 12px/18px Arial, sans-serif;
-							top: 1px;
-							
-							color: #1d84c7;
-							position: absolute;
-							left: 10px;
-							z-index: 0;
-							font-weight: bold;
-						}
-
-						.search_criteria_checkbox_<?=filter_css_special($field, $config['charset'])?> label {
-							display: block;
-
-							width: 28px;
-							height: 14px;
-
-							-webkit-transition: all .4s ease;
-							-moz-transition: all .4s ease;
-							-o-transition: all .4s ease;
-							-ms-transition: all .4s ease;
-							transition: all .4s ease;
-							cursor: pointer;
-							position: absolute;
-							top: 3px;
-							left: 3px;
-							z-index: 1;
-
-							background: #fcfff4;
-						}
-
-						.search_criteria_checkbox_<?=filter_css_special($field, $config['charset'])?> input[type=checkbox]:checked + label {
-							left: 38px;
-						}
-
-						#search_field_<?=filter_css_special($field, $config['charset'])?> {
-							background-color: #777;
-							display: table;
-							margin: 0 auto;
-							margin-top: 15px;
-							margin-bottom: 15px;
-							padding-left: 20px;
-							padding-right: 20px;
-							padding-top: 5px;
-							padding-bottom: 5px;
-							text-align: center;
-							vertical-align: middle;
-						}
-						
-						#search_field_cond_<?=filter_css_special($field, $config['charset'])?> {
-							display: inline-block;
-							vertical-align: middle;
-						}
-						
-						#search_field_cond_button_<?=filter_css_special($field, $config['charset'])?> {
-							display: inline-block;
-						}
-					</style>
-					<script type="text/javascript">
-						jQuery("#search_field_cond_<?=filter_js_special($field, $config['charset'])?>").hide();
-					</script>
-					<script type="text/javascript">
-						var checkbox_<?=filter_js_special($field, $config['charset'])?> = false;
-
-						/* FIXME: Not the best approach... To be redesigned */
-						jQuery("#search_criteria_checkbox_<?=filter_js_special($field, $config['charset'])?>").click(function() {
-							if (checkbox_<?=filter_js_special($field, $config['charset'])?>) {
-								checkbox_<?=filter_js_special($field, $config['charset'])?> = false;
-								jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").nd_animate_hide(800);
-							} else {
-								checkbox_<?=filter_js_special($field, $config['charset'])?> = true;
-								jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").nd_animate_show(800);
-							}
-						});
-					</script>
+				?>
 					<div class="search_criteria_field">
 						<table class="search_criteria_field_table">
 							<tr class="search_criteria_field_table">
 								<td class="search_criteria_field_table">
 									<div class="search_criteria_label">
-										<?=filter_html(ucfirst($value['viewname']), $config['charset'])?>
+										<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
 									</div>
 								</td>
 								<td class="search_criteria_field_table">
 									<div class="search_criteria_checkbox_<?=filter_html_special($field, $config['charset'])?>">
-										<input id="search_criteria_checkbox_<?=filter_html_special($field, $config['charset'])?>" name="criteria_<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($value['viewname']), $config['charset'])?>" type="checkbox" value="1">
+										<input id="search_criteria_checkbox_<?=filter_html_special($field, $config['charset'])?>" name="criteria_<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" type="checkbox" value="1">
 										<label for="search_criteria_checkbox_<?=filter_html_special($field, $config['charset'])?>"></label>
 									</div>
 								</td>
 							</tr>
 						</table>
 					</div>
-			<?php
-				endforeach;
-			?>
+			<?php endforeach; ?>
 			</div>
 			</fieldset>		
 		</div>
@@ -217,18 +101,22 @@
 			<fieldset class="search_fields_fieldset">
 			<legend class="search_fields_legend"><?=filter_html(NDPHP_LANG_MOD_BLOCK_SEARCH_ADV_CONDITIONS, $config['charset'])?></legend>
 			<div class="search_fields_inner">
-			<?php
-				$i = 1;
-				foreach ($view['fields'] as $field => $meta):
+			<?php $i = 1; foreach ($view['fields'] as $field => $meta): ?>
+				<?php
 					/* Ignore fields without meta data */
 					if (!isset($view['fields'][$field]))
 						continue;
 
-					if ($view['fields'][$field]['type'] == 'separator')
+					/* Ignore hidden fields */
+					if (in_array($field, $config['hidden_fields']))
 						continue;
 
-					if ($meta['input_type'] == 'checkbox') {
-			?>
+					/* Ignore separators */
+					if ($view['fields'][$field]['type'] == 'separator')
+						continue;
+				?>
+
+				<?php if ($meta['input_type'] == 'checkbox'): ?>
 						<div id="search_field_<?=filter_html_special($field, $config['charset'])?>" style="display: inline-block; margin: 20px;">
 							<table class="search_field">
 								<tr class="search_field">
@@ -239,21 +127,19 @@
 								</tr>
 							</table>
 						</div>
-			<?php
-					} else if ((($meta['input_type'] == 'text') || ($meta['input_type'] == 'file') || ($meta['type'] == 'mixed')) && ($meta['type'] != 'date') && ($meta['type'] != 'time') && ($meta['type'] != 'datetime') && ($meta['type'] != 'timer')) {
-			?>
+				<?php elseif ((($meta['input_type'] == 'text') || ($meta['input_type'] == 'file') || ($meta['type'] == 'mixed')) && ($meta['type'] != 'date') && ($meta['type'] != 'time') && ($meta['type'] != 'datetime') && ($meta['type'] != 'timer')): ?>
 					<div id="search_field_<?=filter_html_special($field, $config['charset'])?>" style="display: inline-block; margin: 20px;">
 						<table class="search_field">
 							<tr class="search_field">
 								<td class="search_field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?></td>
 								<td class="search_field_value">
 									<input name="<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" type="text" />
-									<div id="search_field_cond_button_<?=filter_html_special($field, $config['charset'])?>">
-										<a href="javascript:search_expand_options('search_field_cond_<?=filter_html_js_special($field, $config['charset'])?>', 'search_field_cond_button_<?=filter_html_js_str($field, $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_MORE, $config['charset'])?>..." class="search_options_link">
+									<div id="search_cond_button_field_<?=filter_html_special($field, $config['charset'])?>">
+										<a href="javascript:search_expand_options('search_cond_field_<?=filter_html_js_special($field, $config['charset'])?>', 'search_cond_button_field_<?=filter_html_js_str($field, $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_MORE, $config['charset'])?>..." class="search_options_link">
 											+
 										</a>
 									</div>
-									<div id="search_field_cond_<?=filter_html_special($field, $config['charset'])?>">
+									<div id="search_cond_field_<?=filter_html_special($field, $config['charset'])?>">
 										<input name="<?=filter_html($field, $config['charset'])?>_exact" alt="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_EXACT, $config['charset'])?>" type="checkbox" value="1" /> <?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_EXACT, $config['charset'])?>
 										<input name="<?=filter_html($field, $config['charset'])?>_diff" alt="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_DIFF, $config['charset'])?>" type="checkbox" value="1" /> <?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_DIFF, $config['charset'])?>
 									</div>
@@ -261,21 +147,19 @@
 							</tr>
 						</table>
 					</div>
-			<?php
-					} else if ($meta['input_type'] == 'textarea') {
-			?>
+				<?php elseif ($meta['input_type'] == 'textarea'): ?>
 					<div id="search_field_<?=filter_html_special($field, $config['charset'])?>" style="display: inline-block; margin: 20px;">
 						<table class="search_field">
 							<tr class="search_field">
 								<td class="search_field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?></td>
 								<td class="search_field_value">
 									<textarea rows="6" cols="28" name="<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>"></textarea>
-									<div id="search_field_cond_button_<?=filter_html_special($field, $config['charset'])?>">
-										<a href="javascript:search_expand_options('search_field_cond_<?=filter_html_js_special($field, $config['charset'])?>', 'search_field_cond_button_<?=filter_html_js_special($field, $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_MORE, $config['charset'])?>..." class="search_options_link">
+									<div id="search_cond_button_field_<?=filter_html_special($field, $config['charset'])?>">
+										<a href="javascript:search_expand_options('search_cond_field_<?=filter_html_js_special($field, $config['charset'])?>', 'search_cond_button_field_<?=filter_html_js_special($field, $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_MORE, $config['charset'])?>..." class="search_options_link">
 											+
 										</a>
 									</div>
-									<div id="search_field_cond_<?=filter_html_special($field, $config['charset'])?>">
+									<div id="search_cond_field_<?=filter_html_special($field, $config['charset'])?>">
 										<input name="<?=filter_html($field, $config['charset'])?>_exact" alt="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_EXACT, $config['charset'])?>" type="checkbox" value="1" /> <?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_EXACT, $config['charset'])?>
 										<input name="<?=filter_html($field, $config['charset'])?>_diff" alt="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_DIFF, $config['charset'])?>" type="checkbox" value="1" /> <?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_DIFF, $config['charset'])?>
 									</div>
@@ -283,9 +167,7 @@
 							</tr>
 						</table>
 					</div>
-			<?php
-					} else if (($meta['input_type'] == 'number') || ($meta['type'] == 'date') || ($meta['type'] == 'time') || ($meta['type'] == 'datetime')) {
-			?>
+				<?php elseif (($meta['input_type'] == 'number') || ($meta['type'] == 'date') || ($meta['type'] == 'time') || ($meta['type'] == 'datetime')): ?>
 					<div id="search_field_<?=filter_html_special($field, $config['charset'])?>" style="display: inline-block; margin: 20px;">
 						<table class="search_field">
 							<tr class="search_field">
@@ -295,29 +177,17 @@
 									<?php if ($meta['type'] == 'datetime'): ?>
 										<input id="<?=filter_html_special($field, $config['charset'])?>_from_time" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" name="<?=filter_html($field, $config['charset'])?>_time" type="<?=filter_html($meta['input_type'], $config['charset'])?>" placeholder="HH:MM:SS" />
 										<input name="<?=filter_html($field, $config['charset'])?>_custom" type="text" placeholder="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_CUSTOM, $config['charset'])?>" />
-										<script type="text/javascript">
-											jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker();
-											jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker('option', 'dateFormat', 'yy-mm-dd');
-											jQuery("#<?=filter_js_special($field, $config['charset'])?>_from_time").timepicker();
-										</script>
 									<?php elseif ($meta['type'] == 'date'): ?>
 										<input name="<?=filter_html($field, $config['charset'])?>_custom" type="text" placeholder="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_CUSTOM, $config['charset'])?>" />
-										<script type="text/javascript">
-											jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker();
-											jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker('option', 'dateFormat', 'yy-mm-dd');
-										</script>
 									<?php elseif ($meta['type'] == 'time'): ?>
 										<input name="<?=filter_html($field, $config['charset'])?>_custom" type="text" placeholder="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_CUSTOM, $config['charset'])?>" />
-										<script type="text/javascript">
-											jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").timepicker();
-										</script>
 									<?php endif; ?>
-									<div id="search_field_cond_button_<?=filter_html_special($field, $config['charset'])?>"> 
-										<a href="javascript:search_expand_options('search_field_cond_<?=filter_html_js_special($field, $config['charset'])?>', 'search_field_cond_button_<?=filter_html_js_special($field, $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_MORE, $config['charset'])?>..." class="search_options_link">
+									<div id="search_cond_button_field_<?=filter_html_special($field, $config['charset'])?>"> 
+										<a href="javascript:search_expand_options('search_cond_field_<?=filter_html_js_special($field, $config['charset'])?>', 'search_cond_button_field_<?=filter_html_js_special($field, $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_MORE, $config['charset'])?>..." class="search_options_link">
 											+
 										</a>
 									</div>
-									<div id="search_field_cond_<?=filter_html_special($field, $config['charset'])?>">
+									<div id="search_cond_field_<?=filter_html_special($field, $config['charset'])?>">
 										<br />
 										<input name="<?=filter_html($field, $config['charset'])?>_cond" alt="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_DIFF, $config['charset'])?>" type="radio" value="!=" /> <?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_DIFF, $config['charset'])?>
 										<input name="<?=filter_html($field, $config['charset'])?>_cond" alt="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_LESSER, $config['charset'])?>" type="radio" value="&lt;" /> <?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_LESSER, $config['charset'])?>
@@ -330,54 +200,34 @@
 										<?php if ($meta['type'] == 'datetime'): ?>
 											<input id="<?=filter_html_special($field, $config['charset'])?>_to_time" name="<?=filter_html($field, $config['charset'])?>_to_time" type="<?=filter_html($meta['input_type'], $config['charset'])?>" placeholder="HH:MM:SS" />
 											<input name="<?=filter_html($field, $config['charset'])?>_to_custom" type="text" placeholder="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_CUSTOM, $config['charset'])?>" />
-											<script type="text/javascript">
-												jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker();
-												jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker('option', 'dateFormat', 'yy-mm-dd');
-												jQuery("#<?=filter_js_special($field, $config['charset'])?>_to_time").timepicker();
-											</script>
 										<?php endif;?>
 										<?php if ($meta['type'] == 'date'): ?>
 											<input name="<?=filter_html($field, $config['charset'])?>_to_custom" type="text" placeholder="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_CUSTOM, $config['charset'])?>" />
-											<script type="text/javascript">
-												jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker();
-												jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker('option', 'dateFormat', 'yy-mm-dd');
-											</script>
 										<?php endif; ?>
 										<?php if ($meta['type'] == 'time'): ?>
 											<input name="<?=filter_html($field, $config['charset'])?>_to_custom" type="text" placeholder="<?=filter_html(NDPHP_LANG_MOD_SEARCH_OPT_CUSTOM, $config['charset'])?>" />
-											<script type="text/javascript">
-												jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").timepicker();
-											</script>
 										<?php endif; ?>
 									</div>
 								</td>
 							</tr>
 						</table>
 					</div>
-			<?php
-					} else if ($meta['input_type'] == 'select') {
-			?>
+				<?php elseif ($meta['input_type'] == 'select'): ?>
 					<div id="search_field_<?=filter_html_special($field, $config['charset'])?>" style="display: inline-block; margin: 20px;">
 						<table class="search_field">
 							<tr class="search_field">
 								<td class="search_field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?></td>
 								<td class="search_field_value">
 									<select name="<?=filter_html($field, $config['charset'])?>[]" multiple="multiple">
-										<?php
-										foreach ($meta['options'] as $opt_id => $opt_value):
-										?>
+										<?php foreach ($meta['options'] as $opt_id => $opt_value): ?>
 											<option value="<?=filter_html($opt_id, $config['charset'])?>"><?=filter_html($opt_value, $config['charset'])?></option>
-										<?php
-										endforeach;
-										?>
+										<?php endforeach; ?>
 									</select>
 								</td>
 							</tr>
 						</table>
 					</div>
-			<?php
-					} else {
-			?>
+				<?php else: ?>
 					<div id="search_field_<?=filter_html_special($field, $config['charset'])?>" style="display: inline-block; margin: 20px;">
 						<table class="search_field">
 							<tr class="search_field">
@@ -388,18 +238,8 @@
 							</tr>
 						</table>
 					</div>
-			<?php
-					}
-
-					$i ++;
-			?>
-				<script type="text/javascript">
-					jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").hide();
-				</script>
-
-			<?php
-				endforeach;
-			?>
+				<?php endif; ?>
+			<?php $i ++; endforeach; ?>
 			</div>
 			</fieldset>
 		</div>
@@ -407,123 +247,38 @@
 			<fieldset class="search_result_fieldset">
 			<legend class="search_result_legend"><?=filter_html(NDPHP_LANG_MOD_BLOCK_SEARCH_ADV_RESULT, $config['charset'])?></legend>
 			<div class="search_result_fields_inner">
-			<?php
-				foreach ($view['fields'] as $field => $value):
+			<?php foreach ($view['fields'] as $field => $meta): ?>
+				<?php
 					/* Ignore fields without meta data */
 					if (!isset($view['fields'][$field]))
 						continue;
 
+					/* Ignore hidden fields */
+					if (in_array($field, $config['hidden_fields']))
+						continue;
+
+					/* Ignore separators */
 					if ($view['fields'][$field]['type'] == 'separator')
 						continue;
-			?>
-					<style>
-						/* FIXME:
-						 *
-						 * This style must be moved into the main.css
-						 *
-						 * ---
-						 *
-						 */
-						div.search_result_checkbox_<?=filter_css_special($field, $config['charset'])?> {
-							display: inline-block;
-							float: right;
-							margin-right: 10px;
-						}
-						.search_result_checkbox_<?=filter_css_special($field, $config['charset'])?> {
-							width: 70px;
-							height: 20px;
-
-							background: #333;
-							margin: 5px auto;
-
-							position: relative;
-
-						}
-
-						.search_result_checkbox_<?=filter_css_special($field, $config['charset'])?>:after {
-							content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_OFF, $config['charset'])?>';
-						
-							font: 12px/18px Arial, sans-serif;
-							top: 1px;
-							
-							color: #000;
-							position: absolute;
-							right: 10px;
-							z-index: 0;
-							font-weight: bold;
-							text-shadow: 1px 1px 0px rgba(255,255,255,.15);
-						}
-
-						.search_result_checkbox_<?=filter_css_special($field, $config['charset'])?>:before {
-							content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_ON, $config['charset'])?>';
-							font: 12px/18px Arial, sans-serif;
-							top: 1px;
-							
-							color: #1d84c7;
-							position: absolute;
-							left: 10px;
-							z-index: 0;
-							font-weight: bold;
-						}
-
-						.search_result_checkbox_<?=filter_css_special($field, $config['charset'])?> label {
-							display: block;
-
-							width: 28px;
-							height: 14px;
-
-							-webkit-transition: all .4s ease;
-							-moz-transition: all .4s ease;
-							-o-transition: all .4s ease;
-							-ms-transition: all .4s ease;
-							transition: all .4s ease;
-							cursor: pointer;
-							position: absolute;
-							top: 3px;
-							left: 3px;
-							z-index: 1;
-
-							background: #fcfff4;
-						}
-
-						.search_result_checkbox_<?=filter_css_special($field, $config['charset'])?> input[type=checkbox]:checked + label {
-							left: 38px;
-						}
-
-						#search_field_<?=filter_css_special($field, $config['charset'])?> {
-							background-color: #999999;
-							display: table;
-							margin: 0 auto;
-							margin-top: 15px;
-							margin-bottom: 15px;
-							padding-left: 20px;
-							padding-right: 20px;
-							padding-top: 5px;
-							padding-bottom: 5px;
-							text-align: center;
-							vertical-align: middle;
-						}
-					</style>
+				?>
 					<div class="search_result_field">
 						<table class="search_result_field_table">
 							<tr class="search_result_field_table">
 								<td class="search_result_field_table">
 									<div class="search_result_label">
-										<?=filter_html(ucfirst($value['viewname']), $config['charset'])?>
+										<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
 									</div>
 								</td>
 								<td class="search_result_field_table">
 									<div class="search_result_checkbox_<?=filter_html_special($field, $config['charset'])?>">
-										<input id="search_result_checkbox_<?=filter_html_special($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($value['viewname']), $config['charset'])?>" name="result_<?=filter_html($field, $config['charset'])?>" type="checkbox" value="1" checked="checked">
+										<input id="search_result_checkbox_<?=filter_html_special($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" name="result_<?=filter_html($field, $config['charset'])?>" type="checkbox" value="1" checked="checked">
 										<label for="search_result_checkbox_<?=filter_html_special($field, $config['charset'])?>"></label>
 									</div>
 								</td>
 							</tr>
 						</table>
 					</div>
-			<?php
-				endforeach;
-			?>
+			<?php endforeach; ?>
 			</div>
 			</fieldset>
 		</div>

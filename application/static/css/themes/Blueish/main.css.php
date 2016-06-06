@@ -1069,6 +1069,148 @@ a.search_saved_link:hover, a.search_saved_link:active {
 	color: #eeeeee;
 }
 
+/* BEGIN: Search data view */
+div[class^=search_criteria_checkbox_] {
+	display: inline-block;
+	float: right;
+	margin-right: 10px;
+}
+
+[class^=search_criteria_checkbox_] {
+	width: 70px;
+	height: 20px;
+	background: #333;
+	margin: 5px auto;
+	position: relative;
+}
+
+[class^=search_criteria_checkbox_]:after {
+	content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_OFF, $config['charset'])?>';
+	font: 12px/18px Arial, sans-serif;
+	top: 1px;
+	color: #000;
+	position: absolute;
+	right: 10px;
+	z-index: 0;
+	font-weight: bold;
+	text-shadow: 1px 1px 0px rgba(255,255,255,.15);
+}
+
+[class^=search_criteria_checkbox_]:before {
+	content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_ON, $config['charset'])?>';
+	font: 12px/18px Arial, sans-serif;
+	top: 1px;
+	color: #1d84c7;
+	position: absolute;
+	left: 10px;
+	z-index: 0;
+	font-weight: bold;
+}
+
+[class^=search_criteria_checkbox_] label {
+	display: block;
+	width: 28px;
+	height: 14px;
+	-webkit-transition: all .4s ease;
+	-moz-transition: all .4s ease;
+	-o-transition: all .4s ease;
+	-ms-transition: all .4s ease;
+	transition: all .4s ease;
+	cursor: pointer;
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	z-index: 1;
+	background: #fcfff4;
+}
+
+[class^=search_criteria_checkbox_] input[type=checkbox]:checked + label {
+	left: 38px;
+}
+
+div[class^=search_result_checkbox_] {
+	display: inline-block;
+	float: right;
+	margin-right: 10px;
+}
+
+[class^=search_result_checkbox_] {
+	width: 70px;
+	height: 20px;
+	background: #333;
+	margin: 5px auto;
+	position: relative;
+}
+
+[class^=search_result_checkbox_]:after {
+	content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_OFF, $config['charset'])?>';
+	font: 12px/18px Arial, sans-serif;
+	top: 1px;
+	color: #000;
+	position: absolute;
+	right: 10px;
+	z-index: 0;
+	font-weight: bold;
+	text-shadow: 1px 1px 0px rgba(255,255,255,.15);
+}
+
+[class^=search_result_checkbox_]:before {
+	content: '<?=filter_css_str(NDPHP_LANG_MOD_STATUS_ON, $config['charset'])?>';
+	font: 12px/18px Arial, sans-serif;
+	top: 1px;
+	color: #1d84c7;
+	position: absolute;
+	left: 10px;
+	z-index: 0;
+	font-weight: bold;
+}
+
+[class^=search_result_checkbox_] label {
+	display: block;
+	width: 28px;
+	height: 14px;
+	-webkit-transition: all .4s ease;
+	-moz-transition: all .4s ease;
+	-o-transition: all .4s ease;
+	-ms-transition: all .4s ease;
+	transition: all .4s ease;
+	cursor: pointer;
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	z-index: 1;
+	background: #fcfff4;
+}
+
+[class^=search_result_checkbox_] input[type=checkbox]:checked + label {
+	left: 38px;
+}
+
+div[id^=search_cond_button_field_] {
+	display: inline-block;
+}
+
+div[id^=search_cond_field_] {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+div[id^=search_field_] {
+	background-color: #999999;
+	display: table;
+	margin: 0 auto;
+	margin-top: 15px;
+	margin-bottom: 15px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+/* END: Search data view */
+
 div.import_csv {
 	display: table;
 	margin: 0 auto;

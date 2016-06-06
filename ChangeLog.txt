@@ -1,3 +1,9 @@
+v0.01h (2016-06-06):
+
+ - Improved advanced search views.
+ - Updated Blueish/main.css.
+
+
 v0.01g (2016-06-06):
 
  - Improvements on view and remove data views.
