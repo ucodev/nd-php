@@ -73,12 +73,19 @@
 							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_NAME, $config['charset'])?></th>
 							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_VALUE, $config['charset'])?></th>
 						</tr>
-					<?php
-						$i = 0;
-						foreach ($view['fields'] as $field => $meta):
+
+					<?php $i = 0; foreach ($view['fields'] as $field => $meta): ?>
+						<?php
+							/* Ignore fields without meta data */
+							if (!isset($view['fields'][$field]))
+								continue;
+						?>
+
+						<?php
 							/* If this is a separator, we need to close the current table, fieldset and div and create new ones */
 							if ($meta['type'] == 'separator'):
-					?>
+						?>
+
 					</table>
 				</fieldset>
 			</div>
@@ -93,16 +100,20 @@
 							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_NAME, $config['charset'])?></th>
 							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_VALUE, $config['charset'])?></th>
 						</tr>
-					<?php
-								$i = 0;
+
+						<?php
+								$i = 0; /* Reset the row index... we're entering a new tab */
 								continue;
 							endif; /* $meta['type'] == 'separator' */
+						?>
 
+						<?php
+							/* Ignore hidden fields */
 							if (in_array($field, $config['hidden_fields']))
 								continue;
-			
-							if ($meta['input_type'] == 'checkbox') {
-					?>
+						?>
+
+						<?php if ($meta['input_type'] == 'checkbox'): ?>
 								<tr id="<?=filter_html_special($field, $config['charset'])?>_row" class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
 									<td class="field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>  <?=in_array($field, $view['required']) ? '*' : ''?></td>
 									<td class="field_value">
@@ -115,8 +126,8 @@
 										<?php endif; ?>
 									</td>
 								</tr>
-					<?php
-							} else if ($meta['input_type'] == 'select') {
+						<?php elseif ($meta['input_type'] == 'select'): ?>
+							<?php
 								if ($meta['type'] == 'rel') {
 									/* Store the multiple relationship for later use on a separate div */
 									array_push($rel, array(
@@ -126,7 +137,7 @@
 
 									continue;
 								}
-					?>
+							?>
 								<tr id="<?=filter_html_special($field, $config['charset'])?>_row" class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
 									<td class="field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>  <?php echo(in_array($field, $view['required']) ? '*' : NULL); ?></td>
 									<td class="field_value">
@@ -149,14 +160,8 @@
 										<?php endif; ?>
 									</td>
 								</tr>
-					<?php
-							} else if ($meta['type'] == 'mixed') {
-								continue;
-					?>
-			
-					<?php
-							} else if ($meta['input_type'] == 'timer') {
-					?>
+						<?php elseif ($meta['type'] == 'mixed'): continue; ?>
+						<?php elseif ($meta['input_type'] == 'timer'): ?>
 								<tr id="<?=filter_html_special($field, $config['charset'])?>_row" class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
 									<td class="field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>  <?php echo(in_array($field, $view['required']) ? '*' : NULL); ?></td>
 									<td class="field_value">
@@ -170,9 +175,7 @@
 										<?php endif; ?>
 									</td>
 								</tr>
-					<?php
-							} else if ($view['fields'][$field]['input_type'] == 'file') {
-					?>
+						<?php elseif ($view['fields'][$field]['input_type'] == 'file'): ?>
 								<tr id="<?=filter_html_special($field, $config['charset'])?>_row" class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
 									<td class="field_name"><?=filter_html(ucfirst($view['fields'][$field]['viewname']), $config['charset'])?>  <?php echo(in_array($field, $view['required']) ? '*' : NULL); ?></td>
 									<td class="field_value">
@@ -184,9 +187,7 @@
 										<?php endif; ?>
 									</td>
 								</tr>
-					<?php
-							} else if ($meta['input_type'] == 'textarea') {
-					?>
+						<?php elseif ($meta['input_type'] == 'textarea'): ?>
 								<tr id="<?=filter_html_special($field, $config['charset'])?>_row" class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
 									<td class="field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>  <?php echo(in_array($field, $view['required']) ? '*' : NULL); ?></td>
 									<td class="field_value">
@@ -198,9 +199,7 @@
 										<?php endif; ?>
 									</td>
 								</tr>
-					<?php
-							} else {
-					?>
+						<?php else: ?>
 								<tr id="<?=filter_html_special($field, $config['charset'])?>_row" class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
 									<td class="field_name"><?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>  <?php echo(in_array($field, $view['required']) ? '*' : NULL); ?></td>
 									<td class="field_value">
@@ -211,19 +210,15 @@
 										<?php if ($meta['type'] == 'datetime'): ?>
 											<input id="<?=filter_html_special($field, $config['charset'])?>_time" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" name="<?=filter_html($field, $config['charset'])?>_time" type="<?=filter_html($meta['input_type'], $config['charset'])?>" placeholder="HH:MM:SS" <?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?> />
 										<?php endif;?>
-										<?php if ($meta['help_desc'] != null): ?>
+										<?php if ($meta['help_desc'] != NULL): ?>
 											<a href="<?=filter_html($meta['help_url'], $config['charset'])?>" title="<?=filter_html($meta['help_desc'], $config['charset'])?>">
 												<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png" alt="<?=filter_html($meta['help_desc'], $config['charset'])?>" />
 											</a>
 										<?php endif; ?>
 									</td>
 								</tr>
-					<?php
-							}
-			
-							$i ++;
-						endforeach;
-					?>
+						<?php endif; ?>
+					<?php $i ++; endforeach; ?>
 					</table>
 				</fieldset>
 			</div>

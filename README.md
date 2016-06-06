@@ -12,11 +12,11 @@
 
 ## How to install it?
 
- Download the current framework version and follow the instructions in the INSTALL file.
+ Download the current framework version and follow the instructions in the INSTALL.txt file.
 
 ## Do I need to install a lot of dependencies?
 
- Probably not. Probably your GNU/Linux based operating system comes with all dependencies installed by default. Anyway, check the INSTALL file for some common exceptions that you might need to do manually.
+ Probably not. Probably your GNU/Linux based operating system comes with all dependencies installed by default. Anyway, check the INSTALL.txt file for some common exceptions that you might need to do manually.
 
 ## Is it ready for production?
 

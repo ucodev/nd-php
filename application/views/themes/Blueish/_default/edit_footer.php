@@ -112,7 +112,7 @@
 		<?php if ($meta['type'] == 'date'): ?>
 				jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker();
 				jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('option', 'dateFormat', 'yy-mm-dd');
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('setDate', '<?=filter_html_js_str($_datetime[0], $config['charset'])?>');
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('setDate', '<?=filter_html_js_str($row[$field], $config['charset'])?>');
 				jQuery("#<?=filter_js_special($field, $config['charset'])?>").addClass('input_date');
 		<?php endif; ?>
 		<?php if ($meta['type'] == 'time'): ?>

@@ -1,3 +1,10 @@
+v0.01d1 (2016-06-06):
+
+ - Minor improvements on create and edit data views code.
+ - Date fields on edit forms now correctly show previously inserted data.
+ - Updated README.md
+
+
 v0.01d (2016-06-05):
 
  - Modal ajax controller handlers now also load view footers.
