@@ -1,3 +1,10 @@
+v0.01g (2016-06-06):
+
+ - Improvements on view and remove data views.
+ - Minor changes on create and edit views.
+ - Updated README.md.
+
+
 v0.01f (2016-06-06):
 
  - Ajax data controller handlers now also load view footers.

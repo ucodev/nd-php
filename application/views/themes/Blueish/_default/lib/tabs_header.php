@@ -123,6 +123,7 @@
 		jQuery('#create, #edit, #remove, #view, #list, #result, #search, #groups').css('padding-top', '0px').css('padding-bottom', '0px');
 	});
 </script>
+
 <div id="entry_tabs">
 	<ul>
 		<?php foreach ($tabs as $tab): ?>

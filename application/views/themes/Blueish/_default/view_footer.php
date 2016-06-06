@@ -52,3 +52,24 @@
  */
 
  ?>
+
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		<?php if (isset($config['modalbox'])): ?>
+			/* Set modal box content to 100% (fixing some issues with some content) */
+			jQuery('#MB_content div.view').css('width', '100%');
+		<?php endif; ?>
+
+		/* Field specific handlers and modifiers */
+		<?php foreach ($view['fields'] as $field => $meta): ?>
+			<?php if (in_array($field, $config['rich_text'])): ?>
+				tinyMCE.init({
+					selector: '#<?=filter_js_special($field, $config['charset'])?>',
+					mode : "textareas",
+					theme : "advanced",
+					readonly: true
+				});
+			<?php endif; ?>
+		<?php endforeach; ?>
+	});
+</script>

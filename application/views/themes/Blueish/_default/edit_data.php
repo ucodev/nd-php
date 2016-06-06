@@ -80,9 +80,11 @@
 							/* Ignore fields without meta data */
 							if (!isset($view['fields'][$field]))
 								continue;
-						?>
 
-						<?php
+							/* Ignore hidden fields */
+							if (in_array($field, $config['hidden_fields']))
+								continue;
+
 							/* If this is a separator, we need to close the current table, fieldset and div and create new ones */
 							if ($view['fields'][$field]['type'] == 'separator'):
 						?>
@@ -105,12 +107,6 @@
 								$i = 0; /* Reset the row index... we're entering a new tab */
 								continue;
 							endif; // $view['fields'][$field]['type'] == 'separator'
-						?>
-
-						<?php
-							/* Ignore hidden fields */
-							if (in_array($field, $config['hidden_fields']))
-								continue;
 						?>
 
 						<?php if ($view['fields'][$field]['input_type'] == 'checkbox'): ?>
