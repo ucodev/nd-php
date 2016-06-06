@@ -1,3 +1,8 @@
+v0.01d2 (2016-06-06):
+
+ - Minor CSS fix on create footer view.
+
+
 v0.01d1 (2016-06-06):
 
  - Minor improvements on create and edit data views code.

@@ -69,7 +69,7 @@
 			ndphp.origin_controller = '<?=filter_js_str($view['ctrl'], $config['charset'])?>';
 	<?php else: ?>
 		/* Set modal box content to 100% (fixing some issues with some content) */
-		jQuery('#MB_content div.edit').css('width', '100%');
+		jQuery('#MB_content div.create').css('width', '100%');
 	<?php endif; ?>
 
 	/* Field specific handlers and modifiers */
