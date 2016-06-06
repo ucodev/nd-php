@@ -1,3 +1,11 @@
+v0.01e (2016-06-06):
+
+ - Added the documentation/videos/01_Installation.mp4 video.
+ - Added .htaccess to documentation/ and plugins/ directories.
+ - Updated documentation/3rd_party.txt.
+ - Updated INSTALL.txt
+
+
 v0.01d2 (2016-06-06):
 
  - Minor CSS fix on create footer view.
