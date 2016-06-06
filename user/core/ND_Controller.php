@@ -80,6 +80,7 @@
  *
  * FIXME:
  *
+ * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
  * * On insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * * Export to pdf (on listing/results) is not rendering images from _file_* fields.
  * * Advanced search: "Different than" option for mixed searches is currently bugged (due to the enclosure hack) and shall not be used as it'll return incorrect results
@@ -4128,6 +4129,11 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_data', $data);
 		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_footer', $data);
+		}
 	}
 
 	public function list_generic($field = NULL, $order = NULL, $page = 0) {
@@ -4357,6 +4363,11 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_data', $data);
 		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_footer', $data);
+		}
 	}
 
 	public function list_group_generic($grouping_field, $field = NULL, $order = NULL, $page = 0) {
@@ -4385,6 +4396,7 @@ class ND_Controller extends UW_Controller {
 		$data = $this->list_generic($field, $order, -1 /* $page */); /* FIXME: We should not rely on list_generic(). A specific implementation for grouping is required. */
 
 		$group_result_array = array();
+		$group_hash = array();
 
 		$result_array_iter = $data['view']['result_array'];
 
@@ -4398,6 +4410,7 @@ class ND_Controller extends UW_Controller {
 					if ($row[$grouping_field] == $opt_val) {
 						/* This row belongs to this group... */
 						$group_result_array[$opt_val][] = $row;
+						$group_hash[$opt_val] = openssl_digest($opt_val, 'sha1');
 					} else {
 						/* If it does not belong to this group, add it to the remaining entries array */
 						$result_array_remain[] = $row;
@@ -4406,6 +4419,7 @@ class ND_Controller extends UW_Controller {
 					if (in_array($opt_val, explode($this->_group_concat_sep, $row[$grouping_field]))) {
 						/* This row belongs to this group... */
 						$group_result_array[$opt_val][] = $row;
+						$group_hash[$opt_val] = openssl_digest($opt_val, 'sha1');
 					}
 
 					/* This row can belong to multiple groups, so the remaining will always be the full list */
@@ -4420,6 +4434,7 @@ class ND_Controller extends UW_Controller {
 		/* Update view data */
 		$data['view']['grouping_field'] = $grouping_field;
 		$data['view']['grouping_result_array'] = $group_result_array;
+		$data['view']['grouping_hashes'] = $group_hash;
 
 		/* All good */
 		return $data;
@@ -4484,6 +4499,11 @@ class ND_Controller extends UW_Controller {
 			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_data', $data);
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_data', $data);
+		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_footer', $data);
 		}
 	}
 
@@ -5010,6 +5030,11 @@ class ND_Controller extends UW_Controller {
 			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_data', $data);
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_data', $data);
+		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_footer', $data);
 		}
 	}
 
@@ -5773,6 +5798,11 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_data', $data);
 		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_footer', $data);
+		}
 	}
 
 	public function result_group_generic($grouping_field, $type = 'advanced', $result_query = NULL,
@@ -5803,6 +5833,7 @@ class ND_Controller extends UW_Controller {
 		$data = $this->result_generic($type, $result_query, $order_field, $order_type, -1 /* $page */); /* FIXME: We should not rely on result_generic(). A specific implementation for grouping is required. */
 
 		$group_result_array = array();
+		$group_hash = array();
 
 		$result_array_iter = $data['view']['result_array'];
 
@@ -5816,6 +5847,7 @@ class ND_Controller extends UW_Controller {
 					if ($row[$grouping_field] == $opt_val) {
 						/* This row belongs to this group... */
 						$group_result_array[$opt_val][] = $row;
+						$group_hash[$opt_val] = openssl_digest($opt_val, 'sha1');
 					} else {
 						/* If it does not belong to this group, add it to the remaining entries array */
 						$result_array_remain[] = $row;
@@ -5824,6 +5856,7 @@ class ND_Controller extends UW_Controller {
 					if (in_array($opt_val, explode($this->_group_concat_sep, $row[$grouping_field]))) {
 						/* This row belongs to this group... */
 						$group_result_array[$opt_val][] = $row;
+						$group_hash[$opt_val] = openssl_digest($opt_val, 'sha1');
 					}
 
 					/* This row can belong to multiple groups, so the remaining will always be the full list */
@@ -5838,6 +5871,7 @@ class ND_Controller extends UW_Controller {
 		/* Update view data */
 		$data['view']['grouping_field'] = $grouping_field;
 		$data['view']['grouping_result_array'] = $group_result_array;
+		$data['view']['grouping_hashes'] = $group_hash;
 
 		/* All good */
 		return $data;
@@ -5903,6 +5937,11 @@ class ND_Controller extends UW_Controller {
 			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_data', $data);
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_data', $data);
+		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_footer', $data);
 		}
 	}
 
@@ -6253,6 +6292,12 @@ class ND_Controller extends UW_Controller {
 			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_data', $data);
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_data', $data);
+		}
+		/* Load Views */
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_footer', $data);
 		}
 	}
 
@@ -6977,6 +7022,11 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_data', $data);
 		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_footer', $data);
+		}
 	}
 
 	public function edit_data_modalbox($id = 0) {
@@ -7346,6 +7396,11 @@ class ND_Controller extends UW_Controller {
 				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_data', $data);
 			} else {
 				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_data', $data);
+			}
+			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_footer.php')) {
+				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_footer', $data);
+			} else {
+				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_footer', $data);
 			}
 		}		
 	}
@@ -8077,6 +8132,11 @@ class ND_Controller extends UW_Controller {
 			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_data', $data);
 		} else {
 			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_data', $data);
+		}
+		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_footer.php')) {
+			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_footer', $data);
+		} else {
+			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_footer', $data);
 		}
 	}
 

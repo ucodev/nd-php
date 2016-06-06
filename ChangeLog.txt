@@ -1,3 +1,9 @@
+v0.01f (2016-06-06):
+
+ - Ajax data controller handlers now also load view footers.
+ - Improvements on listing and result views.
+
+
 v0.01e (2016-06-06):
 
  - Added the documentation/videos/01_Installation.mp4 video.

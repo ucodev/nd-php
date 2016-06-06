@@ -55,64 +55,51 @@
 <div id="list" class="list">
 	<?php $tabs_listing = true; include('lib/tabs_header.php'); ?>
 
-	<script type="text/javascript">
-		ndphp.last_listing_op = 'list';
-		ndphp.grouping.enabled = true;
-		ndphp.grouping.controller = '<?=filter_js_str($view['ctrl'], $config['charset'])?>';
-		ndphp.grouping.field = '<?=filter_js_str($view['grouping_field'], $config['charset'])?>';
-	</script>
-
 	<div class="list_container">
 		<div id="listing">
 			<?php if (count($view['result_array'])): ?>
 				<?php foreach ($view['grouping_result_array'] as $group => $result_array): ?>
-					<?php $ghash = openssl_digest($group, 'sha1'); ?>
-					<div id="group_<?=$ghash?>"> <!-- Begin of Group container div -->
-						<div id="group_header_<?=$ghash?>" class="group_header">
-							<a href="javascript:void(0);" onclick="ndphp.grouping.group_visibility_toggle(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=$ghash?>');" class="group_header_link">
-								<span id="arrow_visible_<?=$ghash?>" class="group_header_arrows" style="display: none;"><img class="group_header_arrows" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/downarrow.png" /></span><span id="arrow_hidden_<?=$ghash?>" class="group_header_arrows"><img class="group_header_arrows" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/rightarrow.png" /></span> <?=filter_html($group, $config['charset'])?> <span class="group_header_counting">(<?=count($result_array)?>)</span>
+					<div id="group_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>"> <!-- Begin of Group container div -->
+						<div id="group_header_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_header">
+							<a href="javascript:void(0);" onclick="ndphp.grouping.group_visibility_toggle(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>');" class="group_header_link">
+								<span id="arrow_visible_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_header_arrows" style="display: none;"><img class="group_header_arrows" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/downarrow.png" /></span><span id="arrow_hidden_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_header_arrows"><img class="group_header_arrows" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/rightarrow.png" /></span> <?=filter_html($group, $config['charset'])?> <span class="group_header_counting">(<?=count($result_array)?>)</span>
 							</a>
 						</div>
-						<script type="text/javascript">
-							jQuery(document).ready(function() {
-								ndphp.grouping.group_visibility_eval('<?=filter_js_str($view['ctrl'], $config['charset'])?>', "<?=$ghash?>");
-							});
-						</script>
-						<div id="group_data_<?=$ghash?>" class="group_data" style="display: none;">
+						<div id="group_data_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_data" style="display: none;">
 							<table class="list">
 							<tr class="list">
-							<?php
-								$row = array_values($result_array)[0];
+							<?php $row = array_values($result_array)[0]; ?>
 
-								foreach ($row as $field => $value):
+							<?php foreach ($row as $field => $value): ?>
+								<?php
 									/* Ignore fields without meta data */
 									if (!isset($view['fields'][$field]))
 										continue;
 
+									/* Ignore hidden fields */
+									if (in_array($field, $config['hidden_fields']))
+										continue;
+
+									/* Ignore separators */
 									if ($view['fields'][$field]['type'] == 'separator')
 										continue;
 
 									/* Ignore the $view['grouping_field'] as its value is already standing in the group header */
 									if ($field == $view['grouping_field'])
 										continue;
-							?>
+								?>
 								<th class="list">
 									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($view['grouping_field'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($config['order'], $config['charset'])?>/<?=filter_html($view['page'], $config['charset'])?>" onclick="ndphp.ajax.load_group_data_ordered_list(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($view['grouping_field'], $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>', '<?=filter_html_js_str($config['order'], $config['charset'])?>', '<?=filter_html_js_str($view['page'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_ORDER_BY, $config['charset'])?> <?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>" class="list_th_link">
 										<?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>
 									</a>
 									<?php if ($config['order_by'] == $field) { echo('&nbsp;'); echo($config['order'] == 'desc' ? '&uarr;' : '&darr;'); }?>
 								</th>
-							<?php
-								endforeach;
-							?>
+							<?php endforeach; ?>
 								<th class="list">
 									&nbsp;
 								</th>
 							</tr>
-							<?php
-								$i = 0;
-								foreach ($result_array as $row):
-							?>
+							<?php $i = 0; foreach ($result_array as $row): ?>
 								<?php
 									/* Setup proper table row class based on controller configuration */
 									$tr_class = 'list_' . ($i % 2 ? 'even' : 'odd');
@@ -127,26 +114,31 @@
 								?>
 
 								<tr class="<?=filter_html($tr_class, $config['charset'])?>">
-								<?php
-									foreach ($row as $field => $value):
+								<?php foreach ($row as $field => $value): ?>
+									<?php
 										/* Ignore fields without meta data */
 										if (!isset($view['fields'][$field]))
 											continue;
 
+										/* Ignore hidden fields */
+										if (in_array($field, $config['hidden_fields']))
+											continue;
+
+										/* Ignore separators */
 										if ($view['fields'][$field]['type'] == 'separator')
 											continue;
 
 										/* Ignore the $view['grouping_field'] as its value is already standing in the group header */
 										if ($field == $view['grouping_field'])
 											continue;
-								?>
+									?>
 										<td class="list">
-										<?php
-											if ($view['fields'][$field]['input_type'] == 'checkbox') {
-												echo($value == 1 ? filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED, $config['charset']) : filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED, $config['charset']));
-											} else if (($view['fields'][$field]['input_type'] == 'select') &&
+										<?php if ($view['fields'][$field]['input_type'] == 'checkbox'): ?>
+												<?=($value == 1 ? filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED, $config['charset']) : filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED, $config['charset']))?>
+										<?php elseif (($view['fields'][$field]['input_type'] == 'select') &&
 															($view['fields'][$field]['type'] != 'rel') &&
-															($config['fk_linking'] === true)) {
+															($config['fk_linking'] === true)): ?>
+											<?php
 												/* Output referal link to foreign field */
 												/* FIXME: Implement caching for fields already resolved.
 												 * 			OR
@@ -156,49 +148,37 @@
 												 */
 												foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
 													if ($value == $opt_value):
-										?>
+											?>
 														<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 600}); return false;">
 															<?=filter_html($opt_value, $config['charset'])?>
 														</a>
-										<?php
+											<?php
 													endif;
 												endforeach;
-											} else if ($view['fields'][$field]['input_type'] == 'file') {
-										?>
+											?>
+										<?php elseif ($view['fields'][$field]['input_type'] == 'file'): ?>
 												<!-- FIXME: We're using $row['id'] in the URL, but this field may be hidden, thus not available... -->
 												<a id="<?=filter_html_special($field, $config['charset'])?>_<?=$i?>" target="_blank" title="<?=filter_html($value, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>">
 													<?php if ($config['render']['images'] && in_array(end(explode('.', $value)), $config['render']['ext'])): ?>
 														<img alt="<?=filter_html($value, $config['charset'])?>" style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;" src="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>" />
-														<script type="text/javascript">
-															jQuery('#<?=filter_js_special($field, $config['charset'])?>_<?=$i?>').parent().css('width', '<?=filter_js_str($config['render']['size']['width'], $config['charset'])?>');
-															jQuery('#<?=filter_js_special($field, $config['charset'])?>_<?=$i?>').parent().css('height', '<?=filter_js_str($config['render']['size']['height'], $config['charset'])?>');
-															jQuery('#<?=filter_js_special($field, $config['charset'])?>_<?=$i?>').parent().css('text-align', 'center');
-														</script>
 													<?php else: ?>
 														<?=filter_html($value, $config['charset'])?>
 													<?php endif; ?>
 												</a>
-										<?php
-											} else {
-												if ($field == 'id') {
-										?>
+										<?php else: ?>
+											<?php if ($field == 'id'): ?>
 													<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($value, $config['charset'])?>" onclick="ndphp.ajax.load_body_view(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($value, $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($value, $config['charset'])?>" class="list_td_link">
 														<?=filter_html($value, $config['charset'])?>
 													</a>
-										<?php
-												} else {
-										?>
+											<?php else: ?>
 													<?=truncate_str($value, $config['truncate']['length'], $config['charset'], $config['truncate']['trail'], $config['truncate']['separator'])?>
-										<?php
-												}
-											}
-										?>
+											<?php endif; ?>
+										<?php endif; ?>
 										</td>
-								<?php
-									endforeach;
-								?>
+								<?php endforeach; ?>
 									<td class="list_op">
-										<?php foreach ($view['links']['quick'] as $link):
+										<?php foreach ($view['links']['quick'] as $link): ?>
+											<?php
 												/* $link[0] - Description
 												 * $link[1] - Permission (sec_perm)
 												 * $link[2] - Function
@@ -207,17 +187,14 @@
 												 */
 												if (!security_perm_check($security['perms'], $link[1], $view['ctrl']))
 													continue;
-										?>
-												<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: <?=filter_html_js_special($link[4], $config['charset'])?>}); return false;">
-													<img height="20" width="20" class="list_op_icon" alt="<?=filter_html($link[0], $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/<?=filter_html($link[3], $config['charset'])?>" />
-												</a>
+											?>
+											<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: <?=filter_html_js_special($link[4], $config['charset'])?>}); return false;">
+												<img height="20" width="20" class="list_op_icon" alt="<?=filter_html($link[0], $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/<?=filter_html($link[3], $config['charset'])?>" />
+											</a>
 										<?php endforeach; ?>
 									</td>	
 								</tr>	
-							<?php
-									$i ++;
-								endforeach;
-							?>
+							<?php $i ++; endforeach; ?>
 							</table>
 							<div id="listing_footer">
 								<div id="total_items" class="total_items">
@@ -227,37 +204,6 @@
 						</div> <!-- Group data div -->
 					</div> <!-- End of Group container div -->
 				<?php endforeach; ?>
-				<script type="text/javascript">
-					/* FIXME: TODO: Currently we need to (re)declare this handler here to keep the workflow context... */
-					ndphp.ajax.update_data_list = function() {
-						jQuery.ajax({
-							type: "POST",
-							url: "<?=filter_js_str(base_url(), $config['charset'])?>index.php/<?=filter_js_str($view['ctrl'], $config['charset'])?>/list_group_data_ajax/<?=filter_js_str($view['grouping_field'], $config['charset'])?>/<?php if (isset($config['order_by'])) { echo(filter_js_str($config['order_by'], $config['charset']) . '/'); if (isset($config['order'])) { echo($config['order'] == 'asc' ? 'desc' : 'asc' . '/'); if (isset($view['page'])) { echo(filter_js_str($view['page'], $config['charset'])); } } }?>",
-							success: function(data) {
-								var html = jQuery(data);
-								ndphp.nav.back_store('list', jQuery('#list').html());
-								jQuery("#list").nd_animate_hide(600, function() {
-									jQuery("#list").replaceWith(function() {
-										return jQuery(html).nd_animate_show(600);
-									});
-									/* NOTE: For some reason, jquery 1.8.3 is loosing the display
-									 * element of the div style. We need to force it while the div
-									 * is loading in order to be correctly rendered.
-									 */
-									jQuery('#list').css({"display":"table"});
-								});
-							},
-							error: function(xhr, ajaxOptions, thrownError) {
-								jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_LOAD_VIEW_LIST, $config['charset'])?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), $config['charset'])?>:</span> ' + xhr.responseText);
-								jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_DISPLAY_LIST, $config['charset'])?>' });
-							}
-						});
-					};
-
-					/* Update export option from submenu whenever this view is loaded */
-					jQuery('a[title="<?=filter_js_str(NDPHP_LANG_MOD_OP_EXPORT_PDF, $config['charset'])?>"]').attr('href', '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/<?=filter_html_js_str($view['ctrl'], $config['charset'])?>/export/<?=filter_html_js_str($view['export_query'], $config['charset'])?>');
-					jQuery('a[title="<?=filter_js_str(NDPHP_LANG_MOD_OP_EXPORT_CSV, $config['charset'])?>"]').attr('href', '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/<?=filter_html_js_str($view['ctrl'], $config['charset'])?>/export/<?=filter_html_js_str($view['export_query'], $config['charset'])?>/csv');
-				</script>
 			<?php else: ?>
 				<p class="no_results"><?=filter_html(NDPHP_LANG_MOD_EMPTY_RESULTS, $config['charset'])?></p>
 			<?php endif; ?>
