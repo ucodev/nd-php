@@ -71,5 +71,8 @@
 				});
 			<?php endif; ?>
 		<?php endforeach; ?>
+
+		/* Reset current tab index */
+		ndphp.current.tab_index = null;
 	});
 </script>

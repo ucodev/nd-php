@@ -1,3 +1,16 @@
+v0.01j (2016-06-07):
+
+ - ROLE_ADMIN cannot be deleted nor changed now.
+ - ROLE_ADMIN cannot be removed from User ID 1 (admin) now.
+ - Added new tooltips to IDE Builder.
+ - Fixed browsing actions issue regarding tabs.
+ - Repositioned the browsing actions div.
+ - Configuration menu controller now hides the Memcached tab when memcached feature is disabled.
+ - Minor fixes on views footers.
+ - Current selected tab under View Entry views are now automatically selected when Edit operation is performed.
+ - Updated user/utils/languages.php file.
+
+
 v0.01i1 (2016-06-07):
 
  - Added the documentation/videos/02_Basic_IDE_Usage.mp4 video.

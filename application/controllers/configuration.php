@@ -91,8 +91,49 @@ class Configuration extends ND_Controller {
 		return $hook_pre_return;
 	}
 
+	protected function _hook_view_generic_leave(&$data, &$id, &$export, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_remove_generic_leave(&$data, &$id, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_edit_generic_leave(&$data, &$id, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_create_generic_leave(&$data, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_export_leave(&$data, &$export_query, &$type, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_list_generic_leave(&$data, &$field, &$order, &$page, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_result_generic_leave(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
+	protected function _hook_search_generic_leave(&$data, &$advanced, $hook_enter_return) {
+		/* Unset fields based on disabled features */
+		$this->_feature_filter_data_fields($data);
+	}
+
 
 	/** Other overloads **/
+
 	protected $_submenu_body_links_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
@@ -114,7 +155,7 @@ class Configuration extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	),
 		array(NDPHP_LANG_MOD_OP_EXPORT_PDF,		'R', 'pdf',			NULL, 'export', false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_EXPORT_CSV,		'R', 'csv',			NULL, 'export', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_SAVE_SEARCH,	'C', 'search_save',	NULL, 'modal',	false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_SAVE_SEARCH,	'R', 'search_save',	NULL, 'modal',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_CHARTS,			'R', 'charts',		NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
@@ -176,6 +217,15 @@ class Configuration extends ND_Controller {
 
 
 	/** Custom functions **/
+	private function _feature_filter_data_fields(&$data) {
+		/* Unset fields based on disabled features */
+		if (!$data['config']['features']['system_memcached']) {
+			unset($data['view']['fields']['_separator_memcached']);
+			unset($data['view']['fields']['memcached_server']);
+			unset($data['view']['fields']['memcached_port']);
+		}
+	}
+
 	public function maintenance_enter() {
 		$this->db->where('active', true);
 		$this->db->update('configuration', array(

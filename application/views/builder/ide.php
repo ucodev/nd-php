@@ -70,7 +70,7 @@
 			<legend>Controller Pool</legend>
 			<div id="obj_menu_entry_a" class="object" oncontextmenu="ndphp.ide.menu_entry_edit_controller(event, this);" onclick="ndphp.ide.menu_entry_load_fields(this);" draggable="true" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="generic" />
-				<span id="title" class="title menu_obj" onClick="ndphp.ide.dialog_show(this, 'menu');" title="This is a Generic Controller type. You can drag it into the 'Application Model -> Controllers' container. Then, if you select the instantiated controller, a Fields container will be displayed where you can drag fields from the Fields Pool into the 'Application Model -> Fields' container. The Controller name will create a database table and each Field will create a database column under that table.">Generic</span><br />
+				<span id="title" class="title menu_obj" onClick="ndphp.ide.dialog_show(this, 'menu');" title="This is a Generic Controller type. You can drag it into the 'Application Model -> Controllers' container. Then, if you select the instantiated controller, a Fields container will be displayed where you can drag fields from the Fields Pool into the 'Application Model -> Fields' container. The Controller name will create a database table and each Field will create a database column under that table. To access controller properties, left-click on the blue header of the instantiated controller under the Controllers container.">Generic</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">entry name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
@@ -98,64 +98,64 @@
 			<legend>Fields Pool</legend>
 			<div id="obj_fields_entry_a" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="text" />
-				<span id="title" class="title field_obj" class="field_title" onClick="ndphp.ide.dialog_show(this, 'field');">Text</span><br />
+				<span id="title" class="title field_obj" class="field_title" onClick="ndphp.ide.dialog_show(this, 'field');" title="The Text field type will generate an HTML input of type text. It can also generate a textarea if the Length property is set to a value greater than 65532. To access field properties, left-click on the yellow header of the instantiated field under the Fields container.">Text</span><br />
 				<span id="name" class="field_name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_b" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="numeric" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Numeric</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Numeric type fields will generate an HTML input of type numeric. If the Length property is set to 1, it will generate a checkbox input type. If a decimal format is supplied in the Length property (such as 8,2), the input type is set to text and decimal values will be accepted (See decimal format specification for MySQL/MariaDB).">Numeric</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_c" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="time" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Time</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Time type fields will generate an HTML input of type text with a javascript time picker helper.">Time</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_d" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="date" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Date</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Date type fields will generate an HTML input of type text with a javascript date picker helper.">Date</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_e" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="datetime" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Date &amp; Time</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Date &amp; Time type fields will generate two HTML inputs of type text, one for date values and another for time values. Both inputs will have javascript date/time pickup helpers.">Date &amp; Time</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_f" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="dropdown" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Drop-Down</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Drop-Down field types will generate a HTML select box. The contents of the select box will be filled with the data beloging to the table of the controller linked to this field. To link a controller to a Drop-Down field, drag a controller entry from the Controllers container and drop it over this field under the Fields container.">Drop-Down</span><br />
 				<span id="name">menu link</span>
 			</div>
 			<div id="obj_fields_entry_g" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="multiple" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Multiple</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Multiple type fields will generate two HTML select boxes with the multiple attribute to allow multiple selections, one displaying the unselected options (left) and another displaying the selected options (right). This field type will generate a new tab on the form. The contents and linkage behavior is the same as the Drop-Down field types (see Drop-Down tooltip).">Multiple</span><br />
 				<span id="name">menu link</span>
 			</div>
 			<div id="obj_fields_entry_h" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="mixed" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Mixed</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Mixed type fields will generate a new tab on the form. They behave as a mixing of Drop-Down and Multiple field types. Under that tab, all the fields of the linked controller will be displayed as a row and multiple rows can be created. The first column of each row will have auto-completion based on the contents of the linked controller. The linkage behavior is the same as the Drop-Down or Multiple field types (see Drop-Down or Multiple tooltip).">Mixed</span><br />
 				<span id="name">menu link</span>
 			</div>
 			<div id="obj_fields_entry_i" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="timer" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Timer</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Timer type fields will generate a HTML input of type text with two HTML buttons. One to start and another to stop a timer.">Timer</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_j" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="file" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">File</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="File type fields will generate a HTML input of type file. They will allow file uploads. If the file is a image, it will be rendered on View an List views. If the file is not an image, the file name will be displayed instead. All uploaded files will be encrypted on server side by default.">File</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
 			<div id="obj_fields_entry_k" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="separator" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');">Separator</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Separators will create new tabs on the form. The form tab will have the name of the separator and will contain all the fields that are placed ahead of the Separator field under the Fields container, until another Separator is found or there are no more fields.">Separator</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>

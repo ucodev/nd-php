@@ -44,7 +44,30 @@ class Roles extends ND_Controller {
 	}
 
 	/** Hooks **/
-	
+	protected function _hook_update_pre(&$id, &$POST, &$fields) {
+		$hook_pre_return = NULL;
+
+		/* Do not allow changes to ROLE_ADMIN name */
+		if ($id == 1 && isset($POST['role']) && $POST['role'] != 'ROLE_ADMIN') {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN);
+		}
+
+		return $hook_pre_return;
+	}
+
+	protected function _hook_delete_pre(&$id, &$POST, &$fields) {
+		$hook_pre_return = NULL;
+
+		/* Do now allow the ROLE_ADMIN to be deleted */
+		if ($id == 1) {
+			header('HTTP/1.1 403 Forbidden.');
+			die(NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN);
+		}
+
+		return $hook_pre_return;
+	}
+
 	/** Other overloads **/
 
 	/* Aliases for the current table field names */

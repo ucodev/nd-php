@@ -169,13 +169,11 @@ textarea {
 }
 
 #browsing_actions {
-	position: absolute;
 	top: 0;
 	right: 0;
-	margin-top: 24px;
-	margin-right: 10px;
+	margin-top: 5px;
+	margin-right: 18px;
 	padding: 0;
-	display: none;
 }
 
 img.browsing_actions_icon {

@@ -100,7 +100,11 @@ class Users extends ND_Controller {
 	}
 
 	protected function _hook_update_pre(&$id, &$POST, &$fields) {
-		/* FIXME: Ignore any attempt to remove ROLE_ADMIN from $id == 1 */
+		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
+		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles'])) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN);
+		}
 
 		/* If password was changed ... */
 		$this->db->select('password,privenckey');
@@ -110,7 +114,7 @@ class Users extends ND_Controller {
 		$row = $query->row_array();
 
 		if ($row['password'] != $POST['password']) {
-			/* WARNING: If we're updating the password via REST API, we need to grant that the call passed the plain password
+			/* WARNING: If we're updating the password via REST API, we need to grant that the call provided the plain password
 			 * for authentication (in the '_password' JSON request field) in addition to the API KEY. If not, the privenckey
 			 * session variable is NULL and thus we cannot change the user password (or he will never access the private encrypted
 			 * data again).

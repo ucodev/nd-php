@@ -63,6 +63,7 @@ define('NDPHP_LANG_MOD_ATTN_ONLY_DIGITS',			'Please insert only digits');
 define('NDPHP_LANG_MOD_ATTN_NEED_VALID_EMAIL',		'Please insert a valid email address');
 define('NDPHP_LANG_MOD_ATTN_SELECT_COUNTRY',		'Please select a country');
 define('NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS',	'Please provide additional authorization mechanisms to perform that action.');
+define('NDPHP_LANG_MOD_ATTN_PHP_VERSION',			'PHP versions lesser than 5.6.0 are not supported.');
 
 define('NDPHP_LANG_MOD_CANNOT_LOAD_PREV_VIEW',		'Cannot load the previous view.');
 define('NDPHP_LANG_MOD_CANNOT_VERIFY_PASSWORD',		'Cannot verify password.');
@@ -84,6 +85,9 @@ define('NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER',	'Cannot delete the admin user.
 define('NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL',	'VIEW table type controllers cannot perform the operation');
 define('NDPHP_LANG_MOD_CANNOT_DISPLAY_LIST',		'Cannot display list.');
 define('NDPHP_LANG_MOD_CANNOT_FIND_ACTIVE_CONFIG',	'Cannot find an active configuration.');
+define('NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN',	'Cannot change the ROLE_ADMIN name.');
+define('NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN',	'Cannot delete ROLE_ADMIN.');
+
 
 define('NDPHP_LANG_MOD_DISABLED_MULTI_USER',		'Multi-user support is not enabled.');
 define('NDPHP_LANG_MOD_DISABLED_USER_REGISTER',		'User registration disabled.');

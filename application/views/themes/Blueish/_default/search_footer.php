@@ -65,7 +65,11 @@
 
 			var checkbox_<?=filter_js_special($field, $config['charset'])?> = false;
 
-			/* FIXME: Not the best approach... To be redesigned */
+			/* FIXME 1: Not the best approach... To be redesigned */
+			/* FIXME 2: Browsing actions back_store() should account for full modifications on the advanced search form.
+			 *          If the user goes back after a search, the previously inserted data on the form should be visible.
+			 *          Currently the form is being reset after a browsing action back is performed.
+			 */
 			jQuery("#search_criteria_checkbox_<?=filter_js_special($field, $config['charset'])?>").click(function() {
 				if (checkbox_<?=filter_js_special($field, $config['charset'])?>) {
 					checkbox_<?=filter_js_special($field, $config['charset'])?> = false;
@@ -100,6 +104,10 @@
 			/* Search fields are hidden by default */
 			jQuery("#search_field_<?=filter_js_special($field, $config['charset'])?>").hide();
 		<?php endforeach; ?>
+
+		/* Reset current tab index */
+		ndphp.current.tab_index = null;
+
 	});
 
 	function search_expand_options(opt_div, btn_div) {

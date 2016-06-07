@@ -85,6 +85,9 @@ define('NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER',	'Cannot delete the admin user.
 define('NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL',	'VIEW table type controllers cannot perform the operation');
 define('NDPHP_LANG_MOD_CANNOT_DISPLAY_LIST',		'Cannot display list.');
 define('NDPHP_LANG_MOD_CANNOT_FIND_ACTIVE_CONFIG',	'Cannot find an active configuration.');
+define('NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN',	'Cannot change the ROLE_ADMIN name.');
+define('NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN',	'Cannot delete ROLE_ADMIN.');
+define('NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN',	'Cannot remove the ROLE_ADMIN role from User ID 1.');
 
 define('NDPHP_LANG_MOD_DISABLED_MULTI_USER',		'Multi-user support is not enabled.');
 define('NDPHP_LANG_MOD_DISABLED_USER_REGISTER',		'User registration disabled.');

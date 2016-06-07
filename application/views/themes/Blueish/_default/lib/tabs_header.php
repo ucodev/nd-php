@@ -118,6 +118,9 @@
 
 	jQuery(function() {
 		jQuery('div[id^=entry_tabs]').tabs();
+		jQuery('div[id^=entry_tabs]').on('tabsactivate', function(event, ui) {
+			ndphp.current.tab_index = ui.newTab.index();
+		});
 		jQuery('div[id^=entry_tabs]').removeClass("ui-widget");
 		jQuery('div[id^=entry_tabs]').css('border-radius', '0px');
 		jQuery('#create, #edit, #remove, #view, #list, #result, #search, #groups').css('padding-top', '0px').css('padding-bottom', '0px');

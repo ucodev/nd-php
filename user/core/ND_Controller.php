@@ -80,7 +80,8 @@
  *
  * FIXME:
  *
- * * Memcached tab under Configuration menu should be hidden when FEATURE_SYSTEM_MEMCACHED is disabled.
+ * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
+ * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
  * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
  * * On insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * * Export to pdf (on listing/results) is not rendering images from _file_* fields.
@@ -92,7 +93,6 @@
  * * Missing multiple and mixed relationship logging support (only basic fields are supported).
  * * Mixed relationship _timer_ not fully supported (missing start and stop buttons).
  * * Paypal payments interface is outdated.
- * - Navigation/Browsing actions (back, refresh, forward) implementation conflicts with view tabs. Needs redesign.
  * - Charts under results view do not reflect the searched data (Should they?).
  * - [REQUIRED?] mixed relationships _tc_ fields are not being converted (if datetime) to/from user timezone.
  * - [WONT_FIX] The first table name of multiple relationship table names cannot have underscores (_).

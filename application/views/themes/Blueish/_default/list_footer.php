@@ -82,29 +82,32 @@
 		jQuery('a[title="<?=filter_js_str(NDPHP_LANG_MOD_OP_EXPORT_PDF, $config['charset'])?>"]').attr('href', '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/<?=filter_html_js_str($view['ctrl'], $config['charset'])?>/export/<?=filter_html_js_str($view['export_query'], $config['charset'])?>');
 		jQuery('a[title="<?=filter_js_str(NDPHP_LANG_MOD_OP_EXPORT_CSV, $config['charset'])?>"]').attr('href', '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/<?=filter_html_js_str($view['ctrl'], $config['charset'])?>/export/<?=filter_html_js_str($view['export_query'], $config['charset'])?>/csv');
 
-		/* FIXME: TODO: Currently we need to (re)declare this handler here to keep the workflow context... */
-		ndphp.ajax.update_data_list = function() {
-			jQuery.ajax({
-				type: "POST",
-				url: "<?=filter_js_str(base_url(), $config['charset'])?>index.php/<?=filter_js_str($view['ctrl'], $config['charset'])?>/list_data_ajax/<?php if (isset($config['order_by'])) { echo(filter_js_str($config['order_by'], $config['charset']) . '/'); if (isset($config['order'])) { echo(($config['order'] == 'asc' ? 'desc' : 'asc') . '/'); if (isset($view['page'])) { echo(filter_js_str($view['page'], $config['charset'])); } } }?>",
-				success: function(data) {
-					var html = jQuery(data);
-					ndphp.nav.back_store('list', jQuery('#list').html());
-					jQuery("#list").nd_animate_hide(ndphp.animation.ordering_delay, function() {
-						jQuery("#list").replaceWith(function() {
-							return jQuery(html).nd_animate_show(ndphp.animation.ordering_delay);
-						});
-						/* NOTE: For some reason, some browsers are losing the display
-						 * property after this routine completes. This is the bare fix.
-						 */
-						jQuery('#list').css({"display": "table"});
-					});
-				},
-				error: function(xhr, ajaxOptions, thrownError) {
-					jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_LOAD_VIEW_LIST, $config['charset'])?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), $config['charset'])?>:</span> ' + xhr.responseText);
-					jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_DISPLAY_LIST, $config['charset'])?>' });
-				}
-			});
-		};
+		/* Reset current tab index */
+		ndphp.current.tab_index = null;
 	});
+
+	/* FIXME: TODO: Currently we need to (re)declare this handler here to keep the workflow context... */
+	ndphp.ajax.update_data_list = function() {
+		jQuery.ajax({
+			type: "POST",
+			url: "<?=filter_js_str(base_url(), $config['charset'])?>index.php/<?=filter_js_str($view['ctrl'], $config['charset'])?>/list_data_ajax/<?php if (isset($config['order_by'])) { echo(filter_js_str($config['order_by'], $config['charset']) . '/'); if (isset($config['order'])) { echo(($config['order'] == 'asc' ? 'desc' : 'asc') . '/'); if (isset($view['page'])) { echo(filter_js_str($view['page'], $config['charset'])); } } }?>",
+			success: function(data) {
+				var html = jQuery(data);
+				ndphp.nav.back_store('list', jQuery('#list').html());
+				jQuery("#list").nd_animate_hide(ndphp.animation.ordering_delay, function() {
+					jQuery("#list").replaceWith(function() {
+						return jQuery(html).nd_animate_show(ndphp.animation.ordering_delay);
+					});
+					/* NOTE: For some reason, some browsers are losing the display
+					 * property after this routine completes. This is the bare fix.
+					 */
+					jQuery('#list').css({"display": "table"});
+				});
+			},
+			error: function(xhr, ajaxOptions, thrownError) {
+				jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_LOAD_VIEW_LIST, $config['charset'])?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), $config['charset'])?>:</span> ' + xhr.responseText);
+				jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_DISPLAY_LIST, $config['charset'])?>' });
+			}
+		});
+	};
 </script>
