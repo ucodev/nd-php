@@ -1,3 +1,8 @@
+v0.01i1 (2016-06-07):
+
+ - Added the documentation/videos/02_Basic_IDE_Usage.mp4 video.
+
+
 v0.01i (2016-06-07):
 
  - Updated doccumentation/NDCA.pdf.

@@ -55,7 +55,7 @@
  * * Add support for memcached to lower database overhead
  * * Implement guest user support. Authentication for guest user is done automatically for controllers allowing it. This user must be disabled by default.
  * * Total mixed entries as a list_default() / result() field.
- * - Migrate Modalbox to MOOdalBox (https://code.google.com/archive/p/moodalbox/) [so we can remove the prototype.js and scritaculus.js deps].
+ * - Migrate Modalbox to something else (probably jQuery UI Dialog?).
  * - Implement different families of views (configurable per table: backend, blog, shop, page, etc...)
  * - Autocomplete fields (and matching fields) based on the values of a foreign table. (with a simple API)
  * - Add uSched support.
@@ -93,7 +93,6 @@
  * * Mixed relationship _timer_ not fully supported (missing start and stop buttons).
  * * Paypal payments interface is outdated.
  * - Navigation/Browsing actions (back, refresh, forward) implementation conflicts with view tabs. Needs redesign.
- * - There is a lot of conditions validaating the usage of modalbox around the controller logic.. this kind of (view) logic should be moved elsewhere.
  * - Charts under results view do not reflect the searched data (Should they?).
  * - [REQUIRED?] mixed relationships _tc_ fields are not being converted (if datetime) to/from user timezone.
  * - [WONT_FIX] The first table name of multiple relationship table names cannot have underscores (_).
