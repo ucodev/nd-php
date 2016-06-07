@@ -3226,7 +3226,7 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_field_help_desc($table, $field) {
-		$this->db->select('field_units,help_description,help_url');
+		$this->db->select('field_units,units_on_left,help_description,help_url');
 		$this->db->from('_help_tfhd');
 		$this->db->where('table_name', $table);
 		$this->db->where('field_name', $field);
@@ -3318,7 +3318,9 @@ class ND_Controller extends UW_Controller {
 
 			/* Get field help, if exists */
 			$help_data = $this->_get_field_help_desc($target, $field['name']);
-			$fields[$field['name']]['units'] = $help_data['field_units'];
+			$fields[$field['name']]['units'] = array();
+			$fields[$field['name']]['units']['unit'] = $help_data['field_units'];
+			$fields[$field['name']]['units']['left'] = $help_data['units_on_left'];
 			$fields[$field['name']]['help_desc'] = $help_data['help_description'];
 			$fields[$field['name']]['help_url'] = $help_data['help_url'];
 

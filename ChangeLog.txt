@@ -1,3 +1,10 @@
+v0.01k (2016-06-07):
+
+ - Updated documentation/3rd_party.txt file.
+ - Added "Units on Left" property on field objects (IDE Builder).
+ - Added full support for field units.
+
+
 v0.01j2 (2016-06-07):
 
  - Renamed install/languages/EN_us.php to install/languages/en_US.php.

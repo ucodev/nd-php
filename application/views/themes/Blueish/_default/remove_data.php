@@ -154,7 +154,13 @@
 												</a>
 										<?php endif; ?>
 									<?php else: ?>
-											<?=truncate_str($value, $config['truncate']['length'], $config['charset'], $config['truncate']['trail'], $config['truncate']['separator'])?>
+										<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
+											<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+										<?php endif; ?>
+										<?=truncate_str($value, $config['truncate']['length'], $config['charset'], $config['truncate']['trail'], $config['truncate']['separator'])?>
+										<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
+											<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+										<?php endif; ?>
 									<?php endif; ?>
 								<?php endif; ?>
 								</td>

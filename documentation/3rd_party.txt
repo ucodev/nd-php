@@ -22,11 +22,13 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
  17.	json2.js		(Public Domain)
  18.	Flat theme Iconset	(Custom, See below)
  19.	Free Grey Cloud Icons	(CC BY 3.0 US)
- 20.	TimeZoneDB		(CC BY 3.0)
- 21.	zone.tab		(Public Domain)
- 22.	reCAPTCHA		(MIT)
- 23.	uWeb			(GPLv3)
- 24.	uWAT			(GPLv3)
+ 20.	Freecns Cumulus Icons	(Custom, See below)
+ 21.	Miu Icons		(Custom, See below)
+ 22.	TimeZoneDB		(CC BY 3.0)
+ 23.	zone.tab		(Public Domain)
+ 24.	reCAPTCHA		(MIT)
+ 25.	uWeb			(GPLv3)
+ 26.	uWAT			(GPLv3)
 
 
 
@@ -319,7 +321,44 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-20. TimeZoneDB
+20. Freecns Cumulus Icons
+========================
+
+  Author:	Yannick Lung
+
+  URLs:		http://yannicklung.com
+		http://www.yanlu.de
+		https://www.iconfinder.com/iconsets/freecns-cumulus
+
+  License:	Custom (see below)
+
+  You are free to use Freecns for commercial and personal purposes without
+  attribution, however a credit for the work would be appreciated. You may
+  not sell or redistribute the icons themselves as icons. Do not claim
+  creative credit.
+
+=========================
+
+
+=========================
+21. Miu Icons
+=========================
+
+  Author:	Linh Pham Thi Dieu
+
+  URLs:		http://linhpham.me/
+		https://www.iconfinder.com/iconsets/miu
+
+  License:	Custom (see below)
+
+  These icons are free and you can use them in any project you want, but
+  please do not redistribute the icons themselves.
+
+=========================
+
+
+=========================
+22. TimeZoneDB
 =========================
 
   Author:	TimeZoneDB.com
@@ -332,7 +371,7 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-21. zone.tab
+23. zone.tab
 =========================
 
   Author:	Paul Eggert
@@ -347,7 +386,7 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-22. reCAPTCHA
+24. reCAPTCHA
 =========================
 
   Author:	Mike Crawford and Ben Maurer
@@ -360,7 +399,7 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-23. uWeb
+25. uWeb
 =========================
 
   Author:	Pedro A. Hortas
@@ -373,7 +412,7 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-24. uWAT
+26. uWAT
 =========================
 
   Author:	Pedro A. Hortas

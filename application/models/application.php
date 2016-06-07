@@ -1071,6 +1071,7 @@ class UW_Application extends UW_Model {
 			if (isset($field['properties']['help']) || isset($field['properties']['units'])) {
 				$help_desc = '';
 				$field_units = '';
+				$units_on_left = false;
 
 				if (isset($field['properties']['help']))
 					$help_desc = $field['properties']['help'];
@@ -1078,11 +1079,15 @@ class UW_Application extends UW_Model {
 				if (isset($field['properties']['units']))
 					$field_units = $field['properties']['units'];
 
+				if (isset($field['properties']['units_on_left']))
+					$units_on_left = $field['properties']['units_on_left'];
+
 				if ($help_desc || $field_units) {
 					$this->db->insert('_help_tfhd', array(
 						'table_name' => $menu['db']['name'],
 						'field_name' => $field['db']['name'],
 						'field_units' => $field_units,
+						'units_on_left' => $units_on_left,
 						'help_description' => $help_desc
 					));
 				}

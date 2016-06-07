@@ -84,6 +84,7 @@ CREATE TABLE `_help_tfhd` (
   `table_name` varchar(64) NOT NULL,
   `field_name` varchar(64) DEFAULT NULL,
   `field_units` varchar(32) DEFAULT NULL,
+  `units_on_left` tinyint(1) DEFAULT '0',
   `help_description` varchar(4096) NOT NULL,
   `help_url` varchar(1024) NOT NULL DEFAULT '#',
   PRIMARY KEY (`id`)

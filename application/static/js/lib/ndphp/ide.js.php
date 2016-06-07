@@ -765,6 +765,7 @@ ndphp.ide.build = function(check, save, build) {
                 field['properties']['placeholder'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_placeholder').val();
                 field['properties']['len'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_length').val();
                 field['properties']['units'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_units').val();
+                field['properties']['units_on_left'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_units_left').is(':checked');
                 field['properties']['help'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_help').val();
                 /* Debug */
                 //alert('Field Properties -- Alias: ' + field['properties']['alias'] + ', Length: ' + field['properties']['len'] + ', Help: ' + field['properties']['help']);

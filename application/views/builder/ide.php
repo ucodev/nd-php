@@ -129,17 +129,17 @@
 			<div id="obj_fields_entry_f" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="dropdown" />
 				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Drop-Down field types will generate a HTML select box. The contents of the select box will be filled with the data beloging to the table of the controller linked to this field. To link a controller to a Drop-Down field, drag a controller entry from the Controllers container and drop it over this field under the Fields container.">Drop-Down</span><br />
-				<span id="name">menu link</span>
+				<span id="name">controller link</span>
 			</div>
 			<div id="obj_fields_entry_g" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="multiple" />
 				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Multiple type fields will generate two HTML select boxes with the multiple attribute to allow multiple selections, one displaying the unselected options (left) and another displaying the selected options (right). This field type will generate a new tab on the form. The contents and linkage behavior is the same as the Drop-Down field types (see Drop-Down tooltip).">Multiple</span><br />
-				<span id="name">menu link</span>
+				<span id="name">controller link</span>
 			</div>
 			<div id="obj_fields_entry_h" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="mixed" />
 				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Mixed type fields will generate a new tab on the form. They behave as a mixing of Drop-Down and Multiple field types. Under that tab, all the fields of the linked controller will be displayed as a row and multiple rows can be created. The first column of each row will have auto-completion based on the contents of the linked controller. The linkage behavior is the same as the Drop-Down or Multiple field types (see Drop-Down or Multiple tooltip).">Mixed</span><br />
-				<span id="name">menu link</span>
+				<span id="name">controller link</span>
 			</div>
 			<div id="obj_fields_entry_i" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="timer" />
@@ -317,6 +317,10 @@
 												<tr class="properties_table_row">
 													<td class="properties_table_field_title">Units</td>
 													<td class="properties_table_field_value"><input id="property_units" type="text" placeholder="Unit" value="<?=filter_html($field_item['properties']['units'], $config['charset'])?>" /></td>
+												</tr>
+												<tr class="properties_table_row">
+													<td class="properties_table_field_title">Units on Left</td>
+													<td class="properties_table_field_value"><input id="property_units_left" type="checkbox" <?=$field_item['properties']['units_on_left'] ? 'checked="checked"' : ''?> /></td>
 												</tr>
 												<tr class="constraints_table_row">
 													<td class="properties_table_field_title">Help</td>
@@ -546,6 +550,10 @@
 				<tr class="properties_table_row">
 					<td class="properties_table_field_title">Units</td>
 					<td class="properties_table_field_value"><input id="property_units" type="text" placeholder="Unit" /></td>
+				</tr>
+				<tr class="properties_table_row">
+					<td class="properties_table_field_title">Units on Left</td>
+					<td class="properties_table_field_value"><input id="property_units_left" type="checkbox" /></td>
 				</tr>
 				<tr class="constraints_table_row">
 					<td class="properties_table_field_title">Help</td>

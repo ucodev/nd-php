@@ -93,11 +93,17 @@
 							<img alt="<?=filter_html($value, $config['charset'])?>" style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;" src="<?=$view['fields'][$field]['base64_format']?>" />
 						<?php else: ?>
 							<?php if ($field == 'id'): ?>
-									<a href="<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($value, $config['charset'])?>">
-										<?=filter_html($value, $config['charset'])?>
-									</a>
-							<?php else: ?>
+								<a href="<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($value, $config['charset'])?>">
 									<?=filter_html($value, $config['charset'])?>
+								</a>
+							<?php else: ?>
+								<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
+									<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+								<?php endif; ?>
+								<?=filter_html($value, $config['charset'])?>
+								<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
+									<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+								<?php endif; ?>
 							<?php endif; ?>
 						<?php endif; ?>
 						</td>
