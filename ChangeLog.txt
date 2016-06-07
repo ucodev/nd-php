@@ -1,3 +1,8 @@
+v0.01k1 (2016-06-07):
+
+ - Minor field units fix under views (removed extra whitespace).
+
+
 v0.01k (2016-06-07):
 
  - Updated documentation/3rd_party.txt file.

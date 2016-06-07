@@ -98,11 +98,11 @@
 								</a>
 							<?php else: ?>
 								<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
-									<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+									<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
 								<?php endif; ?>
 								<?=filter_html($value, $config['charset'])?>
 								<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
-									<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+									<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
 								<?php endif; ?>
 							<?php endif; ?>
 						<?php endif; ?>

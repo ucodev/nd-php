@@ -172,11 +172,11 @@
 												</a>
 											<?php else: ?>
 												<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
-													<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+													<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
 												<?php endif; ?>
 												<?=truncate_str($value, $config['truncate']['length'], $config['charset'], $config['truncate']['trail'], $config['truncate']['separator'])?>
 												<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
-													<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+													<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
 												<?php endif; ?>
 											<?php endif; ?>
 										<?php endif; ?>

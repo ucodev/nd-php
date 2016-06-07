@@ -118,11 +118,11 @@
 							<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=$view['ctrl']?>/view/<?=filter_html($value, $config['charset'])?>"><?=filter_html($value, $config['charset'])?></a>
 						<?php else: ?>
 							<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
-								<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+								<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
 							<?php endif; ?>
 							<?=filter_html($value, $config['charset'])?>
 							<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
-								<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>&nbsp;
+								<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
 							<?php endif; ?>
 						<?php endif; ?>
 					</td>
