@@ -1,3 +1,8 @@
+v0.01j2 (2016-06-07):
+
+ - Renamed install/languages/EN_us.php to install/languages/en_US.php.
+
+
 v0.01j1 (2016-06-07):
 
  - Configuration menu controller now hides the reCAPTCHA tab when recaptcha features are disabled.
