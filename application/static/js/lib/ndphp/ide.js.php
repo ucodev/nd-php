@@ -236,7 +236,7 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
 
     /* Validate the field length value */
     if ('properties' in field && field['properties']['len']) {
-        var pat = /(^\d+$|^\d+\.\,\d+$)/;
+        var pat = /(^\d+$|^\d+[\.\,]{1,1}\d+$)/;;
 
         if (!pat.test(field['properties']['len'])) {
             alert('Length of field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" must be an integer or float.');
