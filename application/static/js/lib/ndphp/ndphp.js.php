@@ -50,7 +50,7 @@ if (typeof ndphp == 'undefined') {
     ndphp.current = {};
     ndphp.current.controller = null;
     ndphp.current.charset = null;
-    ndphp.current.tab_index = 0;
+    ndphp.current.tab_index = null;
 }
 
 /* Theme */

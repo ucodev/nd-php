@@ -224,6 +224,12 @@ class Configuration extends ND_Controller {
 			unset($data['view']['fields']['memcached_server']);
 			unset($data['view']['fields']['memcached_port']);
 		}
+
+		if (!$data['config']['features']['register_with_recaptcha']) {
+			unset($data['view']['fields']['_separator_recaptcha']);
+			unset($data['view']['fields']['recaptcha_priv_key']);
+			unset($data['view']['fields']['recaptcha_pub_key']);
+		}
 	}
 
 	public function maintenance_enter() {

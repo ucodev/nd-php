@@ -1,3 +1,10 @@
+v0.01j1 (2016-06-07):
+
+ - Configuration menu controller now hides the reCAPTCHA tab when recaptcha features are disabled.
+ - Minor fix on ndphp javascript library.
+ - Updated install/languages/EN_us.php file (this file also should be renamed to en_US.php).
+
+
 v0.01j (2016-06-07):
 
  - ROLE_ADMIN cannot be deleted nor changed now.
@@ -7,7 +14,7 @@ v0.01j (2016-06-07):
  - Repositioned the browsing actions div.
  - Configuration menu controller now hides the Memcached tab when memcached feature is disabled.
  - Minor fixes on views footers.
- - Current selected tab under View Entry views are now automatically selected when Edit operation is performed.
+ - Current selected tab under View Entry views is now automatically selected when Edit operation is performed.
  - Updated user/utils/languages.php file.
 
 
