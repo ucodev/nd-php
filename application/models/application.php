@@ -1072,9 +1072,13 @@ class UW_Application extends UW_Model {
 				$help_desc = '';
 				$field_units = '';
 				$units_on_left = false;
+				$input_pattern = NULL;
 
 				if (isset($field['properties']['help']))
 					$help_desc = $field['properties']['help'];
+
+				if (isset($field['properties']['input_pattern']))
+					$input_pattern = $field['properties']['input_pattern'];
 
 				if (isset($field['properties']['units']))
 					$field_units = $field['properties']['units'];
@@ -1088,6 +1092,7 @@ class UW_Application extends UW_Model {
 						'field_name' => $field['db']['name'],
 						'field_units' => $field_units,
 						'units_on_left' => $units_on_left,
+						'input_pattern' => $input_pattern,
 						'help_description' => $help_desc
 					));
 				}

@@ -1,3 +1,12 @@
+v0.01l (2016-06-08):
+
+ - Added human readable upload error strings.
+ - Added a new IDE field property to support customized HTML5 input patterns.
+ - Replaced the remaining HTTP/1.0 headers with HTTP/1.1.
+ - Scheduler can now be configured as 'request' or 'external' type.
+ - Fixed some issues on scheduler processing.
+
+
 v0.01k2 (2016-06-07):
 
  - Fixed decimal format check on IDE numeric field type.

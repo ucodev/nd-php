@@ -104,7 +104,7 @@
 			</div>
 			<div id="obj_fields_entry_b" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="numeric" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Numeric type fields will generate an HTML input of type numeric. If the Length property is set to 1, it will generate a checkbox input type. If a decimal format is supplied in the Length property (such as 8,2), the input type is set to text and decimal values will be accepted (See decimal format specification for MySQL/MariaDB).">Numeric</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Numeric type fields will generate an HTML input of type numeric. If the Length property is set to 1, it will generate a checkbox input type. If a decimal format is supplied in the Length property (such as 8,2), the input type is set to text and decimal values will be accepted (See decimal format specification for MySQL/MariaDB). If the length is set to 0.00, a float type field will be created in the database.">Numeric</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
@@ -313,6 +313,10 @@
 												<tr class="properties_table_row">
 													<td class="properties_table_field_title">Length</td>
 													<td class="properties_table_field_value"><input id="property_length" type="numeric" placeholder="255" value="<?=filter_html($field_item['properties']['len'], $config['charset'])?>" /></td>
+												</tr>
+												<tr class="properties_table_row">
+													<td class="properties_table_field_title">Input Pattern</td>
+													<td class="properties_table_field_value"><input id="property_input_pattern" type="text" placeholder="Regex input filter..." value="<?=filter_html($field_item['properties']['input_pattern'], $config['charset'])?>" /></td>
 												</tr>
 												<tr class="properties_table_row">
 													<td class="properties_table_field_title">Units</td>
@@ -546,6 +550,10 @@
 				<tr class="properties_table_row">
 					<td class="properties_table_field_title">Length</td>
 					<td class="properties_table_field_value"><input id="property_length" type="numeric" placeholder="255" /></td>
+				</tr>
+				<tr class="properties_table_row">
+					<td class="properties_table_field_title">Input Pattern</td>
+					<td class="properties_table_field_value"><input id="property_input_pattern" type="text" placeholder="Regex input filter..." /></td>
 				</tr>
 				<tr class="properties_table_row">
 					<td class="properties_table_field_title">Units</td>

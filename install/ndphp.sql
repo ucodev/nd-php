@@ -85,6 +85,7 @@ CREATE TABLE `_help_tfhd` (
   `field_name` varchar(64) DEFAULT NULL,
   `field_units` varchar(32) DEFAULT NULL,
   `units_on_left` tinyint(1) DEFAULT '0',
+  `input_pattern` varchar(256) DEFAULT NULL,
   `help_description` varchar(4096) NOT NULL,
   `help_url` varchar(1024) NOT NULL DEFAULT '#',
   PRIMARY KEY (`id`)
@@ -801,6 +802,7 @@ CREATE TABLE `scheduler` (
   `last_run` datetime DEFAULT NULL,
   `next_run` datetime DEFAULT NULL,
   `output` varchar(1024) DEFAULT NULL,
+  `queued` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `entry_name` (`entry_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -236,7 +236,7 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
 
     /* Validate the field length value */
     if ('properties' in field && field['properties']['len']) {
-        var pat = /(^\d+$|^\d+[\.\,]{1,1}\d+$)/;;
+        var pat = /(^\d+$|^\d+[\.\,]{1,1}\d+$)/;
 
         if (!pat.test(field['properties']['len'])) {
             alert('Length of field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" must be an integer or float.');
@@ -764,6 +764,7 @@ ndphp.ide.build = function(check, save, build) {
                 field['properties']['alias'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_alias').val();
                 field['properties']['placeholder'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_placeholder').val();
                 field['properties']['len'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_length').val();
+                field['properties']['input_pattern'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_input_pattern').val();
                 field['properties']['units'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_units').val();
                 field['properties']['units_on_left'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_units_left').is(':checked');
                 field['properties']['help'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_help').val();

@@ -41,7 +41,7 @@
  *
  * TODO:
  *
- * * Units support on views (including right/left configuration).
+ * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
  * * [IN_PROGRESS] Database Sharding (per user)
  * * Add special extra field/query pairs to _field_resolve() and _field_value_mangle()
@@ -83,13 +83,10 @@
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
  * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
  * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
- * * On insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
+ * * On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * * Export to pdf (on listing/results) is not rendering images from _file_* fields.
  * * Advanced search: "Different than" option for mixed searches is currently bugged (due to the enclosure hack) and shall not be used as it'll return incorrect results
- * * Scheduler processing routines shall be moved to a separate worker (thread).
- * * Next run value of scheduler must always be computed to reference a timestamp in the future.
  * * Mixed relationship edits are retrieving the newer values of dropdowns (instead of reading the old static values)
- * * Database float type isn't being displayed with decimal component on views.
  * * Missing multiple and mixed relationship logging support (only basic fields are supported).
  * * Mixed relationship _timer_ not fully supported (missing start and stop buttons).
  * * Paypal payments interface is outdated.
@@ -462,6 +459,14 @@ class ND_Controller extends UW_Controller {
 
 	/* If enabled, instead of loading views, the reply will be in JSON */
 	protected $_json_replies = false;
+
+	/* Scheduler settings */
+	protected $_scheduler = array(
+		'type' => 'request', /* By default, scheduled entries will be evaluated and processed on every request.
+							  * If set to 'external', scheduled entries will only be processed when public scheduler_external method is invoked.
+							  * If set to 'threaded' will behave as 'request', but execution of scheduled entries are performed in a separate thread (required PHP threading support).
+							  */
+	);
 
 
 	/** Custom functions **/
@@ -2541,16 +2546,58 @@ class ND_Controller extends UW_Controller {
 
 	/** Scheduler **/
 
-	private function _scheduler_process() {
-		/* FIXME: TODO: This routine shall be moved to a separate thread since we can't predict how long
-		 * the cURL execs will last.
-		 */
+	private function _scheduler_exec_queued_entries() {
+		/* Execute scheduled entries */
+		foreach ($this->_scheduler['queue'] as $entry) {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $entry['url']);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$ret = curl_exec($ch);
+			curl_close($ch);
 
+			/* Check if $row['next_run_val'] date is in the past... if so, we need to keep adding period until we
+			 * get a date pointing to the future.
+			 */
+			if ($entry['next_run_val'] !== NULL && $entry['next_run_val'] > 1451606400) { /* next run must be at least close to this epoch to be considered valid */
+				while ($entry['next_run_val'] < time())
+					$entry['next_run_val'] += $entry['period'];
+			} else {
+				/* Othersite, set it to the current time */
+				$entry['next_run_val'] = time();
+			}
+
+			/* Initialize transaction */
+			$this->db->trans_begin();
+
+			$this->db->where('id', $entry['id']);
+			$this->db->update('scheduler', array(
+				'last_run' => date('Y-m-d H:i:s'),
+				'next_run' => date('Y-m-d H:i:s', $entry['next_run_val']),
+				'output' => $ret,
+				'queued' => false
+			));
+
+			/* Check if transaction succeeded */
+			if ($this->db->trans_status() === false) {
+				$this->db->trans_rollback();
+
+				error_log('_scheduler_exec_entries(): Failed to execute scheduled entry: ' . $entry['id']);
+			}
+
+			/* Commit transaction */
+			$this->db->trans_commit();
+		}
+
+		/* Reset scheduled entries */
+		$this->_sched_entries = array();
+	}
+
+	private function _scheduler_process() {
 		/* Initialize transaction */
 		$this->db->trans_begin();
 
 		/* Fetch scheduler entries requiring immediate processing */
-		$q = $this->db->query('SELECT *,DATE_ADD(next_run, INTERVAL period SECOND) AS next_run_val FROM scheduler WHERE active = 1 AND (next_run <= NOW() OR next_run IS NULL)');
+		$q = $this->db->query('SELECT *,UNIX_TIMESTAMP(DATE_ADD(next_run, INTERVAL period SECOND)) AS next_run_val FROM scheduler WHERE active = 1 AND queued = 0 AND (next_run <= NOW() OR next_run IS NULL)');
 
 		/* Nothing to process */
 		if (!$q->num_rows()) {
@@ -2558,34 +2605,47 @@ class ND_Controller extends UW_Controller {
 			return;
 		}
 
-		/* Execute scheduled entries */
+		/* Re-Initialize scheduler entries array */
+		$this->_scheduler['queue'] = array();
+
+		/* Populate scheduler entries array */
 		foreach ($q->result_array() as $row) {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $row['url']);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$ret = curl_exec($ch);
-			curl_close($ch);
+			array_push($this->_scheduler['queue'], $row);
 
-			/* FIXME: Check if $row['next_run_val'] date is in the past... if so, we need to keep adding period until we
-			 * get a date pointing to the future.
-			 */
-
+			/* Set the 'queued' flag to avoid concurrent proccessing for the same entry */
 			$this->db->where('id', $row['id']);
 			$this->db->update('scheduler', array(
-				'last_run' => date('Y-m-d H:i:s'),
-				'next_run' => $row['next_run_val'] ? $row['next_run_val'] : date('Y-m-d H:i:s', time() + $row['period']),
-				'output' => $ret
+				'queued' => true
 			));
 		}
 
+		/* Check if transaction succeeded */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 
-			error_log('_scheduler_process(): Failed to process scheduled entries.');
-			return;
+			error_log('_scheduler_exec_entries(): Failed to process scheduled entry: ' . $row['id']);
 		}
 
+		/* Commit transaction */
 		$this->db->trans_commit();
+
+		if ($this->_threading && $this->_scheduler['type'] == 'threaded') {
+			/* TODO: Not implemented */
+		} else {
+			// if ($this->_scheduler['type'] == 'request' || $this->_scheduler['type'] == 'external') ...
+			$this->_scheduler_exec_queued_entries();
+		}
+	}
+
+	public function scheduler_external() {
+		/* Grant that only ROLE_ADMIN is able to execute this method */
+		if (!$this->security->im_admin()) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN);
+		}
+
+		/* Process and execute scheduled entries */
+		$this->_scheduler_process();
 	}
 
 
@@ -2600,7 +2660,7 @@ class ND_Controller extends UW_Controller {
 		/* Grant that there are no errors */
 		if ($_FILES[$field]['error'] > 0) {
 			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . $_FILES[$field]['error']);
+			die(NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']));
 		}
 
 		/* Validate file size (This is a fallback for php settings) */
@@ -3022,8 +3082,24 @@ class ND_Controller extends UW_Controller {
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_post.php') as $plugin)
 			include($plugin);
 
-		/* Process scheduler */
-		$this->_scheduler_process();
+		/* Process scheduler entries if the scheduler is not set as external (which, in that case, will require a cron job) */
+		if ($this->_scheduler['type'] != 'external')
+			$this->_scheduler_process();
+	}
+
+
+	/** Threading / Worker handlers (Will only be used if PHP has threading enabled.) **/
+
+	public function worker($thread) {
+		/* Grant that the supplied parameter is an object. This will also filter remote calls to this method. */
+		if (!is_object($thread)) {
+			header('HTTP/1.1 500 Internal Server Error');
+			die(NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ);
+		}
+
+		/** BEGIN OF WORKER MAIN **/
+
+		/** END OF WORKER MAIN **/
 	}
 
 
@@ -3226,7 +3302,7 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_field_help_desc($table, $field) {
-		$this->db->select('field_units,units_on_left,help_description,help_url');
+		$this->db->select('field_units,units_on_left,input_pattern,help_description,help_url');
 		$this->db->from('_help_tfhd');
 		$this->db->where('table_name', $table);
 		$this->db->where('field_name', $field);
@@ -3321,6 +3397,7 @@ class ND_Controller extends UW_Controller {
 			$fields[$field['name']]['units'] = array();
 			$fields[$field['name']]['units']['unit'] = $help_data['field_units'];
 			$fields[$field['name']]['units']['left'] = $help_data['units_on_left'];
+			$fields[$field['name']]['input_pattern'] = $help_data['input_pattern'];
 			$fields[$field['name']]['help_desc'] = $help_data['help_description'];
 			$fields[$field['name']]['help_url'] = $help_data['help_url'];
 
@@ -3948,7 +4025,7 @@ class ND_Controller extends UW_Controller {
 	public function groups_generic() {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -4164,7 +4241,7 @@ class ND_Controller extends UW_Controller {
 	public function list_generic($field = NULL, $order = NULL, $page = 0) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.1 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -4174,7 +4251,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that field contains only safe characters */
 		if (!$this->security->safe_names($field, $this->_security_safe_chars)) {
-			header("HTTP/1.1 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INVALID_CHARS_FIELD);
 		}
 
@@ -4590,7 +4667,7 @@ class ND_Controller extends UW_Controller {
 			/* Grant that there are no errors */
 			if ($_FILES[$field]['error'] > 0) {
 				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . $_FILES[$field]['error']);
+				die(NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']));
 			}
 
 			/* Validate file size (This is a fallback for php settings) */
@@ -4941,7 +5018,7 @@ class ND_Controller extends UW_Controller {
 	public function search_generic($advanced = true) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -5067,7 +5144,7 @@ class ND_Controller extends UW_Controller {
 							$order_field = NULL, $order_type = NULL, $page = 0) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -5075,7 +5152,7 @@ class ND_Controller extends UW_Controller {
 			$order_field = $this->_field_result_order;
 
 		if (!$this->security->safe_names($order_field, $this->_security_safe_chars)) {
-			header("HTTP/1.1 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER);
 		}
 
@@ -5973,7 +6050,7 @@ class ND_Controller extends UW_Controller {
 	public function export($export_query = NULL, $type = 'pdf') {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -6129,7 +6206,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_create, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -6236,7 +6313,7 @@ class ND_Controller extends UW_Controller {
 			$this->db->where($field_name, $field_data);
 
 			if (!$this->_table_row_filter_perm($field_data, $this->_name, $field_name)) {
-				header("HTTP/1.0 403 Forbidden");
+				header('HTTP/1.1 403 Forbidden');
 				die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 			}
 
@@ -6354,7 +6431,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_create, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #1');
 		}
 
@@ -6470,7 +6547,7 @@ class ND_Controller extends UW_Controller {
 				 */
 				$_POST[$field] = $this->timezone->convert($value . ' ' . $_POST[$field . '_time'], $this->_session_data['timezone'], $this->_default_timezone);
 				unset($_POST[$field . '_time']);
-			} 
+			}
 
 			/* Check if fields are empty */
 			if (($_POST[$field] == NULL) || (trim($_POST[$field], ' \t') == '')) {
@@ -6486,9 +6563,16 @@ class ND_Controller extends UW_Controller {
 			/* Grant that foreign table id is eligible to be inserted */
 			if (substr($field, -3) == '_id') {
 				if (!$this->_table_row_filter_perm($value, substr($field, 0, -3))) {
-					$this->db->trans_rollback();
-					header("HTTP/1.0 403 Forbidden");
+					header('HTTP/1.1 403 Forbidden');
 					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #2');
+				}
+			}
+
+			/* If an input pattern was defined for this field, grant that it matches the field value */
+			if ($ftypes[$field]['input_pattern']) {
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field])) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'');
 				}
 			}
 		}
@@ -6508,7 +6592,7 @@ class ND_Controller extends UW_Controller {
 		
 		if (!$last_id) {
 			$this->db->trans_rollback();
-			header("HTTP/1.0 500 Internal Server Error");
+			header('HTTP/1.1 500 Internal Server Error');
 			die(NDPHP_LANG_MOD_UNABLE_INSERT_ENTRY);
 		}
 
@@ -6571,7 +6655,7 @@ class ND_Controller extends UW_Controller {
 
 					if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
 						$this->db->trans_rollback();
-						header("HTTP/1.0 403 Forbidden");
+						header('HTTP/1.1 403 Forbidden');
 						die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #3');
 					}
 
@@ -6736,7 +6820,7 @@ class ND_Controller extends UW_Controller {
 					/* Security Permissions Check */
 					if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $mixed_table)) {
 						$this->db->trans_rollback();
-						header("HTTP/1.0 403 Forbidden");
+						header('HTTP/1.1 403 Forbidden');
 						die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 					}
 
@@ -6750,7 +6834,7 @@ class ND_Controller extends UW_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header("HTTP/1.0 500 Internal Server Error");
+			header('HTTP/1.1 500 Internal Server Error');
 			die(NDPHP_LANG_MOD_FAILED_INSERT);
 		} else {
 			$this->db->trans_commit();
@@ -6789,12 +6873,12 @@ class ND_Controller extends UW_Controller {
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
 		if (!$this->_table_row_filter_perm($id)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -6933,7 +7017,7 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -6963,7 +7047,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->_default_database);
 
 			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-				header("HTTP/1.0 403 Forbidden");
+				header('HTTP/1.1 403 Forbidden');
 				die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 			}
 
@@ -7074,12 +7158,12 @@ class ND_Controller extends UW_Controller {
 	public function view_generic($id = 0, $export = NULL) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
 		if (!$this->_table_row_filter_perm($id)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -7203,7 +7287,7 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -7234,7 +7318,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->_default_database);
 
 			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-				header("HTTP/1.0 403 Forbidden");
+				header('HTTP/1.1 403 Forbidden');
 				die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 			}
 
@@ -7480,12 +7564,12 @@ class ND_Controller extends UW_Controller {
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
 		if (!$this->_table_row_filter_perm($_POST['id'])) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -7634,7 +7718,7 @@ class ND_Controller extends UW_Controller {
 
 				if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
 					$this->db->trans_rollback();
-					header("HTTP/1.0 403 Forbidden");
+					header('HTTP/1.1 403 Forbidden');
 					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 				}
 
@@ -7645,7 +7729,7 @@ class ND_Controller extends UW_Controller {
 			unset($_POST[$field]);
 		}
 
-		/* Set all empty fields ('') to NULL and evaluate column permissions */
+		/* Set all empty fields ('') to NULL and evaluate column permissions. Also grant input pattern matching. */
 		foreach ($_POST as $field => $value) {
 			/* Security check */
 			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, $field)) {
@@ -7676,7 +7760,7 @@ class ND_Controller extends UW_Controller {
 			if (substr($field, -3) == '_id') {
 				if (!$this->_table_row_filter_perm($value, substr($field, 0, -3))) {
 					$this->db->trans_rollback();
-					header("HTTP/1.0 403 Forbidden");
+					header('HTTP/1.1 403 Forbidden');
 					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 				}
 			}
@@ -7684,6 +7768,14 @@ class ND_Controller extends UW_Controller {
 			/* Set to NULL if empty */
 			if (trim($_POST[$field], ' \t') == '') {
 				$_POST[$field] = NULL;
+			}
+
+			/* If an input pattern was defined for this field, grant that it matches the field value */
+			if ($ftypes[$field]['input_pattern']) {
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field])) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'');
+				}
 			}
 		}
 
@@ -7730,7 +7822,7 @@ class ND_Controller extends UW_Controller {
 					/* Security Permissions Check */
 					if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $fmeta['rel_table'])) {
 						$this->db->trans_rollback();
-						header("HTTP/1.0 403 Forbidden");
+						header('HTTP/1.1 403 Forbidden');
 						die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 					}
         	
@@ -7893,7 +7985,7 @@ class ND_Controller extends UW_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header("HTTP/1.0 500 Internal Server Error");
+			header('HTTP/1.1 500 Internal Server Error');
 			die(NDPHP_LANG_MOD_FAILED_UPDATE);
 		} else {
 			$this->db->trans_commit();
@@ -7928,17 +8020,17 @@ class ND_Controller extends UW_Controller {
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_delete, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
 		if (!$this->_table_row_filter_perm($id)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -8044,7 +8136,7 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
@@ -8074,7 +8166,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->_default_database);
 
 			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-				header("HTTP/1.0 403 Forbidden");
+				header('HTTP/1.1 403 Forbidden');
 				die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 			}
 
@@ -8193,12 +8285,12 @@ class ND_Controller extends UW_Controller {
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_delete, $this->_name)) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 
 		if (!$this->_table_row_filter_perm($_POST['id'])) {
-			header("HTTP/1.0 403 Forbidden");
+			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
 		}
 

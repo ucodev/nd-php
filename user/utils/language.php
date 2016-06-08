@@ -33,7 +33,7 @@
 
 define('NDPHP_LANG_MOD_ACCESS_FORBIDDEN',			'Forbidden.');
 define('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED',	'Permission Denied.');
-define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only ROLE_ADMIN is allowed to access this controller.');
+define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only ROLE_ADMIN is allowed to access this resource.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE',		'Account is not active.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED',			'Account is locked.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		'Account is expired.');
@@ -93,6 +93,16 @@ define('NDPHP_LANG_MOD_DISABLED_MULTI_USER',		'Multi-user support is not enabled
 define('NDPHP_LANG_MOD_DISABLED_USER_REGISTER',		'User registration disabled.');
 define('NDPHP_LANG_MOD_DISABLED_USER_PASS_RECOVER',	'User password recovery disabled.');
 
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_OK',			'There is no error, the file uploaded with success.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_INI_SIZE',		'The uploaded file exceeds the upload_max_filesize directive in php.ini.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_FORM_SIZE',		'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_PARTIAL',		'The uploaded file was only partially uploaded.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_NO_FILE',		'No file was uploaded.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_NO_TMP_DIR',	'Missing a temporary folder.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_CANT_WRITE',	'Failed to write file to disk.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_EXTENSION',		'A PHP extension stopped the file upload.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_UNKNOWN',		'An unknown error occurred while performing the upload.');
+
 define('NDPHP_LANG_MOD_FAILED_INSERT',				'Failed to perform insert.');
 define('NDPHP_LANG_MOD_FAILED_UPDATE',				'Failed to perform update.');
 define('NDPHP_LANG_MOD_FAILED_VERIFY_PASSWORD',		'Password verification failed. Please re-enter the password.');
@@ -136,6 +146,8 @@ define('NDPHP_LANG_MOD_INVALID_REQUEST',			'Invalid request.');
 define('NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY',		'Invalid private encryption key.');
 define('NDPHP_LANG_MOD_INVALID CREDENTIALS',		'Invalid credentials.');
 define('NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT','Incorrect custom interval. Intervals format is:');
+define('NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN',	'The input pattern defined does not match the content of field');
+define('NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ',		'Invalid type. The supplied parameter is not an object.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
