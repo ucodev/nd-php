@@ -732,7 +732,7 @@ class UW_Application extends UW_Model {
 					$default = $ftable_data[$i]['default'];
 				} else {
 					/* ... otherwise, the value must be quoted (treated as string) */
-					$default = $this->db->quote($ftable_data[$i]['default']);
+					$default = '\'' . $ftable_data[$i]['default'] . '\'';
 				}
 			}
 
@@ -812,7 +812,7 @@ class UW_Application extends UW_Model {
 				$default = $ftable_data[1]['default'];
 			} else {
 				/* ... otherwise, the value must be quoted (treated as string) */
-				$default = $this->db->quote($ftable_data[1]['default']);
+				$default = '\'' . $ftable_data[1]['default'] . '\'';
 			}
 		}
 
@@ -845,7 +845,7 @@ class UW_Application extends UW_Model {
 					$default = $ftable_data[$i]['default'];
 				} else {
 					/* ... otherwise, the value must be quoted (treated as string) */
-					$default = $this->db->quote($ftable_data[$i]['default']);
+					$default = '\'' . $ftable_data[$i]['default'] . '\'';
 				}
 			}
 
@@ -1068,7 +1068,7 @@ class UW_Application extends UW_Model {
 
 		/* Insert menu fields help */
 		foreach ($menu['fields'] as $field) {
-			if (isset($field['properties']['help']) || isset($field['properties']['units'])) {
+			if (isset($field['properties']['help']) || isset($field['properties']['units']) || isset($field['properties']['input_pattern'])) {
 				$help_desc = '';
 				$field_units = '';
 				$units_on_left = false;
@@ -1872,7 +1872,7 @@ class UW_Application extends UW_Model {
 
 					/* If the field isn't of type integer, the default value must be quoted */
 					if (!strpos($app_model['menus'][$i]['fields'][$j]['db']['type'], 'int'))
-						$app_model['menus'][$i]['fields'][$j]['db']['default'] = $this->db->quote($app_model['menus'][$i]['fields'][$j]['db']['default']);
+						$app_model['menus'][$i]['fields'][$j]['db']['default'] = '\'' . $app_model['menus'][$i]['fields'][$j]['db']['default'] . '\'';
 				} else {
 					/* Set default value to NULL */
 					$app_model['menus'][$i]['fields'][$j]['db']['default'] = 'NULL';

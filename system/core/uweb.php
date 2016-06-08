@@ -1195,7 +1195,7 @@ class UW_Database extends UW_Base {
 				$default = trim($default, '\'');
 
 				/* Escape $default contents */
-				$default = '\'' . $this->quote($default) . '\'';
+				$default = $this->quote($default);
 			}
 				
 			$table = str_replace('`', '', $table);
@@ -1250,7 +1250,7 @@ class UW_Database extends UW_Base {
 				$default = trim($default, '\'');
 
 				/* Escape $default contents */
-				$default = '\'' . $this->quote($default) . '\'';
+				$default = $this->quote($default);
 			}
 				
 			$table = str_replace('`', '', $table);

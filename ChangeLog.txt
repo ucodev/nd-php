@@ -1,3 +1,12 @@
+v0.01m (2016-06-08):
+
+ - Typo fix on _scheduler_process() error log message.
+ - HTML tags of scheduler entry output are now stripped for readability.
+ - Fixed an issue where input pattern were not being deployed if no help or unit properties were set (IDE).
+ - Added missing scheduler configuration variables on ND_Controller::config.
+ - Fixed the Placeholder (default value of IDE fields) issue where string type placeholders were breaking the building process.
+
+
 v0.01l (2016-06-08):
 
  - Added human readable upload error strings.

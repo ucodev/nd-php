@@ -80,6 +80,8 @@
  *
  * FIXME:
  *
+ * * jQuery validation plugin isn't matching the html input tag pattern.
+ * * jQuery validation plugin should highlight (in red) the offending field (not just placing the red asterisk in front of it).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
  * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
  * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
@@ -2573,7 +2575,7 @@ class ND_Controller extends UW_Controller {
 			$this->db->update('scheduler', array(
 				'last_run' => date('Y-m-d H:i:s'),
 				'next_run' => date('Y-m-d H:i:s', $entry['next_run_val']),
-				'output' => $ret,
+				'output' => strip_tags($ret),
 				'queued' => false
 			));
 
@@ -2623,7 +2625,7 @@ class ND_Controller extends UW_Controller {
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 
-			error_log('_scheduler_exec_entries(): Failed to process scheduled entry: ' . $row['id']);
+			error_log('_scheduler_process(): Failed to process scheduled entry: ' . $row['id']);
 		}
 
 		/* Commit transaction */
@@ -2859,6 +2861,8 @@ class ND_Controller extends UW_Controller {
 
 		$this->config['session_data']							= $this->_session_data;
 		$this->config['json_replies']							= $this->_json_replies;
+
+		$this->config['scheduler']								= $this->_scheduler;
 	}
 
 
