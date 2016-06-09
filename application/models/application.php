@@ -1077,16 +1077,16 @@ class UW_Application extends UW_Model {
 				if (isset($field['properties']['help']))
 					$help_desc = $field['properties']['help'];
 
-				if (isset($field['properties']['input_pattern']))
-					$input_pattern = $field['properties']['input_pattern'];
-
 				if (isset($field['properties']['units']))
 					$field_units = $field['properties']['units'];
 
 				if (isset($field['properties']['units_on_left']))
 					$units_on_left = $field['properties']['units_on_left'];
 
-				if ($help_desc || $field_units) {
+				if (isset($field['properties']['input_pattern']))
+					$input_pattern = $field['properties']['input_pattern'];
+
+				if ($help_desc || $field_units || $input_pattern) {
 					$this->db->insert('_help_tfhd', array(
 						'table_name' => $menu['db']['name'],
 						'field_name' => $field['db']['name'],

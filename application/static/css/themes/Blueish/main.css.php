@@ -610,14 +610,20 @@ img.searchbutton {
  */
 
 /* jQuery validate error style */
-span.error {
-	color: red;
-	margin-left: 5px;
-	overflow: hidden;
-	white-space: nowrap;
-	display: inline;
+.error {
+	background: rgba(255, 0, 0, 0.2) !important;
 }
 
+/*
+.checked {
+	background: rgba(0, 255, 0, 0.2) !important;
+}
+.valid {
+	background: rgba(0, 255, 0, 0.2) !important;
+}
+*/
+
+/* No data */
 p.no_results, p.no_charts, p.no_searches, p.no_groups, p.no_mainmenu {
 	color: #777777;
 	display: table;
@@ -628,6 +634,7 @@ p.no_results, p.no_charts, p.no_searches, p.no_groups, p.no_mainmenu {
 	padding-right: 30px;
 }
 
+/* CRUD contents */
 #crud_title, #home_title {
 	background-color: #555555;
 	min-height: 26px;

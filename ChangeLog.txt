@@ -1,3 +1,12 @@
+v0.01n (2016-06-09):
+
+ - Another minor fix on input pattern handling (IDE).
+ - Input patterns are now correctly validated before submits.
+ - When invalid data is inserted, Input fields background turns red (replacing the trailling * character).
+ - Mixed views now also support input patterns.
+ - Minor improvements on mixed views code.
+
+
 v0.01m (2016-06-08):
 
  - Typo fix on _scheduler_process() error log message.

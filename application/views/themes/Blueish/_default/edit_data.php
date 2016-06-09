@@ -254,6 +254,8 @@
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_EXPAND, $config['charset'])?>
 				</a>
 			<?php endif; ?>
+			<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" type="submit" style="display: none;" />
+			<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" type="reset" style="display: none;" />
 		</div>
 	</form>
 	<?php include('lib/tabs_footer.php'); ?>

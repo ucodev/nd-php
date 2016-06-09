@@ -60,8 +60,9 @@
 	jQuery(document).ready(function() {
 		/* Enable form validation */
 		jQuery("#createform").validate({
-			errorElement: "span",
-			wrapper: "span"
+			errorPlacement: function() {
+				return false;
+			}
 		});
 
 		<?php if (!isset($config['modalbox'])): ?>

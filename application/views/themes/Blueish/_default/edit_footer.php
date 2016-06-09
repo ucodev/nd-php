@@ -61,8 +61,9 @@
 	jQuery(document).ready(function() {
 		/* Enable form validation */
 		jQuery("#editform").validate({
-			errorElement: "span",
-			wrapper: "span"
+			errorPlacement: function() {
+				return false;
+			}
 		});
 
 		<?php if (!isset($config['modalbox'])): ?>
