@@ -476,7 +476,7 @@ class Install extends UW_Controller {
 
 		$this->db->trans_commit();
 
-		/* Proceeed to application dettails configuration */
+		/* Proceeed to application details configuration */
 		redirect('install/app_config');
 	}
 

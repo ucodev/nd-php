@@ -126,6 +126,11 @@
 		/* Reset current tab index */
 		ndphp.current.tab_index = null;
 
+		/* On submit ... */
+		jQuery('#createform').submit(function(e) {
+			ndphp.form.submit_create_wrapper(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'createform', <?=isset($config['modalbox']) ? 1 : 0?>);
+		});
+
 	}); /* END OF jQuery(document). ... */
 
 	/* Submit wrapper */

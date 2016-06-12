@@ -57,9 +57,11 @@ class UW_Application extends UW_Model {
 		$this->_theme = $row['name'];
 	}
 
+
 	/******************************/
 	/*  GLOBAL PRE-COMPUTED DATA  */
 	/******************************/
+
 	private $_app_menu_hidden_list = array(
 		'builder',
 		'charts_config',
@@ -199,6 +201,37 @@ class UW_Application extends UW_Model {
 
 
 	/************************/
+	/*   RELATIONSHIP API   */
+	/************************/
+
+	private $_table_rel_components_multiple = array();
+	private $_table_rel_components_mixed = array();
+
+	private function _table_rel_add_components($type, $table, $component1, $component2) {
+		if ($type == 'multiple') {
+			$this->_table_rel_components_multiple[$table] = array($component1, $component2);
+		} else if ($type == 'mixed') {
+			$this->_table_rel_components_mixed[$table] = array($component1, $component2);
+		} else {
+			header('HTTP/1.1 500 Internal Server Error');
+			die('Unknown relationship type: ' . $type);
+		}
+	}
+
+	private function _table_rel_get_components($type, $table) {
+		if ($type == 'multiple') {
+			if (isset($this->_table_rel_components_multiple[$table]))
+				return $this->_table_rel_components_multiple[$table];
+		} else if ($type == 'mixed') {
+			if (isset($this->_table_rel_components_mixed[$table]))
+				return $this->_table_rel_components_mixed[$table];
+		}
+
+		return NULL;
+	}
+
+
+	/************************/
 	/*  POSTPONE BATCH API  */
 	/************************/
 
@@ -257,6 +290,32 @@ class UW_Application extends UW_Model {
 
 		/* All good */
 		return true;
+	}
+
+
+	/********************/
+	/*    PARSING API   */
+	/********************/
+
+	private function _parse_rel_table_names($rel, $target = NULL, $mixed = false) {
+		if ($target === NULL)
+			$target = $this->_name;
+
+		if (!strpos($rel, $target))
+			return array();
+
+		$foreign_table_raw = str_replace($target, '', substr($rel, $mixed ? 6 : 4));
+
+		/* After removing the $target table name from the string, if the remaining starts with '_', then
+		 * that foreign table was positioned at the end of the relationship table name.
+		 */
+		if ($foreign_table_raw[0] == '_') {
+			return array($mixed ? 'mixed' : 'rel', $target, trim($foreign_table_raw, '_'));
+		} else {
+			return array($mixed ? 'mixed' : 'rel', trim($foreign_table_raw, '_'), $target);
+		}
+
+		return NULL;
 	}
 
 
@@ -510,6 +569,7 @@ class UW_Application extends UW_Model {
 		return true;
 	}
 
+
 	/***********************/
 	/*  SPECIAL TABLE API  */
 	/***********************/
@@ -521,41 +581,53 @@ class UW_Application extends UW_Model {
 
 		$old_table_name = $table_name;
 
-		$columns = explode('_', $table_name);
+		/* Fetch relationship table components */
+		$columns = $this->_table_rel_get_components('multiple', $table_name);
+
+		if (!$columns) {
+			error_log('_special_table_rebuild_rel(): Unable to retrieve relationship table components.');
+			return false;
+		}
 
 		/* Drop foreign keys */
+		$this->db->table_key_column_foreign_drop($table_name, $columns[0] . '_id');
 		$this->db->table_key_column_foreign_drop($table_name, $columns[1] . '_id');
-		$this->db->table_key_column_foreign_drop($table_name, $columns[2] . '_id');
 
 		/* Check if the first table reference was changed */
+		if (isset($this->_convert_renamed_tables[$columns[0]])) {
+			/* Modify table and columns */
+			$this->db->table_rename($table_name, 'rel_' . $this->_convert_renamed_tables[$columns[0]] . '_' . $columns[1]);
+			$table_name = 'rel_' . $this->_convert_renamed_tables[$columns[0]] . '_' . $columns[1];
+			$this->db->table_column_change($table_name, $columns[0] . '_id', $this->_convert_renamed_tables[$columns[0]] . '_id', 'int(11)', false, '1');
+		}
+
+		/* Update columns as they may have been modified */
+		$columns[0] = $this->_convert_renamed_tables[$columns[0]];
+
+		/* Update relationship table components */
+		$this->_table_rel_add_components('multiple', $table_name, $columns[0], $columns[1]);
+
+		/* Check if the second table reference was changed */
 		if (isset($this->_convert_renamed_tables[$columns[1]])) {
 			/* Modify table and columns */
-			$this->db->table_rename($table_name, 'rel_' . $this->_convert_renamed_tables[$columns[1]] . '_' . $columns[2]);
-			$table_name = 'rel_' . $this->_convert_renamed_tables[$columns[1]] . '_' . $columns[2];
+			$this->db->table_rename($table_name, 'rel_' . $columns[0] . '_' . $this->_convert_renamed_tables[$columns[1]]);
+			$table_name = 'rel_' . $columns[0]  . '_' . $this->_convert_renamed_tables[$columns[1]];
 			$this->db->table_column_change($table_name, $columns[1] . '_id', $this->_convert_renamed_tables[$columns[1]] . '_id', 'int(11)', false, '1');
 		}
 
 		/* Update columns as they may have been modified */
-		$columns = explode('_', $table_name);
+		$columns[1] = $this->_convert_renamed_tables[$columns[1]];
 
-		/* Check if the second table reference was changed */
-		if (isset($this->_convert_renamed_tables[$columns[2]])) {
-			/* Modify table and columns */
-			$this->db->table_rename($table_name, 'rel_' . $columns[1] . '_' . $this->_convert_renamed_tables[$columns[2]]);
-			$table_name = 'rel_' . $columns[1]  . '_' . $this->_convert_renamed_tables[$columns[2]];
-			$this->db->table_column_change($table_name, $columns[2] . '_id', $this->_convert_renamed_tables[$columns[2]] . '_id', 'int(11)', false, '1');
-		}
-
-		/* Update columns as they may have been modified */
-		$columns = explode('_', $table_name);
+		/* Update relationship table components */
+		$this->_table_rel_add_components('multiple', $table_name, $columns[0], $columns[1]);
 
 		/* Store foreign keys to be added later */
+		$this->_pp_batch_db_key_foreign_store($table_name, $columns[0] . '_id', $columns[0], 'id', true /* CASCADE DELETE */);
 		$this->_pp_batch_db_key_foreign_store($table_name, $columns[1] . '_id', $columns[1], 'id', true /* CASCADE DELETE */);
-		$this->_pp_batch_db_key_foreign_store($table_name, $columns[2] . '_id', $columns[2], 'id', true /* CASCADE DELETE */);
 
 		/* Update db_table_field of $columns[1] table */
 		$this->db->where('db_table_field', $old_table_name);
-		$this->db->where('db_table', $columns[1]);
+		$this->db->where('db_table', $columns[0]);
 		$this->db->where('is_field', true);
 		$this->db->update('model_objects', array('db_table_field' => $table_name));
 
@@ -564,17 +636,23 @@ class UW_Application extends UW_Model {
 	}
 
 	private function _special_table_create_rel($table_name) {
-		$columns = explode('_', $table_name);
+		/* Fetch relationship table components */
+		$columns = $this->_table_rel_get_components('multiple', $table_name);
+
+		if (!$columns) {
+			error_log('_special_table_create_rel(): Unable to retrieve relationship table components.');
+			return false;
+		}
 
 		/* Create table and first field */
-		$this->db->table_create($table_name, $columns[1] . '_id', 'int(11)', false, false, false);
+		$this->db->table_create($table_name, $columns[0] . '_id', 'int(11)', false, false, false);
 
 		/* Create second field */
-		$this->db->table_column_create($table_name, $columns[2] . '_id', 'int(11)', false, '1');
+		$this->db->table_column_create($table_name, $columns[1] . '_id', 'int(11)', false, '1');
 
 		/* Add foreign keys */
+		$this->_pp_batch_db_key_foreign_store($table_name, $columns[0] . '_id', $columns[0], 'id', true /* CASCADE DELETE */);
 		$this->_pp_batch_db_key_foreign_store($table_name, $columns[1] . '_id', $columns[1], 'id', true /* CASCADE DELETE */);
-		$this->_pp_batch_db_key_foreign_store($table_name, $columns[2] . '_id', $columns[2], 'id', true /* CASCADE DELETE */);
 
 		/* All good */
 		return true;
@@ -587,43 +665,55 @@ class UW_Application extends UW_Model {
 
 		$old_table_name = $table_name;
 
-		$columns = explode('_', $table_name);
+		/* Fetch relationship table components */
+		$columns = $this->_table_rel_get_components('mixed', $table_name);
+
+		if (!$columns) {
+			error_log('_special_table_rebuild_mixed(): Unable to retrieve relationship table components.');
+			return false;
+		}
 
 		/* Drop foreign keys */
+		$this->db->table_key_column_foreign_drop($table_name, $columns[0] . '_id');
 		$this->db->table_key_column_foreign_drop($table_name, $columns[1] . '_id');
-		$this->db->table_key_column_foreign_drop($table_name, $columns[2] . '_id');
 
 		/* Check if the first table reference was changed */
+		if (isset($this->_convert_renamed_tables[$columns[0]])) {
+			/* Modify table and columns */
+			$this->db->table_rename($table_name, 'mixed_' . $this->_convert_renamed_tables[$columns[0]] . '_' . $columns[1]);
+			$table_name = 'mixed_' . $this->_convert_renamed_tables[$columns[0]] . '_' . $columns[1];
+			$this->db->table_column_change($table_name, $columns[0] . '_id', $this->_convert_renamed_tables[$columns[0]] . '_id', 'int(11)', false, '1');
+		}
+
+		/* Update columns as they may have been modified */
+		$columns[0] = $this->_convert_renamed_tables[$columns[0]];
+
+		/* Update relationship table components */
+		$this->_table_rel_add_components('mixed', $table_name, $columns[0], $columns[1]);
+
+		/* Check if the second table reference was changed */
 		if (isset($this->_convert_renamed_tables[$columns[1]])) {
 			/* Modify table and columns */
-			$this->db->table_rename($table_name, 'mixed_' . $this->_convert_renamed_tables[$columns[1]] . '_' . $columns[2]);
-			$table_name = 'mixed_' . $this->_convert_renamed_tables[$columns[1]] . '_' . $columns[2];
+			$this->db->table_rename($table_name, 'mixed_' . $columns[0] . '_' . $this->_convert_renamed_tables[$columns[1]]);
+			$table_name = 'mixed_' . $columns[0]  . '_' . $this->_convert_renamed_tables[$columns[1]];
 			$this->db->table_column_change($table_name, $columns[1] . '_id', $this->_convert_renamed_tables[$columns[1]] . '_id', 'int(11)', false, '1');
 		}
 
 		/* Update columns as they may have been modified */
-		$columns = explode('_', $table_name);
+		$columns[1] = $this->_convert_renamed_tables[$columns[1]];
 
-		/* Check if the second table reference was changed */
-		if (isset($this->_convert_renamed_tables[$columns[2]])) {
-			/* Modify table and columns */
-			$this->db->table_rename($table_name, 'mixed_' . $columns[1] . '_' . $this->_convert_renamed_tables[$columns[2]]);
-			$table_name = 'mixed_' . $columns[1]  . '_' . $this->_convert_renamed_tables[$columns[2]];
-			$this->db->table_column_change($table_name, $columns[2] . '_id', $this->_convert_renamed_tables[$columns[2]] . '_id', 'int(11)', false, '1');
-		}
-
-		/* Update columns as they may have been modified */
-		$columns = explode('_', $table_name);
+		/* Update relationship table components */
+		$this->_table_rel_add_components('mixed', $table_name, $columns[0], $columns[1]);
 
 		/* Store foreign keys to be added later */
+		$this->_pp_batch_db_key_foreign_store($table_name, $columns[0] . '_id', $columns[0], 'id', true /* CASCADE DELETE */);
 		$this->_pp_batch_db_key_foreign_store($table_name, $columns[1] . '_id', $columns[1], 'id', true /* CASCADE DELETE */);
-		$this->_pp_batch_db_key_foreign_store($table_name, $columns[2] . '_id', $columns[2], 'id', true /* CASCADE DELETE */);
 
 		/* Fetch the foreign table fields data */
 		$ftable_data = array();
 
 		/* Convert table description into a integer indexed array */
-		foreach ($this->db->describe_table($columns[2]) as $ftable_field) {
+		foreach ($this->db->describe_table($columns[1]) as $ftable_field) {
 			array_push($ftable_data, $ftable_field);
 		}
 
@@ -654,9 +744,9 @@ class UW_Application extends UW_Model {
 
 		/* Check if there are any fields to be changed and change them (before adding or removing any field) */
 		foreach ($mtable_data as $field) {
-			if (isset($this->_convert_changed_fields[$columns[2]]) && isset($this->_convert_changed_fields[$columns[2]][$field['name']])) {
+			if (isset($this->_convert_changed_fields[$columns[1]]) && isset($this->_convert_changed_fields[$columns[1]][$field['name']])) {
 				/* This field was changed... */
-				$field_new = $this->_convert_changed_fields[$columns[2]][$field['name']];
+				$field_new = $this->_convert_changed_fields[$columns[1]][$field['name']];
 
 				/* Check if the field name was changed */
 				if ($field_new['name'] != $field['name']) {
@@ -682,7 +772,7 @@ class UW_Application extends UW_Model {
 
 				if ($after == $ftable_data[1]['name']) {
 					/* The field is positioned right after the second column of the foreign table (so it's the 3rd field), which should be placed at the 5th column on the mixed table */
-					$after = $columns[2] . '_id'; /* 4th column of mixed table */
+					$after = $columns[1] . '_id'; /* 4th column of mixed table */
 				}
 
 				/* Change the the mixed table column */
@@ -712,7 +802,7 @@ class UW_Application extends UW_Model {
 			/* FIXME: TODO: If a users_id field is present, should we create it too in the mixed table? */
 
 			/* Compute column type */
-			$type = null;
+			$type = NULL;
 
 			if (end(explode('_', $ftable_data[$i]['name'])) == 'id') {
 				/* Single relationship fields (dropdown types) are stored as string literal on mixed tables, not by id (in order to preserve the value through time) */
@@ -744,7 +834,7 @@ class UW_Application extends UW_Model {
 				$after = 'id';
 			} else if ($i == 2) {
 				/* If this is the third field of the foreign table, move it to the 5th position of the mixed table */
-				$after = $columns[2] . '_id';
+				$after = $columns[1] . '_id';
 			} else {
 				/* Just set it to be the previous element of the array */
 				$after = $ftable_data[$i - 1]['name'];
@@ -774,7 +864,7 @@ class UW_Application extends UW_Model {
 
 		/* Update db_table_field of $columns[1] table */
 		$this->db->where('db_table_field', $old_table_name);
-		$this->db->where('db_table', $columns[1]);
+		$this->db->where('db_table', $columns[0]);
 		$this->db->where('is_field', true);
 		$this->db->update('model_objects', array('db_table_field' => $table_name));
 
@@ -783,13 +873,18 @@ class UW_Application extends UW_Model {
 	}
 
 	private function _special_table_create_mixed($table_name) {
-		/* Fetch table names */
-		$columns = explode('_', $table_name);
+		/* Fetch relationship table components */
+		$columns = $this->_table_rel_get_components('mixed', $table_name);
+
+		if (!$columns) {
+			error_log('_special_table_create_mixed(): Unable to retrieve relationship table components.');
+			return false;
+		}
 
 		$ftable_data = array();
 
 		/* Convert table description into a integer indexed array */
-		foreach ($this->db->describe_table($columns[2]) as $ftable_field) {
+		foreach ($this->db->describe_table($columns[1]) as $ftable_field) {
 			array_push($ftable_data, $ftable_field);
 		}
 
@@ -817,15 +912,15 @@ class UW_Application extends UW_Model {
 		}
 
 		$this->db->table_column_create($table_name, $ftable_data[1]['name'], $ftable_data[1]['type'] . '(' . $ftable_data[1]['max_length'] . ')', $ftable_data[1]['null'], $default);
+		$this->db->table_column_create($table_name, $columns[0] . '_id', 'int(11)', false, '1');
 		$this->db->table_column_create($table_name, $columns[1] . '_id', 'int(11)', false, '1');
-		$this->db->table_column_create($table_name, $columns[2] . '_id', 'int(11)', false, '1');
 
 		/* Replicate the remaining fields from the foreign table... */
 		for ($i = 2; $i < count($ftable_data); $i ++) {
 			/* FIXME: TODO: If a users_id field is present, should we create it too in the mixed table? */
 
 			/* Compute column type */
-			$type = null;
+			$type = NULL;
 
 			if (end(explode('_', $ftable_data[$i]['name'])) == 'id') {
 				/* Single relationship fields (dropdown types) are stored as string literals on mixed tables, not by id (in order to preserve the value through time) */
@@ -854,8 +949,8 @@ class UW_Application extends UW_Model {
 		}
 
 		/* Add foreign keys */
+		$this->_pp_batch_db_key_foreign_store($table_name, $columns[0] . '_id', $columns[0], 'id', true /* CASCADE DELETE */);
 		$this->_pp_batch_db_key_foreign_store($table_name, $columns[1] . '_id', $columns[1], 'id', true /* CASCADE DELETE */);
-		$this->_pp_batch_db_key_foreign_store($table_name, $columns[2] . '_id', $columns[2], 'id', true /* CASCADE DELETE */);
 
 		/* All good */
 		return true;
@@ -1068,14 +1163,18 @@ class UW_Application extends UW_Model {
 
 		/* Insert menu fields help */
 		foreach ($menu['fields'] as $field) {
-			if (isset($field['properties']['help']) || isset($field['properties']['units']) || isset($field['properties']['input_pattern'])) {
+			if (isset($field['properties']['help']) || isset($field['properties']['units']) || isset($field['properties']['input_pattern']) || isset($field['properties']['placeholder'])) {
 				$help_desc = '';
+				$placeholder = NULL;
 				$field_units = '';
 				$units_on_left = false;
 				$input_pattern = NULL;
 
 				if (isset($field['properties']['help']))
 					$help_desc = $field['properties']['help'];
+
+				if (isset($field['properties']['placeholder']))
+					$placeholder = $field['properties']['placeholder'];
 
 				if (isset($field['properties']['units']))
 					$field_units = $field['properties']['units'];
@@ -1086,10 +1185,11 @@ class UW_Application extends UW_Model {
 				if (isset($field['properties']['input_pattern']))
 					$input_pattern = $field['properties']['input_pattern'];
 
-				if ($help_desc || $field_units || $input_pattern) {
+				if ($help_desc || $placeholder || $field_units || $input_pattern) {
 					$this->db->insert('_help_tfhd', array(
 						'table_name' => $menu['db']['name'],
 						'field_name' => $field['db']['name'],
+						'placeholder' => $placeholder,
 						'field_units' => $field_units,
 						'units_on_left' => $units_on_left,
 						'input_pattern' => $input_pattern,
@@ -1718,8 +1818,26 @@ class UW_Application extends UW_Model {
 			case 'timer'	: return '_timer_' . str_replace(' ', '_', strtolower($field['name']));
 			case 'separator': return '_separator_' . str_replace(' ', '_', strtolower($field['name']));
 			case 'dropdown'	: return str_replace(' ', '_', strtolower($field['name'])) . '_id';
-			case 'multiple'	: return 'rel_' . $table . '_' . str_replace(' ', '_', strtolower($field['name']));
-			case 'mixed'	: return 'mixed_' . $table . '_' . str_replace(' ', '_', strtolower($field['name']));
+			case 'multiple'	: {
+				/* Craft relationship table name */
+				$rtable = 'rel_' . $table . '_' . str_replace(' ', '_', strtolower($field['name']));
+
+				/* Store the components of the relationship table for future reference */
+				$this->_table_rel_add_components('multiple', $rtable, $table, str_replace(' ', '_', strtolower($field['name'])));
+
+				/* Return the relationship table name */
+				return $rtable;
+			} break;
+			case 'mixed'	: {
+				/* Craft relationship table name */
+				$rtable = 'mixed_' . $table . '_' . str_replace(' ', '_', strtolower($field['name']));
+
+				/* Store the components of the relationship table for future reference */
+				$this->_table_rel_add_components('mixed', $rtable, $table, str_replace(' ', '_', strtolower($field['name'])));
+
+				/* Return the relationship table name */
+				return $rtable;
+			} break;
 		}
 
 		/* multiple and mixed are not fields but special tables, so they'll have special treatment later in _process_menu_fields() */
@@ -1867,8 +1985,8 @@ class UW_Application extends UW_Model {
 				$app_model['menus'][$i]['fields'][$j]['db']['is_unique'] = $this->_field_is_unique($app_model['menus'][$i]['fields'][$j]);
 
 				/* FIXME: TODO: Set the default value */
-				if (isset($app_model['menus'][$i]['fields'][$j]['properties']['placeholder']) && $app_model['menus'][$i]['fields'][$j]['properties']['placeholder']) {
-					$app_model['menus'][$i]['fields'][$j]['db']['default'] = $app_model['menus'][$i]['fields'][$j]['properties']['placeholder'];
+				if (isset($app_model['menus'][$i]['fields'][$j]['properties']['default_value']) && $app_model['menus'][$i]['fields'][$j]['properties']['default_value']) {
+					$app_model['menus'][$i]['fields'][$j]['db']['default'] = $app_model['menus'][$i]['fields'][$j]['properties']['default_value'];
 
 					/* If the field isn't of type integer, the default value must be quoted */
 					if (!strpos($app_model['menus'][$i]['fields'][$j]['db']['type'], 'int'))

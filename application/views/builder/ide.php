@@ -307,8 +307,12 @@
 													<td class="properties_table_field_value"><input id="property_alias" type="text" placeholder="Default" value="<?=filter_html($field_item['properties']['alias'], $config['charset'])?>" /></td>
 												</tr>
 												<tr class="properties_table_row">
+													<td class="properties_table_field_title">Default Value</td>
+													<td class="properties_table_field_value"><input id="property_default_value" type="text" placeholder="Default field value..." value="<?=filter_html($field_item['properties']['default_value'], $config['charset'])?>" /></td>
+												</tr>
+												<tr class="properties_table_row">
 													<td class="properties_table_field_title">Placeholder</td>
-													<td class="properties_table_field_value"><input id="property_placeholder" type="text" placeholder="Default field value..." value="<?=filter_html($field_item['properties']['placeholder'], $config['charset'])?>" /></td>
+													<td class="properties_table_field_value"><input id="property_placeholder" type="text" placeholder="Input placeholder value..." value="<?=filter_html($field_item['properties']['placeholder'], $config['charset'])?>" /></td>
 												</tr>
 												<tr class="properties_table_row">
 													<td class="properties_table_field_title">Length</td>
@@ -544,8 +548,12 @@
 					<td class="properties_table_field_value"><input id="property_alias" type="text" placeholder="Default" /></td>
 				</tr>
 				<tr class="properties_table_row">
+					<td class="properties_table_field_title">Default Value</td>
+					<td class="properties_table_field_value"><input id="property_default_value" type="text" placeholder="Default field value..." /></td>
+				</tr>
+				<tr class="properties_table_row">
 					<td class="properties_table_field_title">Placeholder</td>
-					<td class="properties_table_field_value"><input id="property_placeholder" type="text" placeholder="Default field value..." /></td>
+					<td class="properties_table_field_value"><input id="property_placeholder" type="text" placeholder="Input placeholder value..." /></td>
 				</tr>
 				<tr class="properties_table_row">
 					<td class="properties_table_field_title">Length</td>

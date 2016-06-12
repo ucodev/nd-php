@@ -309,6 +309,7 @@ define('NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK',	'Unable match a relationship 
 define('NDPHP_LANG_MOD_UNABLE_MATCH_CSV_FIELD_CTRL','Unable to match CSV header field name with any of the controller fields.');
 define('NDPHP_LANG_MOD_UNABLE_UPGRADE_SUBSCRIPTION','Unable to perform Subscription Upgrade.');
 define('NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS','Unable to fetch critical data from the database.');
+define('NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD','Unable to find the mixed relationship table assign to the current field being processed');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');

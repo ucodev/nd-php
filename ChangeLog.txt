@@ -1,3 +1,14 @@
+v0.01o (2016-06-12):
+
+ - Submit event caused by keycode 13 on create and edit form is now properly handled with AJAX.
+ - Multiple and Mixed relationship tables are now allowed to contain '_' characters in their names without breaking the ORM.
+ - IDE Builder now correctly validate impossible ORM relationships (such as multiple relationships pointing to their own controller).
+ - Minor fixes on mixed create and edit views.
+ - Added support for independent default value and placeholder values under IDE fields' properties.
+ - Updated documentation/3rd_party.txt file.
+ - Updated install/languages/en_US.php language file.
+
+
 v0.01n (2016-06-09):
 
  - Another minor fix on input pattern handling (IDE).

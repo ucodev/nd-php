@@ -41,6 +41,7 @@
  *
  * TODO:
  *
+ * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
  * * [IN_PROGRESS] Database Sharding (per user)
@@ -66,7 +67,6 @@
  * - Password recovery should be performed via a recovery form and not by sending a new password via email.
  * - CSV export support on view_generic() is missing.
  * - Javascript Library with ajax calls to fetch data from the controllers in order to integrate and populate a third-party/detached website with the framework.
- * - [SHOULD?] On all submit(able) forms, 'Enter' (key code 13) should trigger the submit (CRUD).
  * - Implement Dashboards (Imports of other views, including charts, to a Dashboard view).
  * - Add imagemap to charts (pChart imagemap).
  * - Add export support for grouping views.
@@ -80,6 +80,7 @@
  *
  * FIXME:
  *
+ * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
  * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
  * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
@@ -92,7 +93,6 @@
  * * Paypal payments interface is outdated.
  * - Charts under results view do not reflect the searched data (Should they?).
  * - [REQUIRED?] mixed relationships _tc_ fields are not being converted (if datetime) to/from user timezone.
- * - [WONT_FIX] The first table name of multiple relationship table names cannot have underscores (_).
  *
  *
  */
@@ -3149,6 +3149,35 @@ class ND_Controller extends UW_Controller {
 		return $this->features->get_features();
 	}
 
+	private function _get_rel_table_names($rel, $target = NULL, $mixed = false) {
+		if ($target === NULL)
+			$target = $this->_name;
+
+		if (!strpos($rel, $target))
+			return array();
+
+		$foreign_table_raw = str_replace($target, '', substr($rel, $mixed ? 6 : 4));
+
+		/* After removing the $target table name from the string, the remaining starts with '_', then
+		 * that foreign table was positioned at the end of the relationship table name.
+		 */
+		if ($foreign_table_raw[0] == '_') {
+			return array($target, trim($foreign_table_raw, '_'));
+		} else {
+			return array(trim($foreign_table_raw, '_'), $target);
+		}
+
+		return NULL;
+	}
+
+	private function _get_multiple_rel_table_names($rel, $target = NULL) {
+		return $this->_get_rel_table_names($rel, $target, false);
+	}
+
+	private function _get_mixed_rel_table_names($rel, $target = NULL) {
+		return $this->_get_rel_table_names($rel, $target, true);
+	}
+
 	protected function _get_relative_tables($target = NULL, $type = 'multiple') {
 		/* If no target was set, assume this controller table as default */
 		if (!$target)
@@ -3173,15 +3202,17 @@ class ND_Controller extends UW_Controller {
 		foreach ($query->result_array() as $field => $value) {
 			foreach ($value as $header => $table) {
 				if (substr($table, 0, strlen($prefix)) == $prefix) {
-					$slices = explode('_', $table);
-
 					/* If $type is multiple, any of the slices that match $target is a relationship */
 					if ($type == 'multiple') {
-						if ($slices[1] == $target || $slices[2] == $target)
+						$slices = $this->_get_multiple_rel_table_names($table, $target);
+
+						if ($slices[0] == $target || $slices[1] == $target)
 							array_push($relative, $table);
 					} else if ($type == 'mixed') {
+						$slices = $this->_get_mixed_rel_table_names($table, $target);
+
 						/* If the $type is mixed, only $slice[1] matches is considered a relationship */
-						if ($slices[1] == $target)
+						if ($slices[0] == $target)
 							array_push($relative, $table);
 					}
 				}
@@ -3304,7 +3335,7 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_field_help_desc($table, $field) {
-		$this->db->select('field_units,units_on_left,input_pattern,help_description,help_url');
+		$this->db->select('placeholder,field_units,units_on_left,input_pattern,help_description,help_url');
 		$this->db->from('_help_tfhd');
 		$this->db->where('table_name', $table);
 		$this->db->where('field_name', $field);
@@ -3396,6 +3427,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Get field help, if exists */
 			$help_data = $this->_get_field_help_desc($target, $field['name']);
+			$fields[$field['name']]['placeholder'] = $help_data['placeholder'];
 			$fields[$field['name']]['units'] = array();
 			$fields[$field['name']]['units']['unit'] = $help_data['field_units'];
 			$fields[$field['name']]['units']['left'] = $help_data['units_on_left'];
@@ -3527,21 +3559,14 @@ class ND_Controller extends UW_Controller {
 				if ((substr($table, 0, 4) != 'rel_'))
 					continue;
 
-				$rel_tables = explode('_', substr($table, 4));
-
-				/* Ignore relationships not belonging to the current table */
-				if (!(in_array($target, $rel_tables)))
-					continue;
-
-				/* Remove the current table from the relationship array */
-				$rel_tables = array_diff($rel_tables, array($target));
+				$rel_tables = array_diff($this->_get_multiple_rel_table_names($table, $target), array($target));
 
 				foreach ($rel_tables as $rel) {
 					/* Security check */
 					if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel))
 						continue;
 
-					if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $target, $table /* NOTE: $table is the field name: mixed_<t1>_<ft2> */))
+					if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $target, $table /* NOTE: $table is the field name: rel_<t1>_<ft2> */))
 						continue;
 
 					$table_fields = $this->db->list_fields($rel);
@@ -3649,7 +3674,7 @@ class ND_Controller extends UW_Controller {
 				if (substr($table, 0, 6) != 'mixed_')
 					continue;
 
-				$rel_tables = explode('_', substr($table, 6));
+				$rel_tables = $this->_get_mixed_rel_table_names($table, $target);
 				
 				/* Check mixed relationship precedence */
 				if ($rel_tables[0] != $target) {
@@ -3805,7 +3830,7 @@ class ND_Controller extends UW_Controller {
 				if (substr($table, 0, 6) != 'mixed_')
 					continue;
 
-				$slices = explode('_', substr($table, 6));
+				$slices = $this->_get_mixed_rel_table_names($table, $origin);
 
 				if (($slices[0] != $origin) || ($slices[1] != $mixed_table))
 					continue;
@@ -4129,7 +4154,7 @@ class ND_Controller extends UW_Controller {
 				if (substr($table, 0, 4) != 'rel_')
 					continue;
 
-				$rel_tables = array_slice(explode('_', $table), 1);
+				$rel_tables = $this->_get_multiple_rel_table_names($table, $this->_name);
 
 				$group = array();
 
@@ -4786,6 +4811,8 @@ class ND_Controller extends UW_Controller {
 
 			/* Populate entry data */
 			for ($i = 0; $i < count($header); $i ++) {
+				/* FIXME: TODO: Missing mixed relationships */
+
 				if (substr($header[$i], 0, 4) == 'rel_') {
 					/* Split $row[$i], fetch id's from foreign table, and populate $rel array */
 					
@@ -4793,7 +4820,7 @@ class ND_Controller extends UW_Controller {
 					$rel_values = explode($this->_group_concat_sep, $row[$i]);
 
 					/* Get foreign table name */
-					$foreign_table = implode('_', array_slice(explode('_', $header[$i]), 2));
+					$foreign_table = array_pop(array_diff($this->_get_multiple_rel_table_names($header[$i], $this->_name), array($this->_name)));
 
 					/* Get foreign table fields list */
 					$ftable_fields = $this->db->list_fields($foreign_table);
@@ -4934,7 +4961,7 @@ class ND_Controller extends UW_Controller {
 				foreach ($rel[$rel_table] as $fid) {
 					$this->db->insert($rel_table, array(
 						$this->_name . '_id' => $last_id,
-						implode('_', array_slice(explode('_', $rel_table), 2)) . '_id' => $fid
+						array_pop(array_diff($this->_get_multiple_rel_table_names($header[$i], $this->_name), array($this->_name))) . '_id' => $fid
 					));
 				}
 			}
@@ -5255,12 +5282,12 @@ class ND_Controller extends UW_Controller {
 						if ($mixed_field == ($this->_name . '_id'))
 							continue;
 
-						/* Ignore single relationship field referencing to foreign table */
-						if ($mixed_field == (end(explode('_', $field)) . '_id'))
-							continue;
-
 						/* Get the mixed foreign table */
-						$mixed_foreign_table = implode('_', array_slice(explode('_', $field), 2));
+						$mixed_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($field, $this->_name), array($this->_name)));
+
+						/* Ignore single relationship field referencing to foreign table */
+						if ($mixed_field == ($mixed_foreign_table . '_id'))
+							continue;
 
 						/* Check if we've permissions to read the foreign field on the foreign table */
 						if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $mixed_foreign_table, $mixed_field))
@@ -5462,15 +5489,15 @@ class ND_Controller extends UW_Controller {
 						if ($mixed_field == ($this->_name . '_id'))
 							continue;
 
+						/* Get the mixed foreign table */
+						$mixed_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($field, $this->_name), array($this->_name)));
+
 						/* Ignore single relationship field referencing to foreign table */
-						if ($mixed_field == (end(explode('_', $field)) . '_id'))
+						if ($mixed_field == ($mixed_foreign_table . '_id'))
 							continue;
 
 						/* FIXME: #1: Currently we only support string matching (partial date and datetime values are not yet implemented) */
 						/* FIXME: #2: "Different than" option for mixed searches is is bugged (due to the enclosure hack) and shall not be used as it'll return incorrect results */
-
-						/* Get the mixed foreign table */
-						$mixed_foreign_table = implode('_', array_slice(explode('_', $field), 2));
 
 						/* Check if we've permissions to read the foreign field on the foreign table */
 						if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $mixed_foreign_table, $mixed_field))
@@ -6482,32 +6509,41 @@ class ND_Controller extends UW_Controller {
 				 * We'll first evaluate the $field contents for these exceptions before applying the default parser.
 				 *
 				 */
-				if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
-					$p = explode('_', substr($field, 6));
-					$mixed_field[0] = $p[0];
-					$mixed_field[1] = '_' . implode('_', array_slice($p, 2, count($p) - 3));
-					$mixed_field[2] = $p[count($p) - 1];
-				} else {
-					$mixed_field = explode('_', substr($field, 6));
-					
-					if (count($mixed_field) > 3) {
-						/* NOTE: Datetime fields are split into 2 fields. The field name containing the time part is the field name
-						 * itself suffixed with '_time'.
-						 * So, for a mixed field name called 'mixed_born_1', the field name itself contains the date part and the
-						 * time part is stored in the the field called 'mixed_born_1_time'. 
-						 */
-						if ($mixed_field[count($mixed_field) - 1] == 'time') {
-							/* Implode field slice to allow fields with '_' chars */
-							$mixed_field[1] = implode('_', array_slice($mixed_field, 1, count($mixed_field) - 3)) . '_time';
-							/* Reassign mixed id */
-							$mixed_field[2] = $mixed_field[count($mixed_field) - 2];
-						} else {
-							/* Implode field slice to allow fields with '_' chars */
-							$mixed_field[1] = implode('_', array_slice($mixed_field, 1, count($mixed_field) - 2));
-							/* Reassign mixed id */
-							$mixed_field[2] = $mixed_field[count($mixed_field) - 1];
-						}
+
+				/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
+				 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
+				 * mixed_<table>_<field>_<mixed id> ...
+				 *
+				 * Probably this won't be fixed in a near future, but should be well documented.
+				 */
+
+				/* Get foreign table name from $field */
+				$mixed_foreign_table = NULL;
+
+				foreach ($this->_get_relative_tables($this->_name, 'mixed') as $mixed_rel_table) {
+					$mixed_rel_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($mixed_rel_table, $this->_name), array($this->_name)));
+
+					/* Check if the field prefix matches the foreign table name */
+					if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
+						$mixed_foreign_table = $mixed_rel_foreign_table;
+						break;
 					}
+				}
+
+				/* If the table cannot be found, we cannot proceed */
+				if ($mixed_foreign_table === NULL) {
+					header('HTTP/1.1 500 Internal Server Error');
+					die(NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field);
+				}
+
+				/* Retrieve table, field and mixed id */
+				$mixed_field[0] = $mixed_foreign_table;
+				$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
+				$mixed_field[2] = end(explode('_', $field));
+
+				/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
+				if (preg_match('/^mixed_[a-zA-Z0-9\_]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9\_]+__timer_.+$/i', $field)) {
+					$mixed_field[1] = '_' . $mixed_field[1];
 				}
 
 				/* 
@@ -6632,8 +6668,7 @@ class ND_Controller extends UW_Controller {
 		if ($rel) {
 			foreach ($rel as $table => $value) {
 				/* Retrieve the relationship table */
-				$rel_tables = explode('_', substr($table, 4));
-				$rel_table = array_pop(array_diff($rel_tables, array($this->_name)));
+				$rel_table = array_pop(array_diff($this->_get_multiple_rel_table_names($table, $this->_name), array($this->_name)));
 
 				/* Security Permissions Check */
 				if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel_table))
@@ -7631,32 +7666,40 @@ class ND_Controller extends UW_Controller {
 				 *
 				 */
 
-				if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
-					$p = explode('_', substr($field, 6));
-					$mixed_field[0] = $p[0];
-					$mixed_field[1] = '_' . implode('_', array_slice($p, 2, count($p) - 3));
-					$mixed_field[2] = $p[count($p) - 1];
-				} else {
-					$mixed_field = explode('_', substr($field, 6));
-					
-					if (count($mixed_field) > 3) {
-						/* NOTE: Datetime fields are split into 2 fields. The field name containing the time part is the field name
-						 * itself suffixed with '_time'.
-						 * So, for a mixed field name called 'mixed_born_1', the field name itself contains the date part and the
-						 * time part is stored in the the field called 'mixed_born_1_time'. 
-						 */
-						if ($mixed_field[count($mixed_field) - 1] == 'time') {
-							/* Implode field slice to allow fields with '_' chars */
-							$mixed_field[1] = implode('_', array_slice($mixed_field, 1, count($mixed_field) - 3)) . '_time';
-							/* Reassign mixed id */
-							$mixed_field[2] = $mixed_field[count($mixed_field) - 2];
-						} else {
-							/* Implode field slice to allow fields with delete('_' chars */
-							$mixed_field[1] = implode('_', array_slice($mixed_field, 1, count($mixed_field) - 2));
-							/* Reassign mixed id */
-							$mixed_field[2] = $mixed_field[count($mixed_field) - 1];
-						}
+				/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
+				 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
+				 * mixed_<table>_<field>_<mixed id> ...
+				 *
+				 * Probably this won't be fixed in a near future, but should be well documented.
+				 */
+
+				/* Get foreign table name from $field */
+				$mixed_foreign_table = NULL;
+
+				foreach ($this->_get_relative_tables($this->_name, 'mixed') as $mixed_rel_table) {
+					$mixed_rel_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($mixed_rel_table, $this->_name), array($this->_name)));
+
+					/* Check if the field prefix matches the foreign table name */
+					if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
+						$mixed_foreign_table = $mixed_rel_foreign_table;
+						break;
 					}
+				}
+
+				/* If the table cannot be found, we cannot proceed */
+				if ($mixed_foreign_table === NULL) {
+					header('HTTP/1.1 500 Internal Server Error');
+					die(NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field);
+				}
+
+				/* Retrieve table, field and mixed id */
+				$mixed_field[0] = $mixed_foreign_table;
+				$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
+				$mixed_field[2] = end(explode('_', $field));
+
+				/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
+				if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
+					$mixed_field[1] = '_' . $mixed_field[1];
 				}
 
 				/* 
@@ -7699,8 +7742,7 @@ class ND_Controller extends UW_Controller {
 			$table = $field;
 
 			/* Retrieve the relationship table */
-			$rel_tables = explode('_', substr($table, 4));
-			$rel_table = array_pop(array_diff($rel_tables, array($this->_name)));
+			$rel_table = array_pop(array_diff($this->_get_multiple_rel_table_names($table, $this->_name), array($this->_name)));
 
 			/* Security Permissions Check (READ) -- We must be able to read the foreign table... */
 			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel_table))

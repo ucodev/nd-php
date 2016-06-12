@@ -213,7 +213,7 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
         case 'id':
         case 'users_id': alert('Reserved field name used on field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".'); return false;
         case 'field name': alert('No name was set on field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".'); return false;
-        case 'menu link': alert('No link was set on field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".'); return false;
+        case 'controller link': alert('No link was set on field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".'); return false;
     }
 
     /* Check for name collisions */
@@ -233,6 +233,18 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
         alert('Name collision detected on field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".');
         return false;
     }
+
+    /* Check for relationship inconsistencies */
+    if (field['title'] == 'Drop-Down' || field['title'] == 'Multiple' || field['title'] == 'Mixed') {
+        if (field['name'] == menu['name']) {
+            alert('A relationship field cannot point to its own menu controller: "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".');
+            return false;
+        }
+    }
+
+    /* TODO: FIXME: Also check for duplicate Multiple and Mixed relationships that will generate similar relationship tables
+     *              if created under diferent controllers but pointing to the same place.
+     */
 
     /* Validate the field length value */
     if ('properties' in field && field['properties']['len']) {
@@ -265,8 +277,8 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
     /* If this is a required field, validate if the placeholder is of the right type */
     if ('constraints' in field && field['constraints']['required']) {
         /* If this is a required field and no placeholder is set, it will cause an error on data model... */
-        if (!field['properties']['placeholder'].length) {
-            alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" was set as required, but no placeholder was defined.');
+        if (!field['properties']['default_value'].length) {
+            alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" was set as required, but no default value was defined.');
             return false;
         }
 
@@ -280,8 +292,8 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
             case 'Numeric': {
                 var pat = /(^\d+$|^\d+\.\d+$)/;
 
-                if (!pat.test(field['properties']['placeholder'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its placeholder for the Numeric type (integer or float expected).');
+                if (!pat.test(field['properties']['default_value'])) {
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Numeric type (integer or float expected).');
                     return false;
                 }
             } break;
@@ -289,32 +301,32 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
             case 'Time': {
                 var pat = /(^\d{1,2}:\d{1,2}$|^\d{1,2}:\d{1,2}:\d{1,2}$)/;
 
-                if (!pat.test(field['properties']['placeholder'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its placeholder for the Time type (HH:MM:SS expected).');
+                if (!pat.test(field['properties']['default_value'])) {
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Time type (HH:MM:SS expected).');
                     return false;
                 }
             } break;
             case 'Date': {
                 var pat = /^\d{4,4}-\d{2,2}-\d{2,2}$/;
 
-                if (!pat.test(field['properties']['placeholder'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its placeholder for the Date type (YYYY-MM-DD expected).');
+                if (!pat.test(field['properties']['default_value'])) {
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Date type (YYYY-MM-DD expected).');
                     return false;
                 }
             } break;
             case 'Date &amp; Time': {
                 var pat = /^\d{4,4}-\d{2,2}-\d{2,2} \d{1,2}:\d{1,2}:\d{1,2}$/;
 
-                if (!pat.test(field['properties']['placeholder'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its placeholder for the Date & Time type (YYYY-MM-DD HH:MM:SS expected).');
+                if (!pat.test(field['properties']['default_value'])) {
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Date & Time type (YYYY-MM-DD HH:MM:SS expected).');
                     return false;
                 }
             } break;
             case 'Drop-Down': {
                 var pat = /^\d+$/i;
 
-                if (!pat.test(field['properties']['placeholder'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its placeholder for the Drop-Down type (integer expected).');
+                if (!pat.test(field['properties']['default_value'])) {
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Drop-Down type (integer expected).');
                     return false;
                 }
             } break;
@@ -762,6 +774,7 @@ ndphp.ide.build = function(check, save, build) {
                 /** Properties **/
                 field['properties'] = {};
                 field['properties']['alias'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_alias').val();
+                field['properties']['default_value'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_default_value').val();
                 field['properties']['placeholder'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_placeholder').val();
                 field['properties']['len'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_length').val();
                 field['properties']['input_pattern'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #property_input_pattern').val();

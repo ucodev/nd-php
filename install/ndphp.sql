@@ -83,6 +83,7 @@ CREATE TABLE `_help_tfhd` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `table_name` varchar(64) NOT NULL,
   `field_name` varchar(64) DEFAULT NULL,
+  `placeholder` varchar(128) DEFAULT NULL,
   `field_units` varchar(32) DEFAULT NULL,
   `units_on_left` tinyint(1) DEFAULT '0',
   `input_pattern` varchar(256) DEFAULT NULL,

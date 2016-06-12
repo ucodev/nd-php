@@ -1,7 +1,7 @@
 <?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
 
 /* Session settings */
-$session['enable']		= true;
+$session['enable']		= false;
 $session['name']		= 'ndphp_installation';
 $session['encrypt']		= true;
 $session['cookie_lifetime']	= 7200;
