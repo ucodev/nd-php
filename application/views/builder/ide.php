@@ -128,7 +128,7 @@
 			</div>
 			<div id="obj_fields_entry_f" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="dropdown" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Drop-Down field types will generate a HTML select box. The contents of the select box will be filled with the data beloging to the table of the controller linked to this field. To link a controller to a Drop-Down field, drag a controller entry from the Controllers container and drop it over this field under the Fields container.">Drop-Down</span><br />
+				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Drop-Down field types will generate a HTML select box. The contents of the select box will be filled with the data belonging to the table of the controller linked to this field. To link a controller to a Drop-Down field, drag a controller entry from the Controllers container and drop it over this field under the Fields container.">Drop-Down</span><br />
 				<span id="name">controller link</span>
 			</div>
 			<div id="obj_fields_entry_g" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">

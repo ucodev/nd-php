@@ -1,3 +1,12 @@
+v0.01p (2016-06-13):
+
+ - Fixed IDE issues when renaming controllers assigned to mixed and/or multiple relationship fields.
+ - Improved IDE validations over the application model regarding relationships.
+ - Improved the schema migration process.
+ - Typo fix on IDE Builder tooltips.
+ - Minor changes on core controllers.
+
+
 v0.01o (2016-06-12):
 
  - Submit event caused by keycode 13 on create and edit form is now properly handled with AJAX.

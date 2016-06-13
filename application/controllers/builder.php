@@ -34,16 +34,13 @@
  * TODO:
  *
  * - Change field and menu entry types (Currently we need to remove them and add them again as a new type, losing all the data for that field).
- * - Droping a non-instantiated pool object over an instantiated object the same family shall change the latest type/title (with confirmation dialog).
- * - Multiple typed objects do not support changes (cannot link to a table if already linked).
- * - Mixed typed objects do not support changes (cannot link to a table if already linked).
+ * - Droping a non-instantiated pool object over an instantiated object of the same family shall change the latest type/title (with confirmation dialog).
  * - Relational field name aliases (such as Mixed relationship fields) are not being processed (no rel_table_config is being set on the controller with the aliases for that table).
  * - Download button to export ndmodel (application model in JSON format)
  * - Download button to export nddata (table dump in JSON format)
  * - Import button to import ndmodel (application model in JSON format)
  * - Import button to import nddata (table dump in JSON format)
  * - [IN PROGRESS] A lot of javascript validations are missing:
- *  * Grant that any reference set on relational fields (dropdown, multiple and mixed) really exists (menu may be removed or renamed).
  *  * Validate all data input with regex (including constraints, properties, etc either on menu and field objects).
  *  * Multiple relationship field objects shall be replicated to the foreign table, or ignored from the foreign table if the user replicated them (Choose one...)
  *  * Check for reserved prefixes for menu: rel_ and mixed_
@@ -51,7 +48,6 @@
  *  * Check for reserved suffixes on fields: _id, _time
  * - Field 'Hidden' constraint must go.
  * - IDE Builder view should contain a link to open the webapp (in a new tab).
- * - When a menu entry is renamed, the associated permissions and help descriptions/links are not being removed.
  * * Add context-menu insert options on Controller code edition (to insert templates for hooks, charts, etc.).
  * * When a table is renamed containing _file_* fields and is referenced as mixed, the uploads/ directory must be changed to keep the integrity of uploaded files links.
  * * When sharding is enabled, all the databases need to be updated, not just the default database.

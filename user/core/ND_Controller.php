@@ -2581,7 +2581,7 @@ class ND_Controller extends UW_Controller {
 			if ($this->db->trans_status() === false) {
 				$this->db->trans_rollback();
 
-				error_log('_scheduler_exec_entries(): Failed to execute scheduled entry: ' . $entry['id']);
+				error_log('_scheduler_exec_queued_entries(): Failed to execute scheduled entry: ' . $entry['id']);
 			}
 
 			/* Commit transaction */
@@ -3161,13 +3161,7 @@ class ND_Controller extends UW_Controller {
 		/* After removing the $target table name from the string, the remaining starts with '_', then
 		 * that foreign table was positioned at the end of the relationship table name.
 		 */
-		if ($foreign_table_raw[0] == '_') {
-			return array($target, trim($foreign_table_raw, '_'));
-		} else {
-			return array(trim($foreign_table_raw, '_'), $target);
-		}
-
-		return NULL;
+		return ($foreign_table_raw[0] == '_') ? array($target, trim($foreign_table_raw, '_')) : array(trim($foreign_table_raw, '_'), $target);
 	}
 
 	private function _get_multiple_rel_table_names($rel, $target = NULL) {

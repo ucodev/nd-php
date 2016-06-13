@@ -250,12 +250,13 @@ class UW_Application extends UW_Model {
 		));
 	}
 
-	private function _pp_batch_db_special_table_store($table, $type, $op = 'create') {
+	private function _pp_batch_db_special_table_store($table, $type, $op = 'create', $parent_table = NULL) {
 		/* Stores a table name and type to be created/commited by _batch_db_commit() */
 		array_push($this->_pp_batch_db_special_tables, array(
 			'name' => $table,
 			'type' => $type,
-			'op' => $op /* $op may assume 'create' or 'rebuild' */
+			'op' => $op, /* $op may assume 'create' or 'rebuild' */
+			'parent_table' => $parent_table
 		));
 	}
 
@@ -264,21 +265,25 @@ class UW_Application extends UW_Model {
 		foreach ($this->_pp_batch_db_special_tables as $table) {
 			if ($table['type'] == 'multiple') {
 				if ($table['op'] == 'create') {
-					$this->_special_table_create_rel($table['name']);
+					if (!$this->_special_table_create_rel($table['name']))
+						return false;
 				} else if ($table['op'] == 'rebuild') {
-					$this->_special_table_rebuild_rel($table['name']);
+					if (!$this->_special_table_rebuild_rel($table['name'], $table['parent_table']))
+						return false;
 				}
 			} else if ($table['type'] == 'mixed') {
 				if ($table['op'] == 'create') {
-					$this->_special_table_create_mixed($table['name']);
+					if (!$this->_special_table_create_mixed($table['name']))
+						return false;
 				} else if ($table['op'] == 'rebuild') {
-					$this->_special_table_rebuild_mixed($table['name']);
+					if (!$this->_special_table_rebuild_mixed($table['name'], $table['parent_table']))
+						return false;
 				} else {
-					error_log('_batch_db_commit(): Unrecognized $table[\'op\']: ' . $table['op']);
+					error_log('_pp_batch_db_commit(): Unrecognized $table[\'op\']: ' . $table['op']);
 					return false;
 				}
 			} else {
-				error_log('_batch_db_commit(): Unrecognized $table[\'type\']: ' . $table['type']);
+				error_log('_pp_batch_db_commit(): Unrecognized $table[\'type\']: ' . $table['type']);
 				return false;
 			}
 		}
@@ -297,25 +302,16 @@ class UW_Application extends UW_Model {
 	/*    PARSING API   */
 	/********************/
 
-	private function _parse_rel_table_names($rel, $target = NULL, $mixed = false) {
-		if ($target === NULL)
-			$target = $this->_name;
-
-		if (!strpos($rel, $target))
+	private function _parse_rel_table_names($rel, $knowable, $mixed = false) {
+		if (!strpos($rel, $knowable))
 			return array();
 
-		$foreign_table_raw = str_replace($target, '', substr($rel, $mixed ? 6 : 4));
+		$foreign_table_raw = str_replace($knowable, '', substr($rel, $mixed ? 6 : 4));
 
 		/* After removing the $target table name from the string, if the remaining starts with '_', then
 		 * that foreign table was positioned at the end of the relationship table name.
 		 */
-		if ($foreign_table_raw[0] == '_') {
-			return array($mixed ? 'mixed' : 'rel', $target, trim($foreign_table_raw, '_'));
-		} else {
-			return array($mixed ? 'mixed' : 'rel', trim($foreign_table_raw, '_'), $target);
-		}
-
-		return NULL;
+		return ($foreign_table_raw[0] == '_') ? array($knowable, trim($foreign_table_raw, '_')) : array(trim($foreign_table_raw, '_'), $knowable);
 	}
 
 
@@ -574,7 +570,7 @@ class UW_Application extends UW_Model {
 	/*  SPECIAL TABLE API  */
 	/***********************/
 
-	private function _special_table_rebuild_rel($table_name) {
+	private function _special_table_rebuild_rel($table_name, $parent_table) {
 		/* Check if there was a change in table names and rename table and fields accordingly,
 		 * updating the corresponding foreign keys
 		 */
@@ -585,8 +581,18 @@ class UW_Application extends UW_Model {
 		$columns = $this->_table_rel_get_components('multiple', $table_name);
 
 		if (!$columns) {
-			error_log('_special_table_rebuild_rel(): Unable to retrieve relationship table components.');
-			return false;
+			/* Since we've one parent table name, we should be able to retrieve both components from it... */
+			$columns = $this->_parse_rel_table_names($table_name, $parent_table, false);
+
+			if (!$columns) {
+				/* Our hands are tied... there's still a way that may allow us to fetch both components without ambiguity,
+				 * but such method will require the analysis of the full application model, processing every controller...
+				 * If we were unable to retrieve the components based on any of the used methods, this is probably an issue
+				 * caused somewhere else and needs to be fixed there.
+				 */
+				error_log('_special_table_rebuild_rel(): Unable to retrieve relationship table components: ' . $table_name);
+				return false;
+			}
 		}
 
 		/* Drop foreign keys */
@@ -601,8 +607,9 @@ class UW_Application extends UW_Model {
 			$this->db->table_column_change($table_name, $columns[0] . '_id', $this->_convert_renamed_tables[$columns[0]] . '_id', 'int(11)', false, '1');
 		}
 
-		/* Update columns as they may have been modified */
-		$columns[0] = $this->_convert_renamed_tables[$columns[0]];
+		/* Update columns if they have been modified */
+		if (isset($this->_convert_renamed_tables[$columns[0]]))
+			$columns[0] = $this->_convert_renamed_tables[$columns[0]];
 
 		/* Update relationship table components */
 		$this->_table_rel_add_components('multiple', $table_name, $columns[0], $columns[1]);
@@ -615,8 +622,9 @@ class UW_Application extends UW_Model {
 			$this->db->table_column_change($table_name, $columns[1] . '_id', $this->_convert_renamed_tables[$columns[1]] . '_id', 'int(11)', false, '1');
 		}
 
-		/* Update columns as they may have been modified */
-		$columns[1] = $this->_convert_renamed_tables[$columns[1]];
+		/* Update columns if they have been modified */
+		if (isset($this->_convert_renamed_tables[$columns[1]]))
+			$columns[1] = $this->_convert_renamed_tables[$columns[1]];
 
 		/* Update relationship table components */
 		$this->_table_rel_add_components('multiple', $table_name, $columns[0], $columns[1]);
@@ -658,7 +666,7 @@ class UW_Application extends UW_Model {
 		return true;
 	}
 
-	private function _special_table_rebuild_mixed($table_name) {
+	private function _special_table_rebuild_mixed($table_name, $parent_table) {
 		/* Check if there was a change in table names and rename table and fields accordingly,
 		 * updating the corresponding foreign keys.
 		 */
@@ -669,8 +677,18 @@ class UW_Application extends UW_Model {
 		$columns = $this->_table_rel_get_components('mixed', $table_name);
 
 		if (!$columns) {
-			error_log('_special_table_rebuild_mixed(): Unable to retrieve relationship table components.');
-			return false;
+			/* Since we've one parent table name, we should be able to retrieve both components from it... */
+			$columns = $this->_parse_rel_table_names($table_name, $parent_table, true);
+
+			if (!$columns) {
+				/* Our hands are tied... there's still a way that may allow us to fetch both components without ambiguity,
+				 * but such method will require the analysis of the full application model, processing every controller...
+				 * If we were unable to retrieve the components based on any of the used methods, this is probably an issue
+				 * caused somewhere else and needs to be fixed there.
+				 */
+				error_log('_special_table_rebuild_mixed(): Unable to retrieve relationship table components: ' . $table_name);
+				return false;
+			}
 		}
 
 		/* Drop foreign keys */
@@ -685,8 +703,9 @@ class UW_Application extends UW_Model {
 			$this->db->table_column_change($table_name, $columns[0] . '_id', $this->_convert_renamed_tables[$columns[0]] . '_id', 'int(11)', false, '1');
 		}
 
-		/* Update columns as they may have been modified */
-		$columns[0] = $this->_convert_renamed_tables[$columns[0]];
+		/* Update columns if they have been modified */
+		if (isset($this->_convert_renamed_tables[$columns[0]]))
+			$columns[0] = $this->_convert_renamed_tables[$columns[0]];
 
 		/* Update relationship table components */
 		$this->_table_rel_add_components('mixed', $table_name, $columns[0], $columns[1]);
@@ -699,8 +718,9 @@ class UW_Application extends UW_Model {
 			$this->db->table_column_change($table_name, $columns[1] . '_id', $this->_convert_renamed_tables[$columns[1]] . '_id', 'int(11)', false, '1');
 		}
 
-		/* Update columns as they may have been modified */
-		$columns[1] = $this->_convert_renamed_tables[$columns[1]];
+		/* Update columns if they have been modified */
+		if (isset($this->_convert_renamed_tables[$columns[1]]))
+			$columns[1] = $this->_convert_renamed_tables[$columns[1]];
 
 		/* Update relationship table components */
 		$this->_table_rel_add_components('mixed', $table_name, $columns[0], $columns[1]);
@@ -758,7 +778,7 @@ class UW_Application extends UW_Model {
 				}
 
 				/* Compute column type */
-				$type = null;
+				$type = NULL;
 
 				if (end(explode('_', $field_new['name'])) == 'id') {
 					/* Single relationship fields (dropdown types) are stored as string literal on mixed tables, not by id (in order to preserve the value through time) */
@@ -995,14 +1015,14 @@ class UW_Application extends UW_Model {
 				 * tables may be created at this point. We need to store this operation to be
 				 * done after all tables are created.
 				 */
-				$this->_pp_batch_db_special_table_store($field_obj['db_table_field'], 'multiple', 'rebuild'); /* We need to pass the old name because it is the old table */
+				$this->_pp_batch_db_special_table_store($field_obj['db_table_field'], 'multiple', 'rebuild', $field_obj['db_table']); /* We need to pass the old name because it is the old table */
 			} else if ($field['db']['type'] == 'mixed') {
 				/* Rebuild mixed table to match the foreign table fields */
 				/* We cannot rebuild the table just yet because not all the
 				 * tables may be created at this point. We need to store this operation to be
 				 * done after all tables are created.
 				 */
-				$this->_pp_batch_db_special_table_store($field_obj['db_table_field'], 'mixed', 'rebuild'); /* We need to pass the old name because it is the old table */
+				$this->_pp_batch_db_special_table_store($field_obj['db_table_field'], 'mixed', 'rebuild', $field_obj['db_table']); /* We need to pass the old name because it is the old table */
 			}
 		} else { /* This is a common field */
 			/* Always try to remove any old unique key */

@@ -236,14 +236,18 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
 
     /* Check for relationship inconsistencies */
     if (field['title'] == 'Drop-Down' || field['title'] == 'Multiple' || field['title'] == 'Mixed') {
-        if (field['name'] == menu['name']) {
+        /* Check if the relationship is pointing to itself ... */
+        if (field['name'].toLowerCase() == menu['name'].toLowerCase()) {
             alert('A relationship field cannot point to its own menu controller: "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '".');
             return false;
         }
+
+        /* Check if the relationship is pointing to anything valid */
+
     }
 
     /* TODO: FIXME: Also check for duplicate Multiple and Mixed relationships that will generate similar relationship tables
-     *              if created under diferent controllers but pointing to the same place.
+     *              if created under diferent controllers but pointing to the same place (AKA ambiguity).
      */
 
     /* Validate the field length value */
@@ -336,6 +340,42 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
     /* All good */
     return true;
 };
+
+ndphp.ide.ide_integrity_check_application = function(application) {
+    var valid = true; /* Assume valid state */
+
+    /* Iterate over all application entries and grant that they're valid */
+    application['menus'].forEach(function(menu) {
+        menu['fields'].forEach(function(field) {
+            /* If the field type is a relationship ... */
+            if (field['title'] == 'Drop-Down' || field['title'] == 'Multiple' || field['title'] == 'Mixed') {
+                var linked = false;
+
+                /* ... grant that every relationship points to a valid controller */
+                application['menus'].forEach(function(ctrl) {
+                    if ((field['name'].toLowerCase() == ctrl['name'].toLowerCase()) && (menu['name'] != ctrl['name'])) {
+                        linked = true;
+                        return false;
+                    }
+                });
+
+                /* If the relationship field is not linked (or the link is invalid), interrupt the validation */
+                if (!linked) {
+                    alert('A field of type "' + field['title'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" does not link to a valid menu controller.');
+                    valid = false;
+                    return false;
+                }
+            }
+        });
+
+        /* Do not continue validation if the current application state is invalid */
+        if (!valid)
+            return false;
+    });
+
+    /* Return the current validation state */
+    return valid;
+}
 
 ndphp.ide.ide_obj_allow_drop = function(e) {
     e.preventDefault();
@@ -868,6 +908,11 @@ ndphp.ide.build = function(check, save, build) {
         application['menus'].push(menu);
     });
 
+    /* Perform aditional validaations over the full application model */
+    if (validated)
+        validated = ndphp.ide.ide_integrity_check_application(application);
+
+    /* Check if everything was successfully passed all validation checks */
     if (!validated) {
         alert('Application Model failed to pass integrity checks.');
         ndphp.ui.ready();
