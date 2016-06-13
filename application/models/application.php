@@ -1832,7 +1832,7 @@ class UW_Application extends UW_Model {
 		return (isset($field['properties']['len']) && $field['properties']['len']);
 	}
 
-	private function _field_name_translate_to_database($table, $field) {
+	private function _field_name_translate_to_database($menu_name, $field) {
 		switch ($field['type']) {
 			case 'file'		: return '_file_' . str_replace(' ', '_', strtolower($field['name']));
 			case 'timer'	: return '_timer_' . str_replace(' ', '_', strtolower($field['name']));
@@ -1840,20 +1840,20 @@ class UW_Application extends UW_Model {
 			case 'dropdown'	: return str_replace(' ', '_', strtolower($field['name'])) . '_id';
 			case 'multiple'	: {
 				/* Craft relationship table name */
-				$rtable = 'rel_' . $table . '_' . str_replace(' ', '_', strtolower($field['name']));
+				$rtable = 'rel_' . str_replace(' ', '_', strtolower($menu_name)) . '_' . str_replace(' ', '_', strtolower($field['name']));
 
 				/* Store the components of the relationship table for future reference */
-				$this->_table_rel_add_components('multiple', $rtable, $table, str_replace(' ', '_', strtolower($field['name'])));
+				$this->_table_rel_add_components('multiple', $rtable, str_replace(' ', '_', strtolower($menu_name)), str_replace(' ', '_', strtolower($field['name'])));
 
 				/* Return the relationship table name */
 				return $rtable;
 			} break;
 			case 'mixed'	: {
 				/* Craft relationship table name */
-				$rtable = 'mixed_' . $table . '_' . str_replace(' ', '_', strtolower($field['name']));
+				$rtable = 'mixed_' . str_replace(' ', '_', strtolower($menu_name)) . '_' . str_replace(' ', '_', strtolower($field['name']));
 
 				/* Store the components of the relationship table for future reference */
-				$this->_table_rel_add_components('mixed', $rtable, $table, str_replace(' ', '_', strtolower($field['name'])));
+				$this->_table_rel_add_components('mixed', $rtable, str_replace(' ', '_', strtolower($menu_name)), str_replace(' ', '_', strtolower($field['name'])));
 
 				/* Return the relationship table name */
 				return $rtable;
