@@ -52,6 +52,7 @@
 						<a href="#edit">Edit</a>&nbsp;
 						<a href="#view">View</a>&nbsp;
 						<a href="#remove">Remove</a>&nbsp;
+						<a href="#groups">Groups</a>&nbsp;
 						<a href="#insert">Insert</a>&nbsp;
 						<a href="#update">Update</a>&nbsp;
 						<a href="#delete">Delete</a>&nbsp;
@@ -90,7 +91,7 @@
 				</tr>
 				<tr>
 					<td><strong>Hooks</strong></td>
-					<td><a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_list">_hook_list_generic_enter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_list">_hook_list_generic_leave()</a></td>
+					<td><a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_list">_hook_list_generic_enter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_list">_hook_list_generic_filter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_list">_hook_list_generic_leave()</a></td>
 				</tr>
 				<tr>
 					<td><strong>Authentication</strong></td>
@@ -192,7 +193,7 @@
 				</tr>
 				<tr>
 					<td><strong>Hooks</strong></td>
-					<td><a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_result">_hook_result_generic_enter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_result">_hook_result_generic_leave()</a></td>
+					<td><a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_result">_hook_result_generic_enter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_result">_hook_result_generic_filter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_result">_hook_result_generic_leave()</a></td>
 				</tr>
 				<tr>
 					<td><strong>Authentication</strong></td>
@@ -465,6 +466,52 @@
 							<tr><td style="padding-left: 0px;">$id</td><td><span class="required">Required</span></td><td>The entry <i>id</i> to be removed (with confirmation step included).</td></tr>
 						</table>
 					</td>
+				</tr>
+			</table>
+		</fieldset>
+		<a name="groups"></a>
+		<fieldset>
+			<legend>GROUPS</legend>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">public</span> <span class="keyword">function</span> <span class="name api">groups</span>();<br />
+			<br />
+			<br />
+			<br />
+			<table>
+				<tr>
+					<td><strong>Description</strong></td>
+					<td><span>Loads the groups view, displaying the list of groups available for that <i>controller</i>. Groups are automatically created if relationships are found for that <i>controller</i>.</td>
+				</tr>
+				<tr>
+					<td><strong>Friendliness</strong></td>
+					<td><span class="basic">Basic</span> <span class="dim advanced">Advanced</span> <span class="dim expert">Expert</span></td>
+				</tr>
+				<tr>
+					<td><strong>REST API</strong></td>
+					<td><span class="console">N/A</td>
+				</tr>
+				<tr>
+					<td><strong>URL Usage</strong></td>
+					<td><span class="console"><?=filter_html(base_url(), $config['charset'])?>index.php/<i>controller</i>/</span><span class="name api">groups</span></td>
+				</tr>
+				<tr>
+					<td><strong>Method</strong></td>
+					<td><span class="method">GET</span></td>
+				</tr>
+				<tr>
+					<td><strong>Hooks</strong></td>
+					<td><a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_groups">_hook_groups_generic_enter()</a>, <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/hooks#views_groups">_hook_groups_generic_leave()</a></td>
+				</tr>
+				<tr>
+					<td><strong>Authentication</strong></td>
+					<td><span class="required">Required</span></td>
+				</tr>
+				<tr>
+					<td><strong>Request Data</strong></td>
+					<td><span class="none">None</span></td>
+				</tr>
+				<tr>
+					<td><strong>Parameters</strong></td>
+					<td><span class="none">None</span></td>
 				</tr>
 			</table>
 		</fieldset>

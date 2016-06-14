@@ -48,6 +48,12 @@
 					</td>
 				</tr>
 				<tr>
+					<td><strong>Charts</strong></td>
+					<td>
+						<a href="#charts">Charts</a>&nbsp;
+					</td>
+				</tr>
+				<tr>
 					<td><strong>Views</strong></td>
 					<td>
 						
@@ -59,6 +65,7 @@
 						<a href="#views_edit">Edit</a>&nbsp;
 						<a href="#views_view">View</a>&nbsp;
 						<a href="#views_remove">Remove</a>&nbsp;
+						<a href="#views_groups">Groups</a>&nbsp;
 					</td>
 				</tr>
 				<tr>
@@ -80,6 +87,14 @@
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
+		<a name="charts"></a>
+		<fieldset>
+			<legend>CHARTS</legend>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_charts</span>() {<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* NOTE: This hook should only be used for raw charts. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+		</fieldset>
 		<a name="views_list"></a>
 		<fieldset>
 			<legend>VIEWS - LIST</legend>
@@ -91,15 +106,22 @@
 			<br />
 			<br />
 			<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_list_generic_filter</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">field</span>, <span class="special">&amp;</span>$<span class="name">order</span>, <span class="special">&amp;</span>$<span class="name">page</span>, $<span class="name">hook_enter_return</span>) {<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right after the result query is constructed, but before limit and grouping clauses are applied. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> $<span class="name">hook_enter_return</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+			<br />
+			<br />
+			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_list_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">field</span>, <span class="special">&amp;</span>$<span class="name">order</span>, <span class="special">&amp;</span>$<span class="name">page</span>, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#list">list_default()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#list">list_default()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
 		<a name="views_search"></a>
 		<fieldset>
 			<legend>VIEWS - SEARCH</legend>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_search_generic_enter</span>(<span class="special">&amp;</span>$data, <span class="special">&amp;</span>$advanced) {<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_search_generic_enter</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$advanced) {<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right after the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#search">search()</a> method is invoked. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$<span class="name">hook_enter_return</span> = <span class="constant">NULL</span>; <span class="comment">// This context variable is passed as _hook_search_generic_leave() 3rd parameter.</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> $<span class="name">hook_enter_return</span>;<br />
@@ -107,8 +129,8 @@
 			<br />
 			<br />
 			<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_search_generic_leave</span>(<span class="special">&amp;</span>$data, <span class="special">&amp;</span>$advanced, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#search">search()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_search_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$advanced, $<span class="name">hook_enter_return</span>) {<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#search">search()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
@@ -123,8 +145,15 @@
 			<br />
 			<br />
 			<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_result_generic_filter</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">type</span>, <span class="special">&amp;</span>$<span class="name">result_query</span>, <span class="special">&amp;</span>$<span class="name">order_field</span>, <span class="special">&amp;</span>$<span class="name">order_type</span>, <span class="special">&amp;</span>$<span class="name">page</span>, $<span class="name">hook_enter_return</span>) {<br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right after the result query is constructed, but before limit and grouping clauses are applied. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> $<span class="name">hook_enter_return</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+			<br />
+			<br />
+			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_result_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">type</span>, <span class="special">&amp;</span>$<span class="name">result_query</span>, <span class="special">&amp;</span>$<span class="name">order_field</span>, <span class="special">&amp;</span>$<span class="name">order_type</span>, <span class="special">&amp;</span>$<span class="name">page</span>, $<span class="name">hook_enter_return</span>) {<br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#result">result()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#result">result()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
@@ -140,7 +169,7 @@
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_export_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">export_query</span>, <span class="special">&amp;</span>$<span class="name">type</span>, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#export">export()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#export">export()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
@@ -156,7 +185,7 @@
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_create_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#create">create()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#create">create()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
@@ -172,7 +201,7 @@
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_edit_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">id</span>, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#edit">edit()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#edit">edit()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
@@ -188,7 +217,7 @@
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_view_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">id</span>, <span class="special">&amp;</span>$<span class="name">export</span>, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#view">view()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#view">view()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>
@@ -204,7 +233,23 @@
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_remove_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, <span class="special">&amp;</span>$<span class="name">id</span>, $<span class="name">hook_enter_return</span>) {<br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#remove">remove()</a> method returns. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#remove">remove()</a> method loads the view. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+		</fieldset>
+		<a name="views_groups"></a>
+		<fieldset>
+			<legend>VIEWS - GROUPS</legend>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_groups_generic_enter</span>(<span class="special">&amp;</span>$<span class="name">data</span>) {<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right after the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#groups">groups()</a> method is invoked. */</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$<span class="name">hook_enter_return</span> = <span class="constant">NULL</span>; <span class="comment">// This context variable is passed as _hook_groups_generic_leave() 2nd parameter.</span><br /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> $<span class="name">hook_enter_return</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
+			<br />
+			<br />
+			<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> <span class="keyword">function</span> <span class="name">_hook_groups_generic_leave</span>(<span class="special">&amp;</span>$<span class="name">data</span>, $<span class="name">hook_enter_return</span>) {<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Triggers right before the <a href="<?=filter_html(base_url(), $config['charset'])?>index.php/documentation/api#groups">groups()</a> method loads the view. */</span><br /><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>;<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;}<br />
 		</fieldset>

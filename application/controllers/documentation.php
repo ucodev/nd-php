@@ -129,7 +129,7 @@ class Documentation extends ND_Controller {
 	public function index() {
 		$data = $this->_get_view_data_generic();
 
-		$data['doc_revision'] = $this->_doc_revision();
+		$data['view']['doc_revision'] = $this->_doc_revision();
 
 		/* Load documentation view */
 		$this->load->view('documentation/intro', $data);

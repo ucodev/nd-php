@@ -239,6 +239,15 @@ class UW_Security extends UW_Model {
 		return true;
 	}
 
+	public function safe_keys($array, $safe_chars = 'a-zA-Z0-9_') {
+		foreach ($array as $k => $v) {
+			if (!preg_match('/^[' . $safe_chars . ']+$/', $k))
+				return false;
+		}
+
+		return true;
+	}
+
 	public function im_admin() {
 		return in_array(1, $this->session->userdata('roles'));
 	}

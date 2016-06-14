@@ -203,9 +203,9 @@ class ND_Controller extends UW_Controller {
 	/* Set a custom class for table row based on single relationship field values.
 	 * Any class specified here must exist in a loaded CSS, with the following prefixes:
 	 *
-	 *   list_<class_name>
-	 *   result_<class_name>
-	 *   export_<class_name>
+	 *   list_<class_suffix_name>
+	 *   result_<class_suffix_name>
+	 *   export_<class_suffix_name>
 	 *
 	 * Example:
 	 *
@@ -257,13 +257,13 @@ class ND_Controller extends UW_Controller {
 		/* 'table' => 'legend' */
 	);
 
-	/* If true, inserts user values into the foreign table if they do not exist.
-	 * (if set to true, this option will casue the framework to ignore the $_mixed_table_set_missing settings)
+	/* If set to true, inserts user values into the foreign table if they do not exist.
+	 * Also, if set to true, this option will cause the framework to ignore the $_mixed_table_set_missing settings.
 	 */
 	protected $_mixed_table_add_missing = true;
 
 	/* When a mixed entry does not belong to any table row of the foreign table associated to the mixed relationship to
-	 * be inserted or updated (this is, when a <foreign table>_id value is missing due to autocompletation is disabled or
+	 * be inserted or updated (this is, when a <foreign table>_id value is missing due to autocompletion is disabled or
 	 * wasn't used by the user), we can force a default foreign table id value to be set, on a per-foreign-table basis.
 	 *
 	 * The framework will check the following array for any default id value set for the foreign table in case of
@@ -448,11 +448,11 @@ class ND_Controller extends UW_Controller {
 	/* Upload max file size */
 	protected $_upload_max_file_size = 10485760; /* 10MiB by default */
 
-	/* If this controller is associated to a view instead of a base table, set the following variable to true */
+	/* If this controller is associated to a DATABASE VIEW instead of a DATABASE TABLE, set the following variable to true */
 	protected $_table_type_view = false;
 
-	/* The query that will generate the view */
-	protected $_table_type_view_query = '';
+	/* The query that will generate the view (requires $_table_type_view set to true) */
+	protected $_table_type_view_query = ''; /* Eg: 'SELECT * FROM users WHERE id > 1' */
 
 	/* Session data buffer (will be populated with construct) */
 	protected $_session_data = array();
@@ -464,7 +464,7 @@ class ND_Controller extends UW_Controller {
 	protected $_scheduler = array(
 		'type' => 'request', /* By default, scheduled entries will be evaluated and processed on every request.
 							  * If set to 'external', scheduled entries will only be processed when public scheduler_external method is invoked.
-							  * If set to 'threaded' will behave as 'request', but execution of scheduled entries are performed in a separate thread (required PHP threading support).
+							  * If set to 'threaded' will behave as 'request', but execution of scheduled entries are performed in a separate thread (requires PHP threading support).
 							  */
 	);
 
@@ -475,13 +475,16 @@ class ND_Controller extends UW_Controller {
 	/** Hooks - Construct **/
 
 	protected function _hook_construct() {
+		/* Triggers right before the ::__construct() method returns. */
+
 		return;
 	}
 
 	/** Hooks - Charts **/
 	
 	protected function _hook_charts() {
-		/* NOTE: This hook should only be used for raw charts */
+		/* NOTE: This hook should only be used for raw charts. */
+
 		return;
 	}
 
@@ -2415,7 +2418,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* All good */
-		return $interval_fields;
+		return $interval_fields; /* Interval fields format: [0] - positive (+) or negative (-), [1] - Integer value, [2] - SECONDS/MINUTE/HOUR/... */
 	}
 
 
@@ -4651,6 +4654,12 @@ class ND_Controller extends UW_Controller {
 			die(NDPHP_LANG_MOD_INVALID_REQUEST);
 		}
 
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
+
 		/* Some sanity checks first */
 		if (!in_array($_POST['import_csv_sep'], array(',', ';'))) {
 			header('HTTP/1.1 500 Internal Server Error');
@@ -4993,6 +5002,12 @@ class ND_Controller extends UW_Controller {
 	}
 
 	public function search_save_insert() {
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
+
 		$this->db->trans_begin();
 
 		$this->db->insert('_saved_searches', array(
@@ -5165,6 +5180,12 @@ class ND_Controller extends UW_Controller {
 
 	public function result_generic($type = 'advanced', $result_query = NULL,
 							$order_field = NULL, $order_type = NULL, $page = 0) {
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
+
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
 			header('HTTP/1.1 403 Forbidden');
@@ -6446,6 +6467,12 @@ class ND_Controller extends UW_Controller {
 	public function insert($retid = false) {
 		/* NOTE: If $retid is true, an integer value is returned on success (on failure, die() will always be called) */
 
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
+
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {
 			header('HTTP/1.1 403 Forbidden');
@@ -7587,6 +7614,12 @@ class ND_Controller extends UW_Controller {
 	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
+
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {
 			header('HTTP/1.1 403 Forbidden');
@@ -8314,6 +8347,12 @@ class ND_Controller extends UW_Controller {
 
 	public function delete($id = 0, $retbool = false) {
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
+
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
 
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {

@@ -148,6 +148,7 @@ define('NDPHP_LANG_MOD_INVALID CREDENTIALS',		'Invalid credentials.');
 define('NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT','Incorrect custom interval. Intervals format is:');
 define('NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN',	'The input pattern defined does not match the content of field');
 define('NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ',		'Invalid type. The supplied parameter is not an object.');
+define('NDPHP_LANG_MOD_INVALID_POST_KEYS',			'Invalid keys founod in POST data.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
