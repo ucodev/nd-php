@@ -56,6 +56,9 @@ class Users extends ND_Controller {
 
 	/** Hooks **/
 	protected function _hook_insert_pre(&$POST, &$fields) {
+		/* Create a hook context */
+		$hook_pre_return = array();
+
 		$features = $this->_get_features();
 
 		/* Check if we're under multi or single user mode */
@@ -67,16 +70,19 @@ class Users extends ND_Controller {
 
 		/* Generate user's private key for encryption
 		 *
-		 * This key will be a pseudo random string with 256 by of length.
+		 * This key will be a pseudo random string with 256 bytes of length.
 		 * It'll be encrypted with the user's password.
 		 * Each time the user logs in, the private key is deciphered with the plain password used for authentication
 		 * and the decrypted key will be stored as a session variable.
 		 *
 		 */
-		$POST['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $POST['password'], false);
+		$hook_pre_return['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $POST['password'], false);
 
 		/* Convert password to hash */
 		$POST['password'] = password_hash($POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
+
+		/* Return the hook context */
+		return $hook_pre_return;
 	}
 
 	protected function _hook_insert_post(&$id, &$POST, &$fields, $hook_pre_return) {
@@ -84,9 +90,12 @@ class Users extends ND_Controller {
 		$this->db->trans_begin();
 
 		$this->db->where('users.id', $id);
-		$this->db->update('users', array('users_id' => $id));
+		$this->db->update('users', array(
+			'users_id' => $id,
+			'privenckey' => $hook_pre_return['privenckey'],
+		));
 
-		if ($this->db->trans_status() === FALSE) {
+		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 
 			/* Try to delete the newly inserted user */
@@ -100,6 +109,9 @@ class Users extends ND_Controller {
 	}
 
 	protected function _hook_update_pre(&$id, &$POST, &$fields) {
+		/* Create a hook context */
+		$hook_pre_return = array();
+
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
 		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles'])) {
 			header('HTTP/1.1 403 Forbidden');
@@ -129,7 +141,8 @@ class Users extends ND_Controller {
 			}
 
 			/* Re-encrypt the user private encryption key with the new password */
-			$POST['privenckey'] = $this->encrypt->encrypt(base64_decode($this->session->userdata('privenckey')), $POST['password'], false);
+			$hook_pre_return['privenckey'] = $this->encrypt->encrypt(base64_decode($this->session->userdata('privenckey')), $POST['password'], false);
+			$hook_pre_return['old_password'] = $row['password'];
 
 			/* hash new password */
 			$POST['password'] = password_hash($POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
@@ -137,9 +150,42 @@ class Users extends ND_Controller {
 
 		/* Grant that users_id is set */
 		$POST['users_id'] = $id;
+
+		/* Return the hook context */
+		return $hook_pre_return;
 	}
 
 	protected function _hook_update_post(&$id, &$POST, &$fields, $hook_pre_return) {
+		/* Update privenckey, if necessary */
+		if (isset($hook_pre_return['privenckey'])) {
+			$this->db->trans_begin();
+
+			$this->db->where('users.id', $id);
+			$this->db->update('users', array(
+				'privenckey' => $hook_pre_return['privenckey']
+			));
+
+			if ($this->db->trans_status() === false) {
+				/* TODO: FIXME: This is really, really critical. User won't be able to retrieve any encrypted data if we're
+				 * unable to store the newly encrypted private encryption key.
+				 *
+				 * If we're here... we must revert the password hash to the old one (set at $hook_pre_return['old_password'])),
+				 * but if the connection to the database was lost and we can't recover it, we may be unable to do so...
+				 *
+				 * We should find a way to include the privenckey as part of the main update transaction. Currently this is not
+				 * possible because if we set the privenckey as a POST field, it'll be ignored as there are no permissions for the
+				 * user to be able to update it...
+				 *
+				 */
+				$this->db->trans_rollback();
+
+				header("HTTP/1.0 500 Internal Server Error");
+				die(NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA);
+			} else {
+				$this->db->trans_commit();
+			}
+		}
+
 		/* Always update user session data after any user changes are performed */
 
 		/* Query the database */

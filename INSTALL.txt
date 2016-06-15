@@ -9,8 +9,8 @@ Basic instructions to install the ND PHP Framework
 
  Perform the following commands as super-user:
 
-  # apt-get install php5-mcrypt
-  # php5enmod mcrypt
+  # apt-get install php5-mcrypt php5-gd
+  # php5enmod mcrypt gd
   # service apache2 restart
   # mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -p mysql
 
@@ -47,7 +47,8 @@ Basic instructions to install the ND PHP Framework
  will solve the issues:
 
   # chown -R root:root nd-php/
-  # chown -R www-data:www-data nd-php/application/controllers
+  # chown www-data:www-data nd-php/application/controllers
+  # chown -R www-data:www-data nd-php/application/controllers/lib
   # chown -R www-data:www-data nd-php/application/static/images/menu
   # chown -R www-data:www-data nd-php/backups/
   # chown -R www-data:www-data nd-php/install/

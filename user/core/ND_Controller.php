@@ -41,6 +41,7 @@
  *
  * TODO:
  *
+ * * Add support for breadcrumb.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
@@ -353,6 +354,22 @@ class ND_Controller extends UW_Controller {
 	 */
 	protected $_fk_linking = true;
 
+	/* Title component separator */
+	protected $_view_title_sep = ' - ';
+
+	/* Breadcrumb component separator */
+	protected $_view_breadcrumb_sep = ' - ';
+
+	/* Append the following entry fields to view title (only effective on view, remove and edit views).
+	 * By default, only the 'id' field value is appended to view title. Multiple fields can be specified
+	 * in this array. Each field value will be separated from each other with the $_view_title_append_sep
+	 * value.
+	 */
+	protected $_view_title_append_fields = array('id');
+
+	/* The string value that will be used in the concatenation of $_view_title_append_fields values. */
+	protected $_view_title_append_sep = ' - ';
+
 	/* Quick Operations Links (Listing and Result views) */
 	protected $_quick_modal_links_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', $modal_width) */
@@ -447,6 +464,9 @@ class ND_Controller extends UW_Controller {
 
 	/* Upload max file size */
 	protected $_upload_max_file_size = 10485760; /* 10MiB by default */
+
+	/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */
+	protected $_upload_filter_file_name = 'a-zA-Z0-9_\.';
 
 	/* If this controller is associated to a DATABASE VIEW instead of a DATABASE TABLE, set the following variable to true */
 	protected $_table_type_view = false;
@@ -2682,7 +2702,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Compute file hash */
-		$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
+		$file_hash = openssl_digest(preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']), 'sha256');
 
 		if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false) {
 			header('HTTP/1.1 403 Forbidden');
@@ -4082,9 +4102,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_GROUPS;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_GROUPS;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_GROUPS;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_GROUPS;
 		}
 
 		/* Get view description value */
@@ -4316,9 +4336,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_LIST;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_LIST;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_LIST;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_LIST;
 		}
 
 		/* Get view description value */
@@ -5088,9 +5108,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_SEARCH;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_SEARCH;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_SEARCH;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_SEARCH;
 		}
 
 		/* Get view description value */
@@ -5237,9 +5257,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_RESULT;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_RESULT;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_RESULT;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_RESULT;
 		}
 
 		/* Get view description value */
@@ -6133,9 +6153,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_EXPORT;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EXPORT;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_EXPORT;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EXPORT;
 		}
 
 		/* Get view description value */
@@ -6268,9 +6288,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_CREATE;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_CREATE;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_CREATE;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_CREATE;
 		}
 
 		/* Get view description value */
@@ -6513,7 +6533,7 @@ class ND_Controller extends UW_Controller {
 			array_push($file_uploads, $k);
 
 			/* Set the POST variable value */
-			$_POST[$k] = $_FILES[$k]['name'];
+			$_POST[$k] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
 		}
 
 		/* Pre-process $_POST array */
@@ -6954,9 +6974,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_EDIT;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EDIT;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_EDIT;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EDIT;
 		}
 
 		/* Get view description value */
@@ -7059,6 +7079,18 @@ class ND_Controller extends UW_Controller {
 
 		/* Hidden fields */
 		$data['config']['hidden_fields'] = $this->_hide_fields_edit;
+
+		/* Check if there are any entry fields to be appended to the view title */
+		if (count($this->_view_title_append_fields)) {
+			foreach ($this->_view_title_append_fields as $title_append) {
+				/* There's a minor exception for the edit view: The 'id' field isn't part of the result array */
+				if ($title_append == 'id') {
+					$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['id'];
+				} else {
+					$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
+				}
+			}
+		}
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/edit_generic_leave.php') as $plugin)
@@ -7242,9 +7274,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_VIEW;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_VIEW;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
 		}
 
 		/* Get view description value */
@@ -7329,6 +7361,13 @@ class ND_Controller extends UW_Controller {
 
 		/* Hidden fields */
 		$data['config']['hidden_fields'] = $this->_hide_fields_view;
+
+		/* Check if there are any entry fields to be appended to the view title */
+		if (count($this->_view_title_append_fields)) {
+			foreach ($this->_view_title_append_fields as $title_append) {
+				$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
+			}
+		}
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_leave.php') as $plugin)
@@ -7675,7 +7714,7 @@ class ND_Controller extends UW_Controller {
 			array_push($file_uploads, $k);
 
 			/* Set the POST value */
-			$_POST[$k] = $_FILES[$k]['name'];
+			$_POST[$k] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
 		}
 
 		/* Process multiple relationships and special fields first */
@@ -8119,9 +8158,9 @@ class ND_Controller extends UW_Controller {
 		$title = NULL;
 
 		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . ' - ' . NDPHP_LANG_MOD_OP_REMOVE;
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_REMOVE;
 		} else {
-			$title = $this->_viewhname . ' - ' . NDPHP_LANG_MOD_OP_REMOVE;
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_REMOVE;
 		}
 
 		/* Get view description value */
@@ -8192,6 +8231,13 @@ class ND_Controller extends UW_Controller {
 
 		/* Hidden fields */
 		$data['config']['hidden_fields'] = $this->_hide_fields_remove;
+
+		/* Check if there are any entry fields to be appended to the view title */
+		if (count($this->_view_title_append_fields)) {
+			foreach ($this->_view_title_append_fields as $title_append) {
+				$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
+			}
+		}
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/remove_generic_leave.php') as $plugin)

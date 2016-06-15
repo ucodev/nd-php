@@ -1,3 +1,13 @@
+v0.01r (2016-06-15):
+
+ - Added support for title component separator configuration.
+ - Added support for extended information on view titles.
+ - Updated INSTALL.txt file.
+ - Added filename filters to uploaded files.
+ - Added additional name checks to IDE deploy process to deny menu and field names starting with digits, spaces or underscores.
+ - Fixed private encryption key issues when logging in with a newly created user.
+
+
 v0.01q (2016-06-14):
 
  - Improved documentation.
