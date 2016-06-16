@@ -41,6 +41,7 @@
  *
  * TODO:
  *
+ * * Menu entries ordering should be configurable.
  * * Add support for breadcrumb.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
@@ -81,6 +82,7 @@
  *
  * FIXME:
  *
+ * * IDE Builder separators should have a different color.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
  * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
@@ -2702,7 +2704,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Compute file hash */
-		$file_hash = openssl_digest(preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']), 'sha256');
+		$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
 
 		if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false) {
 			header('HTTP/1.1 403 Forbidden');
@@ -6525,6 +6527,9 @@ class ND_Controller extends UW_Controller {
 			if (!$_FILES[$k]['name'])
 				continue;
 
+			/* Filter filename */
+			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+
 			switch ($_FILES[$k]['error']) {
 				case UPLOAD_ERR_NO_FILE:
 				case UPLOAD_ERR_PARTIAL: continue;
@@ -6533,7 +6538,7 @@ class ND_Controller extends UW_Controller {
 			array_push($file_uploads, $k);
 
 			/* Set the POST variable value */
-			$_POST[$k] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+			$_POST[$k] = $_FILES[$k]['name'];
 		}
 
 		/* Pre-process $_POST array */
@@ -7706,6 +7711,9 @@ class ND_Controller extends UW_Controller {
 			if (!$_FILES[$k]['name'])
 				continue;
 
+			/* Filter filename */
+			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+
 			switch ($_FILES[$k]['error']) {
 				case UPLOAD_ERR_NO_FILE:
 				case UPLOAD_ERR_PARTIAL: continue;
@@ -7714,7 +7722,7 @@ class ND_Controller extends UW_Controller {
 			array_push($file_uploads, $k);
 
 			/* Set the POST value */
-			$_POST[$k] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+			$_POST[$k] = $_FILES[$k]['name'];
 		}
 
 		/* Process multiple relationships and special fields first */

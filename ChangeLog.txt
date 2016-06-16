@@ -1,3 +1,8 @@
+v0.01r1 (2016-06-16):
+
+ - Fixed and improved uploaded files' filters.
+
+
 v0.01r (2016-06-15):
 
  - Added support for title component separator configuration.
