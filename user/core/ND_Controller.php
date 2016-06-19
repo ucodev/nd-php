@@ -61,7 +61,6 @@
  * - Migrate Modalbox to something else (probably jQuery UI Dialog?).
  * - Implement different families of views (configurable per table: backend, blog, shop, page, etc...)
  * - Autocomplete fields (and matching fields) based on the values of a foreign table. (with a simple API)
- * - Add uSched support.
  * - [POSTPONED] Support a table name resolver to implement quality and development platforms under the same app infrastructure:
  *  - [POSTPONED] Development users will have full separate tables and wont share real-time production data.
  *  - [POSTPONED] Quality users will share the production tables, except for _acl_* and _help_* tables.
@@ -82,6 +81,8 @@
  *
  * FIXME:
  *
+ * * Saved searches results do not have full breadcrumb support.
+ * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Second level of breadcrumb for result, view, edit and remove isn't pointing to anything meaningful.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
@@ -2570,6 +2571,67 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Mixed handlers **/
+
+	protected function _mixed_process_post_field($field) {
+		$mixed_field = array();
+
+		/* Mixed field format is:
+		 * 
+		 * mixed_<table>_<field>_<mixed id>
+		 *
+		 * There's an exception for files and time counter fields which start with an underscore prefix.
+		 * We'll first evaluate the $field contents for these exceptions before applying the default parser.
+		 *
+		 */
+
+		/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
+		 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
+		 * mixed_<table>_<field>_<mixed id> ...
+		 *
+		 * Probably this won't be fixed in a near future, but should be well documented.
+		 */
+
+		/* Get foreign table name from $field */
+		$mixed_foreign_table = NULL;
+
+		foreach ($this->_get_relative_tables($this->_name, 'mixed') as $mixed_rel_table) {
+			$mixed_rel_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($mixed_rel_table, $this->_name), array($this->_name)));
+
+			/* Check if the field prefix matches the foreign table name */
+			if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
+				$mixed_foreign_table = $mixed_rel_foreign_table;
+				break;
+			}
+		}
+
+		/* If the table cannot be found, we cannot proceed */
+		if ($mixed_foreign_table === NULL) {
+			header('HTTP/1.1 500 Internal Server Error');
+			die(NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field);
+		}
+
+		/* Retrieve table, field and mixed id */
+		$mixed_field[0] = $mixed_foreign_table;
+		$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
+		$mixed_field[2] = end(explode('_', $field));
+
+		/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
+		if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
+			$mixed_field[1] = '_' . $mixed_field[1];
+		}
+
+		/* 
+		 * Description:
+		 * 
+		 * $mixed_field[0] --> table name
+		 * $mixed_field[1] --> field name
+		 * $mixed_field[2] --> mixed field id
+		 * 
+		 */
+
+		return $mixed_field;
+	}
+
 	protected function _mixed_process_post_data($mixed_rels, $last_id, $ftypes, $remove_existing = false) {
 		if (count($mixed_rels) /* If $mixed_rels array is empty, do not insert, remove nor process updates on mixed fields */) {
 			if ($remove_existing) {
@@ -4130,6 +4192,22 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
+	protected function _load_method_views($method, $data = NULL, $body_only = false, $body_header = true, $body_footer = true) {
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view($method . '_header', $data, true);
+
+		$this->_load_view($method . '_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view($method . '_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
+	}
+
 
 	/** Field analysis and mangling **/
 	protected function _field_value_mangle($fields, $query) {
@@ -4462,19 +4540,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('groups_header', $data, true);
-
-		$this->_load_view('groups_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('groups_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function groups_body_ajax() {
@@ -4672,19 +4738,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('list_header', $data, true);
-
-		$this->_load_view('list_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('list_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views('list', $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function list_body_ajax($field = NULL, $order = NULL, $page = 0) {
@@ -4784,19 +4838,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('list_group_header', $data, true);
-
-		$this->_load_view('list_group_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('list_group_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function list_group_body_ajax($grouping_field, $field = NULL, $order = NULL, $page = 0) {
@@ -5296,19 +5338,7 @@ class ND_Controller extends UW_Controller {
 			$data['config']['modalbox'] = true;
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('search_header', $data, true);
-
-		$this->_load_view('search_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('search_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function search_body_ajax($advanced = true) {
@@ -6044,19 +6074,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('result_header', $data, true);
-
-		$this->_load_view('result_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('result_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function result_body_ajax($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
@@ -6159,19 +6177,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('result_group_header', $data, true);
-
-		$this->_load_view('result_group_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('result_group_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function result_group_body_ajax($grouping_field, $type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
@@ -6483,19 +6489,7 @@ class ND_Controller extends UW_Controller {
 			$data['config']['modalbox'] = true;
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('create_header', $data, true);
-
-		$this->_load_view('create_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('create_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function create_body_ajax() {
@@ -6569,52 +6563,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($_POST as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
-				$mixed_field = array();
-
-				/* Mixed field format is:
-				 * 
-				 * mixed_<table>_<field>_<mixed id>
-				 *
-				 * There's an exception for files and time counter fields which start with an underscore prefix.
-				 * We'll first evaluate the $field contents for these exceptions before applying the default parser.
-				 *
-				 */
-
-				/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
-				 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
-				 * mixed_<table>_<field>_<mixed id> ...
-				 *
-				 * Probably this won't be fixed in a near future, but should be well documented.
-				 */
-
-				/* Get foreign table name from $field */
-				$mixed_foreign_table = NULL;
-
-				foreach ($this->_get_relative_tables($this->_name, 'mixed') as $mixed_rel_table) {
-					$mixed_rel_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($mixed_rel_table, $this->_name), array($this->_name)));
-
-					/* Check if the field prefix matches the foreign table name */
-					if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
-						$mixed_foreign_table = $mixed_rel_foreign_table;
-						break;
-					}
-				}
-
-				/* If the table cannot be found, we cannot proceed */
-				if ($mixed_foreign_table === NULL) {
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field);
-				}
-
-				/* Retrieve table, field and mixed id */
-				$mixed_field[0] = $mixed_foreign_table;
-				$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
-				$mixed_field[2] = end(explode('_', $field));
-
-				/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
-				if (preg_match('/^mixed_[a-zA-Z0-9\_]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9\_]+__timer_.+$/i', $field)) {
-					$mixed_field[1] = '_' . $mixed_field[1];
-				}
+				$mixed_field = $this->_mixed_process_post_field($field);
 
 				/* 
 				 * Description:
@@ -7043,19 +6992,7 @@ class ND_Controller extends UW_Controller {
 			$data['config']['modalbox'] = true;
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('edit_header', $data, true);
-
-		$this->_load_view('edit_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('edit_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function edit_body_ajax($id = 0) {
@@ -7068,6 +7005,270 @@ class ND_Controller extends UW_Controller {
 
 	public function edit_data_modalbox($id = 0) {
 		$this->edit($id, true, false, true, true);
+	}
+
+	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
+		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
+
+		/* Grant that $_POST keys are safe */
+		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
+		}
+
+		/* Check if this is a view table type */
+		if ($this->_table_type_view) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' UPDATE.');
+		}
+
+		/* Security Permissions Check */
+		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+		}
+
+		if (!$this->_table_row_filter_perm($_POST['id'])) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+		}
+
+		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
+		if ($id)
+			$_POST['id'] = $id;
+
+		/* Set/Update the value of the specified field. (JSON REST API) */
+		if ($field !== NULL && $value !== NULL)
+			$_POST[$field] = $field_value;
+
+		/* Retrieve fields meta data */
+		$ftypes = $this->_get_fields();
+		$mixed_rels = array();
+
+		/* Array containing file names to be uploaded */
+		$file_uploads = array();
+
+		/* Load pre plugins */
+		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_pre.php') as $plugin)
+			include($plugin);
+
+		/* Pre-Update hook */
+		$hook_pre_return = $this->_hook_update_pre($_POST['id'], $_POST, $ftypes);
+
+		/* Initialize transaction */
+		$this->db->trans_begin();
+
+		/* Process file uploads */
+		foreach ($_FILES as $k => $v) {
+			if (!$_FILES[$k]['name'])
+				continue;
+
+			/* Filter filename */
+			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+
+			switch ($_FILES[$k]['error']) {
+				case UPLOAD_ERR_NO_FILE:
+				case UPLOAD_ERR_PARTIAL: continue;
+			}
+
+			array_push($file_uploads, $k);
+
+			/* Set the POST value */
+			$_POST[$k] = $_FILES[$k]['name'];
+		}
+
+		/* Process multiple relationships and special fields first */
+		foreach ($_POST as $field => $value) {
+			/* Extract mixed relationships, if any */
+			if (substr($field, 0, 6) == 'mixed_') {
+				$mixed_field = $this->_mixed_process_post_field($field);
+
+				/* 
+				 * Description:
+				 * 
+				 * $mixed_field[0] --> table name
+				 * $mixed_field[1] --> field name
+				 * $mixed_field[2] --> mixed field id
+				 * 
+				 */
+
+				/* Security Check: Check UPDATE permissions for this particular entry (table:mixed_<t1>_<ft2>) */
+				if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, 'mixed_' . $this->_name . '_' . $mixed_field[0])) {
+					unset($_POST[$field]);
+					continue;
+				}
+
+				/* Assign mixed rel value */
+				$mixed_rels[$mixed_field[0]][$mixed_field[2]][$mixed_field[1]] = $value;
+
+				unset($_POST[$field]);
+				continue;
+			}
+
+			/* Datetime field types requires special processing in order to append
+			 * the 'time' component to the 'date'.
+			 */
+			if ($ftypes[$field]['type'] == 'datetime') {
+				$_POST[$field] = $this->timezone->convert($value . ' ' . $_POST[$field . '_time'], $this->_session_data['timezone'], $this->_default_timezone);
+				unset($_POST[$field . '_time']);
+				
+				continue;
+			}
+
+			/* Check if this is a multiple realtionship field */
+			if (substr($field, 0, 4) != 'rel_')
+				continue; /* If not, skip multiple relationship processing */
+
+			/* Set the table name */
+			$table = $field;
+
+			/* Retrieve the relationship table */
+			$rel_table = array_pop(array_diff($this->_get_multiple_rel_table_names($table, $this->_name), array($this->_name)));
+
+			/* Security Permissions Check (READ) -- We must be able to read the foreign table... */
+			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel_table))
+				continue;
+
+			/* Security Permissions Check (UPDATE) -- We must be able to update the multiple relationship table */
+			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, $field))
+				continue;
+
+			/* Remove all related entries from relational table */
+			$this->db->delete($table, array($this->_name . '_id' => $_POST['id']));
+			
+			/* Insert new relationships */
+			foreach ($value as $rel_id) {
+				if (!$rel_id) /* Ignore the None (hidden) value */
+					continue;
+
+				if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
+					$this->db->trans_rollback();
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+				}
+
+				$this->db->insert($table, array($this->_name . '_id' => $_POST['id'], $rel_table . '_id' => $rel_id));
+			}
+
+			/* Remove relational field from $_POST */
+			unset($_POST[$field]);
+		}
+
+		/* Set all empty fields ('') to NULL and evaluate column permissions. Also grant input pattern matching. */
+		foreach ($_POST as $field => $value) {
+			/* Security check */
+			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, $field)) {
+				/* We cannot unset the 'id' field for obvious reasons (reasons: see all the code below belonging to update()) */
+				if ($field != 'id')
+					unset($_POST[$field]);
+
+				continue;
+			}
+
+			/* Check if this is a file field that was requested to be removed */
+			if (substr($field, 0, 6) == '_file_') {
+				if (isset($_POST[$field . '_remove']) && $_POST[$field . '_remove']) {
+					/* Remove the file from filesystem */
+					$this->_remove_file_upload($this->_name, $_POST['id'], $field);
+
+					/* Reset database field value */
+					$_POST[$field] = NULL;
+				} else if (!in_array($field, $file_uploads)) {
+					/* Otherwise, if the file was not requested to be removed and no file was uploaded, prevent any update to this field */
+					unset($_POST[$field]);
+				}
+
+				continue;
+			}
+
+			/* Grant that foreign table id is eligible to be updated */
+			if (substr($field, -3) == '_id') {
+				if (!$this->_table_row_filter_perm($value, substr($field, 0, -3))) {
+					$this->db->trans_rollback();
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+				}
+			}
+
+			/* Set to NULL if empty */
+			if (trim($_POST[$field], ' \t') == '') {
+				$_POST[$field] = NULL;
+			}
+
+			/* If an input pattern was defined for this field, grant that it matches the field value */
+			if ($ftypes[$field]['input_pattern']) {
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field])) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'');
+				}
+			}
+		}
+
+		/* If logging is enabled, check for changed fields and log them */
+		if ($this->_logging === true) {
+			$changed_fields = $this->post_changed_fields_data($this->_name, $_POST['id'], $_POST);
+
+			$log_transaction_id = openssl_digest('UPDATE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+
+			foreach ($changed_fields as $cfield) {
+				$this->db->insert('logging', array(
+					'operation' => 'UPDATE',
+					'_table' => $this->_name,
+					'_field' => $cfield['field'],
+					'entryid' => $_POST['id'],
+					'value_old' => $cfield['value_old'],
+					'value_new' => $cfield['value_new'],
+					'transaction' => $log_transaction_id,
+					'registered' => date('Y-m-d H:i:s'),
+					'sessions_id' => $this->_session_data['sessions_id'],
+					'users_id' => $this->_session_data['user_id']
+				));
+			}
+		}
+
+		/* Update entry data */
+		$this->db->where('id', $_POST['id']);
+		$this->db->update($this->_name, $_POST);
+
+		/* Process file uploads */
+		foreach ($file_uploads as $file) {
+			$this->_remove_file_upload($this->_name, $_POST['id'], $file);
+			$this->_process_file_upload($this->_name, $_POST['id'], $file);
+		}
+
+		/* Set the last inserted ID variable */
+		$last_id = $_POST['id'];
+
+		/* Process mixed relationships if there are any to be updated */
+		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes, true);
+
+		/* Commit transaction */
+		if ($this->db->trans_status() === false) {
+			$this->db->trans_rollback();
+			header('HTTP/1.1 500 Internal Server Error');
+			die(NDPHP_LANG_MOD_FAILED_UPDATE);
+		} else {
+			$this->db->trans_commit();
+		}
+
+		/* Load post plugins */
+		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_post.php') as $plugin)
+			include($plugin);
+
+		/* Post-Update hook */
+		$this->_hook_update_post($_POST['id'], $_POST, $ftypes, $hook_pre_return);
+
+		if ($retbool) {
+			return true;
+		} else {
+			if ($this->_json_replies === true) {
+				echo($this->json_update());
+				return;
+			} else {
+				/* FIXME: Check if the update() was performed via ajax... if so, do not redirect */
+				redirect($this->_name . '/view/' . $_POST['id']);
+			}
+		}
 	}
 
 	protected function view_generic($id = 0, $export = NULL) {
@@ -7336,19 +7537,7 @@ class ND_Controller extends UW_Controller {
 			}
 		} else {
 			/* Load Views */
-			if (!$body_only)
-				$this->_load_view('header', $data);
-
-			if ($body_header)
-				$this->_load_view('view_header', $data, true);
-
-			$this->_load_view('view_data', $data, true);
-
-			if ($body_footer)
-				$this->_load_view('view_footer', $data, true);
-
-			if (!$body_only)
-				$this->_load_view('footer', $data);
+			$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 		}		
 	}
 	
@@ -7362,315 +7551,6 @@ class ND_Controller extends UW_Controller {
 
 	public function view_data_modalbox($id = 0, $export = NULL) {
 		$this->view($id, $export, true, false, true, true);
-	}
-
-	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
-		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
-
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_POST_KEYS);
-		}
-
-		/* Check if this is a view table type */
-		if ($this->_table_type_view) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' UPDATE.');
-		}
-
-		/* Security Permissions Check */
-		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
-
-		if (!$this->_table_row_filter_perm($_POST['id'])) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
-
-		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
-		if ($id)
-			$_POST['id'] = $id;
-
-		/* Set/Update the value of the specified field. (JSON REST API) */
-		if ($field !== NULL && $value !== NULL)
-			$_POST[$field] = $field_value;
-
-		/* Retrieve fields meta data */
-		$ftypes = $this->_get_fields();
-		$mixed_rels = array();
-
-		/* Array containing file names to be uploaded */
-		$file_uploads = array();
-
-		/* Load pre plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_pre.php') as $plugin)
-			include($plugin);
-
-		/* Pre-Update hook */
-		$hook_pre_return = $this->_hook_update_pre($_POST['id'], $_POST, $ftypes);
-
-		/* Initialize transaction */
-		$this->db->trans_begin();
-
-		/* Process file uploads */
-		foreach ($_FILES as $k => $v) {
-			if (!$_FILES[$k]['name'])
-				continue;
-
-			/* Filter filename */
-			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
-
-			switch ($_FILES[$k]['error']) {
-				case UPLOAD_ERR_NO_FILE:
-				case UPLOAD_ERR_PARTIAL: continue;
-			}
-
-			array_push($file_uploads, $k);
-
-			/* Set the POST value */
-			$_POST[$k] = $_FILES[$k]['name'];
-		}
-
-		/* Process multiple relationships and special fields first */
-		foreach ($_POST as $field => $value) {
-			/* Extract mixed relationships, if any */
-			if (substr($field, 0, 6) == 'mixed_') {
-				$mixed_field = array();
-
-				/* Mixed field format is:
-				 * 
-				 * mixed_<table>_<field>_<mixed id>
-				 *
-				 * There's an exception for files and time counter fields which start with an underscore prefix.
-				 * We'll first evaluate the $field contents for these exceptions before applying the default parser.
-				 *
-				 */
-
-				/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
-				 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
-				 * mixed_<table>_<field>_<mixed id> ...
-				 *
-				 * Probably this won't be fixed in a near future, but should be well documented.
-				 */
-
-				/* Get foreign table name from $field */
-				$mixed_foreign_table = NULL;
-
-				foreach ($this->_get_relative_tables($this->_name, 'mixed') as $mixed_rel_table) {
-					$mixed_rel_foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($mixed_rel_table, $this->_name), array($this->_name)));
-
-					/* Check if the field prefix matches the foreign table name */
-					if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
-						$mixed_foreign_table = $mixed_rel_foreign_table;
-						break;
-					}
-				}
-
-				/* If the table cannot be found, we cannot proceed */
-				if ($mixed_foreign_table === NULL) {
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field);
-				}
-
-				/* Retrieve table, field and mixed id */
-				$mixed_field[0] = $mixed_foreign_table;
-				$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
-				$mixed_field[2] = end(explode('_', $field));
-
-				/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
-				if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
-					$mixed_field[1] = '_' . $mixed_field[1];
-				}
-
-				/* 
-				 * Description:
-				 * 
-				 * $mixed_field[0] --> table name
-				 * $mixed_field[1] --> field name
-				 * $mixed_field[2] --> mixed field id
-				 * 
-				 */
-
-				/* Security Check: Check UPDATE permissions for this particular entry (table:mixed_<t1>_<ft2>) */
-				if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, 'mixed_' . $this->_name . '_' . $mixed_field[0])) {
-					unset($_POST[$field]);
-					continue;
-				}
-
-				/* Assign mixed rel value */
-				$mixed_rels[$mixed_field[0]][$mixed_field[2]][$mixed_field[1]] = $value;
-
-				unset($_POST[$field]);
-				continue;
-			}
-
-			/* Datetime field types requires special processing in order to append
-			 * the 'time' component to the 'date'.
-			 */
-			if ($ftypes[$field]['type'] == 'datetime') {
-				$_POST[$field] = $this->timezone->convert($value . ' ' . $_POST[$field . '_time'], $this->_session_data['timezone'], $this->_default_timezone);
-				unset($_POST[$field . '_time']);
-				
-				continue;
-			}
-
-			/* Check if this is a multiple realtionship field */
-			if (substr($field, 0, 4) != 'rel_')
-				continue; /* If not, skip multiple relationship processing */
-
-			/* Set the table name */
-			$table = $field;
-
-			/* Retrieve the relationship table */
-			$rel_table = array_pop(array_diff($this->_get_multiple_rel_table_names($table, $this->_name), array($this->_name)));
-
-			/* Security Permissions Check (READ) -- We must be able to read the foreign table... */
-			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel_table))
-				continue;
-
-			/* Security Permissions Check (UPDATE) -- We must be able to update the multiple relationship table */
-			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, $field))
-				continue;
-
-			/* Remove all related entries from relational table */
-			$this->db->delete($table, array($this->_name . '_id' => $_POST['id']));
-			
-			/* Insert new relationships */
-			foreach ($value as $rel_id) {
-				if (!$rel_id) /* Ignore the None (hidden) value */
-					continue;
-
-				if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
-					$this->db->trans_rollback();
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-				}
-
-				$this->db->insert($table, array($this->_name . '_id' => $_POST['id'], $rel_table . '_id' => $rel_id));
-			}
-
-			/* Remove relational field from $_POST */
-			unset($_POST[$field]);
-		}
-
-		/* Set all empty fields ('') to NULL and evaluate column permissions. Also grant input pattern matching. */
-		foreach ($_POST as $field => $value) {
-			/* Security check */
-			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, $field)) {
-				/* We cannot unset the 'id' field for obvious reasons (reasons: see all the code below belonging to update()) */
-				if ($field != 'id')
-					unset($_POST[$field]);
-
-				continue;
-			}
-
-			/* Check if this is a file field that was requested to be removed */
-			if (substr($field, 0, 6) == '_file_') {
-				if (isset($_POST[$field . '_remove']) && $_POST[$field . '_remove']) {
-					/* Remove the file from filesystem */
-					$this->_remove_file_upload($this->_name, $_POST['id'], $field);
-
-					/* Reset database field value */
-					$_POST[$field] = NULL;
-				} else if (!in_array($field, $file_uploads)) {
-					/* Otherwise, if the file was not requested to be removed and no file was uploaded, prevent any update to this field */
-					unset($_POST[$field]);
-				}
-
-				continue;
-			}
-
-			/* Grant that foreign table id is eligible to be updated */
-			if (substr($field, -3) == '_id') {
-				if (!$this->_table_row_filter_perm($value, substr($field, 0, -3))) {
-					$this->db->trans_rollback();
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-				}
-			}
-
-			/* Set to NULL if empty */
-			if (trim($_POST[$field], ' \t') == '') {
-				$_POST[$field] = NULL;
-			}
-
-			/* If an input pattern was defined for this field, grant that it matches the field value */
-			if ($ftypes[$field]['input_pattern']) {
-				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field])) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'');
-				}
-			}
-		}
-
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->_logging === true) {
-			$changed_fields = $this->post_changed_fields_data($this->_name, $_POST['id'], $_POST);
-
-			$log_transaction_id = openssl_digest('UPDATE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			foreach ($changed_fields as $cfield) {
-				$this->db->insert('logging', array(
-					'operation' => 'UPDATE',
-					'_table' => $this->_name,
-					'_field' => $cfield['field'],
-					'entryid' => $_POST['id'],
-					'value_old' => $cfield['value_old'],
-					'value_new' => $cfield['value_new'],
-					'transaction' => $log_transaction_id,
-					'registered' => date('Y-m-d H:i:s'),
-					'sessions_id' => $this->_session_data['sessions_id'],
-					'users_id' => $this->_session_data['user_id']
-				));
-			}
-		}
-
-		/* Update entry data */
-		$this->db->where('id', $_POST['id']);
-		$this->db->update($this->_name, $_POST);
-
-		/* Process file uploads */
-		foreach ($file_uploads as $file) {
-			$this->_remove_file_upload($this->_name, $_POST['id'], $file);
-			$this->_process_file_upload($this->_name, $_POST['id'], $file);
-		}
-
-		/* Set the last inserted ID variable */
-		$last_id = $_POST['id'];
-
-		/* Process mixed relationships if there are any to be updated */
-		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes, true);
-
-		/* Commit transaction */
-		if ($this->db->trans_status() === false) {
-			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_UPDATE);
-		} else {
-			$this->db->trans_commit();
-		}
-
-		/* Load post plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_post.php') as $plugin)
-			include($plugin);
-
-		/* Post-Update hook */
-		$this->_hook_update_post($_POST['id'], $_POST, $ftypes, $hook_pre_return);
-
-		if ($retbool) {
-			return true;
-		} else {
-			if ($this->_json_replies === true) {
-				echo($this->json_update());
-				return;
-			} else {
-				/* FIXME: Check if the update() was performed via ajax... if so, do not redirect */
-				redirect($this->_name . '/view/' . $_POST['id']);
-			}
-		}
 	}
 
 	protected function remove_generic($id = 0) {
@@ -7875,19 +7755,7 @@ class ND_Controller extends UW_Controller {
 			$data['config']['modalbox'] = true;
 
 		/* Load Views */
-		if (!$body_only)
-			$this->_load_view('header', $data);
-
-		if ($body_header)
-			$this->_load_view('remove_header', $data, true);
-
-		$this->_load_view('remove_data', $data, true);
-
-		if ($body_footer)
-			$this->_load_view('remove_footer', $data, true);
-
-		if (!$body_only)
-			$this->_load_view('footer', $data);
+		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
 	public function remove_body_ajax($id = 0) {

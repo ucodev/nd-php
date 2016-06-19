@@ -1,3 +1,8 @@
+v0.01s1 (2016-06-19):
+
+ - Restructured some more code on core controllers.
+
+
 v0.01s (2016-06-19):
 
  - Field separators on IDE now are shown under a different color from other fields.
