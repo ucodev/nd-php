@@ -659,6 +659,17 @@ h1.crud_header, h1.home_header {
 	line-height: 24px;
 }
 
+a.breadcrumb {
+	font-size: 100%;
+	font-weight: normal;
+	text-align: left;
+	color: white;
+}
+
+a.breadcrumb:hover {
+	text-decoration: underline;
+}
+
 #listing_footer {
 	display: table;
 	margin: 0 auto;

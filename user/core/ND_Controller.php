@@ -41,8 +41,8 @@
  *
  * TODO:
  *
+ * * Add command line to IDE Builder.
  * * Menu entries ordering should be configurable.
- * * Add support for breadcrumb.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
@@ -82,7 +82,7 @@
  *
  * FIXME:
  *
- * * IDE Builder separators should have a different color.
+ * * Second level of breadcrumb for result, view, edit and remove isn't pointing to anything meaningful.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
  * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
@@ -2569,6 +2569,186 @@ class ND_Controller extends UW_Controller {
 	}
 
 
+	/** Mixed handlers **/
+	protected function _mixed_process_post_data($mixed_rels, $last_id, $ftypes, $remove_existing = false) {
+		if (count($mixed_rels) /* If $mixed_rels array is empty, do not insert, remove nor process updates on mixed fields */) {
+			if ($remove_existing) {
+				/* Remove old mixed relationship entries */
+				foreach ($ftypes as $fname => $fmeta) {
+					if ($fmeta['type'] == 'mixed') {
+						/* Security Permissions Check */
+						if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $fmeta['rel_table'])) {
+							$this->db->trans_rollback();
+							header('HTTP/1.1 403 Forbidden');
+							die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+						}
+	        	
+						$this->db->where($this->_name . '_id', $last_id);
+						$this->db->delete($fmeta['table']);
+					}
+				}
+			}
+        	
+			/* Update mixed relationships */
+			$mixed_foreign_value_id = array(); /* Will contain the entry id of foreign single relationship tables... (used by $_mixed_table_add_missing) */
+
+			foreach ($mixed_rels as $mixed_table => $mixed_table_value) {
+				foreach ($mixed_table_value as $mixed_id => $mixed_id_value) {
+					foreach ($mixed_id_value as $mixed_field => $mixed_field_value) {
+						if (($mixed_field_value == '') || ($mixed_field_value == NULL) || isset($mixed_insert_values[$mixed_field]))
+							continue;
+        	
+						/* Check for exceptions, for example, datetime fields are split into _time and _date suffixes */
+						if (isset($mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'])) {
+							$mixed_insert_values[$mixed_field] = $this->timezone->convert($mixed_field_value . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'], $this->_session_data['timezone'], $this->_default_timezone);
+						} else if ((substr($mixed_field, -5) == '_time')) {
+							$mixed_insert_values[substr($mixed_field, 0, -5)] = $this->timezone->convert($mixed_rels[$mixed_table][$mixed_id][substr($mixed_field, 0, -5)] . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field], $this->_session_data['timezone'], $this->_default_timezone);
+						} else if ((substr($mixed_field, -3) == '_id') && (strpos($mixed_field_value, '_'))) {
+							/* Single relationship fields' identifiers on mixed relationships use the <id>_<value> format */
+							$mixed_field_val_raw = explode('_', $mixed_field_value);
+							$mixed_field_val_id = $mixed_field_val_raw[0];
+							$mixed_field_val_value = $mixed_field_val_raw[1];
+							$mixed_field_table_name = substr($mixed_field, 0, -3);
+        	
+							/* Grant that the user has privileges to access the foreign table item */
+							if (!$this->_table_row_filter_perm($mixed_field_val_id, $mixed_field_table_name)) {
+								$this->db->trans_rollback();
+								header('HTTP/1.1 403 Forbidden');
+								die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+							}
+        	
+							/* Exclude the ID portion of the mixed_field_value and get only corresponding value */
+							/* Note that the format of relational mixed fields is: '<id>_<value>' */
+							$mixed_insert_values[$mixed_field] = $mixed_field_val_value;
+
+							/* Also store the entry id... this may be required for later use if we need to add a missing entry */
+							$mixed_foreign_value_id[$mixed_field_table_name] = $mixed_field_val_id;
+						} else {
+							$mixed_insert_values[$mixed_field] = $mixed_field_value;
+						}
+					}
+        	
+					/* Get optional fields and retrieve the respective values, if any */
+					$mixed_table_fields = $this->db->list_fields('mixed_' . $this->_name . '_' . $mixed_table);
+					foreach ($mixed_table_fields as $mixed_field) {
+						/* Check if this is a private field */
+						if (substr($mixed_field, 0, 2) != '__')
+							continue;
+        	
+						$pmfield = explode('_tc_', substr($mixed_field, 2));
+        	
+						$ftname = $pmfield[0];	/* Foreign Table name */
+						$ftcname = $pmfield[1];	/* Foreign Table Column name */
+						
+						$this->db->select($ftcname);
+						$this->db->distinct();	/* NOTE: Not required since the key we're looking for must be UNIQUE. */
+						$this->db->from($ftname);
+						$this->db->where('id', strstr($mixed_rels[$mixed_table][$mixed_id][$ftname . '_id'], '_', true));
+						$this->_table_row_filter_apply($ftname);
+        	
+						$query_mixed = $this->db->get();
+        	
+						/* If empty, there's no permissions */
+						if (!$query_mixed->num_rows()) {
+							$this->db->trans_rollback();
+							header('HTTP/1.1 403 Forbidden');
+							die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+						}
+        	
+						$row_mixed = $query_mixed->row_array();
+						$mixed_insert_values[$mixed_field] = $row_mixed[$ftcname];
+					}
+        	
+					/* Check if all secondary relational table foreign keys exist */
+					$srtf_field_found = false;
+					foreach ($mixed_insert_values as $field => $value) {
+						if ($field == $mixed_table_fields[3]) {
+							$srtf_field_found = true;
+							break;
+						}
+					}
+
+					if ($srtf_field_found === false) {
+						/* Before checking for a matching key, validate if there's any value to search for... */
+						if (!isset($mixed_insert_values[$mixed_table_fields[1]]) || $mixed_insert_values[$mixed_table_fields[1]] === NULL || $mixed_insert_values[$mixed_table_fields[1]] == '')
+							continue; /* Nothing to be done with this entry as the key identifier isn't set or it's empty. */
+
+						/* Update mixed_insert_values with missing relational field */
+						$this->db->select('id');
+						$this->db->from(substr($mixed_table_fields[3], 0, -3));
+						$this->db->where($mixed_table_fields[1], $mixed_insert_values[$mixed_table_fields[1]]);
+
+						$srtf_query = $this->db->get();
+
+						if (!$srtf_query->num_rows()) {
+							/* If $_mixed_table_add_missing is true, insert the element on the foreign table */
+							if ($this->_mixed_table_add_missing === true) {
+								/* Clone the values to be inserted on mixed table */
+								$secondary_insert_values = $mixed_insert_values;
+
+								/* Unset relationships */
+								unset($secondary_insert_values[$mixed_table_fields[2]]);
+								unset($secondary_insert_values[$mixed_table_fields[3]]);
+
+								/* Clear any _tc_ fields */
+								foreach ($secondary_insert_values as $field => $value) {
+									if (count(explode('_tc_', $field)) > 1) {
+										unset($secondary_insert_values[$field]);
+									}
+								}
+
+								/* Resolve single relationships back to their original entry id */
+								foreach ($secondary_insert_values as $field => $value) {
+									/* Ignore fields that are not single relationships */
+									if (substr($field, -3) != '_id')
+										continue;
+
+									/* Fetch the previously stored entry id related to this single relationship */
+									$secondary_insert_values[$field] = $mixed_foreign_value_id[substr($field, -3)];
+								}
+
+								/* Set any existing filtering fields */
+								$secondary_insert_values = array_merge($secondary_insert_values, $this->_table_row_filter_get($mixed_table));
+
+								/* Insert data into the secondary table */
+								$this->db->insert($mixed_table, $secondary_insert_values);
+
+								/* Set the newly inserted id as the mixed relationship id */
+								$mixed_insert_values[$mixed_table_fields[3]] = $this->db->last_insert_id();
+							} else if (isset($this->_mixed_table_set_missing[$mixed_table])) {
+								/* There's a default id to be used associated to this mixed table */
+								$mixed_insert_values[$mixed_table_fields[3]] = $this->_mixed_table_set_missing[$mixed_table];
+							} else {
+								$this->db->trans_rollback();
+								header('HTTP/1.1 403 Forbidden');
+								die(NDPHP_LANG_MOD_INVALID_MIXED_VALUE);
+							}
+						} else {
+							$row = $srtf_query->row_array();
+
+							$mixed_insert_values[$mixed_table_fields[3]] = $row['id'];
+						}
+					}
+
+					/* If there's anything to be inserted, do it */
+					if (isset($mixed_insert_values)) {
+						/* Security Permissions Check */
+						if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $mixed_table)) {
+							$this->db->trans_rollback();
+							header('HTTP/1.1 403 Forbidden');
+							die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+						}
+
+						$mixed_insert_values[$this->_name . '_id'] = $last_id;
+						$this->db->insert('mixed_' . $this->_name . '_' . $mixed_table, $mixed_insert_values);
+						unset($mixed_insert_values);
+					}
+				}
+			}
+		}
+	}
+
+
 	/** Scheduler **/
 
 	private function _scheduler_exec_queued_entries() {
@@ -2853,6 +3033,9 @@ class ND_Controller extends UW_Controller {
 		$this->config['csv_to_encoding']						= $this->_csv_to_encoding;
 
 		$this->config['fk_linking']								= $this->_fk_linking;
+
+		$this->config['view_title_sep']							= $this->_view_title_sep;
+		$this->config['view_breadcrumb_sep']					= $this->_view_breadcrumb_sep;
 
 		$this->config['security_perms']							= $this->_security_perms;
 		$this->config['security_safe_chars']					= $this->_security_safe_chars;
@@ -3172,6 +3355,44 @@ class ND_Controller extends UW_Controller {
 
 	protected function _get_features() {
 		return $this->features->get_features();
+	}
+
+	protected function _get_breadcrumb($method, $second_level = NULL, $id = NULL, $third_level = NULL) {
+		/* Re-initialize breadcrumb */
+		$this->breadcrumb->set('levels', array());
+		$this->breadcrumb->set('charset', $this->_charset);
+		$this->breadcrumb->set('separator', $this->_view_breadcrumb_sep);
+
+		/* Add first level */
+		$this->breadcrumb->add(
+			isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] :  $this->_viewhname,
+			isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] :  $this->_viewhname,
+			base_url() . 'index.php/' . $this->_name,
+			'ndphp.ajax.load_body_menu(event, \'' . $this->_name . '\', \'' . (isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] :  $this->_viewhname) . '\');'
+		);
+
+		/* Add second level, if exists */
+		if ($second_level !== NULL) {
+			$this->breadcrumb->add(
+				$second_level,
+				$second_level,
+				base_url() . 'index.php/' . $this->_name . '/' . $method,
+				'ndphp.ajax.load_body_op(event, \'' . filter_html_js_str($this->_name, $this->_charset) . '\', \'' . filter_html_js_str($method, $this->_charset) . '\');'
+			);
+		}
+
+		/* If the third level is defined, it'll always be an ID for the second level */
+		if ($id !== NULL) {
+			$this->breadcrumb->add(
+				($third_level !== NULL) ? $third_level : $id,
+				($third_level !== NULL) ? $third_level : $id,
+				base_url() . 'index.php/' . $this->_name . '/' . $method . '/' . $id,
+				'ndphp.ajax.load_body_op_id(event, \'' . filter_html_js_str($this->_name, $this->_charset) . '\', \'' . filter_html_js_str($method, $this->_charset) . '\', \'' . filter_html_js_str($id, $this->_charset) . '\');'
+			);
+		}
+
+		/* Create breadcrumb HTML and return the result */
+		return $this->breadcrumb->create();
 	}
 
 	private function _get_rel_table_names($rel, $target = NULL, $mixed = false) {
@@ -3896,6 +4117,20 @@ class ND_Controller extends UW_Controller {
 	}
 
 
+	/** Custom loaders **/
+	protected function _load_view($view_name, $data = NULL, $customizable = false, $return_data = false) {
+		if ($customizable) {
+			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/' . $view_name . '.php')) {
+				return $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/' . $view_name, $data, $return_data);
+			} else {
+				return $this->load->view('themes/' . $this->_theme . '/' . '_default/' . $view_name, $data, $return_data);
+			}
+		} else {
+			return $this->load->view('themes/' . $this->_theme . '/' . $view_name, $data, $return_data);
+		}
+	}
+
+
 	/** Field analysis and mangling **/
 	protected function _field_value_mangle($fields, $query) {
 		$result_mangled = array();
@@ -4061,14 +4296,10 @@ class ND_Controller extends UW_Controller {
 		$data['view']['selected_id'] = $selected_id;
 		$data['view']['relationship'] = $relationship;
 
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/options.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/options', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/options', $data);
-		}
+		$this->_load_view('options', $data, true);
 	}
 	
-	public function groups_generic() {
+	protected function groups_generic() {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
 			header('HTTP/1.1 403 Forbidden');
@@ -4119,6 +4350,7 @@ class ND_Controller extends UW_Controller {
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_groups); /* _get_fields() uses a perm_read filter by default */
 		$data['view']['links']['quick'] = $this->_quick_modal_links_list;
 		$data['view']['links']['submenu'] = $this->_submenu_body_links_groups;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('groups', NDPHP_LANG_MOD_OP_GROUPS);
 
 		/* Create groups list */
 		$groups = array();
@@ -4217,8 +4449,11 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
-	public function groups() {
+	public function groups($body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
 		$data = $this->groups_generic();
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->_json_replies === true) {
@@ -4227,64 +4462,34 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('groups_header', $data, true);
+
+		$this->_load_view('groups_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('groups_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function groups_body_ajax() {
-		$data = $this->groups_generic();
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_header.php')) {
-			$this->load->view('themes/' . $this->_name . '/groups_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_footer', $data);
-		}
+		$this->groups(true);
 	}
 
 	public function groups_data_ajax() {
-		$data = $this->groups_generic();
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/groups_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/groups_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/groups_footer', $data);
-		}
+		$this->groups(true, false);
 	}
 
-	public function list_generic($field = NULL, $order = NULL, $page = 0) {
+	public function groups_data_modalbox() {
+		$this->groups(true, false, true, true);
+	}
+
+	protected function list_generic($field = NULL, $order = NULL, $page = 0) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
 			header('HTTP/1.1 403 Forbidden');
@@ -4352,6 +4557,7 @@ class ND_Controller extends UW_Controller {
 		/* Setup specific view data */
 		$data['view']['links']['quick'] = $this->_quick_modal_links_list;
 		$data['view']['links']['submenu'] = $this->_submenu_body_links_list;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('list', NDPHP_LANG_MOD_OP_LIST);
 
 		$data['config']['charts']['total'] = count($this->_charts);
 
@@ -4451,8 +4657,13 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
-	public function list_default($field = NULL, $order = NULL, $page = 0) {
+	public function list_default($field = NULL, $order = NULL, $page = 0,
+		$body_only = false, $body_header = true, $body_footer = true, $modalbox = false)
+	{
 		$data = $this->list_generic($field, $order, $page);
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->_json_replies === true) {
@@ -4461,64 +4672,34 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('list_header', $data, true);
+
+		$this->_load_view('list_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('list_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function list_body_ajax($field = NULL, $order = NULL, $page = 0) {
-		$data = $this->list_generic($field, $order, $page);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_header.php')) {
-			$this->load->view('themes/' . $this->_name . '/list_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_footer', $data);
-		}
+		$this->list_default($field, $order, $page, true);
 	}
 
 	public function list_data_ajax($field = NULL, $order = NULL, $page = 0) {
-		$data = $this->list_generic($field, $order, $page);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_footer', $data);
-		}
+		$this->list_default($field, $order, $page, true, false);
 	}
 
-	public function list_group_generic($grouping_field, $field = NULL, $order = NULL, $page = 0) {
+	public function list_data_modalbox($field = NULL, $order = NULL, $page = 0) {
+		$this->list_default($field, $order, $page, true, false, true, true);
+	}
+
+	protected function list_group_generic($grouping_field, $field = NULL, $order = NULL, $page = 0) {
 		/* TODO: FIXME:
 		 *
 		 * There's a significant performance impact on this approach and no pagination support is currently
@@ -4588,8 +4769,13 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
-	public function list_group($grouping_field, $field = NULL, $order = NULL, $page = 0) {
+	public function list_group($grouping_field, $field = NULL, $order = NULL, $page = 0,
+		$body_only = false, $body_header = true, $body_footer = true, $modalbox = false)
+	{
 		$data = $this->list_group_generic($grouping_field, $field, $order, $page);
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->_json_replies === true) {
@@ -4598,61 +4784,31 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('list_group_header', $data, true);
+
+		$this->_load_view('list_group_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('list_group_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function list_group_body_ajax($grouping_field, $field = NULL, $order = NULL, $page = 0) {
-		$data = $this->list_group_generic($grouping_field, $field, $order, $page);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_header.php')) {
-			$this->load->view('themes/' . $this->_name . '/list_group_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_footer', $data);
-		}
+		$this->list_group($grouping_field, $field, $order, $page, true);
 	}
 
 	public function list_group_data_ajax($grouping_field, $field = NULL, $order = NULL, $page = 0) {
-		$data = $this->list_group_generic($grouping_field, $field, $order, $page);
+		$this->list_group($grouping_field, $field, $order, $page, true, false);
+	}
 
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/list_group_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/list_group_footer', $data);
-		}
+	public function list_group_data_modalbox($grouping_field, $field = NULL, $order = NULL, $page = 0) {
+		$this->list_group($grouping_field, $field, $order, $page, true, false, true, true);
 	}
 
 	public function import_csv() {
@@ -4662,11 +4818,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['modalbox'] = true;
 
 		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/import_csv.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/import_csv', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/import_csv', $data);
-		}
+		$this->_load_view('import_csv', $data, true);
 	}
 
 	public function import($type = 'csv') {
@@ -5016,11 +5168,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['modalbox'] = true;
 
 		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_save.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_save', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_save', $data);
-		}
+		$this->_load_view('search_save', $data, true);
 	}
 
 	public function search_save_insert() {
@@ -5075,7 +5223,7 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
-	public function search_generic($advanced = true) {
+	protected function search_generic($advanced = true) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
 			header('HTTP/1.1 403 Forbidden');
@@ -5124,6 +5272,7 @@ class ND_Controller extends UW_Controller {
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_filter_fields($this->_security_perms, $this->security->perm_search, $this->_get_fields(NULL, $this->_hide_fields_search)); /* _get_fields() uses a perm_read filter by default */
 		$data['view']['links']['submenu'] = $this->_submenu_body_links_search;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('search', NDPHP_LANG_MOD_OP_SEARCH);
 		$data['view']['saved_searches'] = $this->_get_saved_searches();
 		
 		/* Hidden fields */
@@ -5140,67 +5289,41 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
-	public function search($advanced = true) {
+	public function search($advanced = true, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
 		$data = $this->search_generic($advanced);
 
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
+
 		/* Load Views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('search_header', $data, true);
+
+		$this->_load_view('search_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('search_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function search_body_ajax($advanced = true) {
-		$data = $this->search_generic($advanced);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_header.php')) {
-			$this->load->view('themes/' . $this->_name . '/search_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_footer', $data);
-		}
+		$this->search($advanced, true);
 	}
 
 	public function search_data_ajax($advanced = true) {
-		$data = $this->search_generic($advanced);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/search_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/search_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/search_footer', $data);
-		}
+		$this->search($advanced, true, false);
 	}
 
-	public function result_generic($type = 'advanced', $result_query = NULL,
+	public function search_data_modalbox($advanced = true) {
+		$this->search($advanced, true, false, true, true);
+	}
+
+	protected function result_generic($type = 'advanced', $result_query = NULL,
 							$order_field = NULL, $order_type = NULL, $page = 0) {
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars)) {
@@ -5274,6 +5397,7 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links'] = array();
 		$data['view']['links']['quick'] = $this->_quick_modal_links_result;
 		$data['view']['links']['submenu'] = $this->_submenu_body_links_result;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('result', NDPHP_LANG_MOD_OP_RESULT);
 
 		$data['config']['charts'] = array();
 		$data['config']['charts']['total'] = count($this->_charts);
@@ -5905,8 +6029,13 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
-	public function result($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+	public function result($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0,
+		$body_only = false, $body_header = true, $body_footer = true, $modalbox = false)
+	{
 		$data = $this->result_generic($type, $result_query, $order_field, $order_type, $page);
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->_json_replies === true) {
@@ -5915,70 +6044,40 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('result_header', $data, true);
+
+		$this->_load_view('result_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('result_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
-	public function result_body_ajax($type = 'advanced', $result_query = NULL,
-							$order_field = NULL, $order_type = NULL, $page = 0) {
-		$data = $this->result_generic($type, $result_query, $order_field, $order_type, $page);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_footer', $data);
-		}
+	public function result_body_ajax($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+		$this->result($type, $result_query, $order_field, $order_type, $page, true);
 	}
 
-	public function result_data_ajax($type = 'advanced', $result_query = NULL,
-							$order_field = NULL, $order_type = NULL, $page = 0) {
-		$data = $this->result_generic($type, $result_query, $order_field, $order_type, $page);
-		
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_footer', $data);
-		}
+	public function result_data_ajax($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+		$this->result($type, $result_query, $order_field, $order_type, $page, true, false);
 	}
 
-	public function result_group_generic($grouping_field, $type = 'advanced', $result_query = NULL,
-							$order_field = NULL, $order_type = NULL, $page = 0) {
+	public function result_data_modalbox($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+		$this->result($type, $result_query, $order_field, $order_type, $page, true, false, true, true);
+	}
+
+	protected function result_group_generic($grouping_field, $type = 'advanced', $result_query = NULL,
+		$order_field = NULL, $order_type = NULL, $page = 0)
+	{
 		/* TODO: FIXME:
 		 *
 		 * There's a significant performance impact on this approach and no pagination support is currently
-		 * implemented for grouping. The redesign of this feature is required.
+		 * implemented for grouping. Redesign of this feature is required.
 		 *
 		 */
 
@@ -6045,8 +6144,13 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
-	public function result_group($grouping_field, $type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+	public function result_group($grouping_field, $type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0,
+		$body_only = false, $body_header = true, $body_footer = true, $modalbox = false)
+	{
 		$data = $this->result_group_generic($grouping_field, $type, $result_query, $order_field, $order_type, $page);
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->_json_replies === true) {
@@ -6055,62 +6159,31 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load Views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('result_group_header', $data, true);
+
+		$this->_load_view('result_group_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('result_group_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
-	public function result_group_body_ajax($grouping_field, $type = 'advanced', $result_query = NULL,
-							$order_field = NULL, $order_type = NULL, $page = 0) {
-		$data = $this->result_group_generic($grouping_field, $type, $result_query, $order_field, $order_type, $page);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_footer', $data);
-		}
+	public function result_group_body_ajax($grouping_field, $type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+		$this->result_group($grouping_field, $type, $result_query, $order_field, $order_type, $page, true);
 	}
 
-	public function result_group_data_ajax($grouping_field, $type = 'advanced', $result_query = NULL,
-							$order_field = NULL, $order_type = NULL, $page = 0) {
-		$data = $this->result_group_generic($grouping_field, $type, $result_query, $order_field, $order_type, $page);
-		
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/result_group_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/result_group_footer', $data);
-		}
+	public function result_group_data_ajax($grouping_field, $type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+		$this->result_group($grouping_field, $type, $result_query, $order_field, $order_type, $page, true, false);
+	}
+
+	public function result_group_data_modalbox($grouping_field, $type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0) {
+		$this->result_group($grouping_field, $type, $result_query, $order_field, $order_type, $page, true, false, true, true);
 	}
 
 	public function export($export_query = NULL, $type = 'pdf') {
@@ -6194,12 +6267,10 @@ class ND_Controller extends UW_Controller {
 
 		/* Export format is based on type */
 		if ($type == 'pdf') {
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/export.php')) {
-				$view_data = $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/export', $data, true);
-			} else {
-				$view_data = $this->load->view('themes/' . $this->_theme . '/' . '_default/export', $data, true);
-			}
-		
+			/* Load view data */
+			$view_data = $this->_load_view('export', $data, true, true);
+
+			/* Create PDF */		
 			$this->mpdf->WriteHTML($view_data);
 			/*	mPDF Output() options:
 			 * 
@@ -6263,7 +6334,7 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
-	public function create_generic() {
+	protected function create_generic() {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {
 			header('HTTP/1.1 403 Forbidden');
@@ -6308,6 +6379,7 @@ class ND_Controller extends UW_Controller {
 
 		$data['view']['fields'] = $this->_filter_fields($this->_security_perms, $this->security->perm_create, $this->_get_fields(NULL, $this->_hide_fields_create)); /* Filter fields (The perm_read permission is already being validated on $this->_get_fields() */
 		$data['view']['links']['submenu'] = $this->_submenu_body_links_create;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('create', NDPHP_LANG_MOD_OP_CREATE);
 
 		/* Required fields are extracted from information schema
 		 *
@@ -6401,89 +6473,41 @@ class ND_Controller extends UW_Controller {
 		$data['view']['present_fields'] = $this->_get_mixed_table_fields($this->_name, $foreign_table);
 		
 		/* Load mixed view */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_mixed.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_mixed', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_mixed', $data);
-		}
+		$this->_load_view('create_mixed', $data, true);
 	}
 
-	public function create() {
+	public function create($body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
 		$data = $this->create_generic();
-		
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
+
 		/* Load Views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('create_header', $data, true);
+
+		$this->_load_view('create_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('create_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function create_body_ajax() {
-		$data = $this->create_generic();
-		
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_footer', $data);
-		}
+		$this->create(true);
 	}
 
 	public function create_data_ajax() {
-		$data = $this->create_generic();
-		
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_data', $data);
-		}
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_footer', $data);
-		}
+		$this->create(true, false);
 	}
 
 	public function create_data_modalbox() {
-		$data = $this->create_generic();
-		$data['config']['modalbox'] = true;
-		
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/create_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/create_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/create_footer', $data);
-		}
+		$this->create(true, false, true, true);
 	}
 
 	public function insert($retid = false) {
@@ -6747,172 +6771,8 @@ class ND_Controller extends UW_Controller {
 			}
 		}
 
-		/* Insert mixed relationships.
-		 * TODO: FIXME: This is almost the same code used on update() function... so this should be moved to a helper function.
-		 */
-
-		$mixed_foreign_value_id = array(); /* Will contain the entry id of foreign single relationship tables... (used by $_mixed_table_add_missing) */
-
-		foreach ($mixed_rels as $mixed_table => $mixed_table_value) {
-			/* Structure of $mixed_rels: $mixed_rels[<table_name>][<mid>][<table_field_name>] = <value> */
-			foreach ($mixed_table_value as $mixed_id => $mixed_id_value) {
-				/* Structure of $mixed_table_value: $mixed_table_value[<mid>][<table_field_name>] = <value> */
-				foreach ($mixed_id_value as $mixed_field => $mixed_field_value) {
-					/* Structure of $mixed_id_value: $mixed_id_value[<table_field_name>] = <value> */
-
-					/* If there's no value set for this mixed id field or if it's already set, just ignore this entry */
-					if (($mixed_field_value == '') || ($mixed_field_value == NULL) || isset($mixed_insert_values[$mixed_field]))
-						continue;
-
-					/* Check for exceptions, for example, datetime fields are split into _time and _date suffixes */
-					if (isset($mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'])) {
-						$mixed_insert_values[$mixed_field] = $this->timezone->convert($mixed_field_value . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'], $this->_session_data['timezone'], $this->_default_timezone);
-					} else if ((substr($mixed_field, -5) == '_time')) {
-						$mixed_insert_values[substr($mixed_field, 0, -5)] = $this->timezone->convert($mixed_rels[$mixed_table][$mixed_id][substr($mixed_field, 0, -5)] . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field], $this->_session_data['timezone'], $this->_default_timezone);
-					} else if ((substr($mixed_field, -3) == '_id') && (strpos($mixed_field_value, '_'))) {
-						/* If the mixed table field is a single relationship, its value is a compound of option id and option value
-						 * in the format of <optid>_<optval> and requires special parsing.
-						 */
-						$mixed_field_val_raw = explode('_', $mixed_field_value);
-						$mixed_field_val_id = $mixed_field_val_raw[0];
-						$mixed_field_val_value = $mixed_field_val_raw[1];
-						$mixed_field_table_name = substr($mixed_field, 0, -3);
-
-						/* Grant that the user has privileges to access the foreign table item */
-						if (!$this->_table_row_filter_perm($mixed_field_val_id, $mixed_field_table_name)) {
-							$this->db->trans_rollback();
-							header('HTTP/1.1 403 Forbidden');
-							die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #6');
-						}
-
-						/* Exclude the ID portion of the mixed_field_value and get only corresponding value */
-						/* Note that the format of relational mixed fields is: '<id>_<value>' */
-						$mixed_insert_values[$mixed_field] = $mixed_field_val_value;
-
-						/* Also store the entry id... this may be required for later use if we need to add a missing entry */
-						$mixed_foreign_value_id[$mixed_field_table_name] = $mixed_field_val_id;
-					} else {
-						$mixed_insert_values[$mixed_field] = $mixed_field_value;
-					}
-				}
-
-				/* Get optional fields and retrieve their respective values, if any */
-				$mixed_table_fields = $this->db->list_fields('mixed_' . $this->_name . '_' . $mixed_table);
-				foreach ($mixed_table_fields as $mixed_field) {
-					/* Check if this is a private field */
-					if (substr($mixed_field, 0, 2) != '__')
-						continue;
-
-					$pmfield = explode('_tc_', substr($mixed_field, 2));
-
-					$ftname = $pmfield[0];	/* Foreign Table name */
-					$ftcname = $pmfield[1];	/* Foreign Table Column name */
-					
-					$this->db->select($ftcname);
-					$this->db->distinct();	/* NOTE: Not required since the key we're looking for must be UNIQUE. */
-					$this->db->from($ftname);
-					$this->db->where('id', strstr($mixed_rels[$mixed_table][$mixed_id][$ftname . '_id'], '_', true));
-					$this->_table_row_filter_apply($ftname);
-
-					$query_mixed = $this->db->get();
-
-					/* If empty, there's no permissions */
-					if (!$query_mixed->num_rows()) {
-						$this->db->trans_rollback();
-						header('HTTP/1.1 403 Forbidden');
-						die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-					}
-
-					$row_mixed = $query_mixed->row_array();
-					$mixed_insert_values[$mixed_field] = $row_mixed[$ftcname];
-				}
-
-				/* Check if all secondary relational table foreign keys exist */
-				$srtf_field_found = false;
-				foreach ($mixed_insert_values as $field => $value) {
-					if ($field == $mixed_table_fields[3]) {
-						$srtf_field_found = true;
-						break;
-					}
-				}
-
-				if ($srtf_field_found === false) {
-					/* Before checking for a matching key, validate if there's any value to search for... */
-					if (!isset($mixed_insert_values[$mixed_table_fields[1]]) || $mixed_insert_values[$mixed_table_fields[1]] === NULL || $mixed_insert_values[$mixed_table_fields[1]] == '')
-						continue; /* Nothing to be done with this entry as the key identifier isn't set or it's empty. */
-
-					/* Update mixed_insert_values with missing relational field */
-					$this->db->select('id');
-					$this->db->from(substr($mixed_table_fields[3], 0, -3));
-					$this->db->where($mixed_table_fields[1], $mixed_insert_values[$mixed_table_fields[1]]);
-
-					$srtf_query = $this->db->get();
-
-					if (!$srtf_query->num_rows()) {
-						/* If $_mixed_table_add_missing is true, insert the element on the foreign table */
-						if ($this->_mixed_table_add_missing === true) {
-							/* Clone the values to be inserted on mixed table */
-							$secondary_insert_values = $mixed_insert_values;
-
-							/* Unset relationships */
-							unset($secondary_insert_values[$mixed_table_fields[2]]);
-							unset($secondary_insert_values[$mixed_table_fields[3]]);
-
-							/* Clear any _tc_ fields */
-							foreach ($secondary_insert_values as $field => $value) {
-								if (count(explode('_tc_', $field)) > 1) {
-									unset($secondary_insert_values[$field]);
-								}
-							}
-
-							/* Resolve single relationships back to their original entry id */
-							foreach ($secondary_insert_values as $field => $value) {
-								/* Ignore fields that are not single relationships */
-								if (substr($field, -3) != '_id')
-									continue;
-
-								/* Fetch the previously stored entry id related to this single relationship */
-								$secondary_insert_values[$field] = $mixed_foreign_value_id[substr($field, -3)];
-							}
-
-							/* Set any existing filtering fields */
-							$secondary_insert_values = array_merge($secondary_insert_values, $this->_table_row_filter_get($mixed_table));
-
-							/* Insert data into the secondary table */
-							$this->db->insert($mixed_table, $secondary_insert_values);
-
-							/* Set the newly inserted id as the mixed relationship id */
-							$mixed_insert_values[$mixed_table_fields[3]] = $this->db->last_insert_id();
-						} else if (isset($this->_mixed_table_set_missing[$mixed_table])) {
-							/* There's a default id to be used associated to this mixed table */
-							$mixed_insert_values[$mixed_table_fields[3]] = $this->_mixed_table_set_missing[$mixed_table];
-						} else {
-							$this->db->trans_rollback();
-							header('HTTP/1.1 403 Forbidden');
-							die(NDPHP_LANG_MOD_INVALID_MIXED_VALUE);
-						}
-					} else {
-						$row = $srtf_query->row_array();
-
-						$mixed_insert_values[$mixed_table_fields[3]] = $row['id'];
-					}
-				}
-
-				/* If there's anything to be inserted, do it */
-				if (isset($mixed_insert_values)) {
-					/* Security Permissions Check */
-					if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $mixed_table)) {
-						$this->db->trans_rollback();
-						header('HTTP/1.1 403 Forbidden');
-						die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-					}
-
-					$mixed_insert_values[$this->_name . '_id'] = $last_id;
-					$this->db->insert('mixed_' . $this->_name . '_' . $mixed_table, $mixed_insert_values);
-					unset($mixed_insert_values);
-				}
-			}
-		}
+		/* Insert mixed relationships. */
+		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes);
 
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
@@ -6947,7 +6807,7 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 	
-	public function edit_generic($id = 0) {
+	protected function edit_generic($id = 0) {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {
 			header('HTTP/1.1 403 Forbidden');
@@ -7086,16 +6946,22 @@ class ND_Controller extends UW_Controller {
 		$data['config']['hidden_fields'] = $this->_hide_fields_edit;
 
 		/* Check if there are any entry fields to be appended to the view title */
+		$title_suffix = '';
+
 		if (count($this->_view_title_append_fields)) {
 			foreach ($this->_view_title_append_fields as $title_append) {
 				/* There's a minor exception for the edit view: The 'id' field isn't part of the result array */
 				if ($title_append == 'id') {
-					$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['id'];
+					$title_suffix .= $this->_view_title_append_sep . $id;
 				} else {
-					$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
+					$title_suffix .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
 				}
 			}
 		}
+
+		/* Update title and breadcrumb */
+		$data['view']['title'] .= $title_suffix;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('edit', NDPHP_LANG_MOD_OP_EDIT, $id, ltrim($title_suffix, $this->_view_title_append_sep));
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/edit_generic_leave.php') as $plugin)
@@ -7166,91 +7032,45 @@ class ND_Controller extends UW_Controller {
 		/* Remove the fields that are not present in the mixed relational table */
 		$data['view']['present_fields'] = $this->_get_mixed_table_fields($this->_name, $foreign_table);
 
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_mixed.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_mixed', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_mixed', $data);
-		}
+		/* Load view */
+		$this->_load_view('edit_mixed', $data, true);
 	}
 
-	public function edit($id = 0) {
+	public function edit($id = 0, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
 		$data = $this->edit_generic($id);
 
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
+
 		/* Load Views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('edit_header', $data, true);
+
+		$this->_load_view('edit_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('edit_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function edit_body_ajax($id = 0) {
-		$data = $this->edit_generic($id);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_footer', $data);
-		}
+		$this->edit($id, true);
 	}
 
 	public function edit_data_ajax($id = 0) {
-		$data = $this->edit_generic($id);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_footer', $data);
-		}
+		$this->edit($id, true, false);
 	}
 
 	public function edit_data_modalbox($id = 0) {
-		$data = $this->edit_generic($id);
-		$data['config']['modalbox'] = true;
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/edit_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/edit_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/edit_footer', $data);
-		}
+		$this->edit($id, true, false, true, true);
 	}
 
-	public function view_generic($id = 0, $export = NULL) {
+	protected function view_generic($id = 0, $export = NULL) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
 			header('HTTP/1.1 403 Forbidden');
@@ -7368,11 +7188,16 @@ class ND_Controller extends UW_Controller {
 		$data['config']['hidden_fields'] = $this->_hide_fields_view;
 
 		/* Check if there are any entry fields to be appended to the view title */
+		$title_suffix = '';
+
 		if (count($this->_view_title_append_fields)) {
-			foreach ($this->_view_title_append_fields as $title_append) {
-				$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
-			}
+			foreach ($this->_view_title_append_fields as $title_append)
+				$title_suffix .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
 		}
+
+		/* Update title and breadcrumb */
+		$data['view']['title'] .= $title_suffix;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('view', NDPHP_LANG_MOD_OP_VIEW, $id, ltrim($title_suffix, $this->_view_title_append_sep));
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_leave.php') as $plugin)
@@ -7443,16 +7268,16 @@ class ND_Controller extends UW_Controller {
 
 		/* Remove the fields that are not present in the mixed relational table */
 		$data['view']['present_fields'] = $this->_get_mixed_table_fields($this->_name, $foreign_table);
-		
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_mixed.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_mixed', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/view_mixed', $data);
-		}
+
+		/* Load view */
+		$this->_load_view('view_mixed', $data, true);
 	}
 
-	public function view($id = 0, $export = NULL) {
+	public function view($id = 0, $export = NULL, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
 		$data = $this->view_generic($id, $export);
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->_json_replies === true) {
@@ -7493,12 +7318,10 @@ class ND_Controller extends UW_Controller {
 					}
 				}
 
-				if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/exportview.php')) {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/exportview', $data, true);
-				} else {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . '_default/exportview', $data, true);
-				}
+				/* Load view data */
+				$view_data = $this->_load_view('exportview', $data, true, true);
 
+				/* Create PDF */
 				$this->mpdf->WriteHTML($view_data);
 				/*	mPDF Output() options:
 				 * 
@@ -7513,146 +7336,32 @@ class ND_Controller extends UW_Controller {
 			}
 		} else {
 			/* Load Views */
-			$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_header.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_header', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_header', $data);
-			}
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_data.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_data', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_data', $data);
-			}
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_footer.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_footer', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_footer', $data);
-			}
-			$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+			if (!$body_only)
+				$this->_load_view('header', $data);
+
+			if ($body_header)
+				$this->_load_view('view_header', $data, true);
+
+			$this->_load_view('view_data', $data, true);
+
+			if ($body_footer)
+				$this->_load_view('view_footer', $data, true);
+
+			if (!$body_only)
+				$this->_load_view('footer', $data);
 		}		
 	}
 	
 	public function view_body_ajax($id = 0, $export = NULL) {
-		$data = $this->view_generic($id, $export);
-		
-		if ($export) {
-			if ($export == 'pdf') {
-				if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/exportview.php')) {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/exportview', $data, true);
-				} else {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . '_default/exportview', $data, true);
-				}
-
-				$this->mpdf->WriteHTML($view_data);
-				/*	mPDF Output() options:
-				 * 
-				 * 	I: send the file inline to the browser. The plug-in is used if available. The name given by filename is used when one selects the "Save as" option on the link generating the PDF.
-				 *	D: send to the browser and force a file download with the name given by filename.
-				 *	F: save to a local file with the name given by filename (may include a path).
-				 *	S: return the document as a string. filename is ignored.
-				 */
-				$this->mpdf->Output($this->_name . '_' . $id . '.pdf', 'D');
-			} else if ($export == 'csv') {
-				// TODO: Implement CSV export here
-			}
-		} else {
-			/* Load Views */
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_header.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_header', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_header', $data);
-			}
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_data.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_data', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_data', $data);
-			}
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_footer.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_footer', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_footer', $data);
-			}
-		}		
+		$this->view($id, $export, true);
 	}
 
 	public function view_data_ajax($id = 0, $export = NULL) {
-		$data = $this->view_generic($id, $export);
-		
-		if ($export) {
-			if ($export == 'pdf') {
-				if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/exportview.php')) {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/exportview', $data, true);
-				} else {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . '_default/exportview', $data, true);
-				}
-
-				$this->mpdf->WriteHTML($view_data);
-				/*	mPDF Output() options:
-				 * 
-				 * 	I: send the file inline to the browser. The plug-in is used if available. The name given by filename is used when one selects the "Save as" option on the link generating the PDF.
-				 *	D: send to the browser and force a file download with the name given by filename.
-				 *	F: save to a local file with the name given by filename (may include a path).
-				 *	S: return the document as a string. filename is ignored.
-				 */
-				$this->mpdf->Output($this->_name . '_' . $id . '.pdf', 'D');
-			} else if ($export == 'csv') {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV);
-				// TODO: Implement CSV export here
-			}
-		} else {
-			/* Load Views */
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_data.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_data', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_data', $data);
-			}
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_footer.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_footer', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_footer', $data);
-			}
-		}		
+		$this->view($id, $export, true, false);
 	}
 
 	public function view_data_modalbox($id = 0, $export = NULL) {
-		$data = $this->view_generic($id, $export);
-		$data['config']['modalbox'] = true;
-
-		if ($export) {
-			if ($export == 'pdf') {
-				if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/exportview.php')) {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/exportview', $data, true);
-				} else {
-					$view_data = $this->load->view('themes/' . $this->_theme . '/' . '_default/exportview', $data, true);
-				}
-
-				$this->mpdf->WriteHTML($view_data);
-				/*	mPDF Output() options:
-				 * 
-				 * 	I: send the file inline to the browser. The plug-in is used if available. The name given by filename is used when one selects the "Save as" option on the link generating the PDF.
-				 *	D: send to the browser and force a file download with the name given by filename.
-				 *	F: save to a local file with the name given by filename (may include a path).
-				 *	S: return the document as a string. filename is ignored.
-				 */
-				$this->mpdf->Output($this->_name . '_' . $id . '.pdf', 'D');
-			} else if ($export == 'csv') {
-				// TODO: Implement CSV export here
-			}
-		} else {
-			/* Load Views */
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_data.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_data', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_data', $data);
-			}
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/view_footer.php')) {
-				$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/view_footer', $data);
-			} else {
-				$this->load->view('themes/' . $this->_theme . '/' . '_default/view_footer', $data);
-			}
-		}		
+		$this->view($id, $export, true, false, true, true);
 	}
 
 	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
@@ -7933,172 +7642,7 @@ class ND_Controller extends UW_Controller {
 		$last_id = $_POST['id'];
 
 		/* Process mixed relationships if there are any to be updated */
-		if (count($mixed_rels) /* If $mixed_rels array is empty, do not remove nor process updates on mixed fields */) {
-			/* Remove old mixed relationship entries */
-			foreach ($ftypes as $fname => $fmeta) {
-				if ($fmeta['type'] == 'mixed') {
-					/* Security Permissions Check */
-					if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $fmeta['rel_table'])) {
-						$this->db->trans_rollback();
-						header('HTTP/1.1 403 Forbidden');
-						die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-					}
-        	
-					$this->db->where($this->_name . '_id', $last_id);
-					$this->db->delete($fmeta['table']);
-				}
-			}
-        	
-			/* Update mixed relationships */
-			$mixed_foreign_value_id = array(); /* Will contain the entry id of foreign single relationship tables... (used by $_mixed_table_add_missing) */
-
-			foreach ($mixed_rels as $mixed_table => $mixed_table_value) {
-				foreach ($mixed_table_value as $mixed_id => $mixed_id_value) {
-					foreach ($mixed_id_value as $mixed_field => $mixed_field_value) {
-						if (($mixed_field_value == '') || ($mixed_field_value == NULL) || isset($mixed_insert_values[$mixed_field]))
-							continue;
-        	
-						/* Check for exceptions, for example, datetime fields are split into _time and _date suffixes */
-						if (isset($mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'])) {
-							$mixed_insert_values[$mixed_field] = $this->timezone->convert($mixed_field_value . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'], $this->_session_data['timezone'], $this->_default_timezone);
-						} else if ((substr($mixed_field, -5) == '_time')) {
-							$mixed_insert_values[substr($mixed_field, 0, -5)] = $this->timezone->convert($mixed_rels[$mixed_table][$mixed_id][substr($mixed_field, 0, -5)] . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field], $this->_session_data['timezone'], $this->_default_timezone);
-						} else if ((substr($mixed_field, -3) == '_id') && (strpos($mixed_field_value, '_'))) {
-							/* Single relationship fields' identifiers on mixed relationships use the <id>_<value> format */
-							$mixed_field_val_raw = explode('_', $mixed_field_value);
-							$mixed_field_val_id = $mixed_field_val_raw[0];
-							$mixed_field_val_value = $mixed_field_val_raw[1];
-							$mixed_field_table_name = substr($mixed_field, 0, -3);
-        	
-							/* Grant that the user has privileges to access the foreign table item */
-							if (!$this->_table_row_filter_perm($mixed_field_val_id, $mixed_field_table_name)) {
-								$this->db->trans_rollback();
-								header('HTTP/1.1 403 Forbidden');
-								die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-							}
-        	
-							/* Exclude the ID portion of the mixed_field_value and get only corresponding value */
-							/* Note that the format of relational mixed fields is: '<id>_<value>' */
-							$mixed_insert_values[$mixed_field] = $mixed_field_val_value;
-
-							/* Also store the entry id... this may be required for later use if we need to add a missing entry */
-							$mixed_foreign_value_id[$mixed_field_table_name] = $mixed_field_val_id;
-						} else {
-							$mixed_insert_values[$mixed_field] = $mixed_field_value;
-						}
-					}
-        	
-					/* Get optional fields and retrieve the respective values, if any */
-					$mixed_table_fields = $this->db->list_fields('mixed_' . $this->_name . '_' . $mixed_table);
-					foreach ($mixed_table_fields as $mixed_field) {
-						/* Check if this is a private field */
-						if (substr($mixed_field, 0, 2) != '__')
-							continue;
-        	
-						$pmfield = explode('_tc_', substr($mixed_field, 2));
-        	
-						$ftname = $pmfield[0];	/* Foreign Table name */
-						$ftcname = $pmfield[1];	/* Foreign Table Column name */
-						
-						$this->db->select($ftcname);
-						$this->db->distinct();	/* NOTE: Not required since the key we're looking for must be UNIQUE. */
-						$this->db->from($ftname);
-						$this->db->where('id', strstr($mixed_rels[$mixed_table][$mixed_id][$ftname . '_id'], '_', true));
-						$this->_table_row_filter_apply($ftname);
-        	
-						$query_mixed = $this->db->get();
-        	
-						/* If empty, there's no permissions */
-						if (!$query_mixed->num_rows()) {
-							$this->db->trans_rollback();
-							header('HTTP/1.1 403 Forbidden');
-							die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-						}
-        	
-						$row_mixed = $query_mixed->row_array();
-						$mixed_insert_values[$mixed_field] = $row_mixed[$ftcname];
-					}
-        	
-					/* Check if all secondary relational table foreign keys exist */
-					$srtf_field_found = false;
-					foreach ($mixed_insert_values as $field => $value) {
-						if ($field == $mixed_table_fields[3]) {
-							$srtf_field_found = true;
-							break;
-						}
-					}
-
-					if ($srtf_field_found === false) {
-						/* Before checking for a matching key, validate if there's any value to search for... */
-						if (!isset($mixed_insert_values[$mixed_table_fields[1]]) || $mixed_insert_values[$mixed_table_fields[1]] === NULL || $mixed_insert_values[$mixed_table_fields[1]] == '')
-							continue; /* Nothing to be done with this entry as the key identifier isn't set or it's empty. */
-
-						/* Update mixed_insert_values with missing relational field */
-						$this->db->select('id');
-						$this->db->from(substr($mixed_table_fields[3], 0, -3));
-						$this->db->where($mixed_table_fields[1], $mixed_insert_values[$mixed_table_fields[1]]);
-
-						$srtf_query = $this->db->get();
-
-						if (!$srtf_query->num_rows()) {
-							/* If $_mixed_table_add_missing is true, insert the element on the foreign table */
-							if ($this->_mixed_table_add_missing === true) {
-								/* Clone the values to be inserted on mixed table */
-								$secondary_insert_values = $mixed_insert_values;
-
-								/* Unset relationships */
-								unset($secondary_insert_values[$mixed_table_fields[2]]);
-								unset($secondary_insert_values[$mixed_table_fields[3]]);
-
-								/* Clear any _tc_ fields */
-								foreach ($secondary_insert_values as $field => $value) {
-									if (count(explode('_tc_', $field)) > 1) {
-										unset($secondary_insert_values[$field]);
-									}
-								}
-
-								/* Resolve single relationships back to their original entry id */
-								foreach ($secondary_insert_values as $field => $value) {
-									/* Ignore fields that are not single relationships */
-									if (substr($field, -3) != '_id')
-										continue;
-
-									/* Fetch the previously stored entry id related to this single relationship */
-									$secondary_insert_values[$field] = $mixed_foreign_value_id[substr($field, -3)];
-								}
-
-								/* Set any existing filtering fields */
-								$secondary_insert_values = array_merge($secondary_insert_values, $this->_table_row_filter_get($mixed_table));
-
-								/* Insert data into the secondary table */
-								$this->db->insert($mixed_table, $secondary_insert_values);
-
-								/* Set the newly inserted id as the mixed relationship id */
-								$mixed_insert_values[$mixed_table_fields[3]] = $this->db->last_insert_id();
-							} else if (isset($this->_mixed_table_set_missing[$mixed_table])) {
-								/* There's a default id to be used associated to this mixed table */
-								$mixed_insert_values[$mixed_table_fields[3]] = $this->_mixed_table_set_missing[$mixed_table];
-							} else {
-								$this->db->trans_rollback();
-								header('HTTP/1.1 403 Forbidden');
-								die(NDPHP_LANG_MOD_INVALID_MIXED_VALUE);
-							}
-						} else {
-							$row = $srtf_query->row_array();
-
-							$mixed_insert_values[$mixed_table_fields[3]] = $row['id'];
-						}
-					}
-
-					/* If there's anything to be inserted, do it */
-					if (isset($mixed_insert_values)) {
-						$mixed_insert_values[$this->_name . '_id'] = $last_id;
-						$this->db->insert('mixed_' . $this->_name . '_' . $mixed_table, $mixed_insert_values);
-						unset($mixed_insert_values);
-					}
-				}
-			}
-		}
+		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes, true);
 
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
@@ -8129,7 +7673,7 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
-	public function remove_generic($id = 0) {
+	protected function remove_generic($id = 0) {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {
 			header('HTTP/1.1 403 Forbidden');
@@ -8241,11 +7785,16 @@ class ND_Controller extends UW_Controller {
 		$data['config']['hidden_fields'] = $this->_hide_fields_remove;
 
 		/* Check if there are any entry fields to be appended to the view title */
+		$title_suffix = '';
+
 		if (count($this->_view_title_append_fields)) {
-			foreach ($this->_view_title_append_fields as $title_append) {
-				$data['view']['title'] .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
-			}
+			foreach ($this->_view_title_append_fields as $title_append)
+				$title_suffix .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
 		}
+
+		/* Update title and breadcrumb */
+		$data['view']['title'] .= $title_suffix;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('remove', NDPHP_LANG_MOD_OP_REMOVE, $id, ltrim($title_suffix, $this->_view_title_append_sep));
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/remove_generic_leave.php') as $plugin)
@@ -8315,88 +7864,42 @@ class ND_Controller extends UW_Controller {
 		/* Remove the fields that are not present in the mixed relational table */
 		$data['view']['present_fields'] = $this->_get_mixed_table_fields($this->_name, $foreign_table);
 
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_mixed.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_mixed', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_mixed', $data);
-		}
+		/* Load view */
+		$this->_load_view('remove_mixed', $data, true);
 	}
 
-	public function remove($id = 0) {
+	public function remove($id = 0, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
 		$data = $this->remove_generic($id);
 
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
+
 		/* Load Views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_footer', $data);
-		}
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		if (!$body_only)
+			$this->_load_view('header', $data);
+
+		if ($body_header)
+			$this->_load_view('remove_header', $data, true);
+
+		$this->_load_view('remove_data', $data, true);
+
+		if ($body_footer)
+			$this->_load_view('remove_footer', $data, true);
+
+		if (!$body_only)
+			$this->_load_view('footer', $data);
 	}
 
 	public function remove_body_ajax($id = 0) {
-		$data = $this->remove_generic($id);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_header.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_header', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_footer', $data);
-		}
+		$this->remove($id, true);
 	}
 
 	public function remove_data_ajax($id = 0) {
-		$data = $this->remove_generic($id);
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_footer', $data);
-		}
+		$this->remove($id, true, false);
 	}
 
 	public function remove_data_modalbox($id = 0) {
-		$data = $this->remove_generic($id);
-		$data['config']['modalbox'] = true;
-
-		/* Load Views */
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_data.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_data', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/remove_footer.php')) {
-			$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/remove_footer', $data);
-		} else {
-			$this->load->view('themes/' . $this->_theme . '/' . '_default/remove_footer', $data);
-		}
+		$this->remove($id, true, false, true, true);
 	}
 
 	public function delete($id = 0, $retbool = false) {

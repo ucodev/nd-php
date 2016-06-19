@@ -1,3 +1,10 @@
+v0.01s (2016-06-19):
+
+ - Field separators on IDE now are shown under a different color from other fields.
+ - Added support for breadcrumb.
+ - Restructured some code on core controllers.
+
+
 v0.01r1 (2016-06-16):
 
  - Fixed and improved uploaded files' filters.

@@ -155,7 +155,7 @@
 			</div>
 			<div id="obj_fields_entry_k" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ this.parentNode.id ])">
 				<input id="type" type="hidden" value="separator" />
-				<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Separators will create new tabs on the form. The form tab will have the name of the separator and will contain all the fields that are placed ahead of the Separator field under the Fields container, until another Separator is found or there are no more fields.">Separator</span><br />
+				<span id="title" class="title field_obj separator_obj" onClick="ndphp.ide.dialog_show(this, 'field');" title="Separators will create new tabs on the form. The form tab will have the name of the separator and will contain all the fields that are placed ahead of the Separator field under the Fields container, until another Separator is found or there are no more fields.">Separator</span><br />
 				<span id="name" onClick="ndphp.ide.name_click(this);">field name</span>
 				<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" />
 			</div>
@@ -271,7 +271,7 @@
 						<?php foreach ($menu_item['fields'] as $field_item): ?>
 							<div id="<?=$field_item['obj_id']?>" class="object" draggable="true" ondrop="ndphp.ide.ide_obj_draggable_drop(event);" ondragover="ndphp.ide.ide_obj_allow_drop(event)" ondragstart="ndphp.ide.ide_obj_drag_common(event, [ 'fields', 'trash' ])">
 								<input id="type" type="hidden" value="<?=filter_html($field_item['type'], $config['charset'])?>" />
-								<span id="title" class="title field_obj" onClick="ndphp.ide.dialog_show(this, 'field');" style="cursor: context-menu;"><?=filter_html(html_entity_decode($field_item['title']), $config['charset'])?></span><br />
+								<span id="title" class="title field_obj <?=($field_item['title'] == 'Separator') ? 'separator_obj' : ''?>" onClick="ndphp.ide.dialog_show(this, 'field');" style="cursor: context-menu;"><?=filter_html(html_entity_decode($field_item['title']), $config['charset'])?></span><br />
 								<?php if ($field_item['type'] != "dropdown" && $field_item['type'] != "multiple" && $field_item['type'] != "mixed"): ?>
 									<span id="name" class="field_name" onClick="ndphp.ide.name_click(this);" style="cursor: cell; display: inline-block; font-weight: bold;"><?=filter_html($field_item['name'], $config['charset'])?></span>
 									<input id="name_edit" onblur="ndphp.ide.input_blur(event);" onkeydown="return ndphp.ide.keydown(event);" type="text" value="<?=filter_html($field_item['name'], $config['charset'])?>" />

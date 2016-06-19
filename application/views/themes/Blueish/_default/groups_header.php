@@ -56,7 +56,7 @@
 <?php include('lib/current_context.php'); ?>
 
 <div id="crud_title">
-	<h1 class="crud_header"><?=filter_html($view['title'], $config['charset'])?></h1>
+	<h1 class="crud_header"><?=$view['links']['breadcrumb']?></h1>
 	<script type="text/javascript">
 		/* Set correct window title (if this view was loaded via an ajax call, the title needs to be changed) */
 		window.document.title = '<?=filter_js_str(html_entity_decode(strip_tags($project['name'] . " - " . $view['title']), ENT_QUOTES, $config['charset']), $config['charset'])?>';

@@ -313,6 +313,10 @@ fieldset {
 	background-color: #DDCC55;
 }
 
+.separator_obj {
+	background-color: #CCDD55;
+}
+
 #name {
 	font-style: italic;
 	font-size: 70%;
