@@ -214,6 +214,9 @@ class Login extends UW_Controller {
 			die(NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY);
 		}
 
+		/* Regenrate user session */
+		$this->session->regenerate();
+
 		/* Setup user session */
 		/* NOTE: Grant that session data is stored under server sessions and not client cookies.
 		 * Client cookies hold 4kB of data at most... if it is exceeded by the following data, bad things can happen.

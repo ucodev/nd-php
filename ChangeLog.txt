@@ -1,3 +1,8 @@
+v0.01u1 (2016-06-20):
+
+ - Session is now correctly regenerated upon user login.
+
+
 v0.01u (2016-06-20):
 
  - Fixed breadcrumb for result views.
