@@ -32,7 +32,7 @@
 
 class Update extends ND_Controller {
 	/* ND PHP Framework - update settings */
-	private $_ndphp_github_content_url = 'https://raw.githubusercontent.com/ucodev/nd-php/'
+	private $_ndphp_github_content_url = 'https://raw.githubusercontent.com/ucodev/nd-php/';
 	private $_ndphp_url = 'http://www.nd-php.org';
 	private $_ndphp_version = '0.01v';
 
@@ -66,11 +66,13 @@ class Update extends ND_Controller {
 	public function update() {
 		/** Stage 0: Fetch tracker **/
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->__ndphp_github_content_url . '/master/install/updates/tracker.json');
+		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$tracker_file_contents = curl_exec($ch);
 		curl_close($ch);
 
+		echo($this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
+		echo($tracker_file_contents);
 		if (($tracker = json_decode($tracker_file_contents, true)) === NULL) {
 			header('HTTP/1.1 500 Internal Server Error');
 			die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
@@ -111,10 +113,15 @@ class Update extends ND_Controller {
 		/** Stage 4: Fetch and replace files **/
 		foreach ($tracker[$from_version]['files'] as $file) {
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $this->__ndphp_github_content_url . '/' . $tracker[$from_version]['to'] . '/' . $file);
+			curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . $tracker[$from_version]['to'] . '/' . $file);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			$file_contents = curl_exec($ch);
 			curl_close($ch);
+
+			if (!$file_contents) {
+				header('HTTP/1.1 500 Internal Server Error');
+				die('No content: ' . $file);
+			}
 
 			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
 

@@ -1,3 +1,8 @@
+v0.01v1 (2016-06-20):
+
+ - Fixed issues on update process.
+
+
 v0.01v (2016-06-20):
 
  - Added support for on-the-fly updates.
