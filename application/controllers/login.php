@@ -400,6 +400,9 @@ class Login extends UW_Controller {
 
 		/* User is authenticated... redirecting to application contents */
 		if ($_POST['referer']) {
+			/* TODO: FIXME: If the referer is the login page itself, we should ignore it and redirect to / instead...
+			 * Otherwise we'll have 2 consecutive logins and the session ID will be regenetared twice (waste of time and resources).
+			 */
 			redirect($this->ndphp->safe_b64decode($_POST['referer']), false, true); /* Full URL redirect */
 		} else {
 			redirect('/');

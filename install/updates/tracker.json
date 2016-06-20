@@ -1,0 +1,25 @@
+{
+	"any": {
+		"to": "master",
+		"directories": [
+			"logs"
+		],
+		"files": [
+			"ChangeLog.txt",
+			"INSTALL.txt",
+			"README.md",
+			"VERSION",
+			"application/controllers/install.php",
+			"application/controllers/login.php",
+			"application/controllers/update.php",
+			"install/languages/en_US.php",
+			"install/updates/tracker.json",
+			"logs/.htaccess",
+			"user/core/ND_Controller.php",
+			"user/utils/language.php"
+		],
+		"post_update_redirect": "/index.php/update/post_update/any/master",
+		"data_model_queries": [
+		]
+	}
+}

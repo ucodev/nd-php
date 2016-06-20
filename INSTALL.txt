@@ -19,6 +19,8 @@ Basic instructions to install the ND PHP Framework
 
  Set 'AllowOverride all' on project VirtualHost directory.
 
+ Set the VirtualHost ErrorLog directive value to logs/error.log .
+
 
 3. PHP Settings
 
@@ -50,9 +52,10 @@ Basic instructions to install the ND PHP Framework
   # chown www-data:www-data nd-php/application/controllers
   # chown -R www-data:www-data nd-php/application/controllers/lib
   # chown -R www-data:www-data nd-php/application/static/images/menu
-  # chown -R www-data:www-data nd-php/backups/
-  # chown -R www-data:www-data nd-php/install/
-  # chown -R www-data:www-data nd-php/uploads/
+  # chown -R www-data:www-data nd-php/backups
+  # chown -R www-data:www-data nd-php/install
+  # chown -R www-data:www-data nd-php/uploads
+  # chown -R www-data:www-data nd-php/logs
   # chown -R www-data:www-data nd-php/user/config
 
  or run the following command (exactly as stated, with all the dots):

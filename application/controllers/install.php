@@ -39,6 +39,10 @@ class Install extends UW_Controller {
 	protected $_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	protected $_default_timezone = NDPHP_LANG_MOD_DEFAULT_TIMEZONE;
 
+	/* ND PHP Framework - update settings */
+	private $_ndphp_url = 'http://www.nd-php.org';
+	private $_ndphp_version = '0.01v';
+
 	/* Validation routines config */
 	private $_retries_max = 15;
 	private $_sleep_secs = 1;

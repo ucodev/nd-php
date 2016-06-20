@@ -32,8 +32,9 @@
 
 class Update extends ND_Controller {
 	/* ND PHP Framework - update settings */
+	private $_ndphp_github_content_url = 'https://raw.githubusercontent.com/ucodev/nd-php/'
 	private $_ndphp_url = 'http://www.nd-php.org';
-	private $_ndphp_version = '0.01';
+	private $_ndphp_version = '0.01v';
 
 	/* Constructor */
 	public function __construct($session_enable = true, $json_replies = false) {
@@ -63,66 +64,105 @@ class Update extends ND_Controller {
 	/** Custom functions **/
 
 	public function update() {
-		/** Stage 1 of update process **/
-
-		/* Setup JSON request */
-		$req_update = json_encode(array(
-			'who' => 'ND PHP Framework',
-			'stage' => 1,
-			'from_url' => base_url(),
-			'from_version' => $this->_ndphp_version
-		));
-
-		/* Fetch update file contents from server */
+		/** Stage 0: Fetch tracker **/
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_url . '/updates/');
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $req_update);
+		curl_setopt($ch, CURLOPT_URL, $this->__ndphp_github_content_url . '/master/install/updates/tracker.json');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$update_file_contents = curl_exec($ch);
+		$tracker_file_contents = curl_exec($ch);
 		curl_close($ch);
 
-		if ($update_file_contents == '0') {
-			echo(NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE);
-			return;
-		}
-
-		/* Craft file name */
-		$update_file_name = SYSTEM_BASE_DIR . '/install/updates/ndphp_' . date('YmdHis') . '_' . openssl_digest($update_file_contents, 'sha1') . '.update';
-
-		/* Create local file to hold update file contents */
-		if (($fp = fopen($update_file_name, 'w')) === false) {
+		if (($tracker = json_decode($tracker_file_contents, true)) === NULL) {
 			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $update_file_name . '"');
+			die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
 		}
 
-		/* Write update file contents to local file */
-		if (fwrite($fp, $update_file_contents) === false) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $update_file_name . '"');
+		/** Stage 1: Determine the tracker entry to be used **/
+		$from_version = $this->_ndphp_version;
+
+		if (!isset($tracker[$from_version]))
+			$from_version = 'any';
+
+		if (!isset($tracker[$from_version])) {
+			header('HTTP/1.1 404 Not Found');
+			die(NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION);
 		}
 
-		/* Flush data to file */
-		fflush($fp);
+		/** Stage 2: Create required directories **/
+		foreach ($tracker[$from_version]['directories'] as $directory) {
+			if (file_exists(SYSTEM_BASE_DIR . '/' . $directory))
+				continue;
 
-		/* Close file pointer */
-		fclose($fp);
-
-		/* Overwrite the update.php controller */
-		if (copy($update_file_name, SYSTEM_BASE_DIR . '/application/controllers/update.php') === false) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/application/controllers/update.php');
+			if (mkdir(SYSTEM_BASE_DIR . '/' . $directory) === false) {
+				header('HTTP/1.1 403 Forbidden');
+				die(NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory);
+			}
 		}
 
-		/* Wait a little while ... */
-		sleep(5);
+		/** Stage 3: Check if we've permissions to overwrite the files to be updated **/
+		foreach ($tracker[$from_version]['files'] as $file) {
+			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
-		/* Redirect to the PHP upgrade script (Stage 2) */
-		redirect('/update');
+			if ($fp === false) {
+				header('HTTP/1.1 403 Forbidden');
+				die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+			}
+		}
+
+		/** Stage 4: Fetch and replace files **/
+		foreach ($tracker[$from_version]['files'] as $file) {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $this->__ndphp_github_content_url . '/' . $tracker[$from_version]['to'] . '/' . $file);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$file_contents = curl_exec($ch);
+			curl_close($ch);
+
+			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
+
+			if ($fp === false) {
+				header('HTTP/1.1 403 Forbidden');
+				die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+			}
+
+			/* Update file contents */
+			if (fwrite($fp, $file_contents) === false) {
+				header('HTTP/1.1 403 Forbidden');
+				die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+			}
+
+			fclose($fp);
+
+			/* Reset time limit */
+			set_time_limit(30); /* We do not expect that a file update will take longer than 30 seconds... */
+		}
+
+		/** Stage 5: Execute any required SQL queries **/
+		foreach ($tracker[$from_version]['data_model_queries'] as $query) {
+			$this->db->trans_begin();
+
+			$this->db->query($query);
+
+			if ($this->db->trans_status() === false) {
+				$this->db->trans_rollback();
+				header('HTTP/1.1 500 Internal Server Error');
+				die(NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY);
+			}
+
+			$this->db->trans_commit();
+		}
+
+		/** Stage 6: Wait a little while... */
+		sleep(3);
+
+		/** Stage 7: Redirect to the post update method **/
+		redirect($tracker[$from_version]['post_update_redirect']);
 	}
 
 	public function index() {
 		header('HTTP/1.1 500 Internal Server Error');
 		die('RELOAD THE PAGE');
+	}
+
+	public function post_update($from, $to) {
+		redirect('/');
 	}
 }

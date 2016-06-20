@@ -1,3 +1,13 @@
+v0.01v (2016-06-20):
+
+ - Added support for on-the-fly updates.
+ - Added update tracker file.
+ - Updated language files.
+ - Framework version number is now correctly set under install and update controllers.
+ - Updated README.md file.
+ - Added logs/ directory (VirtualHost configuration now should use this directory for log files).
+
+
 v0.01u1 (2016-06-20):
 
  - Session is now correctly regenerated upon user login.

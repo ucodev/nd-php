@@ -149,6 +149,7 @@ define('NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT','Incorrect custom interval. 
 define('NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN',	'The input pattern defined does not match the content of field');
 define('NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ',		'Invalid type. The supplied parameter is not an object.');
 define('NDPHP_LANG_MOD_INVALID_POST_KEYS',			'Invalid keys founod in POST data.');
+define('NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS','Invalid characters found on views base directory path.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
@@ -311,6 +312,10 @@ define('NDPHP_LANG_MOD_UNABLE_MATCH_CSV_FIELD_CTRL','Unable to match CSV header 
 define('NDPHP_LANG_MOD_UNABLE_UPGRADE_SUBSCRIPTION','Unable to perform Subscription Upgrade.');
 define('NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS','Unable to fetch critical data from the database.');
 define('NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD','Unable to find the mixed relationship table assign to the current field being processed');
+define('NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY',	'Unable to execute one or more SQL queries while performing update.');
+define('NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER','Unable to decode tracker data.');
+define('NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION','Unable to find a suitable version on tracker data.');
+define('NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR',		'Unable to determine the views base directory.');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');

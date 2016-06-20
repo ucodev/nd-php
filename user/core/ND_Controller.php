@@ -41,6 +41,7 @@
  *
  * TODO:
  *
+ * * Add a grouping icon under listing / result views over the relational fields.
  * * Add command line to IDE Builder.
  * * Menu entries ordering should be configurable.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
@@ -2269,7 +2270,7 @@ class ND_Controller extends UW_Controller {
 		if (strpos($theme, '..')) {
 			/* We need to fail hard here... */
 			header('HTTP/1.1 500 Internal Server Error');
-			die('Invalid characters found on views base directory path.');
+			die(NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS);
 		}
 
 		/* Craft the views base directory path */
@@ -2281,7 +2282,7 @@ class ND_Controller extends UW_Controller {
 
 		/* We need to fail hard here... */
 		header('HTTP/1.1 500 Internal Server Error');
-		die('Unable to determine the views base directory.');
+		die(NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR);
 	}
 
 	protected function _get_view_data_generic($title = 'NO_TITLE', $description = "NO_DESCRIPTION") {
