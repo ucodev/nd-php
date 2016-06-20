@@ -1,3 +1,8 @@
+v0.01v5 (2016-06-20):
+
+ - Fix ND PHP version number under core controller (ND_Controller.php)
+
+
 v0.01v4 (2016-06-20):
 
  - Fixed missing concatenation on update controller post_update method.

@@ -106,7 +106,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.01v3';
+	protected $_ndphp_version = '0.01v5';
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";
 	protected $_tagline = "Framework";
