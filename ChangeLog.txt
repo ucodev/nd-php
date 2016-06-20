@@ -1,3 +1,11 @@
+v0.01u (2016-06-20):
+
+ - Fixed breadcrumb for result views.
+ - Added a new JS handler to load body contents based on a generic URL ajax call.
+ - Fixed second level breadcrumb links for result, view, edit and remove views.
+ - View, edit and remove views now prompt for an entry id if an unset, invalid or non-existing ID was supplied.
+
+
 v0.01t (2016-06-20):
 
  - Fixed mixed table field width variables on create mixed views.

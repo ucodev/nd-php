@@ -83,7 +83,6 @@
  *
  * * Saved searches results do not have full breadcrumb support.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
- * * Second level of breadcrumb for result, view, edit and remove isn't pointing to anything meaningful.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
  * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
@@ -3444,6 +3443,8 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_breadcrumb($method, $second_level = NULL, $id = NULL, $third_level = NULL) {
+		/* NOTE: Currently, breadcrumbs won't contain more than 3 levels */
+
 		/* Re-initialize breadcrumb */
 		$this->breadcrumb->set('levels', array());
 		$this->breadcrumb->set('charset', $this->_charset);
@@ -3467,13 +3468,35 @@ class ND_Controller extends UW_Controller {
 			);
 		}
 
-		/* If the third level is defined, it'll always be an ID for the second level */
+		/* If the third level is defined, it can be an ID for the second level (if the type of $id is NOT array), or it can be
+		 * a customized method with respective parameters if the type of $id is of array.
+		 */
 		if ($id !== NULL) {
+			$params = NULL;
+			$url = NULL;
+			$onclick = NULL;
+
+			if (gettype($id) == 'array') {
+				/* If the $id is of type array, the first array element is the method name that will override the secodn level method.
+				 * All the elements after the first array element are the parameters to the supplied method.
+				  */
+				$method = $id[0];
+				$params = implode('/', array_slice($id, 1));
+				$url = base_url() . 'index.php/' . $this->_name . '/' . $method . '/' . $params;
+				$onclick = 'ndphp.ajax.load_body_url(event, \'' . base_url() . 'index.php/' . $this->_name . '/' . $method . '_body_ajax/' . $params . '\');';
+				$id = $method; /* Will be used as name and title value if $third_level is NULL */
+			} else {
+				/* $id is a single identifier for the second level method */
+				$params = $id;
+				$url = base_url() . 'index.php/' . $this->_name . '/' . $method . '/' . $params;
+				$onclick = 'ndphp.ajax.load_body_op_id(event, \'' . filter_html_js_str($this->_name, $this->_charset) . '\', \'' . filter_html_js_str($method, $this->_charset) . '\', \'' . filter_html_js_str($id, $this->_charset) . '\');';
+			}
+
 			$this->breadcrumb->add(
 				($third_level !== NULL) ? $third_level : $id,
 				($third_level !== NULL) ? $third_level : $id,
-				base_url() . 'index.php/' . $this->_name . '/' . $method . '/' . $id,
-				'ndphp.ajax.load_body_op_id(event, \'' . filter_html_js_str($this->_name, $this->_charset) . '\', \'' . filter_html_js_str($method, $this->_charset) . '\', \'' . filter_html_js_str($id, $this->_charset) . '\');'
+				$url,
+				$onclick
 			);
 		}
 
@@ -5451,7 +5474,6 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links'] = array();
 		$data['view']['links']['quick'] = $this->_links_quick_modal_result;
 		$data['view']['links']['submenu'] = $this->_links_submenu_body_result;
-		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('result', NDPHP_LANG_MOD_OP_RESULT);
 
 		$data['config']['charts'] = array();
 		$data['config']['charts']['total'] = count($this->_charts);
@@ -6060,6 +6082,9 @@ class ND_Controller extends UW_Controller {
 
 		/* Hidden fields */
 		$data['config']['hidden_fields'] = $this->_hide_fields_result;
+
+		/* Setup breadcrumb */
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('search', NDPHP_LANG_MOD_OP_SEARCH, array('result', 'query', $data['view']['result_query']), NDPHP_LANG_MOD_OP_RESULT);
 
 		/* Hook handler (leave) */
 		$this->_hook_result_generic_leave($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);

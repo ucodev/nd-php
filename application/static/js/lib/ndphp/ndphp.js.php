@@ -1209,6 +1209,31 @@ ndphp.ajax.load_body_op_id = function(e, ctrl, op, id) {
 	});
 };
 
+ndphp.ajax.load_body_url = function(e, full_url) {
+	e.preventDefault();
+
+	ndphp.ui.busy();
+
+	jQuery("#body").nd_animate_hide(ndphp.animation.delay, function() {
+		jQuery.ajax({
+			type: "POST",
+			url: full_url,
+			success: function(data) {
+				var html = jQuery(data);
+				ndphp.nav.back_store('body', jQuery('#body').html());
+				jQuery("#body").html(html).nd_animate_show(ndphp.animation.delay, function() {
+					ndphp.ui.ready();
+				});
+			},
+			error: function(xhr, ajaxOptions, thrownError) {
+				jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_OPERATION, NDPHP_LANG_MOD_DEFAULT_CHARSET)?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>:</span> ' + xhr.responseText);
+				jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_OPERATION, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
+				ndphp.ui.ready();
+			}
+		})
+	});
+}
+
 ndphp.ajax.load_body_group = function(e, ctrl, grouping_field) {
 	e.preventDefault();
 
