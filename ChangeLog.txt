@@ -1,3 +1,8 @@
+v0.01v4 (2016-06-20):
+
+ - Fixed missing concatenation on update controller post_update method.
+
+
 v0.01v3 (2016-06-20):
 
  - Minor fixes on update controller.

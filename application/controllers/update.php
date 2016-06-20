@@ -185,7 +185,7 @@ class Update extends ND_Controller {
 	}
 
 	public function post_update($from, $to) {
-		error_log('Update from \'' . $from . '\' to \'' . $to '\' successful.');
+		error_log('Update from \'' . $from . '\' to \'' . $to . '\' successful.');
 
 		redirect('/');
 	}
