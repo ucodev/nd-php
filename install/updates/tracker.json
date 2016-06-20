@@ -13,6 +13,7 @@
 			"application/controllers/install.php",
 			"application/controllers/login.php",
 			"application/controllers/update.php",
+			"application/views/themes/Blueish/footer.php",
 			"install/languages/en_US.php",
 			"install/updates/tracker.json",
 			"logs/.htaccess",

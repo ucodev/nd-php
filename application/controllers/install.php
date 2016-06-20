@@ -41,7 +41,6 @@ class Install extends UW_Controller {
 
 	/* ND PHP Framework - update settings */
 	private $_ndphp_url = 'http://www.nd-php.org';
-	private $_ndphp_version = '0.01v';
 
 	/* Validation routines config */
 	private $_retries_max = 15;

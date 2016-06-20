@@ -34,7 +34,6 @@ class Update extends ND_Controller {
 	/* ND PHP Framework - update settings */
 	private $_ndphp_github_content_url = 'https://raw.githubusercontent.com/ucodev/nd-php/';
 	private $_ndphp_url = 'http://www.nd-php.org';
-	private $_ndphp_version = '0.01v';
 
 	/* Constructor */
 	public function __construct($session_enable = true, $json_replies = false) {
@@ -64,7 +63,23 @@ class Update extends ND_Controller {
 	/** Custom functions **/
 
 	public function update() {
-		/** Stage 0: Fetch tracker **/
+		/** Stage 0: Check if repository version is different than this controller version **/
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/VERSION');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$version_file_contents = curl_exec($ch);
+		curl_close($ch);
+
+		$version = explode(' ', $version_file_contents);
+
+		if ($version[0] == $this->_ndphp_version) {
+			error_log('Already at the newest version (' . $this->_ndphp_version . ').');
+
+			/** Nothing to do **/
+			redirect('/');
+		}
+
+		/** Stage 1: Fetch tracker **/
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -78,7 +93,7 @@ class Update extends ND_Controller {
 			die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
 		}
 
-		/** Stage 1: Determine the tracker entry to be used **/
+		/** Stage 2: Determine the tracker entry to be used **/
 		$from_version = $this->_ndphp_version;
 
 		if (!isset($tracker[$from_version]))
@@ -89,7 +104,7 @@ class Update extends ND_Controller {
 			die(NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION);
 		}
 
-		/** Stage 2: Create required directories **/
+		/** Stage 3: Create required directories **/
 		foreach ($tracker[$from_version]['directories'] as $directory) {
 			if (file_exists(SYSTEM_BASE_DIR . '/' . $directory))
 				continue;
@@ -100,7 +115,7 @@ class Update extends ND_Controller {
 			}
 		}
 
-		/** Stage 3: Check if we've permissions to overwrite the files to be updated **/
+		/** Stage 4: Check if we've permissions to overwrite the files to be updated **/
 		foreach ($tracker[$from_version]['files'] as $file) {
 			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
@@ -110,7 +125,7 @@ class Update extends ND_Controller {
 			}
 		}
 
-		/** Stage 4: Fetch and replace files **/
+		/** Stage 5: Fetch and replace files **/
 		foreach ($tracker[$from_version]['files'] as $file) {
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . $tracker[$from_version]['to'] . '/' . $file);
@@ -142,7 +157,7 @@ class Update extends ND_Controller {
 			set_time_limit(30); /* We do not expect that a file update will take longer than 30 seconds... */
 		}
 
-		/** Stage 5: Execute any required SQL queries **/
+		/** Stage 6: Execute any required SQL queries **/
 		foreach ($tracker[$from_version]['data_model_queries'] as $query) {
 			$this->db->trans_begin();
 
@@ -157,10 +172,10 @@ class Update extends ND_Controller {
 			$this->db->trans_commit();
 		}
 
-		/** Stage 6: Wait a little while... */
+		/** Stage 7: Wait a little while... */
 		sleep(3);
 
-		/** Stage 7: Redirect to the post update method **/
+		/** Stage 8: Redirect to the post update method **/
 		redirect($tracker[$from_version]['post_update_redirect']);
 	}
 
@@ -170,6 +185,8 @@ class Update extends ND_Controller {
 	}
 
 	public function post_update($from, $to) {
+		error_log('Update from \'' . $from . '\' to \'' . $to '\' successful.');
+
 		redirect('/');
 	}
 }

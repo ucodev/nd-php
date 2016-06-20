@@ -106,6 +106,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
+	protected $_ndphp_version = '0.01v3';
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";
 	protected $_tagline = "Framework";
@@ -2318,6 +2319,7 @@ class ND_Controller extends UW_Controller {
 		$data['project']['tagline'] = $this->_tagline;
 		$data['project']['description'] = $this->_description;
 		$data['project']['build'] = $this->_get_build();
+		$data['project']['ndphp_version'] = $this->_ndphp_version;
 
 		/* Session Data */
 		$data['session'] = $this->_session_data;
@@ -3032,6 +3034,8 @@ class ND_Controller extends UW_Controller {
 
 	public function config_populate() {
 		/* Populate public configuration ($config) */
+		$this->config['ndphp_version']							= $this->_ndphp_version;
+
 		$this->config['name']									= $this->_name;
 		$this->config['viewhname']								= $this->_viewhname;
 		$this->config['word_true']								= $this->_word_true;

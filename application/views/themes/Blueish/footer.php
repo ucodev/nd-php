@@ -98,7 +98,7 @@
 </div>
 -->
 <div id="powered_by">
-	Powered by ND PHP Framework - <a class="powered_by_link" href="https://www.nd-php.org">www.nd-php.org</a>&nbsp;
+	Powered by ND PHP Framework (v<?=filter_html($project['ndphp_version'], $config['charset'])?>) - <a class="powered_by_link" href="https://www.nd-php.org">www.nd-php.org</a>&nbsp;
 </div>
 <div id="ajax_error_dialog">
 </div>

@@ -1,3 +1,12 @@
+v0.01v3 (2016-06-20):
+
+ - Minor fixes on update controller.
+ - Added version check before update.
+ - Minor fixes on install controller.
+ - Updated configuration variables on core controllers.
+ - Added ND PHP version information on footer view.
+
+
 v0.01v2 (2016-06-20):
 
  - Updated language files.
