@@ -53,7 +53,7 @@
 
  ?>
  <div id="result" class="result">
- 	<?php $tabs_listing = true; include('lib/tabs_header.php'); ?>
+ 	<?php $tabs_listing = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
 	<div class="list_container">
 		<div id="listing">
@@ -208,11 +208,11 @@
 		</div>
 		<div id="charts">
 			<?php if ($config['charts']['total']): ?>
-				<?php include('lib/charts.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/charts.php'); ?>
 			<?php else: ?>
 				<p class="no_charts"><?=filter_html(NDPHP_LANG_MOD_EMPTY_CHARTS, $config['charset'])?></p>
 			<?php endif; ?>
 		</div>
 	</div>
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

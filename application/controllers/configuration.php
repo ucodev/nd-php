@@ -134,7 +134,7 @@ class Configuration extends ND_Controller {
 
 	/** Other overloads **/
 
-	protected $_submenu_body_links_list = array(
+	protected $_links_submenu_body_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	),
@@ -147,7 +147,7 @@ class Configuration extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								)
 	);
 
-	protected $_submenu_body_links_result = array(
+	protected $_links_submenu_body_result = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),

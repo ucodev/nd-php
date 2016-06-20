@@ -1,3 +1,12 @@
+v0.01t (2016-06-20):
+
+ - Fixed mixed table field width variables on create mixed views.
+ - Normalized the names of some core controller configuration variables.
+ - Includes under view files are now using full paths.
+ - Updated language files.
+ - Charts tab title is now configurable.
+
+
 v0.01s1 (2016-06-19):
 
  - Restructured some more code on core controllers.

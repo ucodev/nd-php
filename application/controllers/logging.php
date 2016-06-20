@@ -86,7 +86,7 @@ class Logging extends ND_Controller {
 	);
 
 	/* Quick Operations Links (Listing and Result views) */
-	protected $_quick_modal_links_list = array(
+	protected $_links_quick_modal_list = array(
 		/* array('Description', $sec_perm, $full_url_prefix, 'image/path/img.png', $modal_width) */
 		array(NDPHP_LANG_MOD_COMMON_ROLLBACK,	'R', 'rollback_modalbox',    'icons/quick_rollback.png', 600),
 		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',     600),
@@ -94,7 +94,7 @@ class Logging extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png',   600)
 	);
 
-	protected $_quick_modal_links_result = array(
+	protected $_links_quick_modal_result = array(
 		/* array('Description', $sec_perm, $function, 'image/path/img.png') */
 		array(NDPHP_LANG_MOD_COMMON_ROLLBACK,	'R', 'rollback_modalbox',    'icons/quick_rollback.png', 600),
 		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',     600),

@@ -694,6 +694,7 @@ define('NDPHP_LANG_MOD_TABS_TITLE_SEARCH_ADVANCED',	'Advanced Search');
 define('NDPHP_LANG_MOD_TABS_TITLE_SEARCH_SAVED',	'Saved Searches');
 define('NDPHP_LANG_MOD_TABS_TITLE_GROUPS',			'Groups');
 define('NDPHP_LANG_MOD_TABS_TITLE_MAIN_GENERIC',	'General');
+define('NDPHP_LANG_MOD_TABS_TITLE_MAIN_CHARTS',		'Charts');
 
 define('NDPHP_LANG_MOD_SEP_USER_SUBSCRIPTION',		'Subscription');
 define('NDPHP_LANG_MOD_SEP_USER_PERSONAL',			'Personal');

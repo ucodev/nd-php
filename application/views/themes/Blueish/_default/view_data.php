@@ -53,9 +53,9 @@
 
  ?>
 <div id="view" class="view">
-	<?php $tabs_view = true; include('lib/tabs_header.php'); ?>
+	<?php $tabs_view = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
- 	<?php $choices_view = true; include('lib/choices.php'); ?>
+ 	<?php $choices_view = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
 	<?php $row = array_values($view['result_array'])[0]; ?>
 
@@ -171,18 +171,18 @@
 		<!-- End of basic fields -->
 		<!-- Begin of Multiple relationships -->
 		<div id="multiple_relationships">
-			<?php include('lib/multiple_view.php'); ?>
+			<?php include($view['base_dir'] . '/_default/lib/multiple_view.php'); ?>
 		</div>
 		<!-- End of Multiple relationships -->
 		<!-- Begin of Mixed relationships -->
 		<div id="mixed_relationships">
-			<?php include('lib/mixed_view.php'); ?>
+			<?php include($view['base_dir'] . '/_default/lib/mixed_view.php'); ?>
 		</div>
 		<!-- End of Mixed relationships -->
 		<!-- Start of Charts -->
 		<div id="charts">
 			<?php if ($config['charts']['total']): ?>
-				<?php include('lib/charts_foreign.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/charts_foreign.php'); ?>
 			<?php else: ?>
 				<p class="no_charts"><?=filter_html(NDPHP_LANG_MOD_EMPTY_CHARTS, $config['charset'])?></p>
 			<?php endif; ?>
@@ -199,5 +199,5 @@
 			<?php endif; ?>
 		</div>
 	</div>
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

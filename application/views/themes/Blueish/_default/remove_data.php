@@ -53,9 +53,9 @@
 
  ?>
 <div id="remove" class="remove">
-	<?php include('lib/tabs_header.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
-	<?php $choices_remove = true; include('lib/choices.php'); ?>
+	<?php $choices_remove = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
 	<?php $row = array_values($view['result_array'])[0]; ?>
 
@@ -172,12 +172,12 @@
 			<!-- End of basic fields -->
 			<!-- Begin of Multiple relationships -->
 			<div id="multiple_relationships">
-				<?php include('lib/multiple_remove.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/multiple_remove.php'); ?>
 			</div>
 			<!-- End of Multiple relationships -->
 			<!-- Begin of Mixed relationships -->
 			<div id="mixed_relationships">
-				<?php include('lib/mixed_remove.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/mixed_remove.php'); ?>
 			</div>
 			<!-- End of Mixed relationships -->
 		</div>
@@ -197,5 +197,5 @@
 			<?php endif; ?>
 		</div>
 	</form>
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

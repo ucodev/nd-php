@@ -53,9 +53,9 @@
 
  ?>
 <div id="create" class="create">
-	<?php include('lib/tabs_header.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
-	<?php $choices_create = true; include('lib/choices.php'); ?>
+	<?php $choices_create = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
 	<?php $rel = array(); /* FIXME: We're populating the $rel in this view. This should be done by the controller. */ ?>
 
@@ -221,12 +221,12 @@
 			<!-- End of basic fields -->
 			<!-- Begin of Multiple relationships -->
 			<div id="multiple_relationships">
-				<?php include('lib/multiple_create.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/multiple_create.php'); ?>
 			</div>
 			<!-- End of Multiple relationships -->
 			<!-- Begin of Mixed relationships -->
 			<div id="mixed_relationships">
-				<?php include('lib/mixed_create.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/mixed_create.php'); ?>
 			</div>
 			<!-- End of Mixed relationships -->
 		</div>
@@ -241,5 +241,5 @@
 			<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" type="reset" style="display: none;" />
 		</div>
 	</form>
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

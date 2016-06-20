@@ -53,9 +53,9 @@
 
  ?>
 <div id="edit" class="edit">
-	<?php include('lib/tabs_header.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
-	<?php $choices_edit = true; include('lib/choices.php'); ?>
+	<?php $choices_edit = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
 	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/update" id="editform" name="editform" enctype="multipart/form-data" method="post">
 		<input type="hidden" name="id" value="<?=filter_html($view['id'], $config['charset'])?>" />
@@ -233,12 +233,12 @@
 			<!-- End of basic fields -->
 			<!-- Begin of Multiple relationships -->
 			<div id="multiple_relationships">
-				<?php include('lib/multiple_edit.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/multiple_edit.php'); ?>
 			</div>
 			<!-- End of Multiple relationships -->
 			<!-- Begin of Mixed relationships -->
 			<div id="mixed_relationships">
-				<?php include('lib/mixed_edit.php'); ?>
+				<?php include($view['base_dir'] . '/_default/lib/mixed_edit.php'); ?>
 			</div>
 			<!-- End of Mixed relationships -->
 		</div>
@@ -258,5 +258,5 @@
 			<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" type="reset" style="display: none;" />
 		</div>
 	</form>
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

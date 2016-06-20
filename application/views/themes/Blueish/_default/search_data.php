@@ -53,7 +53,7 @@
 
  ?>
 <div id="search" class="search">
-	<?php $tabs_searches = true; include('lib/tabs_header.php'); ?>
+	<?php $tabs_searches = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
 	<!-- Begin of Advanced Search -->
 	<div id="search_advanced">
@@ -315,5 +315,5 @@
 		<?php endif; ?>
 	</div>
 
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

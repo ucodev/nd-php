@@ -74,7 +74,7 @@ class Files extends ND_Controller {
 			$file_contents = file_get_contents($file_path);
 
 			/* Unencrypt file contents if required*/
-			if ($this->_encrypted_uploaded_files === true)
+			if ($this->_upload_file_encryption === true)
 				$file_contents = $this->encrypt->decode($file_contents);
 
 			/* If logging is enabled, check for changed fields and log them */

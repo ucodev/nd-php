@@ -53,7 +53,7 @@
 
  ?>
 
-<?php include('lib/current_context.php'); ?>
+<?php include($view['base_dir'] . '/_default/lib/current_context.php'); ?>
 
 <script type="text/javascript">
 	/* <![CDATA[ */
@@ -90,7 +90,7 @@
 		window.document.title = '<?=filter_js_str(html_entity_decode(strip_tags($project['name'] . " - " . $view['title']), ENT_QUOTES, $config['charset']), $config['charset'])?>';
 	</script>
 
-	<?php include('lib/search_bar.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/search_bar.php'); ?>
 </div>
 <div class="submenu">
 	<?php foreach ($view['links']['submenu'] as $link):

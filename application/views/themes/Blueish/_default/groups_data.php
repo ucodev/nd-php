@@ -53,7 +53,7 @@
 
 ?>
 <div id="groups">
-	<?php $tabs_groups = true; include('lib/tabs_header.php'); ?>
+	<?php $tabs_groups = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 		<div id="groups_list">
 			<?php if (count($view['groups'])): ?>
 				<?php foreach ($view['groups'] as $group): ?>
@@ -65,5 +65,5 @@
 				<p class="no_groups"><?=filter_html(NDPHP_LANG_MOD_EMPTY_GROUPS, $config['charset'])?></p>
 			<?php endif; ?>
 		</div>
-	<?php include('lib/tabs_footer.php'); ?>
+	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

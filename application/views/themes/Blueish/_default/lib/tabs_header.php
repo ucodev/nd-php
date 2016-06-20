@@ -107,7 +107,7 @@
 		if (isset($tabs_view)) {
 			array_push($tabs, array(
 				'href' => 'charts',
-				'title' => NDPHP_LANG_MOD_TABS_TITLE_CHARTS
+				'title' => $view['crud_charts_tab_name']
 			));
 		}
 	}

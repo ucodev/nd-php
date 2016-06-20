@@ -53,7 +53,7 @@
 
  ?>
 
-<?php include(SYSTEM_BASE_DIR . '/application/views/themes/' . $config['theme']['name'] . '/_default/lib/current_context.php'); ?>
+<?php include($view['base_dir'] . '/_default/lib/current_context.php'); ?>
 
 <div id="home_title">
 	<h1 class="home_header"><?=filter_html($view['title'], $config['charset'])?></h1>

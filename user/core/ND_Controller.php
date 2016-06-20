@@ -132,27 +132,8 @@ class ND_Controller extends UW_Controller {
 	/* Pagination */
 	protected $_pagination_rpp = 10;
 
-	/* Image rendering - Render images on _file_* typed fields, where mime type matches an image format */
-	protected $_image_file_rendering = true;
-
-	/* Image rendering - Acceptable extensions - FIXME: Currently only extension is being checked, but MIME types must also be validated */
-	protected $_image_file_rendering_ext = array('jpg', 'gif', 'png', 'ico', 'bmp', 'svg');
-
-	protected $_image_file_rendering_size_list = array(
-		'width' => '32px',
-		'height' => '32px'
-	);
-
-	protected $_image_file_rendering_size_view = array(
-		'width' => '256px',
-		'height' => '256px'
-	);
-
 	/* Temporary directory */
 	protected $_temp_dir = '/tmp/';
-
-	/* Main tab name for CRUD views */
-	protected $_crud_main_tab_name = NDPHP_LANG_MOD_TABS_TITLE_MAIN_GENERIC;
 
 	/* Hidden Main Menu entries */
 	protected $_hide_menu_entries = array();
@@ -357,6 +338,10 @@ class ND_Controller extends UW_Controller {
 	 */
 	protected $_fk_linking = true;
 
+	/* Main tab name for CRUD views */
+	protected $_view_crud_main_tab_name = NDPHP_LANG_MOD_TABS_TITLE_MAIN_GENERIC;
+	protected $_view_crud_charts_tab_name = NDPHP_LANG_MOD_TABS_TITLE_MAIN_CHARTS;
+
 	/* Title component separator */
 	protected $_view_title_sep = ' - ';
 
@@ -373,15 +358,31 @@ class ND_Controller extends UW_Controller {
 	/* The string value that will be used in the concatenation of $_view_title_append_fields values. */
 	protected $_view_title_append_sep = ' - ';
 
+	/* Image rendering - Render images on _file_* typed fields, where mime type matches an image format */
+	protected $_view_image_file_rendering = true;
+
+	/* Image rendering - Acceptable extensions - FIXME: Currently only extension is being checked, but MIME types must also be validated */
+	protected $_view_image_file_rendering_ext = array('jpg', 'gif', 'png', 'ico', 'bmp', 'svg');
+
+	protected $_view_image_file_rendering_size_list = array(
+		'width' => '32px',
+		'height' => '32px'
+	);
+
+	protected $_view_image_file_rendering_size_view = array(
+		'width' => '256px',
+		'height' => '256px'
+	);
+
 	/* Quick Operations Links (Listing and Result views) */
-	protected $_quick_modal_links_list = array(
+	protected $_links_quick_modal_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', $modal_width) */
 		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',   600),
 		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',   900),
 		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png', 600)
 	);
 
-	protected $_quick_modal_links_result = array(
+	protected $_links_quick_modal_result = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', $modal_width) */
 		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',   600),
 		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',   900),
@@ -389,13 +390,13 @@ class ND_Controller extends UW_Controller {
 	);
 
 	/* Header Submenu Operations Links (Create, Edit, List, Remove, Result, Search and View) */
-	protected $_submenu_body_links_create = array(
+	protected $_links_submenu_body_create = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),
 		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	)
 	);
 
-	protected $_submenu_body_links_edit = array(
+	protected $_links_submenu_body_edit = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_REMOVE,			'D', 'remove',		NULL, 'ajax',   true,	NDPHP_LANG_MOD_OP_ACCESS_KEY_REMOVE	),
@@ -405,7 +406,7 @@ class ND_Controller extends UW_Controller {
 		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	)
 	);
 
-	protected $_submenu_body_links_remove = array(
+	protected $_links_submenu_body_remove = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_EDIT,			'U', 'edit',		NULL, 'ajax',   true,	NDPHP_LANG_MOD_OP_ACCESS_KEY_EDIT	),
@@ -415,14 +416,14 @@ class ND_Controller extends UW_Controller {
 		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	)
 	);
 
-	protected $_submenu_body_links_search = array(
+	protected $_links_submenu_body_search = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),
 		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	)
 	);
 
-	protected $_submenu_body_links_view = array(
+	protected $_links_submenu_body_view = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_REMOVE,			'D', 'remove',		NULL, 'ajax',   true,	NDPHP_LANG_MOD_OP_ACCESS_KEY_REMOVE	),
@@ -433,7 +434,7 @@ class ND_Controller extends UW_Controller {
 		array(NDPHP_LANG_MOD_OP_EXPORT_PDF,		'R', 'pdf',			NULL, 'export', true,	NULL 								)
 	);
 
-	protected $_submenu_body_links_list = array(
+	protected $_links_submenu_body_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	),
@@ -443,7 +444,7 @@ class ND_Controller extends UW_Controller {
 		array(NDPHP_LANG_MOD_OP_IMPORT_CSV,		'C', 'import_csv',	NULL, 'modal',	false,	NULL 								)
 	);
 
-	protected $_submenu_body_links_result = array(
+	protected $_links_submenu_body_result = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),
@@ -455,7 +456,7 @@ class ND_Controller extends UW_Controller {
 		array(NDPHP_LANG_MOD_OP_SAVE_SEARCH,	'R', 'search_save',	NULL, 'modal',	false,	NULL 								)
 	);
 
-	protected $_submenu_body_links_groups = array(
+	protected $_links_submenu_body_groups = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),
@@ -463,7 +464,7 @@ class ND_Controller extends UW_Controller {
 	);
 
 	/* If set to true, uploaded files will be stored encrypted */
-	protected $_encrypted_uploaded_files = true;
+	protected $_upload_file_encryption = true;
 
 	/* Upload max file size */
 	protected $_upload_max_file_size = 10485760; /* 10MiB by default */
@@ -2264,6 +2265,26 @@ class ND_Controller extends UW_Controller {
 
 	/** View Data **/
 
+	private function _get_views_base_dir($theme) {
+		/* Any attempt to manipulate the views path to access parent directories should be blocked */
+		if (strpos($theme, '..')) {
+			/* We need to fail hard here... */
+			header('HTTP/1.1 500 Internal Server Error');
+			die('Invalid characters found on views base directory path.');
+		}
+
+		/* Craft the views base directory path */
+		$views_base_dir = SYSTEM_BASE_DIR . '/application/views/themes/' . $theme;
+
+		/* Grant that the path is valid */
+		if (file_exists($views_base_dir))
+			return $views_base_dir;
+
+		/* We need to fail hard here... */
+		header('HTTP/1.1 500 Internal Server Error');
+		die('Unable to determine the views base directory.');
+	}
+
 	protected function _get_view_data_generic($title = 'NO_TITLE', $description = "NO_DESCRIPTION") {
 		$data = array();
 
@@ -2286,7 +2307,9 @@ class ND_Controller extends UW_Controller {
 		$data['view']['description'] = $description;
 		$data['view']['hname'] = isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] : $this->_viewhname;
 		$data['view']['mainmenu'] = $this->_get_menu_entries();
-		$data['view']['crud_main_tab_name'] = $this->_crud_main_tab_name;
+		$data['view']['crud_main_tab_name'] = $this->_view_crud_main_tab_name;
+		$data['view']['crud_charts_tab_name'] = $this->_view_crud_charts_tab_name;
+		$data['view']['base_dir'] = $this->_get_views_base_dir($data['config']['theme']['name']);
 
 		/* Project data */
 		$data['project'] = array();
@@ -2954,7 +2977,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Encrypt file, if required */
-		if ($this->_encrypted_uploaded_files === true) {
+		if ($this->_upload_file_encryption === true) {
 			/* FIXME: TODO: For limited type tables, we should use the user's private encryption key here */
 			$content_ciphered = $this->encrypt->encode(file_get_contents($dest_path . '/' . $file_hash));
 			if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false) {
@@ -3028,13 +3051,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['charset']								= $this->_charset;
 		$this->config['theme']									= $this->_theme;
 		$this->config['pagination_rpp']							= $this->_pagination_rpp;
-		$this->config['image_file_rendering']					= $this->_image_file_rendering;
-		$this->config['image_file_rendering_ext']				= $this->_image_file_rendering_ext;
-		$this->config['image_file_rendering_size_list']			= $this->_image_file_rendering_size_list;
-		$this->config['image_file_rendering_size_view']			= $this->_image_file_rendering_size_view;
 		$this->config['temp_dir']								= $this->_temp_dir;
-
-		$this->config['crud_main_tab_name']						= $this->_crud_main_tab_name;
 
 		$this->config['string_truncate_len']					= $this->_string_truncate_len;
 		$this->config['string_truncate_trail']					= $this->_string_truncate_trail;
@@ -3096,26 +3113,33 @@ class ND_Controller extends UW_Controller {
 
 		$this->config['fk_linking']								= $this->_fk_linking;
 
+		$this->config['view_crud_main_tab_name']				= $this->_view_crud_main_tab_name;
+		$this->config['view_crud_charts_tab_name']				= $this->_view_crud_charts_tab_name;
 		$this->config['view_title_sep']							= $this->_view_title_sep;
 		$this->config['view_breadcrumb_sep']					= $this->_view_breadcrumb_sep;
+		$this->config['view_image_file_rendering']				= $this->_view_image_file_rendering;
+		$this->config['view_image_file_rendering_ext']			= $this->_view_image_file_rendering_ext;
+		$this->config['view_image_file_rendering_size_list']	= $this->_view_image_file_rendering_size_list;
+		$this->config['view_image_file_rendering_size_view']	= $this->_view_image_file_rendering_size_view;
 
 		$this->config['security_perms']							= $this->_security_perms;
 		$this->config['security_safe_chars']					= $this->_security_safe_chars;
 
-		$this->config['quick_modal_links_list']					= $this->_quick_modal_links_list;
-		$this->config['quick_modal_links_result']				= $this->_quick_modal_links_result;
+		$this->config['links_quick_modal_list']					= $this->_links_quick_modal_list;
+		$this->config['links_quick_modal_result']				= $this->_links_quick_modal_result;
 
-		$this->config['submenu_body_links_create']				= $this->_submenu_body_links_create;
-		$this->config['submenu_body_links_edit']				= $this->_submenu_body_links_edit;
-		$this->config['submenu_body_links_remove']				= $this->_submenu_body_links_remove;
-		$this->config['submenu_body_links_search']				= $this->_submenu_body_links_search;
-		$this->config['submenu_body_links_view']				= $this->_submenu_body_links_view;
-		$this->config['submenu_body_links_list']				= $this->_submenu_body_links_list;
-		$this->config['submenu_body_links_result']				= $this->_submenu_body_links_result;
-		$this->config['submenu_body_links_groups']				= $this->_submenu_body_links_groups;
+		$this->config['links_submenu_body_create']				= $this->_links_submenu_body_create;
+		$this->config['links_submenu_body_edit']				= $this->_links_submenu_body_edit;
+		$this->config['links_submenu_body_remove']				= $this->_links_submenu_body_remove;
+		$this->config['links_submenu_body_search']				= $this->_links_submenu_body_search;
+		$this->config['links_submenu_body_view']				= $this->_links_submenu_body_view;
+		$this->config['links_submenu_body_list']				= $this->_links_submenu_body_list;
+		$this->config['links_submenu_body_result']				= $this->_links_submenu_body_result;
+		$this->config['links_submenu_body_groups']				= $this->_links_submenu_body_groups;
 
-		$this->config['encrypted_uploaded_files']				= $this->_encrypted_uploaded_files;
+		$this->config['upload_file_encryption']					= $this->_upload_file_encryption;
 		$this->config['upload_max_file_size']					= $this->_upload_max_file_size;
+		$this->config['upload_filter_file_name']				= $this->_upload_filter_file_name;
 
 		$this->config['charts_types']							= $this->_charts_types;
 		$this->config['charts_font_family']						= $this->_charts_font_family;
@@ -4426,8 +4450,8 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_groups); /* _get_fields() uses a perm_read filter by default */
-		$data['view']['links']['quick'] = $this->_quick_modal_links_list;
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_groups;
+		$data['view']['links']['quick'] = $this->_links_quick_modal_list;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_groups;
 		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('groups', NDPHP_LANG_MOD_OP_GROUPS);
 
 		/* Create groups list */
@@ -4621,15 +4645,15 @@ class ND_Controller extends UW_Controller {
 		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
-		$data['view']['links']['quick'] = $this->_quick_modal_links_list;
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_list;
+		$data['view']['links']['quick'] = $this->_links_quick_modal_list;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_list;
 		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('list', NDPHP_LANG_MOD_OP_LIST);
 
 		$data['config']['charts']['total'] = count($this->_charts);
 
-		$data['config']['render']['images'] = $this->_image_file_rendering;
-		$data['config']['render']['size'] = $this->_image_file_rendering_size_list;
-		$data['config']['render']['ext'] = $this->_image_file_rendering_ext;
+		$data['config']['render']['images'] = $this->_view_image_file_rendering;
+		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_list;
+		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
 		$data['config']['choices_class'] = $this->_table_row_choice_class;
 
@@ -5313,7 +5337,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_filter_fields($this->_security_perms, $this->security->perm_search, $this->_get_fields(NULL, $this->_hide_fields_search)); /* _get_fields() uses a perm_read filter by default */
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_search;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_search;
 		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('search', NDPHP_LANG_MOD_OP_SEARCH);
 		$data['view']['saved_searches'] = $this->_get_saved_searches();
 		
@@ -5425,17 +5449,17 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup specific view data */
 		$data['view']['links'] = array();
-		$data['view']['links']['quick'] = $this->_quick_modal_links_result;
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_result;
+		$data['view']['links']['quick'] = $this->_links_quick_modal_result;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_result;
 		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('result', NDPHP_LANG_MOD_OP_RESULT);
 
 		$data['config']['charts'] = array();
 		$data['config']['charts']['total'] = count($this->_charts);
 
 		$data['config']['render'] = array();
-		$data['config']['render']['images'] = $this->_image_file_rendering;
-		$data['config']['render']['size'] = $this->_image_file_rendering_size_list;
-		$data['config']['render']['ext'] = $this->_image_file_rendering_ext;
+		$data['config']['render']['images'] = $this->_view_image_file_rendering;
+		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_list;
+		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
 		$data['config']['choices_class'] = $this->_table_row_choice_class;
 
@@ -6384,7 +6408,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['mixed']['autocomplete'] = $this->_mixed_views_autocomplete;
 
 		$data['view']['fields'] = $this->_filter_fields($this->_security_perms, $this->security->perm_create, $this->_get_fields(NULL, $this->_hide_fields_create)); /* Filter fields (The perm_read permission is already being validated on $this->_get_fields() */
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_create;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_create;
 		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('create', NDPHP_LANG_MOD_OP_CREATE);
 
 		/* Required fields are extracted from information schema
@@ -6446,10 +6470,10 @@ class ND_Controller extends UW_Controller {
 		$data = $this->create_generic();
 
 		$data['config']['hidden_fields'] = $this->_mixed_hide_fields_create;
+		$data['config']['mixed']['table_field_width'] = $this->_mixed_table_fields_width;
 
 		$data['view']['mixed_id'] = $mid;
 		$data['view']['field_data'] = $field_data;
-		$data['view']['mixed']['table_field_width'] = $this->_mixed_table_fields_width;
 		$data['view']['values'] = array();
 
 		if ($field_data != '') {
@@ -6802,14 +6826,14 @@ class ND_Controller extends UW_Controller {
 		/* Setup specific view data */
 		$data['config']['choices'] = count($this->_table_edit_rel_choice_hide_fields) ? $this->_table_edit_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
 		$data['config']['render'] = array();
-		$data['config']['render']['images'] = $this->_image_file_rendering;
-		$data['config']['render']['size'] = $this->_image_file_rendering_size_view;
-		$data['config']['render']['ext'] = $this->_image_file_rendering_ext;
+		$data['config']['render']['images'] = $this->_view_image_file_rendering;
+		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_view;
+		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 		$data['config']['mixed'] = array();
 		$data['config']['mixed']['autocomplete'] = $this->_mixed_views_autocomplete;
 
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_edit); /* _get_fields() uses a perm_read filter by default */
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_edit;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_edit;
 		$data['view']['id'] = $id;
 
 		/* If logging is enabled, check for changed fields and log them */
@@ -6946,11 +6970,11 @@ class ND_Controller extends UW_Controller {
 	public function edit_mixed_rel($mid, $foreign_table = '', $foreign_id = 0) {
 		$data = $this->edit_generic();
 		$data['config']['hidden_fields'] = $this->_mixed_hide_fields_edit;
+		$data['config']['mixed']['table_field_width'] = $this->_mixed_table_fields_width;
+
 		$data['view']['mixed_id'] = $mid;
 		$data['view']['foreign_id'] = $foreign_id;
 		$data['view']['foreign_table'] = $foreign_table;
-		$data['config']['mixed']['table_field_width'] = $this->_mixed_table_fields_width;
-
 		$data['view']['values'] = array();
 
 		if ($foreign_table != '') {
@@ -7271,288 +7295,6 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
-	protected function view_generic($id = 0, $export = NULL) {
-		/* Security Permissions Check */
-		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
-
-		if (!$this->_table_row_filter_perm($id)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
-
-		/* Initialize $data */
-		$data = array();
-
-		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_enter.php') as $plugin)
-			include($plugin);
-
-		/* Hook handler (enter) */
-		$hook_enter_return = $this->_hook_view_generic_enter($data, $id, $export);
-
-		/* Setup charts */
-		$this->_charts_config();
-
-		/* Get view title */
-		$title = NULL;
-
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
-		} else {
-			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
-		}
-
-		/* Get view description value */
-		$description = NDPHP_LANG_MOD_OP_VIEW . " " . $this->_viewhname;
-
-		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
-
-		/* Setup specific View data */
-		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_view); /* _get_fields() uses a perm_read filter by default */
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_view;
-
-		$data['config']['charts'] = array();
-		$data['config']['charts']['total'] = count($this->_charts_foreign);
-		$data['config']['choices'] = count($this->_table_view_rel_choice_hide_fields) ? $this->_table_view_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
-		$data['config']['render']['images'] = $this->_image_file_rendering;
-		$data['config']['render']['size'] = $this->_image_file_rendering_size_view;
-		$data['config']['render']['ext'] = $this->_image_file_rendering_ext;
-
-		$data['view']['id'] = $id;
-
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->_logging === true && $export === NULL) {
-			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'READ',
-				'_table' => $this->_name,
-				'_field' => 'id',
-				'entryid' => $id,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->_session_data['sessions_id'],
-				'users_id' => $this->_session_data['user_id']
-			));
-		} else if ($this->_logging === true && $export !== NULL) {
-			$log_transaction_id = openssl_digest('EXPORT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'EXPORT',
-				'_table' => $this->_name,
-				'_field' => 'id (' . strtoupper($export) . ')',
-				'entryid' => $id,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->_session_data['sessions_id'],
-				'users_id' => $this->_session_data['user_id']
-			));
-		}
-
-		/* Select only the fields that were returned by _get_fields() */
-		$this->_filter_selected_fields($data['view']['fields'], array($this->_name . '.id' => $id));
-		$data['view']['result_array'] = $this->_field_value_mangle($data['view']['fields'], $this->db->get($this->_name));
-
-		$data['view']['rel'] = array();
-
-		/* Process multiple relationships */
-		foreach ($data['view']['fields'] as $field => $meta) {
-			if ($meta['type'] == 'rel') {
-				/* Query the database to retrieve the selected elements for this ID */
-				$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.' . $meta['rel_field'] . ' AS item');
-				$this->db->from($this->_name);
-				$this->db->join($meta['rel_table'], $this->_name . '.id = ' . $meta['rel_table'] . '.' . $this->_name . '_id', 'left');
-				$this->db->join($meta['table'], $meta['table'] . '.id = ' . $meta['rel_table'] . '.' . $meta['table'] . '_id', 'left');
-				$this->db->where($this->_name . '.id', $id);
-				$this->db->having('`item` IS NOT NULL');
-
-				$query = $this->db->get();
-
-				if (!$query->num_rows())
-					continue;
-
-				foreach ($query->result_array() as $row) {
-					/* If any of the fields are NULL, skip the row. (FIXME: This is not required because we're using having() */
-					if (!$row['id'] || !$row['item'])
-						continue;
-
-					$data['view']['rel'][$field][$row['id']] = $row['item'];
-				}
-			}
-		}
-
-		/* Hidden fields */
-		$data['config']['hidden_fields'] = $this->_hide_fields_view;
-
-		/* Check if there are any entry fields to be appended to the view title */
-		$title_suffix = '';
-
-		if (count($this->_view_title_append_fields)) {
-			foreach ($this->_view_title_append_fields as $title_append)
-				$title_suffix .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
-		}
-
-		/* Update title and breadcrumb */
-		$data['view']['title'] .= $title_suffix;
-		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('view', NDPHP_LANG_MOD_OP_VIEW, $id, ltrim($title_suffix, $this->_view_title_append_sep));
-
-		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_leave.php') as $plugin)
-			include($plugin);
-
-		/* Hook handler (leave) */
-		$this->_hook_view_generic_leave($data, $id, $export, $hook_enter_return);
-
-		/* All good */
-		return $data;
-	}
-
-	public function view_mixed_rel_count($foreign_table = '', $foreign_id) {
-		$this->load->database($this->_default_database);
-
-		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
-
-		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
-		$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
-		$this->db->where($foreign_table . '_id', $foreign_id);
-
-		$query = $this->db->get();
-		
-		$row = $query->row_array();
-		
-		/* Return total rows to ajax request */
-		echo($row['total']);
-	}
-
-	public function view_mixed_rel($mid, $foreign_table = '', $foreign_id = 0) {
-		$data = $this->view_generic();
-
-		$data['config']['hidden_fields'] = $this->_mixed_hide_fields_view;
-
-		$data['view']['mixed_id'] = $mid;
-		$data['view']['foreign_id'] = $foreign_id;
-		$data['view']['foreign_table'] = $foreign_table;
-
-		$data['view']['values'] = array();
-
-		if ($foreign_table != '') {
-			$this->load->database($this->_default_database);
-
-			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-			}
-
-			$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
-			$this->db->where($foreign_table . '_id', $foreign_id);
-			$this->db->order_by('id', 'asc');
-			$this->db->limit(1, $mid - 1);
-			
-			/* We need to mangle the relationship data. We also use _get_fields_basic_types() to avoid the
-			 * overhead of calling _get_fields()
-			 */
-			$result_array = $this->_field_value_mangle($this->_get_fields_basic_types('mixed_' . $foreign_table . '_' . $this->_name), $this->db->get());
-			
-			/* NOTE: $field_name must have a UNIQUE constraint in order to trigger the following validation */
-			if (count($result_array) == 1) {
-				$row = array_values($result_array)[0];
-				$data['view']['values'] = $row;
-			}
-		}
-
-		/* Remove the fields that are not present in the mixed relational table */
-		$data['view']['present_fields'] = $this->_get_mixed_table_fields($this->_name, $foreign_table);
-
-		/* Load view */
-		$this->_load_view('view_mixed', $data, true);
-	}
-
-	public function view($id = 0, $export = NULL, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
-		$data = $this->view_generic($id, $export);
-
-		if ($modalbox)
-			$data['config']['modalbox'] = true;
-
-		/* If this is an JSON API request, just reply the data (do not load the views) */
-		if ($this->_json_replies === true) {
-			echo($this->json_view($data));
-			return;
-		}
-
-		if ($export) {
-			if ($export == 'pdf') {
-				/* Pre-process any exceptions for pdf export */
-				foreach ($data['view']['fields'] as $field => $meta) {
-					/* In order to allow the pdf export library to render image files stored in _file_* fields,
-					 * we need to provide the image file contents in base64 format.
-					 * This is required because the export library will act as a different client, thus will have no valid
-					 * session that will allow it to fetch files from the files.php controller.
-					 */
-					if ($meta['input_type'] == 'file') {
-						/* Get file extension */
-						$file_type = end(explode('.', $data['view']['result_array'][0][$field]));
-
-						/* Check if this file type is configured to be rendered as an image */
-						if (!in_array($file_type, $this->_image_file_rendering_ext))
-							continue;
-
-						/* Craft the file location */
-						$file_path = SYSTEM_BASE_DIR . '/uploads/' . $this->_session_data['user_id'] . '/' . $this->_name . '/' . $id . '/' . $field . '/' . openssl_digest($data['view']['result_array'][0][$field], 'sha256');
-						
-						/* Get file contents */
-						if (($file_contents = file_get_contents($file_path)) === false)
-							continue;
-
-						/* If the contents of the file are encrypted ... */
-						if ($this->_encrypted_uploaded_files === true)
-							$file_contents = $this->encrypt->decode($file_contents);
-
-						/* Convert file content to base64 format */
-						$data['view']['fields'][$field]['base64_format'] = 'data:image/' . $file_type . ';base64,' . base64_encode($file_contents);
-					}
-				}
-
-				/* Load view data */
-				$view_data = $this->_load_view('exportview', $data, true, true);
-
-				/* Create PDF */
-				$this->mpdf->WriteHTML($view_data);
-				/*	mPDF Output() options:
-				 * 
-				 * 	I: send the file inline to the browser. The plug-in is used if available. The name given by filename is used when one selects the "Save as" option on the link generating the PDF.
-				 *	D: send to the browser and force a file download with the name given by filename.
-				 *	F: save to a local file with the name given by filename (may include a path).
-				 *	S: return the document as a string. filename is ignored.
-				 */
-				$this->mpdf->Output($this->_name . '_' . $id . '.pdf', 'D');
-			} else if ($export == 'csv') {
-				// TODO: Implement CSV export here
-			}
-		} else {
-			/* Load Views */
-			$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
-		}		
-	}
-	
-	public function view_body_ajax($id = 0, $export = NULL) {
-		$this->view($id, $export, true);
-	}
-
-	public function view_data_ajax($id = 0, $export = NULL) {
-		$this->view($id, $export, true, false);
-	}
-
-	public function view_data_modalbox($id = 0, $export = NULL) {
-		$this->view($id, $export, true, false, true, true);
-	}
-
 	protected function remove_generic($id = 0) {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view) {
@@ -7604,12 +7346,12 @@ class ND_Controller extends UW_Controller {
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_remove); /* _get_fields() uses a perm_read filter by default */
 		$data['view']['links'] = array();
-		$data['view']['links']['submenu'] = $this->_submenu_body_links_remove;
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_remove;
 
 		$data['config']['choices'] = count($this->_table_remove_rel_choice_hide_fields) ? $this->_table_remove_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
-		$data['config']['render']['images'] = $this->_image_file_rendering;
-		$data['config']['render']['size'] = $this->_image_file_rendering_size_view;
-		$data['config']['render']['ext'] = $this->_image_file_rendering_ext;
+		$data['config']['render']['images'] = $this->_view_image_file_rendering;
+		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_view;
+		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
 		$data['view']['id'] = $id;
 
@@ -7867,6 +7609,288 @@ class ND_Controller extends UW_Controller {
 				redirect($this->_name);
 			}
 		}
+	}
+
+	protected function view_generic($id = 0, $export = NULL) {
+		/* Security Permissions Check */
+		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+		}
+
+		if (!$this->_table_row_filter_perm($id)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+		}
+
+		/* Initialize $data */
+		$data = array();
+
+		/* Load enter plugins */
+		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_enter.php') as $plugin)
+			include($plugin);
+
+		/* Hook handler (enter) */
+		$hook_enter_return = $this->_hook_view_generic_enter($data, $id, $export);
+
+		/* Setup charts */
+		$this->_charts_config();
+
+		/* Get view title */
+		$title = NULL;
+
+		if (isset($this->_aliased_menu_entries[$this->_name])) {
+			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
+		} else {
+			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
+		}
+
+		/* Get view description value */
+		$description = NDPHP_LANG_MOD_OP_VIEW . " " . $this->_viewhname;
+
+		/* Setup basic view data */
+		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+
+		/* Setup specific View data */
+		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_view); /* _get_fields() uses a perm_read filter by default */
+		$data['view']['links']['submenu'] = $this->_links_submenu_body_view;
+
+		$data['config']['charts'] = array();
+		$data['config']['charts']['total'] = count($this->_charts_foreign);
+		$data['config']['choices'] = count($this->_table_view_rel_choice_hide_fields) ? $this->_table_view_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
+		$data['config']['render']['images'] = $this->_view_image_file_rendering;
+		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_view;
+		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
+
+		$data['view']['id'] = $id;
+
+		/* If logging is enabled, check for changed fields and log them */
+		if ($this->_logging === true && $export === NULL) {
+			$log_transaction_id = openssl_digest('READ' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+
+			$this->db->insert('logging', array(
+				'operation' => 'READ',
+				'_table' => $this->_name,
+				'_field' => 'id',
+				'entryid' => $id,
+				'transaction' => $log_transaction_id,
+				'registered' => date('Y-m-d H:i:s'),
+				'sessions_id' => $this->_session_data['sessions_id'],
+				'users_id' => $this->_session_data['user_id']
+			));
+		} else if ($this->_logging === true && $export !== NULL) {
+			$log_transaction_id = openssl_digest('EXPORT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+
+			$this->db->insert('logging', array(
+				'operation' => 'EXPORT',
+				'_table' => $this->_name,
+				'_field' => 'id (' . strtoupper($export) . ')',
+				'entryid' => $id,
+				'transaction' => $log_transaction_id,
+				'registered' => date('Y-m-d H:i:s'),
+				'sessions_id' => $this->_session_data['sessions_id'],
+				'users_id' => $this->_session_data['user_id']
+			));
+		}
+
+		/* Select only the fields that were returned by _get_fields() */
+		$this->_filter_selected_fields($data['view']['fields'], array($this->_name . '.id' => $id));
+		$data['view']['result_array'] = $this->_field_value_mangle($data['view']['fields'], $this->db->get($this->_name));
+
+		$data['view']['rel'] = array();
+
+		/* Process multiple relationships */
+		foreach ($data['view']['fields'] as $field => $meta) {
+			if ($meta['type'] == 'rel') {
+				/* Query the database to retrieve the selected elements for this ID */
+				$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.' . $meta['rel_field'] . ' AS item');
+				$this->db->from($this->_name);
+				$this->db->join($meta['rel_table'], $this->_name . '.id = ' . $meta['rel_table'] . '.' . $this->_name . '_id', 'left');
+				$this->db->join($meta['table'], $meta['table'] . '.id = ' . $meta['rel_table'] . '.' . $meta['table'] . '_id', 'left');
+				$this->db->where($this->_name . '.id', $id);
+				$this->db->having('`item` IS NOT NULL');
+
+				$query = $this->db->get();
+
+				if (!$query->num_rows())
+					continue;
+
+				foreach ($query->result_array() as $row) {
+					/* If any of the fields are NULL, skip the row. (FIXME: This is not required because we're using having() */
+					if (!$row['id'] || !$row['item'])
+						continue;
+
+					$data['view']['rel'][$field][$row['id']] = $row['item'];
+				}
+			}
+		}
+
+		/* Hidden fields */
+		$data['config']['hidden_fields'] = $this->_hide_fields_view;
+
+		/* Check if there are any entry fields to be appended to the view title */
+		$title_suffix = '';
+
+		if (count($this->_view_title_append_fields)) {
+			foreach ($this->_view_title_append_fields as $title_append)
+				$title_suffix .= $this->_view_title_append_sep . $data['view']['result_array'][0][$title_append];
+		}
+
+		/* Update title and breadcrumb */
+		$data['view']['title'] .= $title_suffix;
+		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('view', NDPHP_LANG_MOD_OP_VIEW, $id, ltrim($title_suffix, $this->_view_title_append_sep));
+
+		/* Load leave plugins */
+		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_leave.php') as $plugin)
+			include($plugin);
+
+		/* Hook handler (leave) */
+		$this->_hook_view_generic_leave($data, $id, $export, $hook_enter_return);
+
+		/* All good */
+		return $data;
+	}
+
+	public function view_mixed_rel_count($foreign_table = '', $foreign_id) {
+		$this->load->database($this->_default_database);
+
+		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+		}
+
+		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
+		$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
+		$this->db->where($foreign_table . '_id', $foreign_id);
+
+		$query = $this->db->get();
+		
+		$row = $query->row_array();
+		
+		/* Return total rows to ajax request */
+		echo($row['total']);
+	}
+
+	public function view_mixed_rel($mid, $foreign_table = '', $foreign_id = 0) {
+		$data = $this->view_generic();
+
+		$data['config']['hidden_fields'] = $this->_mixed_hide_fields_view;
+
+		$data['view']['mixed_id'] = $mid;
+		$data['view']['foreign_id'] = $foreign_id;
+		$data['view']['foreign_table'] = $foreign_table;
+
+		$data['view']['values'] = array();
+
+		if ($foreign_table != '') {
+			$this->load->database($this->_default_database);
+
+			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table)) {
+				header('HTTP/1.1 403 Forbidden');
+				die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
+			}
+
+			$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
+			$this->db->where($foreign_table . '_id', $foreign_id);
+			$this->db->order_by('id', 'asc');
+			$this->db->limit(1, $mid - 1);
+			
+			/* We need to mangle the relationship data. We also use _get_fields_basic_types() to avoid the
+			 * overhead of calling _get_fields()
+			 */
+			$result_array = $this->_field_value_mangle($this->_get_fields_basic_types('mixed_' . $foreign_table . '_' . $this->_name), $this->db->get());
+			
+			/* NOTE: $field_name must have a UNIQUE constraint in order to trigger the following validation */
+			if (count($result_array) == 1) {
+				$row = array_values($result_array)[0];
+				$data['view']['values'] = $row;
+			}
+		}
+
+		/* Remove the fields that are not present in the mixed relational table */
+		$data['view']['present_fields'] = $this->_get_mixed_table_fields($this->_name, $foreign_table);
+
+		/* Load view */
+		$this->_load_view('view_mixed', $data, true);
+	}
+
+	public function view($id = 0, $export = NULL, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
+		$data = $this->view_generic($id, $export);
+
+		if ($modalbox)
+			$data['config']['modalbox'] = true;
+
+		/* If this is an JSON API request, just reply the data (do not load the views) */
+		if ($this->_json_replies === true) {
+			echo($this->json_view($data));
+			return;
+		}
+
+		if ($export) {
+			if ($export == 'pdf') {
+				/* Pre-process any exceptions for pdf export */
+				foreach ($data['view']['fields'] as $field => $meta) {
+					/* In order to allow the pdf export library to render image files stored in _file_* fields,
+					 * we need to provide the image file contents in base64 format.
+					 * This is required because the export library will act as a different client, thus will have no valid
+					 * session that will allow it to fetch files from the files.php controller.
+					 */
+					if ($meta['input_type'] == 'file') {
+						/* Get file extension */
+						$file_type = end(explode('.', $data['view']['result_array'][0][$field]));
+
+						/* Check if this file type is configured to be rendered as an image */
+						if (!in_array($file_type, $this->_view_image_file_rendering_ext))
+							continue;
+
+						/* Craft the file location */
+						$file_path = SYSTEM_BASE_DIR . '/uploads/' . $this->_session_data['user_id'] . '/' . $this->_name . '/' . $id . '/' . $field . '/' . openssl_digest($data['view']['result_array'][0][$field], 'sha256');
+						
+						/* Get file contents */
+						if (($file_contents = file_get_contents($file_path)) === false)
+							continue;
+
+						/* If the contents of the file are encrypted ... */
+						if ($this->_upload_file_encryption === true)
+							$file_contents = $this->encrypt->decode($file_contents);
+
+						/* Convert file content to base64 format */
+						$data['view']['fields'][$field]['base64_format'] = 'data:image/' . $file_type . ';base64,' . base64_encode($file_contents);
+					}
+				}
+
+				/* Load view data */
+				$view_data = $this->_load_view('exportview', $data, true, true);
+
+				/* Create PDF */
+				$this->mpdf->WriteHTML($view_data);
+				/*	mPDF Output() options:
+				 * 
+				 * 	I: send the file inline to the browser. The plug-in is used if available. The name given by filename is used when one selects the "Save as" option on the link generating the PDF.
+				 *	D: send to the browser and force a file download with the name given by filename.
+				 *	F: save to a local file with the name given by filename (may include a path).
+				 *	S: return the document as a string. filename is ignored.
+				 */
+				$this->mpdf->Output($this->_name . '_' . $id . '.pdf', 'D');
+			} else if ($export == 'csv') {
+				// TODO: Implement CSV export here
+			}
+		} else {
+			/* Load Views */
+			$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
+		}		
+	}
+	
+	public function view_body_ajax($id = 0, $export = NULL) {
+		$this->view($id, $export, true);
+	}
+
+	public function view_data_ajax($id = 0, $export = NULL) {
+		$this->view($id, $export, true, false);
+	}
+
+	public function view_data_modalbox($id = 0, $export = NULL) {
+		$this->view($id, $export, true, false, true, true);
 	}
 
 	public function entry($id, $field = NULL, $value = NULL) {

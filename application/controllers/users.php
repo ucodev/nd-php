@@ -309,7 +309,7 @@ class Users extends ND_Controller {
 	protected $_hide_fields_search = array('password'); // Include fields searched on searchbar (basic)
 	protected $_hide_fields_export = array('password');
 
-	protected $_submenu_body_links_view = array(
+	protected $_links_submenu_body_view = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
 		array(NDPHP_LANG_MOD_OP_REMOVE,			'D', 'remove',		NULL, 'ajax',   true,	NDPHP_LANG_MOD_OP_ACCESS_KEY_REMOVE	),
