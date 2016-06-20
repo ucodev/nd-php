@@ -144,7 +144,8 @@ class Configuration extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_CHARTS,			'R', 'charts',		NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								)
+		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'update',		NULL, 'method', false,	NULL 								)
 	);
 
 	protected $_links_submenu_body_result = array(
@@ -159,7 +160,8 @@ class Configuration extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_CHARTS,			'R', 'charts',		NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								)
+		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'update',		NULL, 'method', false,	NULL 								)
 	);
 
 	/* Hidden fields per view.
@@ -320,6 +322,10 @@ class Configuration extends ND_Controller {
 	public function cache_clear() {
 		/* TODO: This method will clear all existing cache data (from memcached, database, etc) */
 		return;
+	}
+
+	public function update() {
+		redirect('/update/update');
 	}
 
 	public function charts_body_ajax() {

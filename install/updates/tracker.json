@@ -9,6 +9,7 @@
 			"INSTALL.txt",
 			"README.md",
 			"VERSION",
+			"application/controllers/configuration.php",
 			"application/controllers/install.php",
 			"application/controllers/login.php",
 			"application/controllers/update.php",
@@ -18,7 +19,7 @@
 			"user/core/ND_Controller.php",
 			"user/utils/language.php"
 		],
-		"post_update_redirect": "/index.php/update/post_update/any/master",
+		"post_update_redirect": "/update/post_update/any/master",
 		"data_model_queries": [
 		]
 	}

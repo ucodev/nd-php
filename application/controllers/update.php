@@ -120,7 +120,7 @@ class Update extends ND_Controller {
 
 			if (!$file_contents) {
 				header('HTTP/1.1 500 Internal Server Error');
-				die('No content: ' . $file);
+				die(NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file);
 			}
 
 			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');

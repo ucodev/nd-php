@@ -1,3 +1,11 @@
+v0.01v2 (2016-06-20):
+
+ - Updated language files.
+ - Minor fixes on update.php controller.
+ - Added Update operation (submenu link) on Configuration controller.
+ - Updated update tracker file.
+
+
 v0.01v1 (2016-06-20):
 
  - Fixed issues on update process.

@@ -218,6 +218,7 @@ define('NDPHP_LANG_MOD_OP_CACHE_CLEAR',				'Clear Cache');
 define('NDPHP_LANG_MOD_OP_SAVE_SEARCH',				'Save Search');
 define('NDPHP_LANG_MOD_OP_IMPORT_CSV',				'Import CSV');
 define('NDPHP_LANG_MOD_OP_LOGOUT',					'Logout');
+define('NDPHP_LANG_MOD_OP_UPDATE',					'Update');
 
 define('NDPHP_LANG_MOD_OP_QUICK_CREATE',			'Quick Create');
 define('NDPHP_LANG_MOD_OP_QUICK_EDIT',				'Quick Edit');
@@ -316,6 +317,7 @@ define('NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY',	'Unable to execute one or more
 define('NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER','Unable to decode tracker data.');
 define('NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION','Unable to find a suitable version on tracker data.');
 define('NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR',		'Unable to determine the views base directory.');
+define('NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA',	'Unable to retrieve data for file');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');
