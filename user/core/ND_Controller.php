@@ -41,7 +41,6 @@
  *
  * TODO:
  *
- * * Add a grouping icon under listing / result views over the relational fields.
  * * Add command line to IDE Builder.
  * * Menu entries ordering should be configurable.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
@@ -106,7 +105,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.01v5';
+	protected $_ndphp_version = '0.01w';
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";
 	protected $_tagline = "Framework";
@@ -2934,6 +2933,12 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->im_admin()) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN);
+		}
+
+		/* If the scheduler configuration type isn't set as 'external', deny this request */
+		if ($this->_scheduler['type'] != 'external') {
+			header('HTTP/1.1 403 Forbidden');
+			die(NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL);
 		}
 
 		/* Process and execute scheduled entries */

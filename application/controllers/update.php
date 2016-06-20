@@ -77,106 +77,106 @@ class Update extends ND_Controller {
 
 			/** Nothing to do **/
 			redirect('/');
-		}
-
-		/** Stage 1: Fetch tracker **/
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$tracker_file_contents = curl_exec($ch);
-		curl_close($ch);
-
-		echo($this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
-		echo($tracker_file_contents);
-		if (($tracker = json_decode($tracker_file_contents, true)) === NULL) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
-		}
-
-		/** Stage 2: Determine the tracker entry to be used **/
-		$from_version = $this->_ndphp_version;
-
-		if (!isset($tracker[$from_version]))
-			$from_version = 'any';
-
-		if (!isset($tracker[$from_version])) {
-			header('HTTP/1.1 404 Not Found');
-			die(NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION);
-		}
-
-		/** Stage 3: Create required directories **/
-		foreach ($tracker[$from_version]['directories'] as $directory) {
-			if (file_exists(SYSTEM_BASE_DIR . '/' . $directory))
-				continue;
-
-			if (mkdir(SYSTEM_BASE_DIR . '/' . $directory) === false) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory);
-			}
-		}
-
-		/** Stage 4: Check if we've permissions to overwrite the files to be updated **/
-		foreach ($tracker[$from_version]['files'] as $file) {
-			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
-
-			if ($fp === false) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
-			}
-		}
-
-		/** Stage 5: Fetch and replace files **/
-		foreach ($tracker[$from_version]['files'] as $file) {
+		} else {
+			/** Stage 1: Fetch tracker **/
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . $tracker[$from_version]['to'] . '/' . $file);
+			curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$file_contents = curl_exec($ch);
+			$tracker_file_contents = curl_exec($ch);
 			curl_close($ch);
 
-			if (!$file_contents) {
+			echo($this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
+			echo($tracker_file_contents);
+			if (($tracker = json_decode($tracker_file_contents, true)) === NULL) {
 				header('HTTP/1.1 500 Internal Server Error');
-				die(NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+				die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
 			}
 
-			$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
+			/** Stage 2: Determine the tracker entry to be used **/
+			$from_version = $this->_ndphp_version;
 
-			if ($fp === false) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+			if (!isset($tracker[$from_version]))
+				$from_version = 'any';
+
+			if (!isset($tracker[$from_version])) {
+				header('HTTP/1.1 404 Not Found');
+				die(NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION);
 			}
 
-			/* Update file contents */
-			if (fwrite($fp, $file_contents) === false) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+			/** Stage 3: Create required directories **/
+			foreach ($tracker[$from_version]['directories'] as $directory) {
+				if (file_exists(SYSTEM_BASE_DIR . '/' . $directory))
+					continue;
+
+				if (mkdir(SYSTEM_BASE_DIR . '/' . $directory) === false) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory);
+				}
 			}
 
-			fclose($fp);
+			/** Stage 4: Check if we've permissions to overwrite the files to be updated **/
+			foreach ($tracker[$from_version]['files'] as $file) {
+				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
-			/* Reset time limit */
-			set_time_limit(30); /* We do not expect that a file update will take longer than 30 seconds... */
+				if ($fp === false) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+				}
+			}
+
+			/** Stage 5: Fetch and replace files **/
+			foreach ($tracker[$from_version]['files'] as $file) {
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . $tracker[$from_version]['to'] . '/' . $file);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				$file_contents = curl_exec($ch);
+				curl_close($ch);
+
+				if (!$file_contents) {
+					header('HTTP/1.1 500 Internal Server Error');
+					die(NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+				}
+
+				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
+
+				if ($fp === false) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+				}
+
+				/* Update file contents */
+				if (fwrite($fp, $file_contents) === false) {
+					header('HTTP/1.1 403 Forbidden');
+					die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
+				}
+
+				fclose($fp);
+
+				/* Reset time limit */
+				set_time_limit(30); /* We do not expect that a file update will take longer than 30 seconds... */
+			}
+
+			/** Stage 6: Execute any required SQL queries **/
+			foreach ($tracker[$from_version]['data_model_queries'] as $query) {
+				$this->db->trans_begin();
+
+				$this->db->query($query);
+
+				if ($this->db->trans_status() === false) {
+					$this->db->trans_rollback();
+					header('HTTP/1.1 500 Internal Server Error');
+					die(NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY);
+				}
+
+				$this->db->trans_commit();
+			}
+
+			/** Stage 7: Wait a little while... */
+			sleep(3);
+
+			/** Stage 8: Redirect to the post update method **/
+			redirect($tracker[$from_version]['post_update_redirect']);
 		}
-
-		/** Stage 6: Execute any required SQL queries **/
-		foreach ($tracker[$from_version]['data_model_queries'] as $query) {
-			$this->db->trans_begin();
-
-			$this->db->query($query);
-
-			if ($this->db->trans_status() === false) {
-				$this->db->trans_rollback();
-				header('HTTP/1.1 500 Internal Server Error');
-				die(NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY);
-			}
-
-			$this->db->trans_commit();
-		}
-
-		/** Stage 7: Wait a little while... */
-		sleep(3);
-
-		/** Stage 8: Redirect to the post update method **/
-		redirect($tracker[$from_version]['post_update_redirect']);
 	}
 
 	public function index() {

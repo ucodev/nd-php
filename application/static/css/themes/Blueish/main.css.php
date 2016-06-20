@@ -831,6 +831,16 @@ th.list:hover, th.create:hover, th.edit:hover, th.remove:hover, th.result:hover,
 	text-align: center;
 }
 
+a.list_header_grouping_button {
+	display: inline-block;
+	float: right;
+}
+
+img.list_header_grouping_button {
+	padding: 0;
+	margin: 0 auto;
+}
+
 th a {
 	text-decoration: none;
 }

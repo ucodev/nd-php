@@ -268,7 +268,7 @@
 		<fieldset>
 			<legend>FILE UPLOAD CONFIGURATION</legend>
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* If set to true, uploaded files will be stored encrypted */</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_encrypted_uploaded_files</span> = <span class="literal">true</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_file_encryption</span> = <span class="literal">true</span>;<br />
 			<br />
 			<br />
 			<br />

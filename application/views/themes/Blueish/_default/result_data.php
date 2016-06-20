@@ -81,6 +81,11 @@
 							<?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>
 						</a>
 						<?php if ($config['order_by'] == $field) { echo('&nbsp;'); echo($config['order'] == 'desc' ? '&uarr;' : '&darr;'); }?>
+						<?php if ($view['fields'][$field]['input_type'] == 'select'): ?>
+							<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($field, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_GROUP_BY, $config['charset'])?> <?=ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field)?>" onclick="ndphp.ajax.load_body_group(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>');" class="list_header_grouping_button">
+								<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/group_small.png" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_GROUP_BY, $config['charset'])?> <?=ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field)?>" class="list_header_grouping_button" />
+							</a>
+						<?php endif; ?>
 					</th>
 				<?php endforeach; ?>
 

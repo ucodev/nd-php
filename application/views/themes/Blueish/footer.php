@@ -58,45 +58,6 @@
 <div id="footer">
 	Copyright &copy; <?=date('Y')?> <?=filter_html($project['author'], $config['charset'])?> (<?=filter_html(ucfirst(NDPHP_LANG_MOD_WORD_BUILD), $config['charset'])?>: <?=filter_html($project['build']['number'] . '.' . str_replace('-', '', explode(' ', $project['build']['date'])[0]), $config['charset'])?>)
 </div>
-<!-- TODO: Under development...
-<div id="sitemap">
-	<div id="sitemap_block_left">
-		<h3 style="text-align: center;">Documentation</h3>
-		<ul style="margin: 0 auto; display: table;">
-			<li><a href="#">Licensing</a></li>
-			<li><a href="#">Configuration</a></li>
-			<li><a href="#">Development</a></li>
-			<li><a href="#">Logging</a></li>
-			<li><a href="#">Accounting</a></li>
-			<li><a href="#">User Management</a></li>
-		</ul>
-	</div>
-	<div id="sitemap_block_center_left">
-		<h3 style="text-align: center;">Internal Controllers</h3>
-		<ul style="margin: 0 auto; display: table;">
-			<li><a href="#">Countries</a></li>
-			<li><a href="#">Features</a></li>
-			<li><a href="#">Roles</a></li>
-			<li><a href="#">Themes</a></li>
-			<li><a href="#">Timezones</a></li>
-		</ul>
-	</div>
-	<div id="sitemap_block_center_right">
-		<h3 style="text-align: center;">Utilities</h3>
-		<ul style="margin: 0 auto; display: table;">
-			<li><a href="#">Class Caption</a></li>
-			<li><a href="#">Performance Testing</a></li>
-		</ul>
-	</div>
-	<div id="sitemap_block_right">
-		<h3 style="text-align: center;">About</h3>
-		<ul style="margin: 0 auto; display: table;">
-			<li><a href="#">Home Page</a></li>
-			<li><a href="#">Community Forum</a></li>
-		</ul>
-	</div>
-</div>
--->
 <div id="powered_by">
 	Powered by ND PHP Framework (v<?=filter_html($project['ndphp_version'], $config['charset'])?>) - <a class="powered_by_link" href="https://www.nd-php.org">www.nd-php.org</a>&nbsp;
 </div>

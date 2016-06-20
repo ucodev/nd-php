@@ -1,3 +1,14 @@
+v0.01w (2016-06-20):
+
+ - Update process now correctly redirects to project base dir when no updates are available.
+ - Removed sitemap commented contents on footer view.
+ - Updated documentation.
+ - Updated language files.
+ - Scheduler external method now checks if the scheduler is set as external.
+ - Fixed a typo on result_group_data.php view.
+ - Listing and result views now display a grouping icon on relational fields' headers.
+
+
 v0.01v5 (2016-06-20):
 
  - Fix ND PHP version number under core controller (ND_Controller.php)
