@@ -22,6 +22,7 @@
 			"application/views/themes/Blueish/_default/result_group_data.php",
 			"application/views/themes/Blueish/footer.php",
 			"install/languages/en_US.php",
+			"install/perm_setup.sh.inc",
 			"install/updates/tracker.json",
 			"logs/.htaccess",
 			"user/core/ND_Controller.php",

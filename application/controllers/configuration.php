@@ -145,7 +145,7 @@ class Configuration extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'update',		NULL, 'method', false,	NULL 								)
+		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'system_update',NULL, 'method', false,	NULL 								)
 	);
 
 	protected $_links_submenu_body_result = array(
@@ -161,7 +161,7 @@ class Configuration extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
 		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'update',		NULL, 'method', false,	NULL 								)
+		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'system_update',NULL, 'method', false,	NULL 								)
 	);
 
 	/* Hidden fields per view.
@@ -321,11 +321,11 @@ class Configuration extends ND_Controller {
 
 	public function cache_clear() {
 		/* TODO: This method will clear all existing cache data (from memcached, database, etc) */
-		return;
+		redirect('/');
 	}
 
-	public function update() {
-		redirect('/update/update');
+	public function system_update() {
+		redirect('/update/system_update');
 	}
 
 	public function charts_body_ajax() {
@@ -334,21 +334,7 @@ class Configuration extends ND_Controller {
 		$data = $fctrl->list_generic();
 		
 		/* Load Views */
-		if (file_exists('application/views/themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_header.php')) {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_header', $data);
-		} else {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . '_default/list_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_data.php')) {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_data', $data);
-		} else {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . '_default/list_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_footer.php')) {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_footer', $data);
-		} else {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . '_default/list_footer', $data);
-		}
+		$fctrl->_load_method_views('list', $data, true);
 	}
 
 	public function scheduler_body_ajax() {
@@ -357,21 +343,7 @@ class Configuration extends ND_Controller {
 		$data = $fctrl->list_generic();
 		
 		/* Load Views */
-		if (file_exists('application/views/themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_header.php')) {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_header', $data);
-		} else {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . '_default/list_header', $data);
-		}
-		if (file_exists('application/views/themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_data.php')) {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_data', $data);
-		} else {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . '_default/list_data', $data);
-		}
-		if (file_exists('application/views/themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_footer.php')) {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . $fctrl->config['name'] . '/list_footer', $data);
-		} else {
-			$this->load->view('themes/' . $fctrl->config['theme'] . '/' . '_default/list_footer', $data);
-		}
+		$fctrl->_load_method_views('list', $data, true);
 	}
 }
 

@@ -62,7 +62,7 @@ class Update extends ND_Controller {
 
 	/** Custom functions **/
 
-	public function update() {
+	public function system_update() {
 		/** Stage 0: Check if repository version is different than this controller version **/
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/VERSION');

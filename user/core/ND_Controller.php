@@ -81,6 +81,7 @@
  *
  * FIXME:
  *
+ * * IDE Builder is not handling relational field aliases.
  * * Saved searches results do not have full breadcrumb support.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
@@ -4237,10 +4238,10 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Custom loaders **/
-	protected function _load_view($view_name, $data = NULL, $customizable = false, $return_data = false) {
+	protected function _load_view($view_name, $data = NULL, $customizable = false, $return_data = false, $ctrl_override = NULL) {
 		if ($customizable) {
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . $this->_name . '/' . $view_name . '.php')) {
-				return $this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/' . $view_name, $data, $return_data);
+			if (file_exists('application/views/themes/' . $this->_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name . '.php')) {
+				return $this->load->view('themes/' . $this->_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name, $data, $return_data);
 			} else {
 				return $this->load->view('themes/' . $this->_theme . '/' . '_default/' . $view_name, $data, $return_data);
 			}
@@ -4249,20 +4250,20 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
-	protected function _load_method_views($method, $data = NULL, $body_only = false, $body_header = true, $body_footer = true) {
+	protected function _load_method_views($method, $data = NULL, $body_only = false, $body_header = true, $body_footer = true, $ctrl_override = NULL) {
 		if (!$body_only)
-			$this->_load_view('header', $data);
+			$this->_load_view('header', $data, false, false, $ctrl_override);
 
 		if ($body_header)
-			$this->_load_view($method . '_header', $data, true);
+			$this->_load_view($method . '_header', $data, true, false, $ctrl_override);
 
-		$this->_load_view($method . '_data', $data, true);
+		$this->_load_view($method . '_data', $data, true, false, $ctrl_override);
 
 		if ($body_footer)
-			$this->_load_view($method . '_footer', $data, true);
+			$this->_load_view($method . '_footer', $data, true, false, $ctrl_override);
 
 		if (!$body_only)
-			$this->_load_view('footer', $data);
+			$this->_load_view('footer', $data, false, false, $ctrl_override);
 	}
 
 

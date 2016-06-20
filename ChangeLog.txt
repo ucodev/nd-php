@@ -1,3 +1,10 @@
+v0.01x (2016-06-20):
+
+ - Cleanups on configuration controller.
+ - Updated tracker.
+ - Fixed erroneous overload of update method under configuration and update controllers.
+
+
 v0.01w (2016-06-20):
 
  - Update process now correctly redirects to project base dir when no updates are available.
