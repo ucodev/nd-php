@@ -40,6 +40,11 @@ Basic instructions to install the ND PHP Framework
  Create a new database and user under MySQL / MariaDB, granting all privileges
  to the user under the created database.
 
+  mysql> CREATE USER 'ndphp_user'@'localhost' IDENTIFIED BY 'ndphp_password';
+  mysql> CREATE DATABASE ndphp;
+  mysql> GRANT ALL PRIVILEGES ON ndphp.* TO 'ndphp_user'@'localhost';
+  mysql> FLUSH PRIVILEGES;
+
 
 5. ND PHP Framework Settings
 

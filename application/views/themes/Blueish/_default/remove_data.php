@@ -84,6 +84,9 @@
 		<?php $choices_remove = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
 		<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/delete" name="removeform" id="removeform" method="post">
+
+			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/remove_data_custom_header.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/remove_data_custom_header.php'); } ?>
+
 			<div class="fields">
 				<h2 class="crud_warning">Are you sure you want to remove this entry?</h2>
 				<input type="hidden" name="id" value="<?=filter_html($view['id'], $config['charset'])?>" />
@@ -205,7 +208,9 @@
 				</div>
 				<!-- End of Mixed relationships -->
 			</div>
-			<!-- <p class="submit"><input class="submit" type="submit" value="Confirm" /></p> -->
+
+			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/remove_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/remove_data_custom_footer.php'); } ?>
+
 			<div class="remove_ops">
 				<!-- FIXME: the following anchors, referencing javascript:void(0), shall be replaced with input submit type elements when javascript is disabled -->
 				<a href="javascript:void(0);" onclick="ndphp.form.submit_remove(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'removeform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_DELETE, $config['charset'])?>" class="context_menu_link">

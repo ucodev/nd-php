@@ -148,8 +148,8 @@ class Home extends ND_Controller {
 			/* Check if there is an alias set for this controller */
 			$viewname = NULL;
 
-			if (isset($this->_aliased_menu_entries[$ctrl])) {
-				$viewname = $this->_aliased_menu_entries[$ctrl];
+			if (isset($this->_menu_entries_aliases[$ctrl])) {
+				$viewname = $this->_menu_entries_aliases[$ctrl];
 			} else {
 				/* If not, use the default (capitalize the first character) */
 				$viewname = ucfirst($ctrl);

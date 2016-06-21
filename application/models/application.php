@@ -128,6 +128,8 @@ class UW_Application extends UW_Model {
 		'weekdays' => NDPHP_LANG_MOD_MENU_WEEKDAYS_NAME
 	);
 
+	private $_app_menu_order_list = array();
+
 	private function _app_compute_menu_hidden($app_model) {
 		foreach ($app_model['menus'] as $menu) {
 			if (isset($menu['options']['hidden']) && $menu['options']['hidden'])
@@ -140,6 +142,15 @@ class UW_Application extends UW_Model {
 			if ($menu['type'] != 'detached' && isset($menu['properties']['alias']) && $menu['properties']['alias']) {
 				$this->_app_menu_aliases_list[$menu['db']['name']] = str_replace("\"", "\\\"", $menu['properties']['alias']);
 			}
+		}
+	}
+
+	private function _app_compute_menu_order($app_model) {
+		foreach ($app_model['menus'] as $menu) {
+			if (isset($menu['options']['hidden']) && $menu['options']['hidden'])
+				continue;
+
+			array_push($this->_app_menu_order_list, $menu['db']['name']);
 		}
 	}
 
@@ -156,6 +167,13 @@ class UW_Application extends UW_Model {
 		foreach ($this->_app_menu_aliases_list as $menu_name => $menu_alias) {
 			$alias_menu_list .= "\t\t'" . $menu_name . "' => \"" . $menu_alias . "\",\n";
 		}
+
+		/* Populate hidden menu entries order */
+		$order_menu_list = 'array(';
+		if (count($this->_app_menu_order_list)) {
+			$order_menu_list .= '\'' . implode('\',\'', $this->_app_menu_order_list) . '\'';
+		}
+		$order_menu_list .= ')';
 
 		/* Craft ide_setup.php file contents */
 		$ide_setup_content = '' .
@@ -177,11 +195,14 @@ class UW_Application extends UW_Model {
 			"\n" .
 			'$this->_hide_global_search_controllers = $this->_hide_menu_entries;' . "\n" .
 			"\n" .
-			'$this->_aliased_menu_entries = array_merge($this->_aliased_menu_entries, array(' . "\n" .
+			'$this->_menu_entries_order = array_merge($this->_menu_entries_order, ' . $order_menu_list . ');' . "\n" .
+			"\n" .
+			'$this->_menu_entries_aliases = array_merge($this->_menu_entries_aliases, array(' . "\n" .
 			'		/* Main Menu entries alias */' . "\n" .
 					rtrim($alias_menu_list, ",\n") . "\n" .
 			'	)' . "\n" .
-			");\n";
+			");\n" .
+			"\n";
 
 		/* Recreate ide_setup.php file. FIXME: Error checking missing on file operations */
 		$ide_setup_file = fopen(SYSTEM_BASE_DIR . '/application/controllers/lib/ide_setup.php', "w");
@@ -196,6 +217,7 @@ class UW_Application extends UW_Model {
 	private function _app_compute_pre($app_model) {
 		$this->_app_compute_menu_hidden($app_model);
 		$this->_app_compute_menu_aliases($app_model);
+		$this->_app_compute_menu_order($app_model);
 		$this->_app_create_ctrl_ide_setup();
 	}
 
@@ -1475,6 +1497,7 @@ class UW_Application extends UW_Model {
 		$hide_search = array();
 		$hide_export = array();
 		$hide_mixed = array();
+		$rel_field_aliases = '';
 		$field_aliases = '';
 
 		/* Populate the hiding lists for each visualization type and respective aliases */
@@ -1510,11 +1533,18 @@ class UW_Application extends UW_Model {
 					array_push($hide_mixed, $field['db']['name']);
 			}
 
-			/* TODO: Evaluate if this is a mixed field and if so, process the aliased names */
-
 			/* Populate aliases list */
-			if ($field['properties']['alias'])
-				$field_aliases .= "\t\t'" . $field['db']['name'] . "' => \"" . str_replace("\"", "\\\"", $field['properties']['alias']) . "\",\n";
+			if ($field['properties']['alias']) {
+				/* Evaluate if this is a relational field and if so, process the aliased names */
+				if ($field['type'] == 'dropdown' || $field['type'] == 'multiple') {
+					$rel_field_aliases .= "\t\t'" . strtolower(str_replace(' ', '_', $field['name'])) . "' => array(\"" . str_replace("\"", "\\\"", $field['properties']['alias']) . "\", NULL, array(1), array('id', 'asc')),\n";
+				} else if ($field['type'] == 'mixed') {
+					/* FIXME: TODO: Mixed relationships aliases ... */
+				} else {
+					/* This is a regular field type */
+					$field_aliases .= "\t\t'" . $field['db']['name'] . "' => \"" . str_replace("\"", "\\\"", $field['properties']['alias']) . "\",\n";
+				}
+			}
 		}
 
 		/* Populate hidden menu entries */
@@ -1529,6 +1559,13 @@ class UW_Application extends UW_Model {
 		foreach ($this->_app_menu_aliases_list as $menu_name => $menu_alias) {
 			$alias_menu_list .= "\t\t'" . $menu_name . "' => \"" . $menu_alias . "\",\n";
 		}
+
+		/* Populate hidden menu entries order */
+		$order_menu_list = 'array(';
+		if (count($this->_app_menu_order_list)) {
+			$order_menu_list .= '\'' . implode('\',\'', $this->_app_menu_order_list) . '\'';
+		}
+		$order_menu_list .= ')';
 
 		/* Set default options if none is set */
 		if (!isset($menu['options']) || !isset($menu['options']['logging'])) {
@@ -1615,7 +1652,9 @@ class UW_Application extends UW_Model {
 			'' . "\n" .
 			'	protected $_hide_menu_entries = ' . $hidden_menu_list . ';' . "\n" .
 			'' . "\n" .
-			'	protected $_aliased_menu_entries = array(' . "\n" .
+			'	protected $_menu_entries_order = ' . $order_menu_list . ';' . "\n" .
+			'' . "\n" .
+			'	protected $_menu_entries_aliases = array(' . "\n" .
 			'		/* Main Menu entries alias */' . "\n" .
 					rtrim($alias_menu_list, ",\n") . "\n" .
 			'	);' . "\n" .
@@ -1624,6 +1663,12 @@ class UW_Application extends UW_Model {
 			'	protected $_table_field_aliases = array(' . "\n" .
 			'		/* \'field\' => \'alias\', */' . "\n" .
 					rtrim($field_aliases, ",\n") . "\n" .
+			'	);' . "\n" .
+			'' . "\n" .
+			'	/* The fields to be concatenated as the options of the relationship table. Also the place to set relational field name aliases. */' . "\n" .
+			'	protected $_rel_table_fields_config = array(' . "\n" .
+			'		/* \'table\' => array(\'ViewName\', \'separator\', array(field_nr_1, field_nr_2, ...), array(\'order_by field\', \'asc or desc\')), */' . "\n" .
+					rtrim($rel_field_aliases, ",\n") . "\n" .
 			'	);' . "\n" .
 			'' . "\n" .
 			'	/* Field by which the listing views shall be ordered by */' . "\n" .
@@ -1658,6 +1703,7 @@ class UW_Application extends UW_Model {
 				'' . "\n" .
 				'		$this->_viewhname = get_class();' . "\n" .
 				'		$this->_name = strtolower($this->_viewhname);' . "\n" .
+				'		$this->_hide_global_search_controllers = $this->_hide_menu_entries;' . "\n" .
 				'		$this->_hook_construct();' . "\n" .
 				'	}' . "\n" .
 				'' . "\n" .
@@ -1715,7 +1761,7 @@ class UW_Application extends UW_Model {
 
 		fclose($cfile);
 
-		/* Recreate controller file */
+		/* Recreate controller file (FIXME: TODO: Add error handling to the following file operations) */
 		$cfile = fopen(SYSTEM_BASE_DIR . '/application/controllers/' . $menu['db']['name'] . '.php', "w");
 		fwrite($cfile, $controller_content);
 		fflush($cfile);

@@ -85,8 +85,6 @@ class Update extends ND_Controller {
 			$tracker_file_contents = curl_exec($ch);
 			curl_close($ch);
 
-			echo($this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
-			echo($tracker_file_contents);
 			if (($tracker = json_decode($tracker_file_contents, true)) === NULL) {
 				header('HTTP/1.1 500 Internal Server Error');
 				die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
@@ -153,7 +151,7 @@ class Update extends ND_Controller {
 				fclose($fp);
 
 				/* Reset time limit */
-				set_time_limit(30); /* We do not expect that a file update will take longer than 30 seconds... */
+				set_time_limit(30); /* Reset the limit counter. We do not expect that a file update will take longer than 30 seconds... */
 			}
 
 			/** Stage 6: Execute any required SQL queries **/

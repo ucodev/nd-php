@@ -83,6 +83,8 @@
 
 	 	<?php $choices_view = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
+	 	<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/view_data_custom_header.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/view_data_custom_header.php'); } ?>
+
 		<div class="fields">
 			<!-- Begin of basic fields -->
 			<div id="fields_basic" class="fields_basic">
@@ -212,6 +214,9 @@
 				<?php endif; ?>
 			</div>
 			<!-- End of Charts -->
+
+			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/view_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/view_data_custom_footer.php'); } ?>
+
 			<div class="view_ops">
 				<?php if (isset($config['modalbox'])): ?>
 					<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['id'], $config['charset'])?>/pdf" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_EXPORT_PDF, $config['charset'])?>" class="context_menu_link">

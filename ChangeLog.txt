@@ -1,3 +1,13 @@
+v0.01y (2016-06-21):
+
+ - Removed debugging logs from update controller.
+ - Added support for menu entries ordering (now ordered accordingly to IDE by default).
+ - Updated INSTALL.txt with clear MySQL/MariaDB instructions to create user and database.
+ - Added support for inclusion of optional custom headers and footers under create/edit/remove/view views.
+ - Updated tracker.
+ - Multiple and single relationship field aliases are now fully supported on IDE.
+
+
 v0.01x (2016-06-20):
 
  - Cleanups on configuration controller.

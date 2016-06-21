@@ -84,6 +84,9 @@
 		<?php $choices_edit = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
 		<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/update" id="editform" name="editform" enctype="multipart/form-data" method="post">
+
+			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_header.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_header.php'); } ?>
+
 			<input type="hidden" name="id" value="<?=filter_html($view['id'], $config['charset'])?>" />
 			<div class="fields">
 				<!-- Begin of basic fields -->
@@ -266,6 +269,9 @@
 				</div>
 				<!-- End of Mixed relationships -->
 			</div>
+
+			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_footer.php'); } ?>
+
 			<div class="edit_ops">
 				<a href="javascript:void(0);" onclick="ndphp.form.submit_edit_wrapper(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'editform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_UPDATE, $config['charset'])?>" class="context_menu_link">
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_UPDATE, $config['charset'])?>

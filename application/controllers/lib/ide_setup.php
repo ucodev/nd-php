@@ -49,7 +49,9 @@ $this->_hide_menu_entries = array_merge($this->_hide_menu_entries, array(
 
 $this->_hide_global_search_controllers = $this->_hide_menu_entries;
 
-$this->_aliased_menu_entries = array_merge($this->_aliased_menu_entries, array(
+$this->_menu_entries_order = array();
+
+$this->_menu_entries_aliases = array_merge($this->_aliased_menu_entries, array(
 		'builder' => NDPHP_LANG_MOD_MENU_BUILDER_NAME,
 		'charts_config' => NDPHP_LANG_MOD_MENU_CHARTS_CONFIG_NAME,
 		'charts_geometry' => NDPHP_LANG_MOD_MENU_CHARTS_GEOMETRY_NAME,

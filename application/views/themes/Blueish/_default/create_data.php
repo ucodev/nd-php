@@ -60,6 +60,9 @@
 	<?php $rel = array(); /* FIXME: We're populating the $rel in this view. This should be done by the controller. */ ?>
 
 	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/insert" id="createform" name="createform" enctype="multipart/form-data" method="post">
+
+		<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_header.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_header.php'); } ?>
+
 		<div class="fields">
 			<!-- Begin of basic fields -->
 			<div id="fields_basic" class="fields_basic">
@@ -230,6 +233,9 @@
 			</div>
 			<!-- End of Mixed relationships -->
 		</div>
+
+		<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_footer.php'); } ?>
+
 		<div class="create_ops">
 			<a href="javascript:void(0);" onclick="ndphp.form.submit_create_wrapper(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'createform', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" class="context_menu_link">
 				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>

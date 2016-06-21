@@ -42,7 +42,6 @@
  * TODO:
  *
  * * Add command line to IDE Builder.
- * * Menu entries ordering should be configurable.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
@@ -106,7 +105,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.01x';
+	protected $_ndphp_version = '0.01y';
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";
 	protected $_tagline = "Framework";
@@ -136,14 +135,17 @@ class ND_Controller extends UW_Controller {
 	/* Temporary directory */
 	protected $_temp_dir = '/tmp/';
 
+	/* Main Menu entries alias */
+	protected $_menu_entries_aliases = array();
+
+	/* Main menu entries order */
+	protected $_menu_entries_order = array();
+
 	/* Hidden Main Menu entries */
 	protected $_hide_menu_entries = array();
 
 	/* Global Search - Controller filter */
 	protected $_hide_global_search_controllers = array();
-
-	/* Main Menu entries alias */
-	protected $_aliased_menu_entries = array();
 
 	/* Hidden fields per view.
 	 *
@@ -219,7 +221,7 @@ class ND_Controller extends UW_Controller {
 		*/
 	);
 
-	/* The fields to be concatenated as the options of the relationship table */
+	/* The fields to be concatenated as the options of the relationship table. Also the place to set relational field name aliases. */
 	protected $_rel_table_fields_config = array(
 		/* 'table' => array('ViewName', 'separator', array(field_nr_1, field_nr_2, ...), array('order_by field', 'asc or desc')), */
 	); /* TODO: If the selected field is of type _id (relationship), it won't be
@@ -2306,7 +2308,7 @@ class ND_Controller extends UW_Controller {
 		$data['view']['ctrl'] = $this->_name;
 		$data['view']['title'] = $title;
 		$data['view']['description'] = $description;
-		$data['view']['hname'] = isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] : $this->_viewhname;
+		$data['view']['hname'] = isset($this->_menu_entries_aliases[$this->_name]) ? $this->_menu_entries_aliases[$this->_name] : $this->_viewhname;
 		$data['view']['mainmenu'] = $this->_get_menu_entries();
 		$data['view']['crud_main_tab_name'] = $this->_view_crud_main_tab_name;
 		$data['view']['crud_charts_tab_name'] = $this->_view_crud_charts_tab_name;
@@ -3067,7 +3069,8 @@ class ND_Controller extends UW_Controller {
 		$this->config['string_truncate_trail']					= $this->_string_truncate_trail;
 		$this->config['string_truncate_sep']					= $this->_string_truncate_sep;
 
-		$this->config['aliased_menu_entries']					= $this->_aliased_menu_entries;
+		$this->config['menu_entries_aliases']					= $this->_menu_entries_aliases;
+		$this->config['menu_entries_order']						= $this->_menu_entries_order;
 
 		$this->config['hide_menu_entries']						= $this->_hide_menu_entries;
 		$this->config['hide_global_search_controllers']			= $this->_hide_global_search_controllers;
@@ -3463,10 +3466,10 @@ class ND_Controller extends UW_Controller {
 
 		/* Add first level */
 		$this->breadcrumb->add(
-			isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] :  $this->_viewhname,
-			isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] :  $this->_viewhname,
+			isset($this->_menu_entries_aliases[$this->_name]) ? $this->_menu_entries_aliases[$this->_name] :  $this->_viewhname,
+			isset($this->_menu_entries_aliases[$this->_name]) ? $this->_menu_entries_aliases[$this->_name] :  $this->_viewhname,
 			base_url() . 'index.php/' . $this->_name,
-			'ndphp.ajax.load_body_menu(event, \'' . $this->_name . '\', \'' . (isset($this->_aliased_menu_entries[$this->_name]) ? $this->_aliased_menu_entries[$this->_name] :  $this->_viewhname) . '\');'
+			'ndphp.ajax.load_body_menu(event, \'' . $this->_name . '\', \'' . (isset($this->_menu_entries_aliases[$this->_name]) ? $this->_menu_entries_aliases[$this->_name] :  $this->_viewhname) . '\');'
 		);
 
 		/* Add second level, if exists */
@@ -3687,8 +3690,27 @@ class ND_Controller extends UW_Controller {
 				 *  +-------------+-------------------+
 				 *
 				 */
-				array_push($entries, array($table, isset($this->_aliased_menu_entries[$table]) ? $this->_aliased_menu_entries[$table] : $table, $help_description));
+				array_push($entries, array($table, isset($this->_menu_entries_aliases[$table]) ? $this->_menu_entries_aliases[$table] : $table, $help_description));
 			}
+		}
+
+		/* Re-order $entries based on $this->_menu_entries_order */
+		if (count($this->_menu_entries_order)) {
+			$entries_ordered = array();
+
+			foreach ($this->_menu_entries_order as $entry_name) {
+				/* Ignore hidden menu entries (this is not really required, but *may* speed up a little) */
+				if (in_array($entry_name, $this->_hide_menu_entries))
+					continue;
+
+				/* Fetch the entry from entries pool */
+				foreach ($entries as $entry) {
+					if ($entry[0] == $entry_name)
+						array_push($entries_ordered, $entry);
+				}
+			}
+
+			$entries = $entries_ordered;
 		}
 
 		return $entries;
@@ -4470,8 +4492,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title value */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_GROUPS;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_GROUPS;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_GROUPS;
 		}
@@ -4519,8 +4541,8 @@ class ND_Controller extends UW_Controller {
 					continue;
 
 				/* Check if there's a viewname alias set */
-				if (isset($this->_aliased_menu_entries[$group['table_name']])) {
-					$group['name'] = $this->_aliased_menu_entries[$group['table_name']];
+				if (isset($this->_menu_entries_aliases[$group['table_name']])) {
+					$group['name'] = $this->_menu_entries_aliases[$group['table_name']];
 				} else {
 					$group['name'] = ucfirst($group['table_name']);
 				}
@@ -4556,8 +4578,8 @@ class ND_Controller extends UW_Controller {
 						continue;
 
 					/* Check if there's a viewname alias set */
-					if (isset($this->_aliased_menu_entries[$group['table_name']])) {
-						$group['name'] = $this->_aliased_menu_entries[$group['table_name']];
+					if (isset($this->_menu_entries_aliases[$group['table_name']])) {
+						$group['name'] = $this->_menu_entries_aliases[$group['table_name']];
 					} else {
 						$group['name'] = ucfirst($group['table_name']);
 					}
@@ -4666,8 +4688,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title value */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_LIST;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_LIST;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_LIST;
 		}
@@ -5357,8 +5379,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_SEARCH;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_SEARCH;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_SEARCH;
 		}
@@ -5469,8 +5491,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_RESULT;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_RESULT;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_RESULT;
 		}
@@ -6293,8 +6315,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EXPORT;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EXPORT;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EXPORT;
 		}
@@ -6426,8 +6448,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_CREATE;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_CREATE;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_CREATE;
 		}
@@ -6847,8 +6869,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EDIT;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EDIT;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_EDIT;
 		}
@@ -7367,8 +7389,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_REMOVE;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_REMOVE;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_REMOVE;
 		}
@@ -7675,8 +7697,8 @@ class ND_Controller extends UW_Controller {
 		/* Get view title */
 		$title = NULL;
 
-		if (isset($this->_aliased_menu_entries[$this->_name])) {
-			$title = $this->_aliased_menu_entries[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
+		if (isset($this->_menu_entries_aliases[$this->_name])) {
+			$title = $this->_menu_entries_aliases[$this->_name] . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
 		} else {
 			$title = $this->_viewhname . $this->_view_title_sep . NDPHP_LANG_MOD_OP_VIEW;
 		}
