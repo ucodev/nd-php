@@ -1,3 +1,8 @@
+v0.01z4 (2016-06-22):
+
+ - Bug fix in the wipe method of builder controller.
+
+
 v0.01z3 (2016-06-22):
 
  - Set no-cache to Cache-Control header on cURL requests under update controller.

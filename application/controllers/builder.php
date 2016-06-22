@@ -265,10 +265,10 @@ class Builder extends ND_Controller {
 		}
 
 		/* Drop all relationship tables */
-		$this->db->select('db_field AS table');
+		$this->db->select('db_table_field AS table');
 		$this->db->from('model_objects');
-		$this->db->like('db_field', 'mixed_%');
-		$this->db->or_like('db_field', 'rel_%');
+		$this->db->like('db_table_field', 'mixed_%');
+		$this->db->or_like('db_table_field', 'rel_%');
 		$q = $this->db->get();
 
 		foreach ($q->result_array() as $row) {
