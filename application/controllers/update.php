@@ -65,6 +65,10 @@ class Update extends ND_Controller {
 	public function system_update() {
 		/** Stage 0: Check if repository version is different than this controller version **/
 		$ch = curl_init();
+		$headers = array(
+			'Cache-Control: no-cache'
+		);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/VERSION');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$version_file_contents = curl_exec($ch);
@@ -80,6 +84,10 @@ class Update extends ND_Controller {
 		} else {
 			/** Stage 1: Fetch tracker **/
 			$ch = curl_init();
+			$headers = array(
+				'Cache-Control: no-cache'
+			);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . 'master/install/updates/tracker.json');
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			$tracker_file_contents = curl_exec($ch);
@@ -125,6 +133,10 @@ class Update extends ND_Controller {
 			/** Stage 5: Fetch and replace files **/
 			foreach ($tracker[$from_version]['files'] as $file) {
 				$ch = curl_init();
+				$headers = array(
+					'Cache-Control: no-cache'
+				);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 				curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . $tracker[$from_version]['to'] . '/' . $file);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				$file_contents = curl_exec($ch);

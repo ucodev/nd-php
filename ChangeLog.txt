@@ -1,3 +1,8 @@
+v0.01z3 (2016-06-22):
+
+ - Set no-cache to Cache-Control header on cURL requests under update controller.
+
+
 v0.01z2 (2016-06-22):
 
  - Minor fix on default ide_setup.php file.
