@@ -1,3 +1,8 @@
+v0.01z2 (2016-06-22):
+
+ - Minor fix on default ide_setup.php file.
+
+
 v0.01z1 (2016-06-22):
 
  - Fixed current version number.
