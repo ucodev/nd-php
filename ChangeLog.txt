@@ -1,3 +1,18 @@
+v0.01z (2016-06-22):
+
+ - IDE model storage increased from 64Kb to 16Mb.
+ - Mixed relationship field aliases are now fully supported on IDE.
+ - Added the wipe method to builder controller.
+ - Fixed IDE Builder issues regarding file copies when project base directory contains more than one directory level.
+ - Added some more sanity checks on IDE Builder validation process.
+ - Views with forms now do not depend on javascript to work properly (except mixed and multiple relationships and search views).
+ - Added specific Firefox CSS styles to main.css file regarding html buttons.
+ - Added a new request model.
+ - Cleaned up core controllers with the new request model API.
+ - Added a generic form submit AJAX handler to ndphp JS library.
+ - Updated tracker.
+
+
 v0.01y (2016-06-21):
 
  - Removed debugging logs from update controller.

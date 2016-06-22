@@ -79,10 +79,10 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         return false;
     }
 
-    pat = /^[0-9_\ ]+.*$/;
+    pat = /^([0-9_\ ]+|rel_|mixed_).*$/;
 
     if (pat.test(menu['name'])) {
-        alert('Menu "' + menu['title'] + '/' + menu['name'] + '" cannot start with a digit, a space nor an underscore.');
+        alert('Menu "' + menu['title'] + '/' + menu['name'] + '" cannot start with a digit, a space nor an underscore and cannot start with \'rel_\' nor \'mixed_\' prefixes.');
         return false;
     }
 
@@ -215,10 +215,10 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
         return false;
     }
 
-    pat = /^[0-9_\ ]+.*$/;
+    pat = /^([0-9_\ ]+|rel_|mixed_).*$/;
 
     if (pat.test(field['name'])) {
-        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" cannot start with a digit, a space nor an underscore.');
+        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" cannot start with a digit, a space nor an underscore and cannot start with \'rel_\' nor \'mixed_\' prefixes.');
         return false;
     }
 

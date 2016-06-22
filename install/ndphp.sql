@@ -142,7 +142,7 @@ CREATE TABLE `builder` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `build` int(11) NOT NULL DEFAULT '1',
   `created` datetime DEFAULT NULL,
-  `model` text,
+  `model` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -267,7 +267,7 @@ CREATE TABLE `configuration` (
   `roles_id` int(11) DEFAULT NULL,
   `maintenance` tinyint(1) DEFAULT NULL,
   `active` tinyint(1) DEFAULT NULL,
-  `model` text,
+  `model` mediumtext,
   `_separator_project` tinyint(1) DEFAULT NULL,
   `project_name` varchar(32) NOT NULL DEFAULT 'ND php',
   `project_version` varchar(16) NOT NULL DEFAULT 'v0.01',

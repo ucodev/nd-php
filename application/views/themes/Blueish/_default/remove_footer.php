@@ -74,5 +74,10 @@
 
 		/* Reset current tab index */
 		ndphp.current.tab_index = null;
+
+		/* On submit ... */
+		jQuery('#removeform').submit(function(e) {
+			ndphp.form.submit_remove(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'removeform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');
+		});
 	});
 </script>

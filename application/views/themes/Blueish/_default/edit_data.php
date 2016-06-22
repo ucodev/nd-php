@@ -273,19 +273,17 @@
 			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_footer.php'); } ?>
 
 			<div class="edit_ops">
-				<a href="javascript:void(0);" onclick="ndphp.form.submit_edit_wrapper(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'editform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_UPDATE, $config['charset'])?>" class="context_menu_link">
+				<button id="op_submit" type="submit" value="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_UPDATE, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_UPDATE, $config['charset'])?>" class="context_menu_button">
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_UPDATE, $config['charset'])?>
-				</a>
-				<a href="javascript:void(0);" onclick="ndphp.form.cancel_edit(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
+				</button>
+				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['id'], $config['charset'])?>" onclick="ndphp.form.cancel_edit(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
 				</a>
 				<?php if (isset($config['modalbox'])): ?>
-					<a href="javascript:void(0);" onclick="ndphp.ajax.load_body_edit_frommodal(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($view['id'], $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_EXPAND, $config['charset'])?>" class="context_menu_link">
+					<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['id'], $config['charset'])?>" onclick="ndphp.ajax.load_body_edit_frommodal(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($view['id'], $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_EXPAND, $config['charset'])?>" class="context_menu_link">
 						<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_EXPAND, $config['charset'])?>
 					</a>
 				<?php endif; ?>
-				<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" type="submit" style="display: none;" />
-				<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" type="reset" style="display: none;" />
 			</div>
 		</form>
 		<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>

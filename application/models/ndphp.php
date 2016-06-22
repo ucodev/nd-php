@@ -31,7 +31,7 @@
  */
 
 class UW_Ndphp extends UW_Model {
-	function arithmetic_op_user_credit($user_id, $ammount, $op = 'add') {
+	public function arithmetic_op_user_credit($user_id, $ammount, $op = 'add') {
 		$this->db->trans_begin();
 
 		$this->db->select('credit');
@@ -66,15 +66,15 @@ class UW_Ndphp extends UW_Model {
 		return true;
 	}
 
-	function add_user_credit($user_id, $ammount) {
+	public function add_user_credit($user_id, $ammount) {
 		return $this->arithmetic_op_user_credit($user_id, $ammount, 'add');
 	}
 
-	function sub_user_credit($user_id, $ammount) {
+	public function sub_user_credit($user_id, $ammount) {
 		return $this->arithmetic_op_user_credit($user_id, $ammount, 'sub');
 	}
 
-	function get_user_credit($user_id) {
+	public function get_user_credit($user_id) {
 		$this->db->select('credit');
 		$this->db->from('users');
 		$this->db->where('id', $user_id);
@@ -89,7 +89,7 @@ class UW_Ndphp extends UW_Model {
 		return $row['credit'];
 	}
 
-	function set_user_credit($user_id, $credit) {
+	public function set_user_credit($user_id, $credit) {
 		$userdata['credit'] = $credit;
 
 		$this->db->trans_begin();
@@ -107,15 +107,15 @@ class UW_Ndphp extends UW_Model {
 		return true;
 	}
 
-	function safe_b64encode($input) {
+	public function safe_b64encode($input) {
 		return str_replace('/', '@', base64_encode($input));
 	}
 
-	function safe_b64decode($input) {
+	public function safe_b64decode($input) {
 		return base64_decode(str_replace('@', '/', $input));
 	}
 
-	function no_cache() {
+	public function no_cache() {
 		header('Expires: Sun, 01 Jan 2006 00:00:00 UTC');
 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' UTC');
 		header('Cache-Control: no-store, no-cache, must-revalidate');

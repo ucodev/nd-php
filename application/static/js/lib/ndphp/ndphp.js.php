@@ -903,6 +903,37 @@ ndphp.form.submit_token = function(base_url, ctrl, form_id) {
 	});
 }
 
+ndphp.form.submit_generic = function(post_url, form_id, error_title, error_msg) {
+	e.preventDefault();
+
+	ndphp.ui.busy();
+                
+	var formData = new FormData(jQuery('#' + form_id)[0]);
+
+	jQuery('#body').nd_animate_hide(ndphp.animation.delay, function() {
+		jQuery.ajax({
+			type: "POST",
+			url: post_url,
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function(data) {
+				var html = jQuery(data);
+				ndphp.nav.back_store('body', jQuery('#body').html());
+				jQuery('#body').html(html).nd_animate_show(ndphp.animation.delay, function() {
+					ndphp.ui.ready();
+				});
+			},
+			error: function(xhr, ajaxOptions, thrownError) {
+				jQuery('#ajax_error_dialog').html(error_msg + ': ' + xhr.responseText);
+				jQuery('#ajax_error_dialog').dialog({ modal: true, title: error_title });
+				ndphp.ui.ready();
+			}
+		});
+	});
+}
+
 ndphp.form.subscription = {};
 
 ndphp.form.subscription_upgrade_submit = function() {

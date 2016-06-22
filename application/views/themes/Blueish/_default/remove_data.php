@@ -212,11 +212,10 @@
 			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/remove_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/remove_data_custom_footer.php'); } ?>
 
 			<div class="remove_ops">
-				<!-- FIXME: the following anchors, referencing javascript:void(0), shall be replaced with input submit type elements when javascript is disabled -->
-				<a href="javascript:void(0);" onclick="ndphp.form.submit_remove(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'removeform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_DELETE, $config['charset'])?>" class="context_menu_link">
+				<button id="op_submit" type="submit" value="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_DELETE, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_DELETE, $config['charset'])?>" class="context_menu_button">
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_DELETE, $config['charset'])?>
-				</a>
-				<a href="javascript:void(0);" onclick="ndphp.form.cancel_remove(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
+				</button>
+				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['id'], $config['charset'])?>" onclick="ndphp.form.cancel_remove(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
 				</a>
 				<?php if (isset($config['modalbox'])): ?>

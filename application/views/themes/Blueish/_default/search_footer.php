@@ -108,6 +108,11 @@
 		/* Reset current tab index */
 		ndphp.current.tab_index = null;
 
+		/* On submit ... */
+		jQuery('#advsearchform').submit(function(e) {
+			ndphp.form.submit_adv_search(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>');
+		});
+
 	});
 
 	function search_expand_options(opt_div, btn_div) {

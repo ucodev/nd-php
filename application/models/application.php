@@ -1498,6 +1498,7 @@ class UW_Application extends UW_Model {
 		$hide_export = array();
 		$hide_mixed = array();
 		$rel_field_aliases = '';
+		$mixed_field_aliases = '';
 		$field_aliases = '';
 
 		/* Populate the hiding lists for each visualization type and respective aliases */
@@ -1539,7 +1540,8 @@ class UW_Application extends UW_Model {
 				if ($field['type'] == 'dropdown' || $field['type'] == 'multiple') {
 					$rel_field_aliases .= "\t\t'" . strtolower(str_replace(' ', '_', $field['name'])) . "' => array(\"" . str_replace("\"", "\\\"", $field['properties']['alias']) . "\", NULL, array(1), array('id', 'asc')),\n";
 				} else if ($field['type'] == 'mixed') {
-					/* FIXME: TODO: Mixed relationships aliases ... */
+					/* Mixed relationship field alias */
+					$mixed_field_aliases .= "\t\t'" . strtolower(str_replace(' ', '_', $field['name'])) . "' => \"" . str_replace("\"", "\\\"", $field['properties']['alias']) . "\",\n";
 				} else {
 					/* This is a regular field type */
 					$field_aliases .= "\t\t'" . $field['db']['name'] . "' => \"" . str_replace("\"", "\\\"", $field['properties']['alias']) . "\",\n";
@@ -1665,6 +1667,12 @@ class UW_Application extends UW_Model {
 					rtrim($field_aliases, ",\n") . "\n" .
 			'	);' . "\n" .
 			'' . "\n" .
+			'	/* Fieldset legend aliases for mixed relationships */' . "\n" .
+			'	protected $_mixed_fieldset_legend_config = array(' . "\n" .
+			'		/* \'table\' => \'legend\', */' . "\n" .
+					rtrim($mixed_field_aliases, ",\n") . "\n" .
+			'	);' . "\n" .
+			'' . "\n" .
 			'	/* The fields to be concatenated as the options of the relationship table. Also the place to set relational field name aliases. */' . "\n" .
 			'	protected $_rel_table_fields_config = array(' . "\n" .
 			'		/* \'table\' => array(\'ViewName\', \'separator\', array(field_nr_1, field_nr_2, ...), array(\'order_by field\', \'asc or desc\')), */' . "\n" .
@@ -1772,22 +1780,24 @@ class UW_Application extends UW_Model {
 	}
 
 	private function _process_menu_icon_recreate($menu) {
-		/* Recreate the menu icon if required */
+		/* Craft the full (system) path to the static images directory */
+		$images_path = SYSTEM_BASE_DIR . '/' . preg_replace('/' . preg_quote(base_dir(), '/') . '/', '', static_images_dir(), 1);
 
+		/* Recreate the menu icon if required */
 		if (!isset($menu['properties']['icon'])) {
 			/* If it doesn't exist, create a blank icon. */
-			return copy(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/menu/' . $menu['db']['name'] . '.png');
+			return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
 		} else if ($menu['properties']['icon'] == "custom") {
 			/* If the icon is custom, do not replace it if already exists. */
-			if (file_exists(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/menu/' . $menu['db']['name'])) {
+			if (file_exists($images_path . '/menu/' . $menu['db']['name'])) {
 				return true; /* Icon exists and it's customized... ignoring... */
 			} else {
 				/* If it doesn't exist, create a blank icon. */
-				return copy(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/menu/' . $menu['db']['name'] . '.png');
+				return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
 			}
 		} else {
 			/* A specific icon was selected... replace the menu icon with it... */
-			return copy(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/' . $menu['properties']['icon'], SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/menu/' . $menu['db']['name'] . '.png');
+			return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/' . $menu['properties']['icon'], $images_path . '/menu/' . $menu['db']['name'] . '.png');
 		}
 
 		return false;

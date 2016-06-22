@@ -3,4 +3,4 @@
 /* Autoload settings */
 $autoload['libraries'] = array('mpdf', 'phpmailer', 'pchart');
 $autoload['extensions'] = array('pagination', 'timezone', 'breadcrumb');
-$autoload['models'] = array('ndphp', 'security', 'features', 'configuration', 'application', 'accounting');
+$autoload['models'] = array('ndphp', 'security', 'features', 'configuration', 'application', 'accounting', 'request');

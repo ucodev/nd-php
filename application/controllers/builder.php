@@ -35,22 +35,21 @@
  *
  * - Change field and menu entry types (Currently we need to remove them and add them again as a new type, losing all the data for that field).
  * - Droping a non-instantiated pool object over an instantiated object of the same family shall change the latest type/title (with confirmation dialog).
- * - Relational field name aliases (such as Mixed relationship fields) are not being processed (no rel_table_config is being set on the controller with the aliases for that table).
  * - Download button to export ndmodel (application model in JSON format)
  * - Download button to export nddata (table dump in JSON format)
  * - Import button to import ndmodel (application model in JSON format)
  * - Import button to import nddata (table dump in JSON format)
  * - [IN PROGRESS] A lot of javascript validations are missing:
- *  * Validate all data input with regex (including constraints, properties, etc either on menu and field objects).
  *  * Multiple relationship field objects shall be replicated to the foreign table, or ignored from the foreign table if the user replicated them (Choose one...)
- *  * Check for reserved prefixes for menu: rel_ and mixed_
- *  * Check for reserved prefixes on fields: _file_, _timer_, _separator_
- *  * Check for reserved suffixes on fields: _id, _time
  * - Field 'Hidden' constraint must go.
  * - IDE Builder view should contain a link to open the webapp (in a new tab).
  * * Add context-menu insert options on Controller code edition (to insert templates for hooks, charts, etc.).
  * * When a table is renamed containing _file_* fields and is referenced as mixed, the uploads/ directory must be changed to keep the integrity of uploaded files links.
  * * When sharding is enabled, all the databases need to be updated, not just the default database.
+ *
+ * FIXME:
+ *
+ * * Changing controllers' fields that are already linked as mixed relationships will break the model (fields will be missing on the mixed view).
  *
  */
 
@@ -237,7 +236,7 @@ class Builder extends ND_Controller {
 		$this->db->update('configuration', array('model' => $json_raw));
 
 		/* Commit transaction */
-		if ($this->db->trans_status() === FALSE) {
+		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 			header("HTTP/1.1 500 Internal Server Error");
 			die(NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL);
@@ -247,6 +246,49 @@ class Builder extends ND_Controller {
 
 		/* XXX: Debug */
 		echo(NDPHP_LANG_MOD_SUCCESS_LOAD_APP_MODEL);
+	}
+
+	public function wipe($magic = NULL, $wipe_models = false) {
+		/* Grant (to a certain level) that we're not calling this method by mistake */
+		if ($magic != gmdate('YmdHi')) {
+			header('HTTP/1.1 403 Forbidden');
+			die('Incorrect magic identifier.');
+		}
+
+		/* Drop all main tables */
+		$this->db->select('db_table AS table');
+		$this->db->from('model_objects');
+		$q = $this->db->get();
+
+		foreach ($q->result_array() as $row) {
+			$this->db->table_drop($row['table'], true, true);
+		}
+
+		/* Drop all relationship tables */
+		$this->db->select('db_field AS table');
+		$this->db->from('model_objects');
+		$this->db->like('db_field', 'mixed_%');
+		$this->db->or_like('db_field', 'rel_%');
+		$q = $this->db->get();
+
+		foreach ($q->result_array() as $row) {
+			$this->db->table_drop($row['table'], true, true);
+		}
+
+		$this->db->delete('model_objects');
+
+		/* Check if we're also wiping the application models */
+		if ($wipe_models) {
+			/* Drop all builds */
+			$this->db->delete('builder');
+
+			/* Drop model from current active configuration */
+			$this->db->where('active', true);
+			$this->db->update('configuration', array('model' => ''));
+		}
+
+		/* Redirect to the IDE Builder */
+		redirect('/builder/ide');
 	}
 }
 

@@ -237,14 +237,12 @@
 		<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_footer.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_footer.php'); } ?>
 
 		<div class="create_ops">
-			<a href="javascript:void(0);" onclick="ndphp.form.submit_create_wrapper(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'createform', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" class="context_menu_link">
+			<button id="op_submit" type="submit" value="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" class="context_menu_button">
 				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>
-			</a>
-			<a href="javascript:void(0);" onclick="ndphp.form.cancel_create(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
+			</button>
+			<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_default" onclick="ndphp.form.cancel_create(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
 				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
 			</a>
-			<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CREATE, $config['charset'])?>" type="submit" style="display: none;" />
-			<input name="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" type="reset" style="display: none;" />
 		</div>
 	</form>
 	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>

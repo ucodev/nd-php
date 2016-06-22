@@ -80,7 +80,8 @@
  *
  * FIXME:
  *
- * * IDE Builder is not handling relational field aliases.
+ * * Mixed and multiple relationships must work properly when javascript is disabled.
+ * * Advanced and basic search must work properly when javascript is disabled.
  * * Saved searches results do not have full breadcrumb support.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
@@ -3201,11 +3202,11 @@ class ND_Controller extends UW_Controller {
 
 		/* Evaluate Session Status */
 		if (!isset($this->_session_data['logged_in']) || $this->_session_data['logged_in'] != true) {
-			$json_raw = file_get_contents('php://input');
-			$json_req = json_decode($json_raw, true);
+			/* Fetch a possible JSON request */
+			$json_req = $this->request->json();
 			
-			/* Check if this is an API call */
-			if (isset($json_req['_apikey']) && isset($json_req['_userid'])) {
+			/* Check if the request is of type JSON and if this is a valid API call */
+			if ($this->request->is_json() && isset($json_req['_apikey']) && isset($json_req['_userid'])) {
 				/* Enable JSON replies. This is the default for REST API */
 				$this->_json_replies = true;
 
@@ -3296,8 +3297,8 @@ class ND_Controller extends UW_Controller {
 					/* Session already exists, so we just need to update it */
 					$this->db->where('session', session_id());
 					$this->db->update('sessions', array(
-						'ip_address' => (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unspecified',
-						'user_agent' => (isset($_SERVER['HTTP_USER_AGENT']) && $_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Unspecified',
+						'ip_address' => $this->request->remote_addr(),
+						'user_agent' => $this->request->header('User-Agent') ? $this->request->header('User-Agent') : 'Unspecified',
 						'last_login' => date('Y-m-d H:i:s'),
 						'users_id' => $user_id
 					));
@@ -3328,10 +3329,10 @@ class ND_Controller extends UW_Controller {
 				/* User not logged in or session expired... we need to force re-authentication */
 
 				/* If this is an AJAX call, redirect to /login/ ... Otherwise set the referer URL */
-				if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != strtolower('XMLHttpRequest')) {
-					die('<meta http-equiv="refresh" content="0; url=' . base_url() . 'index.php/login/login/' . $this->ndphp->safe_b64encode(current_url()) . '"><script type="text/javascript">window.location = "' . base_url() . 'index.php/login/login/' . $this->ndphp->safe_b64encode(current_url()) . '";</script>');
-				} else {
+				if ($this->request->is_ajax()) {
 					die('<meta http-equiv="refresh" content="0; url=' . base_url() . 'index.php/login"><script type="text/javascript">window.location = "' . base_url() . 'index.php/login";</script>');
+				} else {
+					die('<meta http-equiv="refresh" content="0; url=' . base_url() . 'index.php/login/login/' . $this->ndphp->safe_b64encode(current_url()) . '"><script type="text/javascript">window.location = "' . base_url() . 'index.php/login/login/' . $this->ndphp->safe_b64encode(current_url()) . '";</script>');
 				}
 			}
 		}

@@ -546,6 +546,99 @@ a.context_menu_link:hover, a.context_menu_link:active {
 	color: #eeeeee;
 }
 
+.context_menu_button {
+	border: 0px;
+	cursor: pointer;
+	text-decoration: none;
+	font-family: helvetica, verdana, arial, sans-serif; /* Required for Firefox */
+	font-style: normal;
+	font-weight: bold;
+	outline: none;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-right: 5px;
+	margin-left: 5px;
+	display: inline-block;
+	overflow: none;
+	width: 100px;
+	padding: 5px;
+	background-color: #777777;
+	color: #eeeeee;
+}
+
+.context_menu_button:hover {
+	border: 0px;
+	cursor: pointer;
+	text-decoration: none;
+	font-family: helvetica, verdana, arial, sans-serif; /* Required for Firefox */
+	font-style: normal;
+	font-weight: bold;
+	outline: none;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-right: 5px;
+	margin-left: 5px;
+	display: inline-block;
+	overflow: none;
+	width: 100px;
+	padding: 5px;
+	background-color: #555555;
+	color: #eeeeee;
+}
+
+@-moz-document url-prefix() {
+	/* Firefox buttons (either button or input button) need some special treatment */
+	.context_menu_button {
+		-moz-appearance: none;
+		border: 0;
+		cursor: pointer;
+		text-decoration: none;
+		font-family: helvetica, verdana, arial, sans-serif;
+		font-style: normal;
+		font-weight: bold;
+		outline: none;
+		margin-top: 10px;
+		margin-bottom: 10px;
+		margin-right: 5px;
+		margin-left: 5px;
+		display: inline-block;
+		overflow: none;
+		width: 100px;
+		padding-top: 4px;
+		padding-bottom: 3px;
+		padding-left: 5px;
+		padding-right: 5px;
+		background-color: #777777;
+		color: #eeeeee;
+	}
+
+	.context_menu_button:hover {
+		-moz-appearance: none;
+		vertical-align: baseline;
+		border: 0 none;
+		border-spacing: 0;
+		cursor: pointer;
+		text-decoration: none;
+		font-family: helvetica, verdana, arial, sans-serif;
+		font-style: normal;
+		font-weight: bold;
+		outline: none;
+		margin-top: 10px;
+		margin-bottom: 10px;
+		margin-right: 5px;
+		margin-left: 5px;
+		display: inline-block;
+		overflow: none;
+		width: 100px;
+		padding-top: 4px;
+		padding-bottom: 3px;
+		padding-left: 5px;
+		padding-right: 5px;
+		background-color: #555555;
+		color: #eeeeee;
+	}
+}
+
 /**
  * 	END OF:
  * 

@@ -146,7 +146,7 @@ class Login extends UW_Controller {
 			die('session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS);
 		}
 
-		if (!isset($_SERVER['REMOTE_ADDR']) || !$_SERVER['REMOTE_ADDR']) {
+		if ($this->request->remote_addr() == 'Unspecified') {
 			header('HTTP/1.1 403 Forbidden');
 			die('session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS);
 		}
@@ -258,8 +258,8 @@ class Login extends UW_Controller {
 			/* Session already exists, so we just need to update it */
 			$this->db->where('session', session_id());
 			$this->db->update('sessions', array(
-				'ip_address' => (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unspecified',
-				'user_agent' => (isset($_SERVER['HTTP_USER_AGENT']) && $_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Unspecified',
+				'ip_address' => $this->request->remote_addr(),
+				'user_agent' => $this->request->header('User-Agent') ? $this->request->header('User-Agent') : 'Unspecified',
 				'last_login' => date('Y-m-d H:i:s'),
 				'users_id' => $user_id
 			));
@@ -270,7 +270,7 @@ class Login extends UW_Controller {
 		} else {
 			/* The session doesn't exist... Unauthorized */
 			header('HTTP/1.1 403 Unauthorized');
-			die('No session found.');
+			die(NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND);
 		}
 
 		/* Commit transaction if everything is fine. */

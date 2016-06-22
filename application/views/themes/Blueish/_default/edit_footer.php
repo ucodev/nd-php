@@ -140,7 +140,7 @@
 
 		/* On submit ... */
 		jQuery('#editform').submit(function(e) {
-			ndphp.form.submit_edit_wrapper(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'editform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');
+			ndphp.form.submit_edit_wrapper(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'editform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');
 		});
 
 	}); /* END OF jQuery(document). ... */
