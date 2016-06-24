@@ -97,7 +97,8 @@ class UW_Response extends UW_Model {
 			$data['view']['code']['number'] = $code;
 			$data['view']['code']['name'] = $this->_code_name_desc[$code][0];
 			$data['view']['code']['description'] = $this->_code_name_desc[$code][1];
-			die($this->load->view('_templates/errors/status_code', $data, true));
+			$this->load('view');
+			die($this->view->load('_templates/errors/status_code', $data, true));
 		} else {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
 			if ($content !== NULL) echo($content);

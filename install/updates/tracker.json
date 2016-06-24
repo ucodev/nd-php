@@ -64,7 +64,8 @@
 			"install/autoload.php",
 			"install/ndphp.sql",
 			"logs/.htaccess",
-			"user/core/ND_Controller.php"
+			"user/core/ND_Controller.php",
+			"user/utils/language.php"
 		],
 		"post_update_redirect": "/update/post_update/any/master",
 		"data_model_queries": [

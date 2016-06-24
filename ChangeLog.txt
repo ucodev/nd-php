@@ -1,3 +1,9 @@
+v0.02a3 (2016-06-24):
+
+ - Fixed some issues with response model.
+ - Updated tracker.
+
+
 v0.02a2 (2016-06-24):
 
  - Fixed tracker (again).
