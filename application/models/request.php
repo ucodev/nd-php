@@ -34,11 +34,17 @@ class UW_Request extends UW_Model {
 	private $_raw_data = NULL;
 	private $_headers = array();
 
-	public function get() {
+	public function get($key = NULL) {
+		if ($key !== NULL)
+			return $_GET[$key];
+
 		return $_GET;
 	}
 
-	public function post() {
+	public function post($key = NULL) {
+		if ($key !== NULL)
+			return $_POST[$key];
+
 		return $_POST;
 	}
 

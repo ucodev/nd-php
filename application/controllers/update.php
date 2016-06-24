@@ -47,10 +47,8 @@ class Update extends ND_Controller {
 		include('lib/ide_setup.php');
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN);
-		}
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
 	}
 
 	
@@ -93,10 +91,8 @@ class Update extends ND_Controller {
 			$tracker_file_contents = curl_exec($ch);
 			curl_close($ch);
 
-			if (($tracker = json_decode($tracker_file_contents, true)) === NULL) {
-				header('HTTP/1.1 500 Internal Server Error');
-				die(NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER);
-			}
+			if (($tracker = json_decode($tracker_file_contents, true)) === NULL)
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER, $this->_charset, !$this->request->is_ajax());
 
 			/** Stage 2: Determine the tracker entry to be used **/
 			$from_version = $this->_ndphp_version;
@@ -104,30 +100,24 @@ class Update extends ND_Controller {
 			if (!isset($tracker[$from_version]))
 				$from_version = 'any';
 
-			if (!isset($tracker[$from_version])) {
-				header('HTTP/1.1 404 Not Found');
-				die(NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION);
-			}
+			if (!isset($tracker[$from_version]))
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION, $this->_charset, !$this->request->is_ajax());
 
 			/** Stage 3: Create required directories **/
 			foreach ($tracker[$from_version]['directories'] as $directory) {
 				if (file_exists(SYSTEM_BASE_DIR . '/' . $directory))
 					continue;
 
-				if (mkdir(SYSTEM_BASE_DIR . '/' . $directory) === false) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory);
-				}
+				if (mkdir(SYSTEM_BASE_DIR . '/' . $directory) === false)
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory, $this->_charset, !$this->request->is_ajax());
 			}
 
 			/** Stage 4: Check if we've permissions to overwrite the files to be updated **/
 			foreach ($tracker[$from_version]['files'] as $file) {
 				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
-				if ($fp === false) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
-				}
+				if ($fp === false)
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_charset, !$this->request->is_ajax());
 			}
 
 			/** Stage 5: Fetch and replace files **/
@@ -142,23 +132,17 @@ class Update extends ND_Controller {
 				$file_contents = curl_exec($ch);
 				curl_close($ch);
 
-				if (!$file_contents) {
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file);
-				}
+				if (!$file_contents)
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_charset, !$this->request->is_ajax());
 
 				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
 
-				if ($fp === false) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
-				}
+				if ($fp === false)
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_charset, !$this->request->is_ajax());
 
 				/* Update file contents */
-				if (fwrite($fp, $file_contents) === false) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file);
-				}
+				if (fwrite($fp, $file_contents) === false)
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_charset, !$this->request->is_ajax());
 
 				fclose($fp);
 
@@ -166,7 +150,13 @@ class Update extends ND_Controller {
 				set_time_limit(30); /* Reset the limit counter. We do not expect that a file update will take longer than 30 seconds... */
 			}
 
-			/** Stage 6: Execute any required SQL queries **/
+			/** Stage 6: Replace files **/
+			foreach ($tracker[$from_version]['replace'] as $file_rep) {
+				if (copy(SYSTEM_BASE_DIR . '/' . $file_rep[1], SYSTEM_BASE_DIR . '/' . $file_rep[0]) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file_rep[0], $this->_charset, !$this->request->is_ajax());
+			}
+
+			/** Stage 7: Execute any required SQL queries **/
 			foreach ($tracker[$from_version]['data_model_queries'] as $query) {
 				$this->db->trans_begin();
 
@@ -174,24 +164,22 @@ class Update extends ND_Controller {
 
 				if ($this->db->trans_status() === false) {
 					$this->db->trans_rollback();
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY);
+					$this->reponse->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->_charset, !$this->request->is_ajax());
 				}
 
 				$this->db->trans_commit();
 			}
 
-			/** Stage 7: Wait a little while... */
+			/** Stage 8: Wait a little while... */
 			sleep(3);
 
-			/** Stage 8: Redirect to the post update method **/
+			/** Stage 9: Redirect to the post update method **/
 			redirect($tracker[$from_version]['post_update_redirect']);
 		}
 	}
 
 	public function index() {
-		header('HTTP/1.1 500 Internal Server Error');
-		die('RELOAD THE PAGE');
+		$this->reponse->code('500', 'RELOAD THE PAGE', $this->_charset, !$this->request->is_ajax());
 	}
 
 	public function post_update($from, $to) {

@@ -260,6 +260,17 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
 
     }
 
+    /* Check default value */
+    if (field['properties']['default_value'].length) {
+        /* Integer values shall not have default values greater than 2**32 (FIXME: This should be fixed by converting the int() types to bigint()) */
+        if (field['title'] == 'Drop-Down' || field['title'] == 'Numeric') {
+            if (field['properties']['default_value'] > 4294967295) {
+                alert('Default value of field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" must be lesser than 4294967295.');
+                return false;
+            }
+        }
+    }
+
     /* TODO: FIXME: Also check for duplicate Multiple and Mixed relationships that will generate similar relationship tables
      *              if created under diferent controllers but pointing to the same place (AKA ambiguity).
      */

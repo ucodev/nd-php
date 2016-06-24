@@ -41,6 +41,10 @@ class Scheduler extends ND_Controller {
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Grant that only ROLE_ADMIN is able to access this controller */
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
 	}
 	
 	/** Hooks **/

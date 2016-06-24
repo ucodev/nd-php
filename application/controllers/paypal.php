@@ -111,15 +111,13 @@ class Paypal extends ND_Controller {
 
 		if (!$payments_id) {
 			error_log('paypal.php: payment_init(): Insert failed.');
-			header('HTTP/1.0 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1');
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_charset, !$this->request->is_ajax());
 		}
 
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal.php: payment_init(): Transaction failed.');
 			$this->db->trans_rollback();
-			header('HTTP/1.0 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #2');
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #2', $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -141,8 +139,7 @@ class Paypal extends ND_Controller {
 		if (isset($_POST['item_quantity'])) {
 			$new_data['item_quantity'] = intval($POST['item_quantity']);
 		} else {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_POST_DATA);
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$POST = $new_data;
@@ -246,10 +243,8 @@ class Paypal extends ND_Controller {
 		$item_quantity = $_POST['item_quantity'];
 
 		/* Validate payment ammount */
-		if ($this->payment_validate_quantity($item_quantity) !== true) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT);
-		}
+		if ($this->payment_validate_quantity($item_quantity) !== true)
+			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT, $this->_charset, !$this->request->is_ajax());
 
 		$payment_data = $this->payment_init($item_quantity);
 
@@ -289,7 +284,7 @@ class Paypal extends ND_Controller {
 		$querystring .= 'custom=' . urlencode(base64_encode($this->encrypt->encode($payment_data['payments_id'] . '.' . rand(100000, 1000000))));
 	
 		/* Redirect to paypal IPN */
-		header('Location: https://' . $this->paypal_host . '/cgi-bin/webscr' . $querystring);
+		$this->response->header('Location', 'https://' . $this->paypal_host . '/cgi-bin/webscr' . $querystring);
 	}
 }
 

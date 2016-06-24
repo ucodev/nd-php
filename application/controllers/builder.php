@@ -66,10 +66,8 @@ class Builder extends ND_Controller {
 		include('lib/ide_setup.php');
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN);
-		}
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
 	}
 	
 
@@ -113,10 +111,8 @@ class Builder extends ND_Controller {
 		/* Setup view data: Load application model (JSON) */
 		$row = $query->row_array();
 		if ($row['model']) {
-			if (($data['view']['application'] = json_decode($row['model'], true)) === NULL) {
-				header('HTTP/1.1 500 Internal Server Error');
-				die(NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON);
-			}
+			if (($data['view']['application'] = json_decode($row['model'], true)) === NULL)
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$data['view']['application'] = array();
 		}
@@ -128,10 +124,9 @@ class Builder extends ND_Controller {
 	public function save_model() {
 		/* Read JSON data */
 		$json_raw = file_get_contents('php://input');
-		if (($application = json_decode($json_raw, true)) === NULL) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON);
-		}
+
+		if (($application = json_decode($json_raw, true)) === NULL)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->_charset, !$this->request->is_ajax());
 
 		/* Save the new application model */
 		$this->db->trans_begin();
@@ -142,8 +137,7 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header("HTTP/1.1 500 Internal Server Error");
-			die(NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -154,10 +148,9 @@ class Builder extends ND_Controller {
 	public function deploy_model() {
 		/* Read JSON data */
 		$json_raw = file_get_contents('php://input');
-		if (($application = json_decode($json_raw, true)) === NULL) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON);
-		}
+
+		if (($application = json_decode($json_raw, true)) === NULL)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->_charset, !$this->request->is_ajax());
 
 		/* Save the new application model */
 		$this->db->trans_begin();
@@ -168,17 +161,14 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header("HTTP/1.1 500 Internal Server Error");
-			die(NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
 
 		/* Process the raw application model, deploy it, and receive the complete application model */
-		if (($app_model = $this->application->deploy_model($application)) === false) {
-			header('HTTP/1.1 500 Internal Server Error.');
-			die(NDPHP_LANG_MOD_UNABLE_PROCESS_APP_MODEL);
-		}
+		if (($app_model = $this->application->deploy_model($application)) === false)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PROCESS_APP_MODEL, $this->_charset, !$this->request->is_ajax());
 
 		/* Update the new application model with a more complete set of data */
 		$this->db->trans_begin();
@@ -189,8 +179,7 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header("HTTP/1.1 500 Internal Server Error");
-			die(NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -238,8 +227,7 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header("HTTP/1.1 500 Internal Server Error");
-			die(NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -250,10 +238,8 @@ class Builder extends ND_Controller {
 
 	public function wipe($magic = NULL, $wipe_models = false) {
 		/* Grant (to a certain level) that we're not calling this method by mistake */
-		if ($magic != gmdate('YmdHi')) {
-			header('HTTP/1.1 403 Forbidden');
-			die('Incorrect magic identifier.');
-		}
+		if ($magic != gmdate('YmdHi'))
+			$this->response->code('403', 'Incorrect magic identifier.', $this->_charset, !$this->request->is_ajax());
 
 		/* Drop all main tables */
 		$this->db->select('db_table AS table');

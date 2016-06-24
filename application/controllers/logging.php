@@ -43,10 +43,8 @@ class Logging extends ND_Controller {
 		include('lib/ide_setup.php');
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN);
-		}
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
 	}
 	
 	/** Hooks **/
@@ -111,10 +109,8 @@ class Logging extends ND_Controller {
 		$this->db->where('transaction', $transaction);
 		$q_log = $this->db->get();
 
-		if (!$q_log->num_rows()) {
-			header('HTTP/1.1 404 Not Found');
-			die(NDPHP_LANG_MOD_UNABLE_FIND_TRANSACTION . ': ' . $transaction);
-		}
+		if (!$q_log->num_rows())
+			$this->response->code('404', NDPHP_LANG_MOD_UNABLE_FIND_TRANSACTION . ': ' . $transaction, $this->_charset, !$this->request->is_ajax());
 
 		/* Start the rollback process */
 		$this->db->trans_begin();
@@ -139,11 +135,8 @@ class Logging extends ND_Controller {
 				if ($row_current[$row['_field']] != $row['value_new']) {
 					$this->db->trans_rollback();
 
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ' (' . $transaction . '): ' .
-						NDPHP_LANG_MOD_INFO_ENTRY_CHANGED);
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ' (' . $transaction . '): ' . NDPHP_LANG_MOD_INFO_ENTRY_CHANGED, $this->_charset, !$this->request->is_ajax());
 				}
-
 			}
 
 			/* Update the table field value based on the log value */
@@ -176,8 +169,7 @@ class Logging extends ND_Controller {
 		/* Commit database transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ':' . $transaction);
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ':' . $transaction, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -200,10 +192,8 @@ class Logging extends ND_Controller {
 		$row = $q->row_array();
 
 		/* Check if the transaction was already rolled back */
-		if ($row['rolled_back']) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY . ' (' . $row['transaction'] . ').');
-		}
+		if ($row['rolled_back'])
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY . ' (' . $row['transaction'] . ').', $this->_charset, !$this->request->is_ajax());
 
 		/* Fetch all the changed items related to the transaction */
 		$this->db->select('_table,_field,entryid,value_old,value_new,registered');
@@ -213,10 +203,8 @@ class Logging extends ND_Controller {
 		$changes = $q->result_array();
 
 		/* Check if this operation is prone to rollbacks */
-		if ($row['operation'] != 'UPDATE') {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_ROLLBACK_NON_UPDATE);
-		}
+		if ($row['operation'] != 'UPDATE')
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ROLLBACK_NON_UPDATE, $this->_charset, !$this->request->is_ajax());
 
 		/* Setup view data */
 		$data['view']['transaction'] = $row['transaction'];

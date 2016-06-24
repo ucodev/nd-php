@@ -141,15 +141,11 @@ class Login extends UW_Controller {
 	 */
 	private function session_setup($user_id = NULL, $username = NULL, $plain_password = NULL, $email = NULL, $first_name = NULL, $photo = NULL) {
 		/* Sanity checks */
-		if (!$user_id || !$username || !$plain_password || !$email) {
-			header('HTTP/1.1 403 Forbidden');
-			die('session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS);
-		}
+		if (!$user_id || !$username || !$plain_password || !$email)
+			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_charset, !$this->request->is_ajax());
 
-		if ($this->request->remote_addr() == 'Unspecified') {
-			header('HTTP/1.1 403 Forbidden');
-			die('session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS);
-		}
+		if ($this->request->remote_addr() == 'Unspecified')
+			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_charset, !$this->request->is_ajax());
 
 		/* Get user's roles */
 		$this->db->select('roles_id');
@@ -199,20 +195,16 @@ class Login extends UW_Controller {
 		$this->db->where('id', $user_id);
 		$query = $this->db->get();
 
-		if (!$query->num_rows()) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS);
-		}
+		if (!$query->num_rows())
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_charset, !$this->request->is_ajax());
 
 		$pek_row = $query->row_array();
 
 		/* Decrypt the stored key with the user's plain password */
 		$privenckey = $this->encrypt->decrypt($pek_row['privenckey'], $plain_password, false);
 
-		if (strlen($privenckey) != 256) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY);
-		}
+		if (strlen($privenckey) != 256)
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_charset, !$this->request->is_ajax());
 
 		/* Regenrate user session */
 		$this->session->regenerate();
@@ -269,8 +261,7 @@ class Login extends UW_Controller {
 			$sessions_id = $row['id'];
 		} else {
 			/* The session doesn't exist... Unauthorized */
-			header('HTTP/1.1 403 Unauthorized');
-			die(NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND);
+			$this->response->code('401', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Commit transaction if everything is fine. */
@@ -302,12 +293,10 @@ class Login extends UW_Controller {
 			if ($query->num_rows() == 1) {
 				$row = $query->row_array();
 			} else {
-				header('HTTP/1.0 403 Forbidden');
-				die(NDPHP_LANG_MOD_INVALID_USER_OR_API_KEY);
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_API_KEY, $this->_charset, !$this->request->is_ajax());
 			}
 		} else if (!isset($_POST['username'])) {
-			header('HTTP/1.0 403 Forbidden');
-			die(NDPHP_LANG_MOD_MISSING_AUTH_METHOD);
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_charset, !$this->request->is_ajax());
 		} else {
 			/* Retrive username information from database */
 			$this->db->where('username', $_POST['username']);
@@ -315,10 +304,8 @@ class Login extends UW_Controller {
 			$row = $query->row_array();
 
 			/* Validade if user exists */
-			if (!$row) {
-				header("HTTP/1.0 403 Forbidden");
-				die(NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD);
-			}
+			if (!$row)
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_charset, !$this->request->is_ajax());
 
 			/* Check encryption algorithm */
 			if (substr($row['password'], 0, 7) == '$2y$10$') {
@@ -329,45 +316,34 @@ class Login extends UW_Controller {
 				$passwd_digest = openssl_digest($_POST['password'], 'sha512');
 			} else {
 				/* Unrecognized hash */
-				header('HTTP/1.0 403 Forbidden');
-				die(NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
+				$this->response->code('403', NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 			}
 
 			/* Validade password */
-			if ($passwd_digest != $row['password']) {
-				header("HTTP/1.0 403 Forbidden");
-				die(NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD);
-			}
+			if ($passwd_digest != $row['password'])
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Check if account is active */
-		if ($row['active'] != 1) {
-			header("HTTP/1.0 403 Forbidden");
-			die(NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
-		}
+		if ($row['active'] != 1)
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 
 		/* Check if account is locked */
-		if ($row['locked'] != 0) {
-			header("HTTP/1.0 403 Forbidden");
-			die(NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
-		}
+		if ($row['locked'] != 0)
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 
 		/* Check if account is expired */
 		if ($row['expire']) {
 			$expired_date = strtotime($row['expire']);
 			$current_date = time();
 
-			if ($current_date >= $expired_date) {
-				header("HTTP/1.0 403 Forbidden");
-				die(NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
-			}
+			if ($current_date >= $expired_date)
+				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Validade email address (regex) */		
-		if ($this->validate_email($row['email']) == false) {
-			header("HTTP/1.0 403 Forbidden");
-			die(NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
-		}
+		if ($this->validate_email($row['email']) == false)
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 
 		/**** All sanity checks successfully passed ****/
 
@@ -375,10 +351,8 @@ class Login extends UW_Controller {
 		$this->session_setup($row['id'], $row['username'], $_POST['password'], $row['email'], $row['first_name'], $row['_file_photo']);
 
 		/* Check if we're under maintenance mode */
-		if ($this->_maintenance_enabled && !$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE);
-		}
+		if ($this->_maintenance_enabled && !$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
 
 		/* If logging is enabled, log this LOGIN entry */
 		if ($this->_logging === true) {

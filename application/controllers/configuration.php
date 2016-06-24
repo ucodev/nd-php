@@ -43,10 +43,8 @@ class Configuration extends ND_Controller {
 		include('lib/ide_setup.php');
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN);
-		}
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
 	}
 
 
@@ -64,10 +62,8 @@ class Configuration extends ND_Controller {
 			 * if this one is going to be inactive, we need to grant that at least
 			 * one will be active after this update is performed.
 			 */
-			if ($q->num_rows() < 2) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE);
-			}
+			if ($q->num_rows() < 2)
+				$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE, $this->_charset, !$this->request->is_ajax());
 		}
 
 		return $hook_pre_return;
@@ -84,8 +80,7 @@ class Configuration extends ND_Controller {
 
 		if ($q->num_rows()) {
 			/* If so, we cannot allow that... */
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE);
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE, $this->_charset, !$this->request->is_ajax());
 		}
 
 		return $hook_pre_return;
@@ -264,16 +259,14 @@ class Configuration extends ND_Controller {
 		if (($fp = fopen($filename_db_dump, 'w')) === FALSE) {
 			/* Leave Maintenance Mode */
 			$this->maintenance_leave();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ': ' . $filename_db_dump);
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ': ' . $filename_db_dump, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Write dump to file */
 		if (fwrite($fp, $db_dump) === FALSE) {
 			/* Leave Maintenance Mode */
 			$this->maintenance_leave();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . $filename_db_dump);
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . $filename_db_dump, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Flush file data */
@@ -299,8 +292,7 @@ class Configuration extends ND_Controller {
 			/* Leave Maintenance Mode */
 			$this->maintenance_leave();
 
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_BACKUP_PROJECT_DIR);
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_BACKUP_PROJECT_DIR, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Unlink unnecessary files */
@@ -308,8 +300,9 @@ class Configuration extends ND_Controller {
 		unlink($filename_db_dump); /* Delete the .sql file */
 
 		/* Deliver backup as file download */
-		header('Content-Type: application/x-gzip');
-		header('Content-disposition: attachment; filename=' . end(explode('/', $filename_project)) . '.gz');
+		$this->response->header('Content-Type', 'application/x-gzip');
+		$this->response->header('Content-Disposition', 'attachment; filename=' . end(explode('/', $filename_project)) . '.gz');
+
 		readfile($filename_project . '.gz');
 
 		/* Unlink the backup */

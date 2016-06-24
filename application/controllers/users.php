@@ -64,8 +64,7 @@ class Users extends ND_Controller {
 		/* Check if we're under multi or single user mode */
 		if (!$features['multi_user']) {
 			/* If we're under single user mode, user registration is not available */
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_DISABLED_MULTI_USER);
+			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Generate user's private key for encryption
@@ -101,8 +100,7 @@ class Users extends ND_Controller {
 			/* Try to delete the newly inserted user */
 			$this->db->delete('users', array('id' => $id));
 
-			header("HTTP/1.0 500 Internal Server Error");
-			die(NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -113,10 +111,8 @@ class Users extends ND_Controller {
 		$hook_pre_return = array();
 
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
-		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles'])) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN);
-		}
+		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles']))
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->_charset, !$this->request->is_ajax());
 
 		/* If password was changed ... */
 		$this->db->select('password,privenckey');
@@ -136,8 +132,7 @@ class Users extends ND_Controller {
 				/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
 				 * to be changed.
 				 */
-				header('HTTP/1.1 401 Unauthorized');
-				die(NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS);
+				$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS, $this->_charset, !$this->request->is_ajax());
 			}
 
 			/* Re-encrypt the user private encryption key with the new password */
@@ -179,8 +174,7 @@ class Users extends ND_Controller {
 				 */
 				$this->db->trans_rollback();
 
-				header("HTTP/1.0 500 Internal Server Error");
-				die(NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA);
+				$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_charset, !$this->request->is_ajax());
 			} else {
 				$this->db->trans_commit();
 			}
@@ -197,10 +191,8 @@ class Users extends ND_Controller {
 
 		$query = $this->db->get();
 
-		if (!$query->num_rows()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_UNABLE_UPDATE_SESSION_DATA . ' ' . NDPHP_LANG_MOD_ATTN_LOGOUT_LOGIN);
-		}
+		if (!$query->num_rows())
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_UPDATE_SESSION_DATA . ' ' . NDPHP_LANG_MOD_ATTN_LOGOUT_LOGIN, $this->_charset, !$this->request->is_ajax());
 
 		/* Only update session data if the user being updated is the user who's performing the update */
 		if ($this->_session_data['user_id'] == $id) {
@@ -226,10 +218,8 @@ class Users extends ND_Controller {
 	protected function _hook_delete_pre(&$id, &$POST, &$fields) {
 		$hook_pre_return = NULL;
 		
-		if ($id == 1) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER);
-		}
+		if ($id == 1)
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER, $this->_charset, !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}

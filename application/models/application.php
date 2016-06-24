@@ -1788,8 +1788,8 @@ class UW_Application extends UW_Model {
 			/* If it doesn't exist, create a blank icon. */
 			return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
 		} else if ($menu['properties']['icon'] == "custom") {
-			/* If the icon is custom, do not replace it if already exists. */
-			if (file_exists($images_path . '/menu/' . $menu['db']['name'])) {
+			/* If the icon is custom, do not replace it if already present. */
+			if (file_exists($images_path . '/menu/' . $menu['db']['name'] . '.png')) {
 				return true; /* Icon exists and it's customized... ignoring... */
 			} else {
 				/* If it doesn't exist, create a blank icon. */

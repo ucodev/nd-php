@@ -84,10 +84,8 @@ class Paypal_ipn extends UW_Controller {
 
 		$query = $this->db->get();
 
-		if (!$query->num_rows()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_PAYMENT_UNABLE_ID_USER);
-		}
+		if (!$query->num_rows())
+			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_UNABLE_ID_USER, $this->_charset, !$this->request->is_ajax());
 
 		$row_payment = $query->row_array();
 
@@ -103,8 +101,7 @@ class Paypal_ipn extends UW_Controller {
 
 		if (!$query->num_rows()) {
 			$this->db->trans_rollback();
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_UNABLE_USER_CREDIT_INFO);
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_USER_CREDIT_INFO, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$row_user = $query->row_array();
@@ -126,15 +123,14 @@ class Paypal_ipn extends UW_Controller {
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal_ipn.php: users_credit_update_from_payment(): ' . NDPHP_LANG_MOD_FAILED_TRANSACTION);
 			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1');
+			$this->response->code('500', NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
 	}
 
 	private function users_payment_invoice($payments_id) {
-		return TRUE;
+		return true;
 	}
 
 	private function payment_success_post_update($payments_id) {
@@ -170,8 +166,7 @@ class Paypal_ipn extends UW_Controller {
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal_ipn.php: payment_update(): Transaction failed.');
 			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_INFO_PAYMENT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1');
+			$this->response->code('500', NDPHP_LANG_MOD_INFO_PAYMENT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -288,8 +283,7 @@ class Paypal_ipn extends UW_Controller {
 
 		if (!curl_exec($ch)) {
 			error_log('paypal_ipn.php: cURL error: ' . curl_error($ch));
-			header('HTTP/1.1 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_VERIFY_TRANSACTION);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_VERIFY_TRANSACTION, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$res = curl_multi_getcontent($ch);

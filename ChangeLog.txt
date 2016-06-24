@@ -1,3 +1,18 @@
+v0.02a (2016-06-24):
+
+ - Added auto-detection of AJAX requests on core controllers.
+ - Standardized base64 safe URL convertion replacements.
+ - Improved request model.
+ - Added a new response model.
+ - Cleaned up core controllers with the new response model API.
+ - Updated tracker.
+ - CSV Import is now able to import raw ID values from single relationships (Relationship Type argument).
+ - Added some more sanity checks to IDE Builder regarding default values.
+ - Fixed an issue on IDE Builder that was causing custom icons being replaced at every deploy.
+ - Added customized error status code responses.
+ - Added a new stage on the update process to handle file replacements.
+
+
 v0.01z4 (2016-06-22):
 
  - Bug fix in the wipe method of builder controller.

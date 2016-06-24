@@ -483,6 +483,7 @@ define('NDPHP_LANG_MOD_COMMON_OUTPUT',				'Output');
 define('NDPHP_LANG_MOD_COMMON_IMPORT_CSV_FILE',		'CSV File');
 define('NDPHP_LANG_MOD_COMMON_IMPORT_CSV_TEXT',		'CSV Text');
 define('NDPHP_LANG_MOD_COMMON_IMPORT_CSV_SEP',		'Field Separator');
+define('NDPHP_LANG_MOD_COMMON_IMPORT_CSV_REL_TYPE',	'Relationship Type');
 define('NDPHP_LANG_MOD_COMMON_IMPORT_CSV_DELIM',	'Text Delimiter');
 define('NDPHP_LANG_MOD_COMMON_IMPORT_CSV_ESC',		'Escape Character');
 define('NDPHP_LANG_MOD_COMMON_SHARDING',			'Sharding');
@@ -751,9 +752,13 @@ define('NDPHP_LANG_MOD_SEARCH_INTERVAL_LAST',		'last'); /* last x months, years 
 define('NDPHP_LANG_MOD_SEARCH_INTERVAL_NEXT',		'next'); /* next x months, years ... (without accents) */
 define('NDPHP_LANG_MOD_SEARCH_INTERVAL_IN',			'in'); /* in x months, years ... (without accents) */
 
-
 define('NDPHP_LANG_MOD_SEARCH_GLOBAL_NRESULT_PREFIX','Found');
 define('NDPHP_LANG_MOD_SEARCH_GLOBAL_NRESULT_SUFFIX','results.');
+
+define('NDPHP_LANG_MOD_ERROR_STATUS_CODE_HEADER',	'Something went wrong...');
+define('NDPHP_LANG_MOD_ERROR_STATUS_CODE_FIELD_SC',	'Status Code');
+define('NDPHP_LANG_MOD_ERROR_STATUS_CODE_FIELD_DESC','Description');
+define('NDPHP_LANG_MOD_ERROR_STATUS_CODE_FIELD_WHY','Why?');
 
 define('NDPHP_LANG_MOD_ACCESSIBILITY_MENU_BUTTON',	'Menu Button');
 define('NDPHP_LANG_MOD_ACCESSIBILITY_TEXT_SIZE',	'Text Size');

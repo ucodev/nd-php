@@ -2,7 +2,9 @@
 	"any": {
 		"to": "master",
 		"directories": [
-			"logs"
+			"logs",
+			"application/views/_templates"
+			"application/views/_templates/errors"
 		],
 		"files": [
 			"ChangeLog.txt",
@@ -10,18 +12,38 @@
 			"README.md",
 			"VERSION",
 			"application/controllers/builder.php",
+			"application/controllers/charts_config.php",
+			"application/controllers/charts_geometry.php",
+			"application/controllers/charts_types.php",
 			"application/controllers/configuration.php",
+			"application/controllers/dbms.php",
+			"application/controllers/features.php",
+			"application/controllers/files.php",
 			"application/controllers/home.php",
 			"application/controllers/install.php",
+			"application/controllers/logging.php",
 			"application/controllers/login.php",
+			"application/controllers/payment_actions.php",
+			"application/controllers/payment_status.php",
+			"application/controllers/payment_types.php",
+			"application/controllers/paypal.php",
+			"application/controllers/paypal_ipn.php",
+			"application/controllers/roles.php",
+			"application/controllers/scheduler.php",
+			"application/controllers/sessions.php",
+			"application/controllers/subscription_types.php",
 			"application/controllers/update.php",
+			"application/controllers/users.php",
 			"application/models/application.php",
 			"application/models/ndphp.php",
 			"application/models/request.php",
+			"application/models/response.php",
 			"application/static/css/themes/Blueish/main.css.php",
 			"application/static/images/themes/Blueish/icons/group_small.png",
 			"application/static/js/lib/ndphp/ide.js.php",
+			"application/static/js/lib/ndphp/install.js.php",
 			"application/static/js/lib/ndphp/ndphp.js.php",
+			"application/views/_templates/errors/status_code.php"
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/create_data.php",
 			"application/views/themes/Blueish/_default/edit_data.php",
@@ -46,6 +68,9 @@
 		],
 		"post_update_redirect": "/update/post_update/any/master",
 		"data_model_queries": [
+		],
+		"replace": [
+			[ "user/config/autoload.php", "install/autoload.php" ]
 		]
 	}
 }

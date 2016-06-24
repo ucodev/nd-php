@@ -48,10 +48,8 @@ class Roles extends ND_Controller {
 		$hook_pre_return = NULL;
 
 		/* Do not allow changes to ROLE_ADMIN name */
-		if ($id == 1 && isset($POST['role']) && $POST['role'] != 'ROLE_ADMIN') {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN);
-		}
+		if ($id == 1 && isset($POST['role']) && $POST['role'] != 'ROLE_ADMIN')
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN, $this->_charset, !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}
@@ -60,10 +58,8 @@ class Roles extends ND_Controller {
 		$hook_pre_return = NULL;
 
 		/* Do now allow the ROLE_ADMIN to be deleted */
-		if ($id == 1) {
-			header('HTTP/1.1 403 Forbidden.');
-			die(NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN);
-		}
+		if ($id == 1)
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN, $this->_charset, !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}
@@ -87,10 +83,8 @@ class Roles extends ND_Controller {
 		/* TODO: FIXME: Check if max_input_vars (php.ini) value is suitable for the ammount of variables that will be generated */
 
 		/* If the users doesn't belong to ROLE_ADMIN, then it's not allowed to edit roles */
-		if (!$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
 
 		$data = $this->_get_view_data_generic();
 
@@ -158,17 +152,13 @@ class Roles extends ND_Controller {
 
 	public function setup_role_update() {
 		/* If the users doesn't belong to ROLE_ADMIN, then it's not allowed to edit roles */
-		if (!$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED);
-		}
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
 
 		$role_id = intval($_POST['role_id']);
 		
-		if (!$role_id) {
-			header("HTTP/1.0 500 Internal Server Error");
-			die(NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.');
-		}
+		if (!$role_id)
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
 		
 		unset($_POST['role_id']);
 		
@@ -194,28 +184,24 @@ class Roles extends ND_Controller {
 
 			$field_p = explode('_', $field);
 			
-			if ($field_p[0] != 'perm') {
-				header("HTTP/1.0 500 Internal Server Error");
-				die(NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.');
-			}
+			if ($field_p[0] != 'perm')
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
 
 			$field_name = implode('_', array_slice($field_p, 3));
 
 			if ($field_p[2] == 'table') {
-				if (!isset($trans['table'][$field_p[1]])) {
-					header("HTTP/1.0 500 Internal Server Error");
-					die(NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.');
-				}
+				if (!isset($trans['table'][$field_p[1]]))
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+
 				if (isset($table_perms[$field_name])) {
 					$table_perms[$field_name] .= $trans['table'][$field_p[1]];
 				} else {
 					$table_perms[$field_name] = $trans['table'][$field_p[1]];
 				}
 			} else if ($field_p[2] == 'field') {
-				if (!isset($trans['field'][$field_p[1]])) {
-					header("HTTP/1.0 500 Internal Server Error");
-					die(NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.');
-				}
+				if (!isset($trans['field'][$field_p[1]]))
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+
 				$__tcsep = explode('-', $field_name);
 				$__table_name = $__tcsep[0];
 				$__field_name = $__tcsep[1];
@@ -225,8 +211,7 @@ class Roles extends ND_Controller {
 					$table_col_perms[$__table_name][$__field_name] = $trans['field'][$field_p[1]];
 				}
 			} else {
-				header("HTTP/1.0 500 Internal Server Error");
-				die(NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.');
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -261,8 +246,7 @@ class Roles extends ND_Controller {
 		/* Check if everything was done */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_ROLE_UPDATE);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_ROLE_UPDATE, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$this->db->trans_commit();

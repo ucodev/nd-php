@@ -75,6 +75,15 @@
 							<td class="field_value"><textarea name="import_csv_text" /></textarea></td>
 						</tr>
 						<tr class="field_odd">
+							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_REL_TYPE, $config['charset'])?></td>
+							<td class="field_value">
+								<select name="import_csv_rel_type">
+									<option value="value">Value</option>
+									<option value="id">ID</option>
+								</select>
+							</td>
+						</tr>
+						<tr class="field_even">
 							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_SEP, $config['charset'])?></td>
 							<td class="field_value">
 								<select name="import_csv_sep">
@@ -83,7 +92,7 @@
 								</select>
 							</td>
 						</tr>
-						<tr class="field_even">
+						<tr class="field_odd">
 							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_DELIM, $config['charset'])?></td>
 							<td class="field_value">
 								<select name="import_csv_delim">
@@ -92,7 +101,7 @@
 								</select>
 							</td>
 						</tr>
-						<tr class="field_odd">
+						<tr class="field_even">
 							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_ESC, $config['charset'])?></td>
 							<td class="field_value">
 								<select name="import_csv_esc">

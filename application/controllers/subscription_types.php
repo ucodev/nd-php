@@ -112,15 +112,11 @@ class Subscription_types extends ND_Controller {
 			}
 		}
 
-		if ($plan_id_exists === false) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_SUBSCRIPTION_TYPE);
-		}
+		if ($plan_id_exists === false)
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SUBSCRIPTION_TYPE, $this->_charset, !$this->request->is_ajax());
 
-		if ($user_current_plan_id >= $_POST['subscription_types_id']) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_DOWNGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
-		}
+		if ($user_current_plan_id >= $_POST['subscription_types_id'])
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DOWNGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->trans_begin();
 
@@ -135,8 +131,7 @@ class Subscription_types extends ND_Controller {
 
 		if (($user_credit < $plan_price) && ($allow_negative != '1')) {
 			$this->db->trans_rollback();
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCR_CREDIT . ' ' . NDPHP_LANG_MOD_ATTN_ADD_FUNDS);
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCR_CREDIT . ' ' . NDPHP_LANG_MOD_ATTN_ADD_FUNDS, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$user_credit -= $plan_price;
@@ -159,8 +154,7 @@ class Subscription_types extends ND_Controller {
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
+			$this->response->code('500', NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}

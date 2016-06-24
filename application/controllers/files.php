@@ -68,8 +68,7 @@ class Files extends ND_Controller {
 			/* TODO: Log the failed request? */
 
 			/* NOTE: Do not reveal if the true cause ... */
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM);
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$file_contents = file_get_contents($file_path);
 
@@ -97,11 +96,11 @@ class Files extends ND_Controller {
 
 			/* Fetch and set the mime type and dump the file contents */
 			$file_info = new finfo(FILEINFO_MIME);
-			header('Content-Type: ' . $file_info->buffer($file_contents));
+			$this->response->header('Content-Type', $file_info->buffer($file_contents));
 			
 			/* Check if we need to set the content disposition as attachment (aka save file instead of browser display) */
 			if ($download == 'yes')
-				header('Content-disposition: attachment; filename=' . $filename);
+				$this->response->header('Content-Disposition', 'attachment; filename=' . $filename);
 
 			/* Dump file contents */
 			echo($file_contents);
