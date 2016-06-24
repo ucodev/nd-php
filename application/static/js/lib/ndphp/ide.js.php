@@ -261,7 +261,7 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
     }
 
     /* Check default value */
-    if (field['properties']['default_value'].length) {
+    if ('properties' in field && field['properties']['default_value'].length) {
         /* Integer values shall not have default values greater than 2**32 (FIXME: This should be fixed by converting the int() types to bigint()) */
         if (field['title'] == 'Drop-Down' || field['title'] == 'Numeric') {
             if (field['properties']['default_value'] > 4294967295) {

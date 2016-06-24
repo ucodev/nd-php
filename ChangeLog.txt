@@ -1,3 +1,9 @@
+v0.02a4 (2016-06-24):
+
+ - Updated INSTALL.txt file.
+ - Fixed IDE Builder JS library.
+
+
 v0.02a3 (2016-06-24):
 
  - Fixed some issues with response model.

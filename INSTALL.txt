@@ -26,6 +26,8 @@ Basic instructions to install the ND PHP Framework
 
  Edit the /etc/php5/apache2/php.ini file and set the following variables:
 
+  max_execution_time = 120
+  max_input_time = 120
   max_input_vars = 20000
   auto_detect_line_endings = On
   memory_limit = 256M
