@@ -3,7 +3,7 @@
 		"to": "master",
 		"directories": [
 			"logs",
-			"application/views/_templates"
+			"application/views/_templates",
 			"application/views/_templates/errors"
 		],
 		"files": [

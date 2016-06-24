@@ -1,3 +1,8 @@
+v0.02a1 (2016-06-24):
+
+ - Fixed tracker.
+
+
 v0.02a (2016-06-24):
 
  - Added auto-detection of AJAX requests on core controllers.
@@ -11,6 +16,7 @@ v0.02a (2016-06-24):
  - Fixed an issue on IDE Builder that was causing custom icons being replaced at every deploy.
  - Added customized error status code responses.
  - Added a new stage on the update process to handle file replacements.
+ - Updated language files.
 
 
 v0.01z4 (2016-06-22):
