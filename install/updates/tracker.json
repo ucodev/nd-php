@@ -43,7 +43,7 @@
 			"application/static/js/lib/ndphp/ide.js.php",
 			"application/static/js/lib/ndphp/install.js.php",
 			"application/static/js/lib/ndphp/ndphp.js.php",
-			"application/views/_templates/errors/status_code.php"
+			"application/views/_templates/errors/status_code.php",
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/create_data.php",
 			"application/views/themes/Blueish/_default/edit_data.php",

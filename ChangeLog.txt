@@ -1,3 +1,8 @@
+v0.02a2 (2016-06-24):
+
+ - Fixed tracker (again).
+
+
 v0.02a1 (2016-06-24):
 
  - Fixed tracker.
