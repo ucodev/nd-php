@@ -1,3 +1,13 @@
+v0.02b1 (2016-06-25):
+
+ - Added some more validations to the framework update process.
+ - Fixed some typos around.
+ - Added tmp/ directory to base directory.
+ - Updated tracker.
+ - Updated install controller.
+ - Refactored some core controller variables.
+
+
 v0.02b (2016-06-25):
 
  - New Error Log submenu option added to logging controller.

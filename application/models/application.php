@@ -1641,7 +1641,8 @@ class UW_Application extends UW_Model {
 		$controller_ide_region = '' . "\n" .
 			'	protected $_table_type_view = ' . ($menu['type'] == 'custom' ? 'true' : 'false') . ';' . "\n" .
 			'' . "\n" .
-			'	protected $_pagination_rpp = ' . $menu['properties']['rpp'] . ';' . "\n" .
+			'	protected $_table_pagination_listing_rpp = ' . $menu['properties']['rpp'] . ';' . "\n" .
+			'	protected $_table_pagination_result_rpp = ' . $menu['properties']['rpp'] . ';' . "\n" .
 			'' . "\n" .
 			'	protected $_hide_fields_create = ' . $hide_create_str . ';' . "\n" .
 			'	protected $_hide_fields_edit = ' . $hide_edit_str . ';' . "\n" .

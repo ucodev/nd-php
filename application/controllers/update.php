@@ -130,10 +130,13 @@ class Update extends ND_Controller {
 				curl_setopt($ch, CURLOPT_URL, $this->_ndphp_github_content_url . $tracker[$from_version]['to'] . '/' . $file);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				$file_contents = curl_exec($ch);
-				curl_close($ch);
 
-				if (!$file_contents)
+				/* Grant that we've received the file contents... and not just some error... */
+				/* FIXME: We need to put some further validations here in order to grant that the validity and integrity of the contents */
+				if (curl_getinfo($http, CURLINFO_HTTP_CODE) != 200)
 					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_charset, !$this->request->is_ajax());
+
+				curl_close($ch);
 
 				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
 
@@ -164,7 +167,7 @@ class Update extends ND_Controller {
 
 				if ($this->db->trans_status() === false) {
 					$this->db->trans_rollback();
-					$this->reponse->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->_charset, !$this->request->is_ajax());
 				}
 
 				$this->db->trans_commit();
@@ -179,7 +182,7 @@ class Update extends ND_Controller {
 	}
 
 	public function index() {
-		$this->reponse->code('500', 'RELOAD THE PAGE', $this->_charset, !$this->request->is_ajax());
+		$this->response->code('500', 'RELOAD THE PAGE', $this->_charset, !$this->request->is_ajax());
 	}
 
 	public function post_update($from, $to) {

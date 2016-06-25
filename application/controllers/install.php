@@ -341,7 +341,7 @@ class Install extends UW_Controller {
 			'timezones_id' => 383, /* Etc/UTC */
 			'author' => 'ND PHP Framework',
 			'page_rows' => 10,
-			'temporary_directory' => '/tmp/',
+			'temporary_directory' => SYSTEM_BASE_DIR . '/tmp/',
 			'roles_id' => 4,
 			'active' => true
 		));

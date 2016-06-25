@@ -106,7 +106,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02b';		// Framework version
+	protected $_ndphp_version = '0.02b1';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline
@@ -130,11 +130,8 @@ class ND_Controller extends UW_Controller {
 	protected $_string_truncate_trail = 5;
 	protected $_string_truncate_sep = '...';
 
-	/* Pagination */
-	protected $_pagination_rpp = 10;
-
 	/* Temporary directory */
-	protected $_temp_dir = '/tmp/';
+	protected $_temp_dir = SYSTEM_BASE_DIR . '/tmp/';
 
 	/* Main Menu entries alias */
 	protected $_menu_entries_aliases = array();
@@ -208,6 +205,10 @@ class ND_Controller extends UW_Controller {
 		/* 'table field' => 'session var' */
 		'users_id' => 'user_id'
 	);
+
+	/* Pagination */
+	protected $_table_pagination_listing_rpp = 10;
+	protected $_table_pagination_result_rpp = 10;
 
 	/* Table relational choices (conditional drop-down) */
 	protected $_table_rel_choice_hide_fields = array(
@@ -3022,7 +3023,6 @@ class ND_Controller extends UW_Controller {
 		$this->config['default_database']						= $this->_default_database;
 		$this->config['charset']								= $this->_charset;
 		$this->config['theme']									= $this->_theme;
-		$this->config['pagination_rpp']							= $this->_pagination_rpp;
 		$this->config['temp_dir']								= $this->_temp_dir;
 
 		$this->config['string_truncate_len']					= $this->_string_truncate_len;
@@ -3053,6 +3053,8 @@ class ND_Controller extends UW_Controller {
 		$this->config['table_field_result_order_modifier']		= $this->_table_field_result_order_modifier;
 		$this->config['table_row_filtering']					= $this->_table_row_filtering;
 		$this->config['table_row_filtering_config']				= $this->_table_row_filtering_config;
+		$this->config['table_pagination_listing_rpp']			= $this->_table_pagination_listing_rpp;
+		$this->config['table_pagination_result_rpp']			= $this->_table_pagination_result_rpp;
 		$this->config['table_rel_choice_hide_fields']			= $this->_table_rel_choice_hide_fields;
 		$this->config['table_create_rel_choice_hide_fields']	= $this->_table_create_rel_choice_hide_fields;
 		$this->config['table_edit_rel_choice_hide_fields']		= $this->_table_edit_rel_choice_hide_fields;
@@ -3296,7 +3298,8 @@ class ND_Controller extends UW_Controller {
 		$this->_description = $config['description'];
 		$this->_default_timezone = $config['timezone'];
 		$this->_theme = $config['theme'];
-		$this->_pagination_rpp = $config['page_rows'];
+		$this->_table_pagination_listing_rpp = $config['page_rows'];
+		$this->_table_pagination_result_rpp = $config['page_rows'];
 		$this->_temp_dir = $config['temporary_directory'];
 
 		/* Set default database */
@@ -4616,7 +4619,7 @@ class ND_Controller extends UW_Controller {
 				'operation' => 'LIST',
 				'_table' => $this->_name,
 				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->_pagination_rpp) + 1) . ' / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)) : ('0 / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)),
+				'entryid' => ($page >= 0) ? ((($page / $this->_table_pagination_listing_rpp) + 1) . ' / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)) : ('0 / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)),
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
 				'sessions_id' => $this->_session_data['sessions_id'],
@@ -4696,7 +4699,7 @@ class ND_Controller extends UW_Controller {
 		/* If this is a REST call, do not limit the results (as in, display all) */
 		if ($this->_json_replies !== true && $page >= 0) {
 			/* Limit results to the number of rows per page (pagination) */
-			$this->db->limit($this->_pagination_rpp, $page);
+			$this->db->limit($this->_table_pagination_listing_rpp, $page);
 		}
 
 		/* Hook filter: Apply filters, if any */
@@ -4707,13 +4710,13 @@ class ND_Controller extends UW_Controller {
 
 		/* Pagination */
 		if ($page >= 0) {
-			$pagcfg['page'] = ($page / $this->_pagination_rpp) + 1; // $page is actually the number of the first row of the page
+			$pagcfg['page'] = ($page / $this->_table_pagination_listing_rpp) + 1; // $page is actually the number of the first row of the page
 			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->_name . '/list_default/' . $field . '/' . $order . '/@ROW_NR@';
 			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_list(event, \'' . $this->_name . '\', \'' . $field . '\', \'' . $order . '\', \'@ROW_NR@\');';
 			$this->db->from($this->_name);							/* FIXME:																*/
 			$this->_table_row_filter_apply();						/*   - A better approach to retrieve total rows should be implemented	*/
 			$pagcfg['total_rows'] = $this->db->count_all_results(); /*   - Consider SQL_CALC_FOUND_ROWS?									*/
-			$pagcfg['per_page'] = $this->_pagination_rpp;
+			$pagcfg['per_page'] = $this->_table_pagination_listing_rpp;
 			
 			$this->pagination->initialize($pagcfg);
 			$data['view']['links']['pagination'] = $this->pagination->create_links();
@@ -5385,7 +5388,7 @@ class ND_Controller extends UW_Controller {
 				'operation' => 'RESULT',
 				'_table' => $this->_name,
 				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->_pagination_rpp) + 1) . ' / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)) : ('0 / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)),
+				'entryid' => ($page >= 0) ? ((($page / $this->_table_pagination_result_rpp) + 1) . ' / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)) : ('0 / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)),
 				'value_new' => (($type == "basic") ? $_POST['search_value'] : (($type == "query") ? $result_query : json_encode($_POST, JSON_PRETTY_PRINT))),
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
@@ -5931,7 +5934,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Pagination */
 			if ($page >= 0)
-				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->_pagination_rpp;
+				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->_table_pagination_result_rpp;
 			
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
 			$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
@@ -5977,7 +5980,7 @@ class ND_Controller extends UW_Controller {
 			/* If this is a REST call, do not limit the results (as in, display all) */
 			if ($this->_json_replies !== true && $page >= 0) {
 				/* Limit results to the number of rows per page (pagination) */
-				$this->db->limit($this->_pagination_rpp, $page);
+				$this->db->limit($this->_table_pagination_result_rpp, $page);
 			}
 			
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
@@ -5995,11 +5998,11 @@ class ND_Controller extends UW_Controller {
 
 		/* Pagination */
 		if ($page >= 0) {
-			$pagcfg['page'] = ($page / $this->_pagination_rpp) + 1;
+			$pagcfg['page'] = ($page / $this->_table_pagination_result_rpp) + 1;
 			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->_name . '/result/query/' . $data['view']['result_query'] . '/' . $order_field . '/' . $order_type . '/@ROW_NR@';
 			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_result(event, \'' . $this->_name . '\', \'' . $data['view']['result_query'] . '\', \'' . $order_field . '\', \'' . $order_type . '\', \'@ROW_NR@\');';
 			$pagcfg['total_rows'] = $total_rows; 
-			$pagcfg['per_page'] = $this->_pagination_rpp;
+			$pagcfg['per_page'] = $this->_table_pagination_result_rpp;
 			
 			$this->pagination->initialize($pagcfg);
 			$data['view']['links']['pagination'] = $this->pagination->create_links();

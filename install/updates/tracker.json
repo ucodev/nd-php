@@ -2,9 +2,10 @@
 	"any": {
 		"to": "master",
 		"directories": [
-			"logs",
 			"application/views/_templates",
-			"application/views/_templates/errors"
+			"application/views/_templates/errors",
+			"logs",
+			"tmp"
 		],
 		"files": [
 			"ChangeLog.txt",
@@ -68,6 +69,7 @@
 			"install/ndphp.sql",
 			"logs/.htaccess",
 			"logs/error.log",
+			"tmp/.htaccess",
 			"user/core/ND_Controller.php",
 			"user/utils/language.php"
 		],
