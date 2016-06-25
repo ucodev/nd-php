@@ -221,6 +221,7 @@ define('NDPHP_LANG_MOD_OP_SAVE_SEARCH',				'Save Search');
 define('NDPHP_LANG_MOD_OP_IMPORT_CSV',				'Import CSV');
 define('NDPHP_LANG_MOD_OP_LOGOUT',					'Logout');
 define('NDPHP_LANG_MOD_OP_UPDATE',					'Update');
+define('NDPHP_LANG_MOD_OP_ERROR_LOG',				'Error Log');
 
 define('NDPHP_LANG_MOD_OP_QUICK_CREATE',			'Quick Create');
 define('NDPHP_LANG_MOD_OP_QUICK_EDIT',				'Quick Edit');

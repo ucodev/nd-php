@@ -68,10 +68,13 @@
 				<a href="javascript:void(0);" onclick="ndphp.form.search_global_submitform(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>');">
 					<img width="18" height="18" class="searchbutton" alt="<?=filter_html(NDPHP_LANG_MOD_BUTTON_SEARCH, $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/search_button.png" />
 				</a>
+				<input type="submit" value="Search" style="display: none;" />
 			</div>
 			<script type="text/javascript">
 				/* TODO: Move this script elsewhere... it should not be here. */
 				jQuery('#globalsearchform').submit(function(e) {
+					e.preventDefault();
+
 					ndphp.ajax.url = "<?=filter_js_str(base_url(), $config['charset'])?>index.php/<?=filter_js_str($view['ctrl'], $config['charset'])?>/result_global_body_ajax";
 
 					ndphp.ui.busy();
@@ -98,7 +101,6 @@
 
 					ndphp.ajax.url = '';
 
-					e.preventDefault();
 					return false;
 				});
 			</script>

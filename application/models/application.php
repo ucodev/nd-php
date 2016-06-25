@@ -1680,20 +1680,20 @@ class UW_Application extends UW_Model {
 			'	);' . "\n" .
 			'' . "\n" .
 			'	/* Field by which the listing views shall be ordered by */' . "\n" .
-			'	protected $_field_listing_order = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
+			'	protected $_table_field_listing_order = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
 			'' . "\n" .
 			'	/* Field by which the result views shall be ordered by */' . "\n" .
-			'	protected $_field_result_order = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
+			'	protected $_table_field_result_order = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
 			'' . "\n" .
 			'	/* Direction by which the listing views shall be ordered by */' . "\n" .
-			'	protected $_direction_listing_order = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
+			'	protected $_table_field_listing_order_modifier = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
 			'' . "\n" .
 			'	/* Direction by which the result views shall be ordered by */' . "\n" .
-			'	protected $_direction_result_order = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
+			'	protected $_table_field_result_order_modifier = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
 			'' . "\n" .
 			'	protected $_accounting = ' . ($menu['options']['accounting'] ? 'true' : 'false') . ';' . "\n" .
 			'	protected $_logging = ' . ($menu['options']['logging'] ? 'true' : 'false') . ';' . "\n" .
-			'	protected $_fk_linking = ' . ($menu['options']['linking'] ? 'true' : 'false') . ';' . "\n" .
+			'	protected $_table_fk_linking = ' . ($menu['options']['linking'] ? 'true' : 'false') . ';' . "\n" .
 			'' . "\n" .
 			'	/* Mixed Relationship hidden fields per view. */' . "\n" .
 			'	protected $_mixed_hide_fields_create = ' . $hide_mixed_create_str . ';' . "\n" .

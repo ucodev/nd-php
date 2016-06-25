@@ -1,3 +1,13 @@
+v0.02b (2016-06-25):
+
+ - New Error Log submenu option added to logging controller.
+ - Updated language files.
+ - Added CSV string delimiter support on export methods.
+ - Refactored some core controller variables.
+ - Updated tracker.
+ - Basic ang Global search now work when JS is disabled.
+
+
 v0.02a4 (2016-06-24):
 
  - Updated INSTALL.txt file.

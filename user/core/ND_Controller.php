@@ -41,12 +41,14 @@
  *
  * TODO:
  *
- * * Interface to read the error.log on-the-fly.
+ * + Add imagemap to charts (pChart imagemap).
+ * + Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
+ * * [IN_PROGRESS] Database Sharding (per user).
+ * * Add support for memcached to lower database overhead.
+ * * Turn UI responsive
  * * Add command line to IDE Builder.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
- * * Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
- * * [IN_PROGRESS] Database Sharding (per user)
  * * Add special extra field/query pairs to _field_resolve() and _field_value_mangle()
  * * Add a rollback context menu button on Logging (on View and Quick View) [currently only a Quick Rollback button is present on Listing/Result].
  * * Export View should export mixed relationships.
@@ -55,7 +57,6 @@
  * * Per user locale support.
  * * Per user charset support.
  * * Currency (per user) support
- * * Add support for memcached to lower database overhead
  * * Implement guest user support. Authentication for guest user is done automatically for controllers allowing it. This user must be disabled by default.
  * * Total mixed entries as a list_default() / result() field.
  * - Migrate Modalbox to something else (probably jQuery UI Dialog?).
@@ -69,20 +70,19 @@
  * - CSV export support on view_generic() is missing.
  * - Javascript Library with ajax calls to fetch data from the controllers in order to integrate and populate a third-party/detached website with the framework.
  * - Implement Dashboards (Imports of other views, including charts, to a Dashboard view).
- * - Add imagemap to charts (pChart imagemap).
  * - Add export support for grouping views.
  * - Implement Clone operation (under entry view).
  * - Users should be able to disable some features (such as accessbility) even if [globally] activated by administrator.
  * - Add per role restrictions for List/Groups/Result/Export visualizations / sub menu access
  * - Add support for context awareness under hooks (the hook should know which preceeding operations (workflow) preceeded their invocation)
  * - Support edition on previously saved searches.
- * - Turn UI responsive
  * - Improve UI accessibility with ARIA attributes
  *
  * FIXME:
  *
+ * + Charts under results view do not reflect the searched data.
  * * Mixed and multiple relationships must work properly when javascript is disabled.
- * * Advanced and basic search must work properly when javascript is disabled.
+ * * Advanced search must work properly when javascript is disabled.
  * * Saved searches results do not have full breadcrumb support.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
@@ -96,7 +96,6 @@
  * * Missing multiple and mixed relationship logging support (only basic fields are supported).
  * * Mixed relationship _timer_ not fully supported (missing start and stop buttons).
  * * Paypal payments interface is outdated.
- * * Charts under results view do not reflect the searched data.
  * - [REQUIRED?] mixed relationships _tc_ fields are not being converted (if datetime) to/from user timezone.
  *
  *
@@ -107,11 +106,11 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02a4';
+	protected $_ndphp_version = '0.02b';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
-	protected $_project_name = "ND php";
-	protected $_tagline = "Framework";
-	protected $_description = "An handy PHP Framework";
+	protected $_project_name = "ND php";		// The project name
+	protected $_tagline = "Framework";			// The project tagline
+	protected $_description = "An handy PHP Framework"; // The project description
 	protected $_name;				// Controller segment / Table name (must be lower case)
 	protected $_viewhname;			// The name used in the view headers
 	protected $_word_true = NDPHP_LANG_MOD_WORD_TRUE;
@@ -175,6 +174,41 @@ class ND_Controller extends UW_Controller {
 		/* 'field' => 'alias', */
 	);
 
+	/* Rich text editing */
+	protected $_table_field_text_rich = array(
+		/* 'text_field1', 'text_field2' */
+	);
+
+	/* Field by which the listing views shall be ordered by */
+	protected $_table_field_listing_order = 'id';
+
+	/* Field by which the result views shall be ordered by */
+	protected $_table_field_result_order = 'id';
+
+	/* Direction by which the listing views shall be ordered by */
+	protected $_table_field_listing_order_modifier = 'asc';
+
+	/* Direction by which the result views shall be ordered by */
+	protected $_table_field_result_order_modifier = 'asc';
+
+	/* If enabled, show only the rows of configured tables that have a particular
+	 * field name that matches a particular session variable.
+	 *
+	 * For example, if a table has a field named 'users_id' and you want to filter
+	 * the listings/results (and other accesses like edit,delete,update) based on
+	 * the logged on user, define a session variable named 'user_id' and uncomment
+	 * the example in $_table_row_filtering_config array.
+	 *
+	 * The cofiguration map is made in $_table_row_filtering_config
+	 */
+	protected $_table_row_filtering = true;
+
+	/* Table Row filtering configuration */
+	protected $_table_row_filtering_config = array(
+		/* 'table field' => 'session var' */
+		'users_id' => 'user_id'
+	);
+
 	/* Table relational choices (conditional drop-down) */
 	protected $_table_rel_choice_hide_fields = array(
 		/* 'field_id' => array(
@@ -200,7 +234,7 @@ class ND_Controller extends UW_Controller {
 	 * Example:
 	 *
 	 *   tr.list_even,   tr.result_even,   tr.export_even   { ... }
-	 *   tr.list_odd,    tr.result_odd,    tr.export_even   { ... }
+	 *   tr.list_odd,    tr.result_odd,    tr.export_odd    { ... }
 	 *   tr.list_red,    tr.result_red,    tr.export_red    { ... }
 	 *   tr.list_yellow, tr.result_yellow, tr.export_yellow { ... }
 	 *   tr.list_green,  tr.result_green,  tr.export_green  { ... }
@@ -223,6 +257,24 @@ class ND_Controller extends UW_Controller {
 		*/
 	);
 
+	/* Anchor foreign key values
+	 * This option will enable or disable the links (anchors) created in the lists/results
+	 * for foreign fields. Default is enabled (true).
+	 * NOTE:
+	 * This will resolve the values to links by crawling through the field options, comparing
+	 * each one with the current value (quadratic algorithm... to be redesigned). 
+	 * On high entry density foreign tables (tables with a high amount of rows),
+	 * it is recommended to set this option to false (disabled), or a significant
+	 * performance impact will be noticed.
+	 */
+	protected $_table_fk_linking = true;
+
+	/* If this controller is associated to a DATABASE VIEW instead of a DATABASE TABLE, set the following variable to true */
+	protected $_table_type_view = false;
+
+	/* The query that will generate the view (requires $_table_type_view set to true) */
+	protected $_table_type_view_query = ''; /* Eg: 'SELECT * FROM users WHERE id > 1' */
+
 	/* The fields to be concatenated as the options of the relationship table. Also the place to set relational field name aliases. */
 	protected $_rel_table_fields_config = array(
 		/* 'table' => array('ViewName', 'separator', array(field_nr_1, field_nr_2, ...), array('order_by field', 'asc or desc')), */
@@ -236,6 +288,9 @@ class ND_Controller extends UW_Controller {
 	 	* TODO: Field names should be accepted on 3rd array element, instead of using field numbers.
 	 	*
 	 	*/
+
+	/* The separator to be used when MySQL GROUP_CONCAT() is invoked */
+	protected $_rel_group_concat_sep = ' | ';
 
 	/* Field name configuration for mixed relationships */
 	protected $_mixed_table_fields_config = array(
@@ -264,9 +319,6 @@ class ND_Controller extends UW_Controller {
 		/* 'table' => id */
 	);
 
-	/* Enable (set to true) or Disable (set to false) mixed relationships create/edit views autocompletation */
-	protected $_mixed_views_autocomplete = true;
-
 	/* Ajust the views of mixed relationship field widths (forced on element style= attribute) */
 	protected $_mixed_table_fields_width = array(
 		/*
@@ -274,6 +326,9 @@ class ND_Controller extends UW_Controller {
 		'field2' => '250px'
 		*/
 	);
+
+	/* Enable (set to true) or Disable (set to false) mixed relationships create/edit views autocompletation */
+	protected $_mixed_views_autocomplete = true;
 
 	/* Mixed Relationship hidden fields per view.
 	 * TODO: FIXME: This is not fully supported by IDE Builder (it adds the field to be hidden to all four arrays below).
@@ -288,60 +343,11 @@ class ND_Controller extends UW_Controller {
 	protected $_mixed_hide_fields_view = array();
 	protected $_mixed_hide_fields_remove = array();
 
-	/* Rich text editing */
-	protected $_field_text_rich = array(
-		/* 'text_field1', 'text_field2' */
-	);
-
-	/* Field by which the listing views shall be ordered by */
-	protected $_field_listing_order = 'id';
-
-	/* Field by which the result views shall be ordered by */
-	protected $_field_result_order = 'id';
-
-	/* Direction by which the listing views shall be ordered by */
-	protected $_direction_listing_order = 'asc';
-
-	/* Direction by which the result views shall be ordered by */
-	protected $_direction_result_order = 'asc';
-
-	/* If enabled, show only the rows of configured tables that have a particular
-	 * field name that matches a particular session variable.
-	 *
-	 * For example, if a table has a field named 'users_id' and you want to filter
-	 * the listings/results (and other accesses like edit,delete,update) based on
-	 * the logged on user, define a session variable named 'user_id' and uncomment
-	 * the example in $_table_row_filtering_config array.
-	 *
-	 * The cofiguration map is made in $_table_row_filtering_config
-	 */
-	protected $_table_row_filtering = true;
-
-	/* Table Row filtering configuration */
-	protected $_table_row_filtering_config = array(
-		/* 'table field' => 'session var' */
-		'users_id' => 'user_id'
-	);
-
-	/* The separator to be used when MySQL GROUP_CONCAT() is invoked */
-	protected $_group_concat_sep = ' | ';
-
 	/* CSV configuration */
-	protected $_csv_sep = ';';	/* Field Separator */
+	protected $_csv_sep = ',';	/* Default field separator */
+	protected $_csv_delim = "\""; /* Default string delimiter */
 	protected $_csv_from_encoding = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	protected $_csv_to_encoding   = NDPHP_LANG_MOD_DEFAULT_CHARSET;
-
-	/* Anchor foreign key values
-	 * This option will enable or disable the links (anchors) created in the lists/results
-	 * for foreign fields. Default is enabled (true).
-	 * NOTE:
-	 * This will resolve the values to links by crawling through the field options, comparing
-	 * each one with the current value (quadratic algorithm... to be redesigned). 
-	 * On high entry density foreign tables (tables with a high amount of rows),
-	 * it is recommended to set this option to false (disabled), or a significant
-	 * performance impact will be noticed.
-	 */
-	protected $_fk_linking = true;
 
 	/* Main tab name for CRUD views */
 	protected $_view_crud_main_tab_name = NDPHP_LANG_MOD_TABS_TITLE_MAIN_GENERIC;
@@ -476,12 +482,6 @@ class ND_Controller extends UW_Controller {
 
 	/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */
 	protected $_upload_filter_file_name = 'a-zA-Z0-9_\.';
-
-	/* If this controller is associated to a DATABASE VIEW instead of a DATABASE TABLE, set the following variable to true */
-	protected $_table_type_view = false;
-
-	/* The query that will generate the view (requires $_table_type_view set to true) */
-	protected $_table_type_view_query = ''; /* Eg: 'SELECT * FROM users WHERE id > 1' */
 
 	/* Session data buffer (will be populated with construct) */
 	protected $_session_data = array();
@@ -2281,12 +2281,12 @@ class ND_Controller extends UW_Controller {
 		$data['config']['theme'] = $this->_get_theme();
 		$data['config']['charset'] = $this->_charset;
 		$data['config']['features'] = $this->_get_features();
-		$data['config']['fk_linking'] = $this->_fk_linking;
+		$data['config']['fk_linking'] = $this->_table_fk_linking;
 		$data['config']['truncate'] = array();
 		$data['config']['truncate']['length'] = $this->_string_truncate_len;
 		$data['config']['truncate']['trail'] = $this->_string_truncate_trail;
 		$data['config']['truncate']['separator'] = $this->_string_truncate_sep;
-		$data['config']['rich_text'] = $this->_field_text_rich;
+		$data['config']['rich_text'] = $this->_table_field_text_rich;
 
 		/* Main menu */
 		$data['view'] = array();
@@ -3046,18 +3046,25 @@ class ND_Controller extends UW_Controller {
 		$this->config['hide_groups']							= $this->_hide_groups;
 
 		$this->config['table_fields_aliases']					= $this->_table_field_aliases;
+		$this->config['table_field_text_rich']					= $this->_table_field_text_rich;
+		$this->config['table_field_listing_order']				= $this->_table_field_listing_order;
+		$this->config['table_field_result_order']				= $this->_table_field_result_order;
+		$this->config['table_field_listing_order_modifier']		= $this->_table_field_listing_order_modifier;
+		$this->config['table_field_result_order_modifier']		= $this->_table_field_result_order_modifier;
+		$this->config['table_row_filtering']					= $this->_table_row_filtering;
+		$this->config['table_row_filtering_config']				= $this->_table_row_filtering_config;
 		$this->config['table_rel_choice_hide_fields']			= $this->_table_rel_choice_hide_fields;
 		$this->config['table_create_rel_choice_hide_fields']	= $this->_table_create_rel_choice_hide_fields;
 		$this->config['table_edit_rel_choice_hide_fields']		= $this->_table_edit_rel_choice_hide_fields;
 		$this->config['table_view_rel_choice_hide_fields']		= $this->_table_view_rel_choice_hide_fields;
 		$this->config['table_remove_rel_choice_hide_fields']	= $this->_table_remove_rel_choice_hide_fields;
-
 		$this->config['table_row_choice_class']					= $this->_table_row_choice_class;
-
+		$this->config['table_fk_linking']						= $this->_table_fk_linking;
 		$this->config['table_type_view']						= $this->_table_type_view;
 		$this->config['table_type_view_query']					= $this->_table_type_view_query;
 
 		$this->config['rel_table_fields_config']				= $this->_rel_table_fields_config;
+		$this->config['rel_group_concat_sep']					= $this->_rel_group_concat_sep;
 
 		$this->config['mixed_table_fields_config']				= $this->_mixed_table_fields_config;
 		$this->config['mixed_fieldset_legend_config']			= $this->_mixed_fieldset_legend_config;
@@ -3070,21 +3077,9 @@ class ND_Controller extends UW_Controller {
 		$this->config['mixed_hide_fields_view']					= $this->_mixed_hide_fields_view;
 		$this->config['mixed_hide_fields_remove']				= $this->_mixed_hide_fields_remove;
 
-		$this->config['field_text_rich']						= $this->_field_text_rich;
-		$this->config['field_listing_order']					= $this->_field_listing_order;
-		$this->config['field_result_order']						= $this->_field_result_order;
-		$this->config['direction_listing_order']				= $this->_direction_listing_order;
-		$this->config['direction_result_order']					= $this->_direction_result_order;
-
-		$this->config['table_row_filtering']					= $this->_table_row_filtering;
-		$this->config['table_row_filtering_config']				= $this->_table_row_filtering_config;
-
-		$this->config['group_concat_sep']						= $this->_group_concat_sep;
 		$this->config['csv_sep']								= $this->_csv_sep;
 		$this->config['csv_from_encoding']						= $this->_csv_from_encoding;
 		$this->config['csv_to_encoding']						= $this->_csv_to_encoding;
-
-		$this->config['fk_linking']								= $this->_fk_linking;
 
 		$this->config['view_crud_main_tab_name']				= $this->_view_crud_main_tab_name;
 		$this->config['view_crud_charts_tab_name']				= $this->_view_crud_charts_tab_name;
@@ -4349,7 +4344,7 @@ class ND_Controller extends UW_Controller {
 					$cc_fields = '`' . $meta['table'] . '`.`' . $meta['rel_field'] . '`';
 				}
 
-				array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ' SEPARATOR \'' . $this->_group_concat_sep . '\') AS `' . $field . '`');
+				array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ' SEPARATOR \'' . $this->_rel_group_concat_sep . '\') AS `' . $field . '`');
 			} else {
 				/* Otherwise, just select the current table field */
 				array_push($select, '`' . $this->_name . '`.`' . $field . '`');
@@ -4593,7 +4588,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup ordering field if none was specified */
 		if ($field == NULL)
-			$field = $this->_field_listing_order;
+			$field = $this->_table_field_listing_order;
 
 		/* Grant that field contains only safe characters */
 		if (!$this->security->safe_names($field, $this->_security_safe_chars))
@@ -4601,7 +4596,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup ordering */
 		if ($order == NULL)
-			$order = $this->_direction_listing_order;
+			$order = $this->_table_field_listing_order_modifier;
 
 		/* Initialize $data */
 		$data = array();
@@ -4621,7 +4616,7 @@ class ND_Controller extends UW_Controller {
 				'operation' => 'LIST',
 				'_table' => $this->_name,
 				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->_pagination_rpp) + 1) . ' / ' . ($field ? $field : $this->_field_listing_order) . ' / ' . ($order ? $order : $this->_direction_listing_order)) : ('0 / ' . ($field ? $field : $this->_field_listing_order) . ' / ' . ($order ? $order : $this->_direction_listing_order)),
+				'entryid' => ($page >= 0) ? ((($page / $this->_pagination_rpp) + 1) . ' / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)) : ('0 / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)),
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
 				'sessions_id' => $this->_session_data['sessions_id'],
@@ -4830,7 +4825,7 @@ class ND_Controller extends UW_Controller {
 						$result_array_remain[] = $row;
 					}
 				} else if (substr($grouping_field, 0, 4) == 'rel_') {
-					if (in_array($opt_val, explode($this->_group_concat_sep, $row[$grouping_field]))) {
+					if (in_array($opt_val, explode($this->_rel_group_concat_sep, $row[$grouping_field]))) {
 						/* This row belongs to this group... */
 						$group_result_array[$opt_val][] = $row;
 						$group_hash[$opt_val] = openssl_digest($opt_val, 'sha1');
@@ -5041,7 +5036,7 @@ class ND_Controller extends UW_Controller {
 					/* Split $row[$i], fetch id's from foreign table, and populate $rel array */
 					
 					/* Split $row[$i] values by group concatenation separator */
-					$rel_values = explode($this->_group_concat_sep, $row[$i]);
+					$rel_values = explode($this->_rel_group_concat_sep, $row[$i]);
 
 					/* Get foreign table name */
 					$foreign_table = array_pop(array_diff($this->_get_multiple_rel_table_names($header[$i], $this->_name), array($this->_name)));
@@ -5364,13 +5359,13 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
 
 		if ($order_field == NULL)
-			$order_field = $this->_field_result_order;
+			$order_field = $this->_table_field_result_order;
 
 		if (!$this->security->safe_names($order_field, $this->_security_safe_chars))
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->_charset, !$this->request->is_ajax());
 
 		if ($order_type == NULL)
-			$order_type = $this->_direction_result_order;
+			$order_type = $this->_table_field_result_order_modifier;
 
 		/* Initialize $data */
 		$data = array();
@@ -5390,7 +5385,7 @@ class ND_Controller extends UW_Controller {
 				'operation' => 'RESULT',
 				'_table' => $this->_name,
 				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->_pagination_rpp) + 1) . ' / ' . ($order_field ? $order_field : $this->_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_direction_result_order)) : ('0 / ' . ($order_field ? $order_field : $this->_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_direction_result_order)),
+				'entryid' => ($page >= 0) ? ((($page / $this->_pagination_rpp) + 1) . ' / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)) : ('0 / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)),
 				'value_new' => (($type == "basic") ? $_POST['search_value'] : (($type == "query") ? $result_query : json_encode($_POST, JSON_PRETTY_PRINT))),
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
@@ -6122,7 +6117,7 @@ class ND_Controller extends UW_Controller {
 						$result_array_remain[] = $row;
 					}
 				} else if (substr($grouping_field, 0, 4) == 'rel_') {
-					if (in_array($opt_val, explode($this->_group_concat_sep, $row[$grouping_field]))) {
+					if (in_array($opt_val, explode($this->_rel_group_concat_sep, $row[$grouping_field]))) {
 						/* This row belongs to this group... */
 						$group_result_array[$opt_val][] = $row;
 						$group_hash[$opt_val] = openssl_digest($opt_val, 'sha1');
@@ -6273,7 +6268,6 @@ class ND_Controller extends UW_Controller {
 			 */
 			$this->mpdf->Output($this->_name . '.pdf', 'D');
 		} else if ($type == 'csv') {
-			// TODO: Implement CSV export here
 			/* Create a unique filename */
 			$csv_filename = tempnam($this->_temp_dir, $this->_name . '_');
 
@@ -6288,7 +6282,7 @@ class ND_Controller extends UW_Controller {
 				if (in_array($field, $this->_hide_fields_export))
 					continue;
 
-				fwrite($csv_fp, ucfirst(mb_convert_encoding($data['view']['fields'][$field]['viewname'], $this->_csv_to_encoding, $this->_csv_from_encoding)) . $this->_csv_sep);
+				fwrite($csv_fp, $this->_csv_delim . ucfirst(mb_convert_encoding($data['view']['fields'][$field]['viewname'], $this->_csv_to_encoding, $this->_csv_from_encoding)) . $this->_csv_delim . $this->_csv_sep);
 			endforeach;
 			
 			/* Add new line for csv body */
@@ -6301,9 +6295,9 @@ class ND_Controller extends UW_Controller {
 						continue;
 
 					if ($data['view']['fields'][$field]['input_type'] == 'checkbox') {
-						fwrite($csv_fp, $value == 1 ? (NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED . $this->_csv_sep) : (NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED . $this->_csv_sep));
+						fwrite($csv_fp, $this->_csv_delim . ($value == 1 ? (NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED . $this->_csv_sep) : (NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED) . $this->_csv_delim . $this->_csv_sep));
 					} else {
-						fwrite($csv_fp, mb_convert_encoding($value, $this->_csv_to_encoding, $this->_csv_from_encoding) . $this->_csv_sep);
+						fwrite($csv_fp, $this->_csv_delim . mb_convert_encoding($value, $this->_csv_to_encoding, $this->_csv_from_encoding) . $this->_csv_delim . $this->_csv_sep);
 					}
 				endforeach;
 				

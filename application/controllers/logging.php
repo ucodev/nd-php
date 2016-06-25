@@ -80,7 +80,7 @@ class Logging extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'sessions' => array('Session', NULL, array(1), array('id', 'asc')),
+		'sessions' => array(NDPHP_LANG_MOD_COMMON_SESSION, NULL, array(1), array('id', 'asc')),
 	);
 
 	/* Quick Operations Links (Listing and Result views) */
@@ -98,6 +98,30 @@ class Logging extends ND_Controller {
 		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',     600),
 		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',     800),
 		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png',   600)
+	);
+
+	protected $_links_submenu_body_list = array(
+		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
+		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
+		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	),
+		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	),
+		array(NDPHP_LANG_MOD_OP_EXPORT_PDF,		'R', 'pdf',			NULL, 'export', false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_EXPORT_CSV,		'R', 'csv',			NULL, 'export', false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_IMPORT_CSV,		'C', 'import_csv',	NULL, 'modal',	false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_ERROR_LOG,		'R', 'error_log',	NULL, 'method',	false,	NULL 								)
+	);
+
+	protected $_links_submenu_body_result = array(
+		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
+		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
+		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),
+		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	),
+		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	),
+		array(NDPHP_LANG_MOD_OP_EXPORT_PDF,		'R', 'pdf',			NULL, 'export', false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_EXPORT_CSV,		'R', 'csv',			NULL, 'export', false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_IMPORT_CSV,		'C', 'import_csv',	NULL, 'modal',	false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_SAVE_SEARCH,	'R', 'search_save',	NULL, 'modal',	false,	NULL 								),
+		array(NDPHP_LANG_MOD_OP_ERROR_LOG,		'R', 'error_log',	NULL, 'method',	false,	NULL 								)
 	);
 
 	/** Custom functions **/
@@ -178,8 +202,7 @@ class Logging extends ND_Controller {
 		echo(NDPHP_LANG_MOD_SUCCESS_ROLLBACK_TRANSACTION . ' ' . $transaction . '.');
 	}
 
-	public function rollback_modalbox($id)
-	{
+	public function rollback_modalbox($id) {
 		$data['config']['modalbox'] = true;
 		$data['config']['charset'] = $this->_charset;
 		$data['view']['ctrl'] = $this->_name;
@@ -212,5 +235,20 @@ class Logging extends ND_Controller {
 
 		/* Load confirmation view */
 		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/rollback_transaction', $data);
+	}
+
+	public function error_log() {
+		/* Read log file contents */
+		$error_log = file_get_contents(SYSTEM_BASE_DIR . '/logs/error.log');
+
+		/* Check if we've been able to read it */
+		if ($error_log === false)
+			$this->response->code('403', 'Unable to retrieve contents from file' . ': ' . ' logs/error.log', $this->_charset, !$this->request->is_ajax());
+
+		/* Setup view data */
+		$data['config']['charset'] = $this->_charset;
+		$data['view']['error_log'] = $error_log;
+
+		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/error_log', $data);
 	}
 }
