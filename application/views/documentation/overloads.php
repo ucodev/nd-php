@@ -207,7 +207,8 @@
 		<a name="csv_export_settings">
 		<fieldset>
 			<legend>CSV EXPORT SETTINGS</legend>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_csv_sep</span> = <span class="literal">';'</span>;<span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Field Separator */</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_csv_sep</span> = <span class="literal">','</span>;<span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Default field separator */</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_csv_delim</span> = <span class="literal">"\""</span>;<span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Default string delimiter */</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_csv_from_encoding</span> = <span class="literal">'UTF-8'</span>;<span class="comment">&nbsp;&nbsp;/* Expected encoding when processing data to be exported */</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_csv_to_encoding</span> = <span class="literal">'UTF-8'</span>;<span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;/* Encoding that will be used when generating the CSV file */</span><br />
 		</fieldset>
@@ -274,6 +275,11 @@
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Upload max file size */</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_max_file_size</span> = <span class="literal">10485760</span>; <span class="comment">/* 10MiB by default */</span><br />
+			<br />
+			<br />
+			<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_filter_file_name</span> = <span class="literal">'a-zA-Z0-9_\.'</span>;<br />
 		</fieldset>
 		<a name="custom_controller_setup">
 		<fieldset>

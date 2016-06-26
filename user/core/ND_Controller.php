@@ -45,7 +45,7 @@
  * + Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
- * * Turn UI responsive
+ * * Turn UI responsive.
  * * Add command line to IDE Builder.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
@@ -80,10 +80,12 @@
  *
  * FIXME:
  *
+ * + application/controllers/* do not reflect the variable changes performed on v0.02b and v0.02b1
  * + Charts under results view do not reflect the searched data.
  * * Mixed and multiple relationships must work properly when javascript is disabled.
  * * Advanced search must work properly when javascript is disabled.
  * * Saved searches results do not have full breadcrumb support.
+ * * Home controller does not currently have support for breadcrumb.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
@@ -106,7 +108,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02b1';		// Framework version
+	protected $_ndphp_version = '0.02c';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline

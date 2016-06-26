@@ -524,13 +524,20 @@ class Install extends UW_Controller {
 		if ($fp === false)
 			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php', $this->_charset, !$this->request->is_ajax());
 
+		/* Generate a session name */
+		if (!($session_name = trim(base_dir(), '/'))) {
+			/* If we're unable to create a session name from the base directory, we need to generate something else... */
+			/* FIXME: Maybe a static value here isn't the best approach, but will work for now... */
+			$session_name = 'ndphp';
+		}
+
 		/* Craft database configuration */
 		$session_config = '' .
 			"<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }\n" .
 			"\n" .
 			"/* Session settings */\n" .
 			'$session' . "['enable']			= true;\n" .
-			'$session' . "['name']				= '" . trim(base_dir(), '/') . "';\n" .
+			'$session' . "['name']				= '" . $session_name . "';\n" .
 			'$session' . "['encrypt']			= true;\n" .
 			'$session' . "['cookie_lifetime']	= 7200;\n" .
 			'$session' . "['cookie_path']		= '" . base_dir() . "';\n" .

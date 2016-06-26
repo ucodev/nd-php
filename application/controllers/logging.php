@@ -50,11 +50,12 @@ class Logging extends ND_Controller {
 	/** Hooks **/
 	
 	/** Other overloads **/
+
 	/* Direction by which the listing views shall be ordered by */
-	protected $_direction_listing_order = 'desc';
+	protected $_table_field_listing_order_modifier = 'desc';
 
 	/* Direction by which the result views shall be ordered by */
-	protected $_direction_result_order = 'desc';
+	protected $_table_field_result_order_modifier = 'desc';
 
 	/* Hidden fields per view. */
 	protected $_hide_fields_create = array('id');

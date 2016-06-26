@@ -1,3 +1,10 @@
+v0.02c (2016-06-26):
+
+ - Updated documentation.
+ - Updated application/controllers/* with the new core configuration variable names.
+ - The framework can now be safely installed in the web server root directory.
+
+
 v0.02b1 (2016-06-25):
 
  - Added some more validations to the framework update process.
