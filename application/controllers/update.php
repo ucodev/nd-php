@@ -133,7 +133,7 @@ class Update extends ND_Controller {
 
 				/* Grant that we've received the file contents... and not just some error... */
 				/* FIXME: We need to put some further validations here in order to grant that the validity and integrity of the contents */
-				if (curl_getinfo($http, CURLINFO_HTTP_CODE) != 200)
+				if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200)
 					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_charset, !$this->request->is_ajax());
 
 				curl_close($ch);
