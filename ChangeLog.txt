@@ -1,3 +1,10 @@
+v0.02c2 (2016-06-26):
+
+ - Fixed some issues with the update process.
+ - Added informational content to error.log.
+ - Improved update tracker precedences.
+
+
 v0.02c1 (2016-06-26):
 
  - Fixed a typo on update controller.
