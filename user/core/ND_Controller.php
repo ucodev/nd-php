@@ -109,7 +109,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02d1';		// Framework version
+	protected $_ndphp_version = '0.02d2';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline
@@ -1386,7 +1386,7 @@ class ND_Controller extends UW_Controller {
 			$matches = NULL;
 
 			/* Get the WHERE component of the query */
-			if (preg_match('/^.+\s+WHERE\s+(.+)$/', $result_query, $matches)) {
+			if (preg_match('/^.+\s+WHERE\s+(.+)\s+GROUP BY.+$/', $result_query, $matches)) {
 				/* Append the WHERE component to the current query. */
 				/* NOTE: The 1 = 1 is a fail safe, in case the WHERE wasn't initialized yet */
 				$this->db->where('1 =', '1', false);
@@ -1602,7 +1602,7 @@ class ND_Controller extends UW_Controller {
 			$matches = NULL;
 
 			/* Get the WHERE component of the query */
-			if (preg_match('/^.+\s+WHERE\s+(.+)$/', $result_query, $matches)) {
+			if (preg_match('/^.+\s+WHERE\s+(.+)\s+GROUP BY.+$/', $result_query, $matches)) {
 				/* Append the WHERE component to the current query. */
 				/* NOTE: The 1 = 1 is a fail safe, in case the WHERE wasn't initialized yet */
 				$this->db->where('1 =', '1', false);
@@ -1853,7 +1853,7 @@ class ND_Controller extends UW_Controller {
 			$matches = NULL;
 
 			/* Get the WHERE component of the query */
-			if (preg_match('/^.+\s+WHERE\s+(.+)$/', $result_query, $matches)) {
+			if (preg_match('/^.+\s+WHERE\s+(.+)\s+GROUP BY.+$/', $result_query, $matches)) {
 				/* Append the WHERE component to the current query. */
 				/* NOTE: The 1 = 1 is a fail safe, in case the WHERE wasn't initialized yet */
 				$this->db->where('1 =', '1', false);

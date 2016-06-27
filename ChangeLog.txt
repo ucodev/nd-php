@@ -1,3 +1,9 @@
+v0.02d2 (2016-06-27):
+
+ - Fixed some more issues on charts
+ - Fixed issues with result and export queries.
+
+
 v0.02d1 (2016-06-27):
 
  - Fixed some issues on charts.

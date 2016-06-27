@@ -108,8 +108,7 @@ class UW_Ndphp extends UW_Model {
 	}
 
 	public function safe_b64encode($input) {
-		$a = str_replace(array('+', '/', '='), array('-', '_', ','), base64_encode($input));
-
+		return str_replace(array('+', '/', '='), array('-', '_', ','), base64_encode($input));
 	}
 
 	public function safe_b64decode($input) {
