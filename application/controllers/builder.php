@@ -33,6 +33,7 @@
 /*
  * TODO:
  *
+ * - Add a new property field (named index_uri) which will allow the user to set the default index redirection location for a particular controller.
  * - Change field and menu entry types (Currently we need to remove them and add them again as a new type, losing all the data for that field).
  * - Droping a non-instantiated pool object over an instantiated object of the same family shall change the latest type/title (with confirmation dialog).
  * - Download button to export ndmodel (application model in JSON format)

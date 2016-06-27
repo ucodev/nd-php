@@ -45,6 +45,7 @@
 			"application/static/js/lib/ndphp/ndphp.js.php",
 			"application/views/_templates/errors/status_code.php",
 			"application/views/documentation/overloads.php",
+			"application/views/themes/Blueish/_default/lib/charts.php",
 			"application/views/themes/Blueish/_default/lib/search_bar.php",
 			"application/views/themes/Blueish/_default/create_data.php",
 			"application/views/themes/Blueish/_default/edit_data.php",

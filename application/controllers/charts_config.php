@@ -90,7 +90,7 @@ class Charts_config extends ND_Controller {
 	);
 
 	/* Table relational choices (conditional drop-down) */
-	protected $_table_rel_choice_hide_fields = array(
+	protected $_rel_choice_hide_fields = array(
 		'charts_types_id' => array(
 			1 => array('foreign_table', 'field', 'field_ts', 'field_legend', 'field_total', 'import_ctrl', 'chartid'),
 			2 => array('fields', 'abscissa', 'foreign_table', 'field_legend', 'field_total', 'import_ctrl', 'chartid'),

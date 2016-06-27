@@ -43,6 +43,8 @@
  *
  * + Add imagemap to charts (pChart imagemap).
  * + Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
+ * + IDE application model should validate everything that was previously validated by ide.js.
+ * + Disable charts configuration (per controller).
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
  * * Turn UI responsive.
@@ -107,7 +109,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02d';		// Framework version
+	protected $_ndphp_version = '0.02d1';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline
