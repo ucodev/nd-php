@@ -53,7 +53,7 @@
 
  ?>
  <div id="result" class="result">
- 	<?php $tabs_listing = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
+ 	<?php $tabs_result = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
 	<div class="list_container">
 		<div id="listing">

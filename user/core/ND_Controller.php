@@ -42,9 +42,7 @@
  * TODO:
  *
  * + Add imagemap to charts (pChart imagemap).
- * + Add support for dynamic start and end ts values on charts configuration (same behavior of custom interval on advanced search).
  * + IDE application model should validate everything that was previously validated by ide.js.
- * + Disable charts configuration (per controller).
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
  * * Turn UI responsive.
@@ -109,7 +107,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02d2';		// Framework version
+	protected $_ndphp_version = '0.02e';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline
@@ -667,6 +665,10 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Charts **/
+
+	protected $_charts_enable_list = true;
+	protected $_charts_enable_result = true;
+	protected $_charts_enable_view = true;
 
 	protected $_charts_types = array('ts', 'foreign_ts', 'rel', 'foreign_rel', 'totals', 'foreign_totals');
 	protected $_charts_font_family = 'verdana'; /* See fonts/ directory on pChart library package */
@@ -1361,12 +1363,36 @@ class ND_Controller extends UW_Controller {
 		$this->db->from($this->_name);
 
 		/* Check if we need to narrow our result based on start timestamp value */
-		if ($chart['start_ts'])
-			$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+		if ($chart['start_ts']) {
+			if (strstr($chart['start_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+			}
+		}
 
 		/* Check if we need to narrow our result based on end timestamp value */
-		if ($chart['end_ts'])
-			$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+		if ($chart['end_ts']) {
+			if (strstr($chart['end_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+			}
+		}
 
 		/* Also filter rows based on $_table_row_filtering_config */
 		if ($this->_table_row_filtering) {
@@ -1487,12 +1513,36 @@ class ND_Controller extends UW_Controller {
 		$this->db->where($this->_name . '.id', $chart['entry_id']);
 
 		/* Check if we need to narrow our result based on start timestamp value */
-		if ($chart['start_ts'])
-			$this->db->where($chart['ftable'] . '.' . $chart['field_ts'] . ' >=', $chart['start_ts']);
+		if ($chart['start_ts']) {
+			if (strstr($chart['start_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+			}
+		}
 
 		/* Check if we need to narrow our result based on end timestamp value */
-		if ($chart['end_ts'])
-			$this->db->where($chart['ftable'] . '.' . $chart['field_ts'] . ' <=', $chart['end_ts']);
+		if ($chart['end_ts']) {
+			if (strstr($chart['end_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+			}
+		}
 
 		/* Also filter rows based on foreign controller $_table_row_filtering_config if this isn't a mixed table */
 		if (substr($chart['ftable'], 0, 6) != 'mixed_') {
@@ -1577,12 +1627,36 @@ class ND_Controller extends UW_Controller {
 		$this->db->group_by($foreign_fields[1]);
 
 		/* Check if we need to narrow our result based on start timestamp value */
-		if ($chart['start_ts'])
-			$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+		if ($chart['start_ts']) {
+			if (strstr($chart['start_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+			}
+		}
 
 		/* Check if we need to narrow our result based on end timestamp value */
-		if ($chart['end_ts'])
-			$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+		if ($chart['end_ts']) {
+			if (strstr($chart['end_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+			}
+		}
 
 		/* Also filter rows based on $_table_row_filtering_config */
 		if ($this->_table_row_filtering) {
@@ -1716,12 +1790,36 @@ class ND_Controller extends UW_Controller {
 		$this->db->where($chart['ftable'] . '`.`' . $this->_name . '_id`', $chart['entry_id']);
 
 		/* Check if we need to narrow our result based on start timestamp value */
-		if ($chart['start_ts'])
-			$this->db->where($chart['ftable'] . '.' . $chart['field_ts'] . ' >=', $chart['start_ts']);
+		if ($chart['start_ts']) {
+			if (strstr($chart['start_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+			}
+		}
 
 		/* Check if we need to narrow our result based on end timestamp value */
-		if ($chart['end_ts'])
-			$this->db->where($chart['ftable'] . '.' . $chart['field_ts'] . ' <=', $chart['end_ts']);
+		if ($chart['end_ts']) {
+			if (strstr($chart['end_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+			}
+		}
 
 		/* Also filter rows based on foreign controller $_table_row_filtering_config if ftable isn't mixed */
 		if (substr($chart['ftable'], 0, 6) != 'mixed_') {
@@ -1828,12 +1926,36 @@ class ND_Controller extends UW_Controller {
 		$this->db->from($this->_name);
 
 		/* Check if we need to narrow our result based on start timestamp value */
-		if ($chart['start_ts'])
-			$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+		if ($chart['start_ts']) {
+			if (strstr($chart['start_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+			}
+		}
 
 		/* Check if we need to narrow our result based on end timestamp value */
-		if ($chart['end_ts'])
-			$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+		if ($chart['end_ts']) {
+			if (strstr($chart['end_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+			}
+		}
 
 		/* Also filter rows based on $_table_row_filtering_config */
 		if ($this->_table_row_filtering) {
@@ -1991,12 +2113,36 @@ class ND_Controller extends UW_Controller {
 		$this->db->where($this->_name . '_id', $chart['entry_id']);
 
 		/* Check if we need to narrow our result based on start timestamp value */
-		if ($chart['start_ts'])
-			$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+		if ($chart['start_ts']) {
+			if (strstr($chart['start_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' >=', $chart['start_ts']);
+			}
+		}
 
 		/* Check if we need to narrow our result based on end timestamp value */
-		if ($chart['end_ts'])
-			$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+		if ($chart['end_ts']) {
+			if (strstr($chart['end_ts'], ' ')) {
+				/* If there's a space in the time value, then we'll search for interval formats */
+				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
+
+				if (!$interval_fields)
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+
+				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
+			} else {
+				/* Otherwise, it is expected that the value is numeric and represent a timestamp since epoch (1970-01-01 00:00:00 UTC) */
+				$this->db->where($chart['field_ts'] . ' <=', $chart['end_ts']);
+			}
+		}
 
 		/* Also filter rows based on foreign controller $_table_row_filtering_config if table isn't mixed */
 		if (substr($chart['ftable'], 0, 6) != 'mixed_') {
@@ -2352,6 +2498,10 @@ class ND_Controller extends UW_Controller {
 		$data['config']['truncate']['trail'] = $this->_string_truncate_trail;
 		$data['config']['truncate']['separator'] = $this->_string_truncate_sep;
 		$data['config']['rich_text'] = $this->_table_field_text_rich;
+		$data['config']['charts'] = array();
+		$data['config']['charts']['enable_list'] = $this->_charts_enable_list;
+		$data['config']['charts']['enable_result'] = $this->_charts_enable_result;
+		$data['config']['charts']['enable_view'] = $this->_charts_enable_result;
 
 		/* View data - Data that is intended to be 'printed' on the view */
 		$data['view'] = array();
@@ -3175,6 +3325,9 @@ class ND_Controller extends UW_Controller {
 		$this->config['upload_filter_file_name']				= $this->_upload_filter_file_name;
 		$this->config['upload_max_file_size']					= $this->_upload_max_file_size;
 
+		$this->config['charts_enable_list']						= $this->_charts_enable_list;
+		$this->config['charts_enable_result']					= $this->_charts_enable_result;
+		$this->config['charts_enable_view']						= $this->_charts_enable_view;
 		$this->config['charts_types']							= $this->_charts_types;
 		$this->config['charts_font_family']						= $this->_charts_font_family;
 		$this->config['charts_axis_font_size']					= $this->_charts_axis_font_size;
@@ -5515,7 +5668,6 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['quick'] = $this->_links_quick_modal_result;
 		$data['view']['links']['submenu'] = $this->_links_submenu_body_result;
 
-		$data['config']['charts'] = array();
 		$data['config']['charts']['total'] = count($this->_charts);
 
 		$data['config']['render'] = array();
@@ -7660,7 +7812,6 @@ class ND_Controller extends UW_Controller {
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_view); /* _get_fields() uses a perm_read filter by default */
 		$data['view']['links']['submenu'] = $this->_links_submenu_body_view;
 
-		$data['config']['charts'] = array();
 		$data['config']['charts']['total'] = count($this->_charts_foreign);
 		$data['config']['choices'] = count($this->_rel_choice_hide_fields_view) ? $this->_rel_choice_hide_fields_view : $this->_rel_choice_hide_fields;
 		$data['config']['render']['images'] = $this->_view_image_file_rendering;

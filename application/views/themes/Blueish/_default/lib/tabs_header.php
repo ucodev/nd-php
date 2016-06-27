@@ -61,10 +61,25 @@
 			'href' => 'listing',
 			'title' => NDPHP_LANG_MOD_TABS_TITLE_LISTING
 		));
+
+		if ($config['charts']['enable_list']) {
+			array_push($tabs, array(
+				'href' => 'charts',
+				'title' => $view['crud_charts_tab_name']
+			));
+		}
+	} else 	if (isset($tabs_result)) {
 		array_push($tabs, array(
-			'href' => 'charts',
-			'title' => NDPHP_LANG_MOD_TABS_TITLE_CHARTS
+			'href' => 'listing',
+			'title' => NDPHP_LANG_MOD_TABS_TITLE_LISTING
 		));
+
+		if ($config['charts']['enable_result']) {
+			array_push($tabs, array(
+				'href' => 'charts',
+				'title' => $view['crud_charts_tab_name']
+			));
+		}
 	} else if (isset($tabs_searches)) {
 		array_push($tabs, array(
 			'href' => 'search_advanced',
@@ -104,7 +119,7 @@
 			}
 		}
 
-		if (isset($tabs_view)) {
+		if (isset($tabs_view) && $config['charts']['enable_view']) {
 			array_push($tabs, array(
 				'href' => 'charts',
 				'title' => $view['crud_charts_tab_name']

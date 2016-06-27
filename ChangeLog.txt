@@ -1,3 +1,11 @@
+v0.02e (2016-06-27):
+
+ - Updated documentation/NDCA.pdf file.
+ - Charts' tabs can now be disabled on a per controller configuration basis.
+ - Charts' start time and end time configuration fields now accept relative intervals (such as advanced search).
+ - Updated INSTALL.txt file.
+
+
 v0.02d2 (2016-06-27):
 
  - Fixed some more issues on charts

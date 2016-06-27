@@ -47,6 +47,7 @@
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/lib/charts.php",
 			"application/views/themes/Blueish/_default/lib/search_bar.php",
+			"application/views/themes/Blueish/_default/lib/tabs_header.php",
 			"application/views/themes/Blueish/_default/create_data.php",
 			"application/views/themes/Blueish/_default/edit_data.php",
 			"application/views/themes/Blueish/_default/edit_footer.php",

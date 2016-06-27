@@ -69,8 +69,19 @@ Basic instructions to install the ND PHP Framework
 
   # . ./install/perm_setup.sh.inc
 
+ If the framework update feature is to be used, all the framework files must
+ be writable by the webserver process. In that case, set the owner and group
+ as:
+
+  # chown -R www-data:www-data nd-php/
+
  Always grant that system timezone is the same as set on the active
  Configuration timezone. Also grant that the DBMS is operating under the
  same timezone as the web-server.
+
+ For the framework Error Log built-in reader work properly, the file
+ nd-php/logs/error.log should be configured as the error log file for the
+ project vhost. It also must be readable by the webserver processes that are
+ executing the framework scripts. 
 
 
