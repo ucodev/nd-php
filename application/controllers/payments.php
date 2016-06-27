@@ -48,10 +48,10 @@ class Payments extends ND_Controller {
 	/** Other overloads **/
 
 	/* Direction by which the listing views shall be ordered by */
-	protected $_table_field_listing_order_modifier = 'desc';
+	protected $_table_field_order_list_modifier = 'desc';
 
 	/* Direction by which the result views shall be ordered by */
-	protected $_table_field_result_order_modifier = 'desc';
+	protected $_table_field_order_result_modifier = 'desc';
 
 	protected $_hide_fields_create = array('id');
 	protected $_hide_fields_edit = array('id');

@@ -1,3 +1,13 @@
+v0.02d (2016-06-27):
+
+ - Refactored some core controller variables and code.
+ - Updated documentation.
+ - Updated documentation/NDCA.pdf file.
+ - Updated tracker.
+ - Charts under result views are now affected by the result filters.
+ - Reduced a significant amount of queries per request on core controllers.
+
+
 v0.02c2 (2016-06-26):
 
  - Fixed some issues with the update process.

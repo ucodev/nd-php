@@ -80,12 +80,11 @@
  *
  * FIXME:
  *
- * + application/controllers/* do not reflect the variable changes performed on v0.02b and v0.02b1
- * + Charts under results view do not reflect the searched data.
+ * + Charts generators should attempt to trigger both list and result filter hook.
  * * Mixed and multiple relationships must work properly when javascript is disabled.
  * * Advanced search must work properly when javascript is disabled.
  * * Saved searches results do not have full breadcrumb support.
- * * Home controller does not currently have support for breadcrumb.
+ * * Home controller do not currently have support for breadcrumb.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
@@ -108,7 +107,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02c2';		// Framework version
+	protected $_ndphp_version = '0.02d';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline
@@ -154,10 +153,10 @@ class ND_Controller extends UW_Controller {
 	 * 
 	 */
 	protected $_hide_fields_create = array('id');
-	protected $_hide_fields_edit = array('id');
-	protected $_hide_fields_view = array();
+	protected $_hide_fields_edit   = array('id');
+	protected $_hide_fields_view   = array();
 	protected $_hide_fields_remove = array();
-	protected $_hide_fields_list = array();
+	protected $_hide_fields_list   = array();
 	protected $_hide_fields_result = array();
 	protected $_hide_fields_search = array(); // Includes fields searched on searchbar (basic)
 	protected $_hide_fields_export = array();
@@ -173,22 +172,22 @@ class ND_Controller extends UW_Controller {
 		/* 'field' => 'alias', */
 	);
 
-	/* Rich text editing */
+	/* Rich text editing (Fields for this array must be of type text) */
 	protected $_table_field_text_rich = array(
 		/* 'text_field1', 'text_field2' */
 	);
 
 	/* Field by which the listing views shall be ordered by */
-	protected $_table_field_listing_order = 'id';
+	protected $_table_field_order_list = 'id';
 
 	/* Field by which the result views shall be ordered by */
-	protected $_table_field_result_order = 'id';
+	protected $_table_field_order_result = 'id';
 
 	/* Direction by which the listing views shall be ordered by */
-	protected $_table_field_listing_order_modifier = 'asc';
+	protected $_table_field_order_list_modifier = 'asc';
 
 	/* Direction by which the result views shall be ordered by */
-	protected $_table_field_result_order_modifier = 'asc';
+	protected $_table_field_order_result_modifier = 'asc';
 
 	/* If enabled, show only the rows of configured tables that have a particular
 	 * field name that matches a particular session variable.
@@ -209,56 +208,8 @@ class ND_Controller extends UW_Controller {
 	);
 
 	/* Pagination */
-	protected $_table_pagination_listing_rpp = 10;
-	protected $_table_pagination_result_rpp = 10;
-
-	/* Table relational choices (conditional drop-down) */
-	protected $_table_rel_choice_hide_fields = array(
-		/* 'field_id' => array(
-		 * 		1 => array('field_to_hide1', 'field_to_hide2'),
-		 * 		7 => array('field_to_hide3', 'field_to_hide8'),
-		 * 		...
-		 * )
-		 */
-	);
-
-	protected $_table_create_rel_choice_hide_fields = array();
-	protected $_table_edit_rel_choice_hide_fields = array();
-	protected $_table_view_rel_choice_hide_fields = array();
-	protected $_table_remove_rel_choice_hide_fields = array();
-
-	/* Set a custom class for table row based on single relationship field values.
-	 * Any class specified here must exist in a loaded CSS, with the following prefixes:
-	 *
-	 *   list_<class_suffix_name>
-	 *   result_<class_suffix_name>
-	 *   export_<class_suffix_name>
-	 *
-	 * Example:
-	 *
-	 *   tr.list_even,   tr.result_even,   tr.export_even   { ... }
-	 *   tr.list_odd,    tr.result_odd,    tr.export_odd    { ... }
-	 *   tr.list_red,    tr.result_red,    tr.export_red    { ... }
-	 *   tr.list_yellow, tr.result_yellow, tr.export_yellow { ... }
-	 *   tr.list_green,  tr.result_green,  tr.export_green  { ... }
-	 *
-	 * NOTE: The :hover modifier should also be set for list_ and result_ classes.
-	 *
-	 * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black
-	 *
-	 */
-	protected $_table_row_choice_class = array(
-		/*
-		'rel_field' => 'field_id',
-		'class_even' => 'even',
-		'class_odd' => 'odd',
-		'values' => array(
-			'CRITICAL' => 'red',
-			'WARNING' => 'yellow',
-			'OK' => 'green'
-		)
-		*/
-	);
+	protected $_table_pagination_rpp_list = 10;
+	protected $_table_pagination_rpp_result = 10;
 
 	/* Anchor foreign key values
 	 * This option will enable or disable the links (anchors) created in the lists/results
@@ -294,6 +245,54 @@ class ND_Controller extends UW_Controller {
 
 	/* The separator to be used when MySQL GROUP_CONCAT() is invoked */
 	protected $_rel_group_concat_sep = ' | ';
+
+	/* Table relational choices (conditional drop-down) */
+	protected $_rel_choice_hide_fields = array(
+		/* 'field_id' => array(
+		 * 		1 => array('field_to_hide1', 'field_to_hide2'),
+		 * 		7 => array('field_to_hide3', 'field_to_hide8'),
+		 * 		...
+		 * )
+		 */
+	);
+
+	protected $_rel_choice_hide_fields_create = array();
+	protected $_rel_choice_hide_fields_edit   = array();
+	protected $_rel_choice_hide_fields_view   = array();
+	protected $_rel_choice_hide_fields_remove = array();
+
+	/* Set a custom class for table row based on single relationship field values.
+	 * Any class specified here must exist in a loaded CSS, with the following prefixes:
+	 *
+	 *   list_<class_suffix_name>
+	 *   result_<class_suffix_name>
+	 *   export_<class_suffix_name>
+	 *
+	 * Example:
+	 *
+	 *   tr.list_even,   tr.result_even,   tr.export_even   { ... }
+	 *   tr.list_odd,    tr.result_odd,    tr.export_odd    { ... }
+	 *   tr.list_red,    tr.result_red,    tr.export_red    { ... }
+	 *   tr.list_yellow, tr.result_yellow, tr.export_yellow { ... }
+	 *   tr.list_green,  tr.result_green,  tr.export_green  { ... }
+	 *
+	 * NOTE: The :hover modifier should also be set for list_ and result_ classes.
+	 *
+	 * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black
+	 *
+	 */
+	protected $_rel_table_row_choice_class = array(
+		/*
+		'rel_field' => 'field_id',
+		'class_even' => 'even',
+		'class_odd' => 'odd',
+		'values' => array(
+			'CRITICAL' => 'red',
+			'WARNING' => 'yellow',
+			'OK' => 'green'
+		)
+		*/
+	);
 
 	/* Field name configuration for mixed relationships */
 	protected $_mixed_table_fields_config = array(
@@ -342,8 +341,8 @@ class ND_Controller extends UW_Controller {
 	 *              is inteeded to be hiden in a mixe relationship view, it'll probably make sense to hide it in all views...
 	 */
 	protected $_mixed_hide_fields_create = array('id');
-	protected $_mixed_hide_fields_edit = array('id');
-	protected $_mixed_hide_fields_view = array();
+	protected $_mixed_hide_fields_edit   = array('id');
+	protected $_mixed_hide_fields_view   = array();
 	protected $_mixed_hide_fields_remove = array();
 
 	/* CSV configuration */
@@ -378,13 +377,15 @@ class ND_Controller extends UW_Controller {
 	/* Image rendering - Acceptable extensions - FIXME: Currently only extension is being checked, but MIME types must also be validated */
 	protected $_view_image_file_rendering_ext = array('jpg', 'gif', 'png', 'ico', 'bmp', 'svg');
 
+	/* The image scaling for the embedded images under the list / result views */
 	protected $_view_image_file_rendering_size_list = array(
-		'width' => '32px',
+		'width'  => '32px',
 		'height' => '32px'
 	);
 
+	/* The image scaling for the embedded images under the entry views */
 	protected $_view_image_file_rendering_size_view = array(
-		'width' => '256px',
+		'width'  => '256px',
 		'height' => '256px'
 	);
 
@@ -500,8 +501,11 @@ class ND_Controller extends UW_Controller {
 							  */
 	);
 
-
-	/** Custom functions **/
+	/* Caching */
+	protected $_cache_tables = array(); /* This array will be populated by _get_tables() method. */
+	protected $_cache_table_desc = array(); /* This array will be populated by _get_table_desc() method. */
+	protected $_cache_table_fields = array(); /* This array will be populated by _get_table_fields() method. */
+	protected $_cache_help = array(); /* This array will be populated by _get_help() method */
 
 
 	/** Hooks - Construct **/
@@ -652,12 +656,16 @@ class ND_Controller extends UW_Controller {
 	}
 
 
+	/** Custom functions **/
+
+
 	/** Security **/
 
 	protected $_security_perms = array();
 
 
 	/** Charts **/
+
 	protected $_charts_types = array('ts', 'foreign_ts', 'rel', 'foreign_rel', 'totals', 'foreign_totals');
 	protected $_charts_font_family = 'verdana'; /* See fonts/ directory on pChart library package */
 	protected $_charts_axis_font_size = 8;
@@ -1360,11 +1368,27 @@ class ND_Controller extends UW_Controller {
 
 		/* Also filter rows based on $_table_row_filtering_config */
 		if ($this->_table_row_filtering) {
-			$table_fields = $this->db->list_fields($this->_name);
+			$table_fields = $this->_get_table_fields($this->_name);
 
 			foreach ($this->_table_row_filtering_config as $field => $svar) {
 				if (in_array($field, $table_fields))
 					$this->db->where($field, $this->_session_data[$svar]);
+			}
+		}
+
+		/* Check if there are additional filters to append to the query WHERE component */
+		if ($chart['result_query']) {
+			/* Decode and decipher the query */
+			$result_query = gzuncompress($this->encrypt->decode($this->ndphp->safe_b64decode(rawurldecode($chart['result_query']))));
+
+			$matches = NULL;
+
+			/* Get the WHERE component of the query */
+			if (preg_match('/^.+\s+WHERE\s+(.+)$/', $result_query, $matches)) {
+				/* Append the WHERE component to the current query. */
+				/* NOTE: The 1 = 1 is a fail safe, in case the WHERE wasn't initialized yet */
+				$this->db->where('1 =', '1', false);
+				$this->db->where_append(' AND (' . $matches[1] . ')');
 			}
 		}
 
@@ -1425,7 +1449,7 @@ class ND_Controller extends UW_Controller {
 		$this->db->where('id', $chart['entry_id']);
 
 		if ($this->_table_row_filtering) {
-			$table_fields = $this->db->list_fields($this->_name);
+			$table_fields = $this->_get_table_fields($this->_name);
 
 			foreach ($this->_table_row_filtering_config as $field => $svar) {
 				if (in_array($field, $table_fields))
@@ -1473,7 +1497,7 @@ class ND_Controller extends UW_Controller {
 			$fctrl = $this->configuration->controller($chart['ftable']);
 
 			if ($fctrl->config['table_row_filtering']) {
-				$table_fields = $this->db->list_fields($chart['ftable']);
+				$table_fields = $this->_get_table_fields($chart['ftable']);
 
 				/* NOTE: here, we fetch the configuration of the foreign controller, not the filtering config of $this controller  */
 				foreach ($fctrl->config['table_row_filtering_config'] as $field => $svar) {
@@ -1535,7 +1559,7 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $foreign_table))
 			return false;
 
-		$foreign_fields = $this->db->list_fields($foreign_table);
+		$foreign_fields = $this->_get_table_fields($foreign_table);
 		$chart['foreign_field'] = $foreign_fields[1];
 
 		/* Check the READ permissions for the foreign field */
@@ -1560,11 +1584,27 @@ class ND_Controller extends UW_Controller {
 
 		/* Also filter rows based on $_table_row_filtering_config */
 		if ($this->_table_row_filtering) {
-			$table_fields = $this->db->list_fields($this->_name);
+			$table_fields = $this->_get_table_fields($this->_name);
 
 			foreach ($this->_table_row_filtering_config as $field => $svar) {
 				if (in_array($field, $table_fields))
 					$this->db->where($field, $this->_session_data[$svar]);
+			}
+		}
+
+		/* Check if there are additional filters to append to the query WHERE component */
+		if ($chart['result_query']) {
+			/* Decode and decipher the query */
+			$result_query = gzuncompress($this->encrypt->decode($this->ndphp->safe_b64decode(rawurldecode($chart['result_query']))));
+
+			$matches = NULL;
+
+			/* Get the WHERE component of the query */
+			if (preg_match('/^.+\s+WHERE\s+(.+)$/', $result_query, $matches)) {
+				/* Append the WHERE component to the current query. */
+				/* NOTE: The 1 = 1 is a fail safe, in case the WHERE wasn't initialized yet */
+				$this->db->where('1 =', '1', false);
+				$this->db->where_append(' AND (' . $matches[1] . ')');
 			}
 		}
 
@@ -1637,7 +1677,7 @@ class ND_Controller extends UW_Controller {
 
 		$foreign_table = substr($chart['fields'], 0, -3);
 
-		$foreign_fields = $this->db->list_fields($foreign_table);
+		$foreign_fields = $this->_get_table_fields($foreign_table);
 		$chart['foreign_field'] = $foreign_fields[1];
 
 		/* Check the READ permissions for the foreign field */
@@ -1650,7 +1690,7 @@ class ND_Controller extends UW_Controller {
 		$this->db->where('id', $chart['entry_id']);
 
 		if ($this->_table_row_filtering) {
-			$table_fields = $this->db->list_fields($this->_name);
+			$table_fields = $this->_get_table_fields($this->_name);
 
 			foreach ($this->_table_row_filtering_config as $field => $svar) {
 				if (in_array($field, $table_fields))
@@ -1686,7 +1726,7 @@ class ND_Controller extends UW_Controller {
 			$fctrl = $this->configuration->controller($chart['ftable']);
 
 			if ($fctrl->config['table_row_filtering']) {
-				$table_fields = $this->db->list_fields($chart['ftable']);
+				$table_fields = $this->_get_table_fields($chart['ftable']);
 
 				/* NOTE: here, we fetch the configuration of the foreign controller, not the filtering config of $this controller  */
 				foreach ($fctrl->config['table_row_filtering_config'] as $field => $svar) {
@@ -1795,11 +1835,27 @@ class ND_Controller extends UW_Controller {
 
 		/* Also filter rows based on $_table_row_filtering_config */
 		if ($this->_table_row_filtering) {
-			$table_fields = $this->db->list_fields($this->_name);
+			$table_fields = $this->_get_table_fields($this->_name);
 
 			foreach ($this->_table_row_filtering_config as $field => $svar) {
 				if (in_array($field, $table_fields))
 					$this->db->where($field, $this->_session_data[$svar]);
+			}
+		}
+
+		/* Check if there are additional filters to append to the query WHERE component */
+		if ($chart['result_query']) {
+			/* Decode and decipher the query */
+			$result_query = gzuncompress($this->encrypt->decode($this->ndphp->safe_b64decode(rawurldecode($chart['result_query']))));
+
+			$matches = NULL;
+
+			/* Get the WHERE component of the query */
+			if (preg_match('/^.+\s+WHERE\s+(.+)$/', $result_query, $matches)) {
+				/* Append the WHERE component to the current query. */
+				/* NOTE: The 1 = 1 is a fail safe, in case the WHERE wasn't initialized yet */
+				$this->db->where('1 =', '1', false);
+				$this->db->where_append(' AND (' . $matches[1] . ')');
 			}
 		}
 
@@ -1894,7 +1950,7 @@ class ND_Controller extends UW_Controller {
 		$this->db->where('id', $chart['entry_id']);
 
 		if ($this->_table_row_filtering) {
-			$table_fields = $this->db->list_fields($this->_name);
+			$table_fields = $this->_get_table_fields($this->_name);
 
 			foreach ($this->_table_row_filtering_config as $field => $svar) {
 				if (in_array($field, $table_fields))
@@ -1945,7 +2001,7 @@ class ND_Controller extends UW_Controller {
 			$fctrl = $this->configuration->controller($chart['ftable']);
 
 			if ($fctrl->config['table_row_filtering']) {
-				$table_fields = $this->db->list_fields($chart['ftable']);
+				$table_fields = $this->_get_table_fields($chart['ftable']);
 
 				/* NOTE: here, we fetch the configuration of the foreign controller, not the filtering config of $this controller  */
 				foreach ($fctrl->config['table_row_filtering_config'] as $field => $svar) {
@@ -2047,7 +2103,7 @@ class ND_Controller extends UW_Controller {
 		return true;
 	}
 
-	protected function _chart_publish_generic(&$chart_array, $chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $start_ts = NULL, $end_ts = NULL) {
+	protected function _chart_publish_generic(&$chart_array, $chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $result_query = NULL, $start_ts = NULL, $end_ts = NULL) {
 		/* NOTE: The $refresh_rand argument should be a random value in order to force browsers to reload the image */
 
 		/* Setup charts */
@@ -2056,6 +2112,10 @@ class ND_Controller extends UW_Controller {
 		/* Check if the requested chart id is defined */
 		if ($chart_id >= count($chart_array))
 			$this->response->code('404', NDPHP_LANG_MOD_UNDEFINED_CHART_ID, $this->_charset, !$this->request->is_ajax());
+
+		/* Check if there's a result query that will apply additional filters on the chart (not available for imported nor foreign charts) */
+		if ($result_query !== NULL && !$chart_array[$chart_id]['imported'])
+			$chart_array[$chart_id]['result_query'] = $result_query;
 
 		/* Check if we need to override the default start timestamp */
 		if ($start_ts !== NULL)
@@ -2128,15 +2188,15 @@ class ND_Controller extends UW_Controller {
 		imagedestroy($nodata_img);
 	}
 
-	public function chart_publish($chart_id = 0, $refresh_rand = NULL, $start_ts = NULL, $end_ts = NULL) {
-		if ($this->_chart_publish_generic($this->_charts, $chart_id, NULL, $refresh_rand, $start_ts, $end_ts) === false) {
+	public function chart_publish($chart_id = 0, $refresh_rand = NULL, $result_query = NULL, $start_ts = NULL, $end_ts = NULL) {
+		if ($this->_chart_publish_generic($this->_charts, $chart_id, NULL, $refresh_rand, $result_query, $start_ts, $end_ts) === false) {
 			/* No data */
 			$this->_chart_render_nodata($this->_charts[$chart_id]['title']);
 		}
 	}
 
 	public function chart_foreign_publish($chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $start_ts = NULL, $end_ts = NULL) {
-		if ($this->_chart_publish_generic($this->_charts_foreign, $chart_id, $entry_id, $refresh_rand, $start_ts, $end_ts) === false) {
+		if ($this->_chart_publish_generic($this->_charts_foreign, $chart_id, $entry_id, $refresh_rand, NULL, $start_ts, $end_ts) === false) {
 			/* No data */
 			$this->_chart_render_nodata($this->_charts_foreign[$chart_id]['title']);
 		}
@@ -2279,7 +2339,7 @@ class ND_Controller extends UW_Controller {
 	protected function _get_view_data_generic($title = 'NO_TITLE', $description = "NO_DESCRIPTION") {
 		$data = array();
 
-		/* Configuration data */
+		/* Configuration data - Used for configuration and control. It should not be used as 'printable' data */
 		$data['config'] = array();
 		$data['config']['theme'] = $this->_get_theme();
 		$data['config']['charset'] = $this->_charset;
@@ -2291,7 +2351,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['truncate']['separator'] = $this->_string_truncate_sep;
 		$data['config']['rich_text'] = $this->_table_field_text_rich;
 
-		/* Main menu */
+		/* View data - Data that is intended to be 'printed' on the view */
 		$data['view'] = array();
 		$data['view']['ctrl'] = $this->_name;
 		$data['view']['title'] = $title;
@@ -2302,7 +2362,7 @@ class ND_Controller extends UW_Controller {
 		$data['view']['crud_charts_tab_name'] = $this->_view_crud_charts_tab_name;
 		$data['view']['base_dir'] = $this->_get_views_base_dir($data['config']['theme']['name']);
 
-		/* Project data */
+		/* Project data - Aditional project information. May be used as 'printable' data */
 		$data['project'] = array();
 		$data['project']['author'] = $this->_author;
 		$data['project']['name'] = $this->_project_name;
@@ -2311,10 +2371,10 @@ class ND_Controller extends UW_Controller {
 		$data['project']['build'] = $this->_get_build();
 		$data['project']['ndphp_version'] = $this->_ndphp_version;
 
-		/* Session Data */
+		/* Session Data - Control data. May be used for 'printing' and for control. */
 		$data['session'] = $this->_session_data;
 
-		/* Security Data */
+		/* Security Data - Security assessment and control. Not supposed to be used as 'printable' data. */
 		$data['security'] = array();
 		$data['security']['perms'] = $this->_security_perms;
 		$data['security']['im_admin'] = $this->security->im_admin();
@@ -2466,7 +2526,7 @@ class ND_Controller extends UW_Controller {
 		if ($this->security->im_admin())
 			return;
 
-		$field_list = $this->db->list_fields($table ? $table : $this->_name);
+		$field_list = $this->_get_table_fields($table ? $table : $this->_name);
 
 		if ($this->_table_row_filtering === true) {
 			foreach ($this->_table_row_filtering_config as $key => $value) {
@@ -2483,7 +2543,7 @@ class ND_Controller extends UW_Controller {
 		if ($id === false)
 			return false;
 
-		$field_list = $this->db->list_fields($table ? $table : $this->_name);
+		$field_list = $this->_get_table_fields($table ? $table : $this->_name);
 
 		if ($this->_table_row_filtering === true) {
 			foreach ($this->_table_row_filtering_config as $key => $value) {
@@ -2512,7 +2572,7 @@ class ND_Controller extends UW_Controller {
 
 		$res = array();
 
-		$field_list = $this->db->list_fields($table ? $table : $this->_name);
+		$field_list = $this->_get_table_fields($table ? $table : $this->_name);
 
 		if ($this->_table_row_filtering === true) {
 			foreach ($this->_table_row_filtering_config as $key => $value) {
@@ -2702,7 +2762,7 @@ class ND_Controller extends UW_Controller {
 					}
         	
 					/* Get optional fields and retrieve the respective values, if any */
-					$mixed_table_fields = $this->db->list_fields('mixed_' . $this->_name . '_' . $mixed_table);
+					$mixed_table_fields = $this->_get_table_fields('mixed_' . $this->_name . '_' . $mixed_table);
 					foreach ($mixed_table_fields as $mixed_field) {
 						/* Check if this is a private field */
 						if (substr($mixed_field, 0, 2) != '__')
@@ -3034,8 +3094,6 @@ class ND_Controller extends UW_Controller {
 		$this->config['menu_entries_aliases']					= $this->_menu_entries_aliases;
 		$this->config['menu_entries_order']						= $this->_menu_entries_order;
 
-		$this->config['hide_menu_entries']						= $this->_hide_menu_entries;
-		$this->config['hide_global_search_controllers']			= $this->_hide_global_search_controllers;
 		$this->config['hide_fields_create']						= $this->_hide_fields_create;
 		$this->config['hide_fields_edit']						= $this->_hide_fields_edit;
 		$this->config['hide_fields_view']						= $this->_hide_fields_view;
@@ -3045,43 +3103,46 @@ class ND_Controller extends UW_Controller {
 		$this->config['hide_fields_search']						= $this->_hide_fields_search;
 		$this->config['hide_fields_export']						= $this->_hide_fields_export;
 		$this->conifg['hide_fields_groups']						= $this->_hide_fields_groups;
+		$this->config['hide_global_search_controllers']			= $this->_hide_global_search_controllers;
 		$this->config['hide_groups']							= $this->_hide_groups;
+		$this->config['hide_menu_entries']						= $this->_hide_menu_entries;
 
-		$this->config['table_fields_aliases']					= $this->_table_field_aliases;
 		$this->config['table_field_text_rich']					= $this->_table_field_text_rich;
-		$this->config['table_field_listing_order']				= $this->_table_field_listing_order;
-		$this->config['table_field_result_order']				= $this->_table_field_result_order;
-		$this->config['table_field_listing_order_modifier']		= $this->_table_field_listing_order_modifier;
-		$this->config['table_field_result_order_modifier']		= $this->_table_field_result_order_modifier;
+		$this->config['table_field_order_list']					= $this->_table_field_order_list;
+		$this->config['table_field_order_result']				= $this->_table_field_order_result;
+		$this->config['table_field_order_list_modifier']		= $this->_table_field_order_list_modifier;
+		$this->config['table_field_order_result_modifier']		= $this->_table_field_order_result_modifier;
+		$this->config['table_field_aliases']					= $this->_table_field_aliases;
+		$this->config['table_fk_linking']						= $this->_table_fk_linking;
+		$this->config['table_pagination_rpp_list']				= $this->_table_pagination_rpp_list;
+		$this->config['table_pagination_rpp_result']			= $this->_table_pagination_rpp_result;
 		$this->config['table_row_filtering']					= $this->_table_row_filtering;
 		$this->config['table_row_filtering_config']				= $this->_table_row_filtering_config;
-		$this->config['table_pagination_listing_rpp']			= $this->_table_pagination_listing_rpp;
-		$this->config['table_pagination_result_rpp']			= $this->_table_pagination_result_rpp;
-		$this->config['table_rel_choice_hide_fields']			= $this->_table_rel_choice_hide_fields;
-		$this->config['table_create_rel_choice_hide_fields']	= $this->_table_create_rel_choice_hide_fields;
-		$this->config['table_edit_rel_choice_hide_fields']		= $this->_table_edit_rel_choice_hide_fields;
-		$this->config['table_view_rel_choice_hide_fields']		= $this->_table_view_rel_choice_hide_fields;
-		$this->config['table_remove_rel_choice_hide_fields']	= $this->_table_remove_rel_choice_hide_fields;
-		$this->config['table_row_choice_class']					= $this->_table_row_choice_class;
-		$this->config['table_fk_linking']						= $this->_table_fk_linking;
 		$this->config['table_type_view']						= $this->_table_type_view;
 		$this->config['table_type_view_query']					= $this->_table_type_view_query;
 
 		$this->config['rel_table_fields_config']				= $this->_rel_table_fields_config;
 		$this->config['rel_group_concat_sep']					= $this->_rel_group_concat_sep;
+		$this->config['rel_choice_hide_fields']					= $this->_rel_choice_hide_fields;
+		$this->config['rel_choice_hide_fields_create']			= $this->_rel_choice_hide_fields_create;
+		$this->config['rel_choice_hide_fields_edit']			= $this->_rel_choice_hide_fields_edit;
+		$this->config['rel_choice_hide_fields_view']			= $this->_rel_choice_hide_fields_view;
+		$this->config['rel_choice_hide_fields_remove']			= $this->_rel_choice_hide_fields_remove;
+		$this->config['rel_table_row_choice_class']				= $this->_rel_table_row_choice_class;
 
-		$this->config['mixed_table_fields_config']				= $this->_mixed_table_fields_config;
 		$this->config['mixed_fieldset_legend_config']			= $this->_mixed_fieldset_legend_config;
-		$this->config['mixed_table_add_missing']				= $this->_mixed_table_add_missing;
-		$this->config['mixed_table_set_missing']				= $this->_mixed_table_set_missing;
-		$this->config['mixed_views_autocomplete']				= $this->_mixed_views_autocomplete;
-		$this->config['mixed_table_fields_width']				= $this->_mixed_table_fields_width;
 		$this->config['mixed_hide_fields_create']				= $this->_mixed_hide_fields_create;
 		$this->config['mixed_hide_fields_edit']					= $this->_mixed_hide_fields_edit;
 		$this->config['mixed_hide_fields_view']					= $this->_mixed_hide_fields_view;
 		$this->config['mixed_hide_fields_remove']				= $this->_mixed_hide_fields_remove;
+		$this->config['mixed_table_fields_config']				= $this->_mixed_table_fields_config;
+		$this->config['mixed_table_add_missing']				= $this->_mixed_table_add_missing;
+		$this->config['mixed_table_set_missing']				= $this->_mixed_table_set_missing;
+		$this->config['mixed_table_fields_width']				= $this->_mixed_table_fields_width;
+		$this->config['mixed_views_autocomplete']				= $this->_mixed_views_autocomplete;
 
 		$this->config['csv_sep']								= $this->_csv_sep;
+		$this->config['csv_delim']								= $this->_csv_delim;
 		$this->config['csv_from_encoding']						= $this->_csv_from_encoding;
 		$this->config['csv_to_encoding']						= $this->_csv_to_encoding;
 
@@ -3099,7 +3160,6 @@ class ND_Controller extends UW_Controller {
 
 		$this->config['links_quick_modal_list']					= $this->_links_quick_modal_list;
 		$this->config['links_quick_modal_result']				= $this->_links_quick_modal_result;
-
 		$this->config['links_submenu_body_create']				= $this->_links_submenu_body_create;
 		$this->config['links_submenu_body_edit']				= $this->_links_submenu_body_edit;
 		$this->config['links_submenu_body_remove']				= $this->_links_submenu_body_remove;
@@ -3110,8 +3170,8 @@ class ND_Controller extends UW_Controller {
 		$this->config['links_submenu_body_groups']				= $this->_links_submenu_body_groups;
 
 		$this->config['upload_file_encryption']					= $this->_upload_file_encryption;
-		$this->config['upload_max_file_size']					= $this->_upload_max_file_size;
 		$this->config['upload_filter_file_name']				= $this->_upload_filter_file_name;
+		$this->config['upload_max_file_size']					= $this->_upload_max_file_size;
 
 		$this->config['charts_types']							= $this->_charts_types;
 		$this->config['charts_font_family']						= $this->_charts_font_family;
@@ -3300,8 +3360,8 @@ class ND_Controller extends UW_Controller {
 		$this->_description = $config['description'];
 		$this->_default_timezone = $config['timezone'];
 		$this->_theme = $config['theme'];
-		$this->_table_pagination_listing_rpp = $config['page_rows'];
-		$this->_table_pagination_result_rpp = $config['page_rows'];
+		$this->_table_pagination_rpp_list = $config['page_rows'];
+		$this->_table_pagination_rpp_result = $config['page_rows'];
 		$this->_temp_dir = $config['temporary_directory'];
 
 		/* Set default database */
@@ -3362,6 +3422,102 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Fetchers **/
+
+	protected function _get_tables() {
+		/* If we already have a populated table list, just return it... */
+		if (count($this->_cache_tables))
+			return $this->_cache_tables; /* All good */
+
+		/* Fetch the tables from the database */
+		$query = $this->db->query("SHOW TABLES");
+
+		/* If we're unable to retrieve the database tables, we can't proceed */
+		if (!$query)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_charset, !$this->request->is_ajax());
+
+		/* Populate the tables list */
+		foreach ($query->result_array() as $field => $value) {
+			foreach ($value as $header => $table) {
+				array_push($this->_cache_tables, $table);
+			}
+		}
+
+		/* All good */
+		return $this->_cache_tables;
+	}
+
+	protected function _get_table_desc($table = NULL) {
+		/* If no table was specified, used this controller table */
+		if ($table === NULL)
+			$table = $this->_name;
+
+		/* If we already have data cached for the $table, just return it... */
+		if (isset($this->_cache_table_desc[$table]))
+			return $this->_cache_table_desc[$table];
+
+		/* Otherwise, fetch it... */
+		$this->_cache_table_desc[$table] = $this->db->describe_table($table);
+
+		/* All good */
+		return $this->_cache_table_desc[$table];
+	}
+
+	protected function _get_table_fields($table = NULL) {
+		/* If no table was specified, used this controller table */
+		if ($table === NULL)
+			$table = $this->_name;
+
+		/* If we already have data cached for the $table, just return it... */
+		if (isset($this->_cache_table_fields[$table]))
+			return $this->_cache_table_fields[$table];
+
+		/* Otherwise, fetch it... */
+		$this->_cache_table_fields[$table] = $this->db->list_fields($table);
+
+		/* All good */
+		return $this->_cache_table_fields[$table];
+	}
+
+	protected function _get_help($table = NULL) {
+		/* If no table was specified, used this controller table */
+		if ($table === NULL)
+			$table = $this->_name;
+
+		/* If we already have a populated the help data cache, just return it... */
+		if (isset($this->_cache_help[$table]))
+			return $this->_cache_help[$table];
+
+		/* Fetch help data from the database */
+		$this->db->select('field_name, placeholder,field_units,units_on_left,input_pattern,help_description,help_url');
+		$this->db->from('_help_tfhd');
+		$this->db->where('table_name', $table);
+
+		$query = $this->db->get();
+
+		/* If there's no help data, nullify the entry and return it */
+		if (!$query->num_rows()) {
+			$this->_cache_help[$table] = NULL;
+			return NULL;
+		}
+
+		/* Initialize help data entry for $table */
+		$this->_cache_help[$table] = array();
+
+		/* Populate help data */
+		foreach ($query->result_array() as $row) {
+			/* If there is no field assigned to this row, this help entry is related to the table, not the field... */
+			if (!$row['field_name']) {
+				/* ... So we use a special entry _self to store it */
+				$this->_cache_help[$table]['_self'] = $row;
+				continue;
+			}
+
+			$this->_cache_help[$table][$row['field_name']] = $row;
+		}
+
+		/* All good */
+		return $this->_cache_help[$table];
+	}
 
 	protected function _get_build() {
 		/* Fetch build information */
@@ -3495,12 +3651,6 @@ class ND_Controller extends UW_Controller {
 		if (!$target)
 			$target = $this->_name;
 
-		/* Get all the existent tables in the database */
-		$query = $this->db->query("SHOW TABLES");
-
-		if (!$query)
-			return NULL;
-
 		/* Setup prefix */
 		if ($type == 'multiple') {
 			$prefix = 'rel_';
@@ -3511,22 +3661,20 @@ class ND_Controller extends UW_Controller {
 		$relative = array();
 
 		/* Build a list of tables that are related to $target, based on $type prefix */
-		foreach ($query->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				if (substr($table, 0, strlen($prefix)) == $prefix) {
-					/* If $type is multiple, any of the slices that match $target is a relationship */
-					if ($type == 'multiple') {
-						$slices = $this->_get_multiple_rel_table_names($table, $target);
+		foreach ($this->_get_tables() as $table) {
+			if (substr($table, 0, strlen($prefix)) == $prefix) {
+				/* If $type is multiple, any of the slices that match $target is a relationship */
+				if ($type == 'multiple') {
+					$slices = $this->_get_multiple_rel_table_names($table, $target);
 
-						if ($slices[0] == $target || $slices[1] == $target)
-							array_push($relative, $table);
-					} else if ($type == 'mixed') {
-						$slices = $this->_get_mixed_rel_table_names($table, $target);
+					if ($slices[0] == $target || $slices[1] == $target)
+						array_push($relative, $table);
+				} else if ($type == 'mixed') {
+					$slices = $this->_get_mixed_rel_table_names($table, $target);
 
-						/* If the $type is mixed, only $slice[1] matches is considered a relationship */
-						if ($slices[0] == $target)
-							array_push($relative, $table);
-					}
+					/* If the $type is mixed, only $slice[1] matches is considered a relationship */
+					if ($slices[0] == $target)
+						array_push($relative, $table);
 				}
 			}
 		}
@@ -3535,113 +3683,89 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_controller_list() {
-		/* Get all the existent tables in the database */
-		$query = $this->db->query("SHOW TABLES");
-
-		if (!$query)
-			return NULL;
-
 		$controllers = array();
 
-		foreach ($query->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				/* Validate table names */
-				if (!$this->security->safe_names($table, $this->_security_safe_chars)) {
-					error_log($this->_name . '::_get_controller_list(): Table `' . $table . '` contains unsafe characters on its name. Skipping...');
-					continue;
-				}
-
-				/* Security check */
-				if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $table))
-					continue;
-
-				/* 
-				 * Tables prefixed by one of the following are ignored:
-				 * 
-				 *  +------------+---------------------+
-				 *  | Prefix     | Description         |
-				 *  +------------+---------------------+
-				 *  | 'rel_'     | Relational tables   |
-				 *  | 'mixed_'   | Mixed relationships |
-				 *  +------------+---------------------+
-				 * 
-				 */
-				if ((substr($table, 0, 4) == 'rel_') || (substr($table, 0, 6) == 'mixed_'))
-					continue;
-
-				array_push($controllers, $table);
+		foreach ($this->_get_tables() as $table) {
+			/* Validate table names */
+			if (!$this->security->safe_names($table, $this->_security_safe_chars)) {
+				error_log($this->_name . '::_get_controller_list(): Table `' . $table . '` contains unsafe characters on its name. Skipping...');
+				continue;
 			}
+
+			/* Security check */
+			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $table))
+				continue;
+
+			/* 
+			 * Tables prefixed by one of the following are ignored:
+			 * 
+			 *  +------------+---------------------+
+			 *  | Prefix     | Description         |
+			 *  +------------+---------------------+
+			 *  | 'rel_'     | Relational tables   |
+			 *  | 'mixed_'   | Mixed relationships |
+			 *  +------------+---------------------+
+			 * 
+			 */
+			if ((substr($table, 0, 4) == 'rel_') || (substr($table, 0, 6) == 'mixed_'))
+				continue;
+
+			array_push($controllers, $table);
 		}
 
 		return $controllers;
 	}
 
 	protected function _get_menu_entries() {
-		$query = $this->db->query("SHOW TABLES");
-
-		if (!$query)
-			return NULL;
-
 		$entries = array();
 
-		foreach ($query->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				/* Validate table names */
-				if (!$this->security->safe_names($table, $this->_security_safe_chars)) {
-					error_log($this->_name . '::_get_menu_entries(): Table `' . $table . '` contains unsafe characters on its name. Skipping...');
-					continue;
-				}
-
-				/* Security check */
-				if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $table))
-					continue;
-
-				/* Ignore hidden menu entries */
-				if (in_array($table, $this->_hide_menu_entries))
-					continue;
-
-				/* 
-				 * Tables prefixed by one of the following are ignored:
-				 * 
-				 *  +------------+---------------------+
-				 *  | Prefix     | Description         |
-				 *  +------------+---------------------+
-				 *  | 'rel_'     | Relational tables   |
-				 *  | 'mixed_'   | Mixed relationships |
-				 *  | '_'        | Private tables      |
-				 *  +------------+---------------------+
-				 * 
-				 */
-				if ((substr($table, 0, 4) == 'rel_') || (substr($table, 0, 6) == 'mixed_') || ($table[0] == '_'))
-					continue;
-
-				/* Get help data */
-				$help_description = '';
-
-				$this->db->select('help_description');
-				$this->db->from('_help_tfhd');
-				$this->db->where('table_name', $table);
-				$this->db->is_null('field_name');
-				$qh = $this->db->get();
-
-				if ($qh->num_rows()) {
-					$row_help = $qh->row_array();
-					$help_description = $row_help['help_description'];
-				}
-
-				/* Insert element into $entries, resolving the aliased name, if any. */
-				/* Format of menu entry is:
-				 *
-				 *  +-------------+-------------------+
-				 *  |  $entry[0]  |  Table name       |
-				 *  |  $entry[1]  |  View alias       |
-				 *  |  $entry[2]  |  Help description |
-				 *  +-------------+-------------------+
-				 *
-				 */
-				array_push($entries, array($table, isset($this->_menu_entries_aliases[$table]) ? $this->_menu_entries_aliases[$table] : $table, $help_description));
+		foreach ($this->_get_tables() as $table) {
+			/* Validate table names */
+			if (!$this->security->safe_names($table, $this->_security_safe_chars)) {
+				error_log($this->_name . '::_get_menu_entries(): Table `' . $table . '` contains unsafe characters on its name. Skipping...');
+				continue;
 			}
+
+			/* Security check */
+			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $table))
+				continue;
+
+			/* Ignore hidden menu entries */
+			if (in_array($table, $this->_hide_menu_entries))
+				continue;
+
+			/* 
+			 * Tables prefixed by one of the following are ignored:
+			 * 
+			 *  +------------+---------------------+
+			 *  | Prefix     | Description         |
+			 *  +------------+---------------------+
+			 *  | 'rel_'     | Relational tables   |
+			 *  | 'mixed_'   | Mixed relationships |
+			 *  | '_'        | Private tables      |
+			 *  +------------+---------------------+
+			 * 
+			 */
+			if ((substr($table, 0, 4) == 'rel_') || (substr($table, 0, 6) == 'mixed_') || ($table[0] == '_'))
+				continue;
+
+			/* Get help data */
+			$help_data = $this->_get_help($table);
+			$help_description = $help_data[$table]['_self'] ? $help_data[$table]['_self'] : '';
+
+			/* Insert element into $entries, resolving the aliased name, if any. */
+			/* Format of menu entry is:
+			 *
+			 *  +-------------+-------------------+
+			 *  |  $entry[0]  |  Table name       |
+			 *  |  $entry[1]  |  View alias       |
+			 *  |  $entry[2]  |  Help description |
+			 *  +-------------+-------------------+
+			 *
+			 */
+			array_push($entries, array($table, isset($this->_menu_entries_aliases[$table]) ? $this->_menu_entries_aliases[$table] : $table, $help_description));
 		}
+
 
 		/* Re-order $entries based on $this->_menu_entries_order */
 		if (count($this->_menu_entries_order)) {
@@ -3666,25 +3790,18 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_field_help_desc($table, $field) {
-		$this->db->select('placeholder,field_units,units_on_left,input_pattern,help_description,help_url');
-		$this->db->from('_help_tfhd');
-		$this->db->where('table_name', $table);
-		$this->db->where('field_name', $field);
+		$help_data = $this->_get_help($table);
 
-		$query = $this->db->get();
-
-		if (!$query->num_rows())
+		if ($help_data === NULL || !isset($help_data[$field]))
 			return NULL;
 
-		$row = $query->row_array();
-
-		return $row;
+		return $help_data[$field];
 	}
 
 	protected function _get_fields_basic_types($target = NULL, $hide_filter = array()) {
 		$fields = NULL;
 
-		$fields_raw = $this->db->describe_table($target != NULL ? $target : $this->_name);
+		$fields_raw = $this->_get_table_desc($target != NULL ? $target : $this->_name);
 
 		if (!$fields_raw)
 			return NULL;
@@ -3714,7 +3831,7 @@ class ND_Controller extends UW_Controller {
 		if ($target === NULL)
 			$target = $this->_name;
 
-		$fields_raw = $this->db->describe_table($target);
+		$fields_raw = $this->_get_table_desc($target);
 
 		if (!$fields_raw)
 			return NULL;
@@ -3790,7 +3907,7 @@ class ND_Controller extends UW_Controller {
 				/* Relational (single) */
 				$table = substr($field['name'], 0, -3);
 				$fields[$field['name']]['table'] = $table;
-				$table_fields = $this->db->list_fields($table);
+				$table_fields = $this->_get_table_fields($table);
 
 				/* Check how many fields are required to be concatenated to craft the options
 				 * values.
@@ -3879,269 +3996,255 @@ class ND_Controller extends UW_Controller {
 		}
 		
 		/* Check for multiple relationships */
-		$query = $this->db->query("SHOW TABLES");
-		
-		if (!$query)
-			return $fields; /* FIXME: Opss... Shall we return what we have? Or die hard? */
-		
-		foreach ($query->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				/* Ignore all non-relationship tables */
-				if ((substr($table, 0, 4) != 'rel_'))
+		foreach ($this->_get_tables() as $table) {
+			/* Ignore all non-relationship tables */
+			if ((substr($table, 0, 4) != 'rel_'))
+				continue;
+
+			$rel_tables = array_diff($this->_get_multiple_rel_table_names($table, $target), array($target));
+
+			foreach ($rel_tables as $rel) {
+				/* Security check */
+				if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel))
 					continue;
 
-				$rel_tables = array_diff($this->_get_multiple_rel_table_names($table, $target), array($target));
+				if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $target, $table /* NOTE: $table is the field name: rel_<t1>_<ft2> */))
+					continue;
 
-				foreach ($rel_tables as $rel) {
-					/* Security check */
-					if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel))
-						continue;
+				$table_fields = $this->_get_table_fields($rel);
+				$rel_field = isset($this->_rel_table_fields_config[$rel][2][0]) ? $this->_rel_table_fields_config[$rel][2][0] : 1;
 
-					if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $target, $table /* NOTE: $table is the field name: rel_<t1>_<ft2> */))
-						continue;
+				/* Filter hidden fields */
+				if (in_array($table, $hide_filter))
+					continue;
 
-					$table_fields = $this->db->list_fields($rel);
-					$rel_field = isset($this->_rel_table_fields_config[$rel][2][0]) ? $this->_rel_table_fields_config[$rel][2][0] : 1;
+				/* Set the field name properties (field name is the rel_*_* table name) */
+				$fields[$table]['type'] = 'rel';
+				$fields[$table]['max_length'] = NULL;
+				$fields[$table]['primary_key'] = NULL;
+				$fields[$table]['table'] = $rel;
+				$fields[$table]['options'] = array();
+				$fields[$table]['input_type'] = 'select';
+				$fields[$table]['base_table'] = $target;
+				$fields[$table]['rel_table'] = $table;
+				$fields[$table]['rel_field'] = $table_fields[$rel_field];
 
-					/* Filter hidden fields */
-					if (in_array($table, $hide_filter))
-						continue;
-
-					/* Set the field name properties (field name is the rel_*_* table name) */
-					$fields[$table]['type'] = 'rel';
-					$fields[$table]['max_length'] = NULL;
-					$fields[$table]['primary_key'] = NULL;
-					$fields[$table]['table'] = $rel;
-					$fields[$table]['options'] = array();
-					$fields[$table]['input_type'] = 'select';
-					$fields[$table]['base_table'] = $target;
-					$fields[$table]['rel_table'] = $table;
-					$fields[$table]['rel_field'] = $table_fields[$rel_field];
-
-					/* Check how many fields are required to be concatenated to craft the options
-					 * values.
+				/* Check how many fields are required to be concatenated to craft the options
+				 * values.
+				 */
+				if (isset($this->_rel_table_fields_config[$rel]) && ($this->_rel_table_fields_config[$rel][2] != NULL)) {
+					/* Setup the amount of concatenated fields required for the options */
+					$rel_fields = '';
+					foreach ($this->_rel_table_fields_config[$rel][2] as $rel_field)
+						$rel_fields .= $table_fields[$rel_field] . ',';
+					$rel_fields = rtrim($rel_fields, ',');
+				} else {
+					/* If no concatenated fields were configured, use the default value.
+					 * (The default value is always the second field from the rel table)
 					 */
+					$rel_fields = $table_fields[1];
+				}
+
+				/* Get foreign table contents */
+				$this->db->select('id,' . $rel_fields);
+				$this->db->from($rel);
+
+				if (isset($this->_rel_table_fields_config[$rel]) && ($this->_rel_table_fields_config[$rel][3] != NULL)) {
+					$this->db->order_by($this->_rel_table_fields_config[$rel][3][0], $this->_rel_table_fields_config[$rel][3][1]);
+				}
+
+				$this->_table_row_filter_apply($rel);
+
+
+				/* We need to use _field_value_mangle() here to grant that relationship values are mangled
+				 *
+				 * We also use the _get_fields_basic_types() to reduce the overhead that would be caused if
+				 * we used recursion here with _get_fields()
+				 */
+				$result_array = $this->_field_value_mangle($this->_get_fields_basic_types($rel), $this->db->get());
+
+				/* Set the altname */
+				if (isset($this->_rel_table_fields_config[$rel])) {
+					$fields[$table]['altname'] = $table_fields[$this->_rel_table_fields_config[$rel][2][0]];
+					$fields[$table]['viewname'] = $this->_rel_table_fields_config[$rel][0];
+				} else {
+					$fields[$table]['altname'] = $table_fields[1];
+					$fields[$table]['viewname'] = $table_fields[1];
+				}
+
+				/* Get field help, if exists */
+				$help_data = $this->_get_field_help_desc($target, $table);
+				$fields[$table]['units'] = $help_data['field_units'];
+				$fields[$table]['help_desc'] = $help_data['help_description'];
+				$fields[$table]['help_url'] = $help_data['help_url'];
+
+				/* Craft options values based on concatenations' configuration (if any).
+				 * If no configuration is set for this particular relationship, the default
+				 * option value is used (this is, the values of the second field of the
+				 * relationship table).
+				 */
+				foreach ($result_array as $row) {
 					if (isset($this->_rel_table_fields_config[$rel]) && ($this->_rel_table_fields_config[$rel][2] != NULL)) {
 						/* Setup the amount of concatenated fields required for the options */
-						$rel_fields = '';
+						$fields[$table]['options'][$row['id']] = '';
 						foreach ($this->_rel_table_fields_config[$rel][2] as $rel_field)
-							$rel_fields .= $table_fields[$rel_field] . ',';
-						$rel_fields = rtrim($rel_fields, ',');
+							$fields[$table]['options'][$row['id']] .= $row[$table_fields[$rel_field]] . (($this->_rel_table_fields_config[$rel][1] != NULL) ? $this->_rel_table_fields_config[$rel][1] : ' ');
+	                        /* ^^^ -> Field Options Array                                                                   ^^^ -> Resolved Option Field      ^^^ -> Separator   */
+
+						/* Remove trailing separator */
+						$fields[$table]['options'][$row['id']] = trim($fields[$table]['options'][$row['id']], (($this->_rel_table_fields_config[$rel][1] != NULL) ? $this->_rel_table_fields_config[$rel][1] : ' '));
 					} else {
 						/* If no concatenated fields were configured, use the default value.
-						 * (The default value is always the second field from the rel table)
-						 */
-						$rel_fields = $table_fields[1];
-					}
-
-					/* Get foreign table contents */
-					$this->db->select('id,' . $rel_fields);
-					$this->db->from($rel);
-
-					if (isset($this->_rel_table_fields_config[$rel]) && ($this->_rel_table_fields_config[$rel][3] != NULL)) {
-						$this->db->order_by($this->_rel_table_fields_config[$rel][3][0], $this->_rel_table_fields_config[$rel][3][1]);
-					}
-
-					$this->_table_row_filter_apply($rel);
-
-
-					/* We need to use _field_value_mangle() here to grant that relationship values are mangled
-					 *
-					 * We also use the _get_fields_basic_types() to reduce the overhead that would be caused if
-					 * we used recursion here with _get_fields()
-					 */
-					$result_array = $this->_field_value_mangle($this->_get_fields_basic_types($rel), $this->db->get());
-
-					/* Set the altname */
-					if (isset($this->_rel_table_fields_config[$rel])) {
-						$fields[$table]['altname'] = $table_fields[$this->_rel_table_fields_config[$rel][2][0]];
-						$fields[$table]['viewname'] = $this->_rel_table_fields_config[$rel][0];
-					} else {
-						$fields[$table]['altname'] = $table_fields[1];
-						$fields[$table]['viewname'] = $table_fields[1];
-					}
-
-					/* Get field help, if exists */
-					$help_data = $this->_get_field_help_desc($target, $table);
-					$fields[$table]['units'] = $help_data['field_units'];
-					$fields[$table]['help_desc'] = $help_data['help_description'];
-					$fields[$table]['help_url'] = $help_data['help_url'];
-
-					/* Craft options values based on concatenations' configuration (if any).
-					 * If no configuration is set for this particular relationship, the default
-					 * option value is used (this is, the values of the second field of the
-					 * relationship table).
-					 */
-					foreach ($result_array as $row) {
-						if (isset($this->_rel_table_fields_config[$rel]) && ($this->_rel_table_fields_config[$rel][2] != NULL)) {
-							/* Setup the amount of concatenated fields required for the options */
-							$fields[$table]['options'][$row['id']] = '';
-							foreach ($this->_rel_table_fields_config[$rel][2] as $rel_field)
-								$fields[$table]['options'][$row['id']] .= $row[$table_fields[$rel_field]] . (($this->_rel_table_fields_config[$rel][1] != NULL) ? $this->_rel_table_fields_config[$rel][1] : ' ');
-    	                        /* ^^^ -> Field Options Array                                                                   ^^^ -> Resolved Option Field      ^^^ -> Separator   */
-
-							/* Remove trailing separator */
-							$fields[$table]['options'][$row['id']] = trim($fields[$table]['options'][$row['id']], (($this->_rel_table_fields_config[$rel][1] != NULL) ? $this->_rel_table_fields_config[$rel][1] : ' '));
-						} else {
-							/* If no concatenated fields were configured, use the default value.
-						 	 * (The default value is always the second field from the rel table)
-						 	 */
-							$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
-						}
+					 	 * (The default value is always the second field from the rel table)
+					 	 */
+						$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
 					}
 				}
 			}
 		}
 
 		/* Check for mixed relationships (table prefix mixed_*) */
-		$query = $this->db->query("SHOW TABLES");
-		
-		if (!$query)
-			return $fields;
-		
-		foreach ($query->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				/* Ignore all non-relationship tables */
-				if (substr($table, 0, 6) != 'mixed_')
+		foreach ($this->_get_tables() as $table) {
+			/* Ignore all non-relationship tables */
+			if (substr($table, 0, 6) != 'mixed_')
+				continue;
+
+			$rel_tables = $this->_get_mixed_rel_table_names($table, $target);
+			
+			/* Check mixed relationship precedence */
+			if ($rel_tables[0] != $target) {
+				/* There's a mixed relatinship for this table, but not in this order */
+				continue;
+			}
+			
+			/* Ignore relationships not belonging to the current table */
+			if (!(in_array($target, $rel_tables)))
+				continue;
+			
+			/* Remove the current table from the relationship array */
+			$rel_tables = array_diff($rel_tables, array($target));
+			
+			/* Only one table is expected to be present in the array since mixed relationships
+			 * do not support more than one relationship
+			 */
+			$rel = array_pop($rel_tables);
+
+			/* Security check */
+			if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel))
+				continue;
+
+			if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $target, $table /* NOTE: $table is the field name: mixed_<t1>_<ft2> */))
+				continue;
+
+			/* Filter hidden fields */
+			if (in_array($table, $hide_filter))
+				continue;
+
+			$table_fields_all = $this->_get_table_fields($table);
+			$table_fields = array_merge(array('id'), $this->_get_mixed_table_fields($rel, $target));
+			$rel_field = isset($this->_rel_table_fields_config[$rel][2][0]) ? $this->_rel_table_fields_config[$rel][2][0] : 1;
+
+			/* Check if this is a single mixed relationship */
+			$schema = $this->load->database($this->_default_database . '_schema', true);
+			$schema->select('column_key')->from('columns')->where('table_schema', $this->db->database)->where('table_name', $table)->where('column_name', $table_fields_all[2]);
+			$query = $schema->get();
+			$query_row = $query->row_array();
+
+			if ($query_row['column_key'] == 'UNI') {
+				$fields[$table]['mixed_type'] = 'single';
+			} else {
+				$fields[$table]['mixed_type'] = 'multi';
+			}
+			$this->load->database($this->_default_database);
+
+			/* NOTE: $fields entry name for mixed relationships is the relational table name ($rel) */
+			$fields[$table]['type'] = 'mixed';
+			$fields[$table]['input_type'] = 'mixed';
+			$fields[$table]['max_length'] = NULL;
+			$fields[$table]['primary_key'] = NULL;
+			$fields[$table]['table'] = $table;
+			$fields[$table]['options'] = array();
+			$fields[$table]['base_table'] = $target;
+			$fields[$table]['rel_table'] = $rel;
+			$fields[$table]['mixed_fields'] = $table_fields;
+			$fields[$table]['mixed_first_field'] = $table_fields[1];
+			
+			/* Get hidden mixed fields. FIXME: TODO: This will filter fields for all views, so currently we don't support
+			 * customized hidden fields per view (create/edit/view/remove)
+			 */
+			$mixed_hide_fields = $this->configuration->table_hidden_fields_mixed($rel);
+
+			/* Resolve foreign table field names aliases */
+			$table_fields_aliases = array();
+			
+			foreach ($table_fields as $tfid => $tfname) {
+				$tfname = $table_fields[$tfid];
+
+				/* Ignore hidden fields */
+				if (in_array($tfname, $mixed_hide_fields))
 					continue;
 
-				$rel_tables = $this->_get_mixed_rel_table_names($table, $target);
-				
-				/* Check mixed relationship precedence */
-				if ($rel_tables[0] != $target) {
-					/* There's a mixed relatinship for this table, but not in this order */
-					continue;
+				$help_data = $this->_get_field_help_desc($table, $tfname);
+				$rel_fields_help[$rtfname]['units'] = $help_data['field_units'];
+				$rel_fields_help[$rtfname]['help_desc'] = $help_data['help_description'];
+				$rel_fields_help[$rtfname]['help_url'] = $help_data['help_url'];
+
+				/* Remove any special prefixes from $tfname, such as _file and _timer */
+				$tfdata['alias'] = $tfname;
+
+				/* Remove any special prefixes from $tfdata['alias'], such as _file and _timer */
+				if (substr($tfdata['alias'], 0, 6) =='_file_') {
+					$tfdata['alias'] = substr($tfdata['alias'], 6);
+				} else if (substr($tfdata['alias'], 0, 7) =='_timer_') {
+					$tfdata['alias'] = substr($tfdata['alias'], 7);
 				}
-				
-				/* Ignore relationships not belonging to the current table */
-				if (!(in_array($target, $rel_tables)))
-					continue;
-				
-				/* Remove the current table from the relationship array */
-				$rel_tables = array_diff($rel_tables, array($target));
-				
-				/* Only one table is expected to be present in the array since mixed relationships
-				 * do not support more than one relationship
-				 */
-				$rel = array_pop($rel_tables);
 
-				/* Security check */
-				if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $rel))
-					continue;
+				/* Set help description and URL for this table field */
+				$tfdata['help_desc'] = $help_data['help_description'];
+				$tfdata['help_url'] = $help_data['help_url'];
 
-				if (!$skip_perm_check && !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $target, $table /* NOTE: $table is the field name: mixed_<t1>_<ft2> */))
-					continue;
-
-				/* Filter hidden fields */
-				if (in_array($table, $hide_filter))
-					continue;
-
-				$table_fields_all = $this->db->list_fields($table);
-				$table_fields = array_merge(array('id'), $this->_get_mixed_table_fields($rel, $target));
-				$rel_field = isset($this->_rel_table_fields_config[$rel][2][0]) ? $this->_rel_table_fields_config[$rel][2][0] : 1;
-
-				/* Check if this is a single mixed relationship */
-				$schema = $this->load->database($this->_default_database . '_schema', true);
-				$schema->select('column_key')->from('columns')->where('table_schema', $this->db->database)->where('table_name', $table)->where('column_name', $table_fields_all[2]);
-				$query = $schema->get();
-				$query_row = $query->row_array();
-
-				if ($query_row['column_key'] == 'UNI') {
-					$fields[$table]['mixed_type'] = 'single';
-				} else {
-					$fields[$table]['mixed_type'] = 'multi';
-				}
-				$this->load->database($this->_default_database);
-
-				/* NOTE: $fields entry name for mixed relationships is the relational table name ($rel) */
-				$fields[$table]['type'] = 'mixed';
-				$fields[$table]['input_type'] = 'mixed';
-				$fields[$table]['max_length'] = NULL;
-				$fields[$table]['primary_key'] = NULL;
-				$fields[$table]['table'] = $table;
-				$fields[$table]['options'] = array();
-				$fields[$table]['base_table'] = $target;
-				$fields[$table]['rel_table'] = $rel;
-				$fields[$table]['mixed_fields'] = $table_fields;
-				$fields[$table]['mixed_first_field'] = $table_fields[1];
-				
-				/* Get hidden mixed fields. FIXME: TODO: This will filter fields for all views, so currently we don't support
-				 * customized hidden fields per view (create/edit/view/remove)
-				 */
-				$mixed_hide_fields = $this->configuration->table_hidden_fields_mixed($rel);
-
-				/* Resolve foreign table field names aliases */
-				$table_fields_aliases = array();
-				
-				foreach ($table_fields as $tfid => $tfname) {
-					$tfname = $table_fields[$tfid];
-
-					/* Ignore hidden fields */
-					if (in_array($tfname, $mixed_hide_fields))
+				foreach ($this->_mixed_table_fields_config as $rtname => $rtvalue) {
+					if ($rtname != $rel)
 						continue;
 
-					$help_data = $this->_get_field_help_desc($table, $tfname);
-					$rel_fields_help[$rtfname]['units'] = $help_data['field_units'];
-					$rel_fields_help[$rtfname]['help_desc'] = $help_data['help_description'];
-					$rel_fields_help[$rtfname]['help_url'] = $help_data['help_url'];
-
-					/* Remove any special prefixes from $tfname, such as _file and _timer */
-					$tfdata['alias'] = $tfname;
-
-					/* Remove any special prefixes from $tfdata['alias'], such as _file and _timer */
-					if (substr($tfdata['alias'], 0, 6) =='_file_') {
-						$tfdata['alias'] = substr($tfdata['alias'], 6);
-					} else if (substr($tfdata['alias'], 0, 7) =='_timer_') {
-						$tfdata['alias'] = substr($tfdata['alias'], 7);
+					/* Set mixed field aliases */
+					if (isset($this->_mixed_table_fields_config[$rtname][$tfid])) {
+						$tfdata['alias'] = $this->_mixed_table_fields_config[$rtname][$tfid];
 					}
 
-					/* Set help description and URL for this table field */
-					$tfdata['help_desc'] = $help_data['help_description'];
-					$tfdata['help_url'] = $help_data['help_url'];
-
-					foreach ($this->_mixed_table_fields_config as $rtname => $rtvalue) {
-						if ($rtname != $rel)
-							continue;
-
-						/* Set mixed field aliases */
-						if (isset($this->_mixed_table_fields_config[$rtname][$tfid])) {
-							$tfdata['alias'] = $this->_mixed_table_fields_config[$rtname][$tfid];
-						}
-
-						break;
-					}
-
-					array_push($table_fields_aliases, $tfdata);
+					break;
 				}
 
-				$fields[$table]['mixed_fields_alias'] = $table_fields_aliases;
+				array_push($table_fields_aliases, $tfdata);
+			}
 
-				/* Check how many fields are required to be concatenated to craft the options
-				 * values.
-				 */
-				$rel_fields = $table_fields[1];
+			$fields[$table]['mixed_fields_alias'] = $table_fields_aliases;
 
-				$this->db->select('id,' . $rel_fields);
-				$this->db->from($rel);
+			/* Check how many fields are required to be concatenated to craft the options
+			 * values.
+			 */
+			$rel_fields = $table_fields[1];
 
-				/* Filter the rows based on access configuration parameters */
-				$this->_table_row_filter_apply($rel);
+			$this->db->select('id,' . $rel_fields);
+			$this->db->from($rel);
 
-				/* We need to use _field_value_mangle() here to grant that relationship values are mangled
-				 *
-				 * We also use the _get_fields_basic_types() to avoid the overhead that would be caused if
-				 * recursion of _get_fields() was used here.
-				 */
-				$result_array = $this->_field_value_mangle($this->_get_fields_basic_types($rel), $this->db->get());
+			/* Filter the rows based on access configuration parameters */
+			$this->_table_row_filter_apply($rel);
 
-				/* Set the altname and viewname */
-				$fields[$table]['altname'] = $rel;
-				$fields[$table]['viewname'] = isset($this->_mixed_fieldset_legend_config[$rel]) ? $this->_mixed_fieldset_legend_config[$rel] : $rel;
-				
-				/* Craft options values */
-				foreach ($result_array as $row) {
-					$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
-				}
+			/* We need to use _field_value_mangle() here to grant that relationship values are mangled
+			 *
+			 * We also use the _get_fields_basic_types() to avoid the overhead that would be caused if
+			 * recursion of _get_fields() was used here.
+			 */
+			$result_array = $this->_field_value_mangle($this->_get_fields_basic_types($rel), $this->db->get());
+
+			/* Set the altname and viewname */
+			$fields[$table]['altname'] = $rel;
+			$fields[$table]['viewname'] = isset($this->_mixed_fieldset_legend_config[$rel]) ? $this->_mixed_fieldset_legend_config[$rel] : $rel;
+			
+			/* Craft options values */
+			foreach ($result_array as $row) {
+				$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
 			}
 		}
 		
@@ -4149,40 +4252,33 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _get_mixed_table_fields($mixed_table, $origin) {
-		$query = $this->db->query("SHOW TABLES");
-
-		if (!$query)
-			return NULL;
-
 		$result_mixed_fields = array();
 
-		foreach ($query->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				if (substr($table, 0, 6) != 'mixed_')
+		foreach ($this->_get_tables() as $table) {
+			if (substr($table, 0, 6) != 'mixed_')
+				continue;
+
+			$slices = $this->_get_mixed_rel_table_names($table, $origin);
+
+			if (($slices[0] != $origin) || ($slices[1] != $mixed_table))
+				continue;
+
+			$mixed_table_fields_raw = $this->_get_table_fields($table);
+			$mixed_table_fields = array();
+
+			/* Remove private fields, starting by '__' */
+			foreach ($mixed_table_fields_raw as $field) {
+				if (substr($field, 0, 2) == '__')
 					continue;
 
-				$slices = $this->_get_mixed_rel_table_names($table, $origin);
-
-				if (($slices[0] != $origin) || ($slices[1] != $mixed_table))
-					continue;
-
-				$mixed_table_fields_raw = $this->db->list_fields($table);
-				$mixed_table_fields = array();
-
-				/* Remove private fields, starting by '__' */
-				foreach ($mixed_table_fields_raw as $field) {
-					if (substr($field, 0, 2) == '__')
-						continue;
-
-					array_push($mixed_table_fields, $field);
-				}
-
-				array_push($result_mixed_fields, $mixed_table_fields[1]);
-
-				$result_mixed_fields = array_merge($result_mixed_fields, array_slice($mixed_table_fields, 4));
-
-				break;
+				array_push($mixed_table_fields, $field);
 			}
+
+			array_push($result_mixed_fields, $mixed_table_fields[1]);
+
+			$result_mixed_fields = array_merge($result_mixed_fields, array_slice($mixed_table_fields, 4));
+
+			break;
 		}
 
 		return $result_mixed_fields;
@@ -4293,7 +4389,7 @@ class ND_Controller extends UW_Controller {
 			 */
 			if (substr($field, -3, 3) == '_id') {
 				$table = substr($field, 0, -3);
-				$table_fields = $this->db->list_fields($table);
+				$table_fields = $this->_get_table_fields($table);
 				$this->db->join($table, $table . '.id = ' . $this->_name . '.' . $field, 'left');
 
 				/* Concatenate configured fields on _rel_table_fields_config in the results
@@ -4322,7 +4418,7 @@ class ND_Controller extends UW_Controller {
 				array_push($select, $cc_fields . ' AS `' . $field . '`');
 			} else if ($meta['type'] == 'rel') {
 				/* If this is a multiple relationship field */
-				$table_fields = $this->db->list_fields($meta['table']);
+				$table_fields = $this->_get_table_fields($meta['table']);
 
 				$this->db->join($meta['rel_table'], $this->_name . '.id = ' . $meta['rel_table'] . '.' . $this->_name . '_id', 'left');
 				$this->db->join($meta['table'], $meta['table'] . '.id = ' . $meta['rel_table'] . '.' . $meta['table'] . '_id', 'left');
@@ -4461,7 +4557,7 @@ class ND_Controller extends UW_Controller {
 		$groups = array();
 
 		/* Fetch table fields to look for single relationships */
-		$table_fields = $this->db->list_fields($this->_name);
+		$table_fields = $this->_get_table_fields($this->_name);
 
 		foreach ($table_fields as $field) {
 			if (in_array($field, $this->_hide_groups))
@@ -4503,40 +4599,36 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Fetch tables to look for multiple relationships */
-		$q = $this->db->query('SHOW TABLES');
+		foreach ($this->_get_tables() as $table) {
+			if (substr($table, 0, 4) != 'rel_')
+				continue;
 
-		foreach ($q->result_array() as $field => $value) {
-			foreach ($value as $header => $table) {
-				if (substr($table, 0, 4) != 'rel_')
+			$rel_tables = $this->_get_multiple_rel_table_names($table, $this->_name);
+
+			$group = array();
+
+			if (in_array($this->_name, $rel_tables)) {
+				/* This is a multiple relationship */
+
+				/* Get foreign table name */
+				$group['table_name'] = array_pop(array_diff($rel_tables, array($this->_name)));
+
+				/* Check if we've perms to read the foreign table */
+				if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $group['table_name']))
 					continue;
 
-				$rel_tables = $this->_get_multiple_rel_table_names($table, $this->_name);
-
-				$group = array();
-
-				if (in_array($this->_name, $rel_tables)) {
-					/* This is a multiple relationship */
-
-					/* Get foreign table name */
-					$group['table_name'] = array_pop(array_diff($rel_tables, array($this->_name)));
-
-					/* Check if we've perms to read the foreign table */
-					if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $group['table_name']))
-						continue;
-
-					/* Check if there's a viewname alias set */
-					if (isset($this->_menu_entries_aliases[$group['table_name']])) {
-						$group['name'] = $this->_menu_entries_aliases[$group['table_name']];
-					} else {
-						$group['name'] = ucfirst($group['table_name']);
-					}
-
-					/* Set table field name to be used as grouping field identifier */
-					$group['table_field'] = $table;
-
-					/* Add group to the groups array */
-					array_push($groups, $group);
+				/* Check if there's a viewname alias set */
+				if (isset($this->_menu_entries_aliases[$group['table_name']])) {
+					$group['name'] = $this->_menu_entries_aliases[$group['table_name']];
+				} else {
+					$group['name'] = ucfirst($group['table_name']);
 				}
+
+				/* Set table field name to be used as grouping field identifier */
+				$group['table_field'] = $table;
+
+				/* Add group to the groups array */
+				array_push($groups, $group);
 			}
 		}
 
@@ -4593,7 +4685,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup ordering field if none was specified */
 		if ($field == NULL)
-			$field = $this->_table_field_listing_order;
+			$field = $this->_table_field_order_list;
 
 		/* Grant that field contains only safe characters */
 		if (!$this->security->safe_names($field, $this->_security_safe_chars))
@@ -4601,7 +4693,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup ordering */
 		if ($order == NULL)
-			$order = $this->_table_field_listing_order_modifier;
+			$order = $this->_table_field_order_list_modifier;
 
 		/* Initialize $data */
 		$data = array();
@@ -4621,7 +4713,7 @@ class ND_Controller extends UW_Controller {
 				'operation' => 'LIST',
 				'_table' => $this->_name,
 				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->_table_pagination_listing_rpp) + 1) . ' / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)) : ('0 / ' . ($field ? $field : $this->_table_field_listing_order) . ' / ' . ($order ? $order : $this->_table_field_listing_order_modifier)),
+				'entryid' => ($page >= 0) ? ((($page / $this->_table_pagination_rpp_list) + 1) . ' / ' . ($field ? $field : $this->_table_field_order_list) . ' / ' . ($order ? $order : $this->_table_field_order_list_modifier)) : ('0 / ' . ($field ? $field : $this->_table_field_order_list) . ' / ' . ($order ? $order : $this->_table_field_order_list_modifier)),
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
 				'sessions_id' => $this->_session_data['sessions_id'],
@@ -4658,7 +4750,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_list;
 		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
-		$data['config']['choices_class'] = $this->_table_row_choice_class;
+		$data['config']['choices_class'] = $this->_rel_table_row_choice_class;
 
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_list); /* _get_fields() uses a perm_read filter by default */
 
@@ -4695,13 +4787,12 @@ class ND_Controller extends UW_Controller {
 		 * FIXME: TODO: export query should be stored in user session and shall no be passed via URL
 		 *
 		 */
-		//echo $this->db->last_query();
 		$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
 
 		/* If this is a REST call, do not limit the results (as in, display all) */
 		if ($this->_json_replies !== true && $page >= 0) {
 			/* Limit results to the number of rows per page (pagination) */
-			$this->db->limit($this->_table_pagination_listing_rpp, $page);
+			$this->db->limit($this->_table_pagination_rpp_list, $page);
 		}
 
 		/* Hook filter: Apply filters, if any */
@@ -4712,13 +4803,13 @@ class ND_Controller extends UW_Controller {
 
 		/* Pagination */
 		if ($page >= 0) {
-			$pagcfg['page'] = ($page / $this->_table_pagination_listing_rpp) + 1; // $page is actually the number of the first row of the page
+			$pagcfg['page'] = ($page / $this->_table_pagination_rpp_list) + 1; // $page is actually the number of the first row of the page
 			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->_name . '/list_default/' . $field . '/' . $order . '/@ROW_NR@';
 			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_list(event, \'' . $this->_name . '\', \'' . $field . '\', \'' . $order . '\', \'@ROW_NR@\');';
 			$this->db->from($this->_name);							/* FIXME:																*/
 			$this->_table_row_filter_apply();						/*   - A better approach to retrieve total rows should be implemented	*/
 			$pagcfg['total_rows'] = $this->db->count_all_results(); /*   - Consider SQL_CALC_FOUND_ROWS?									*/
-			$pagcfg['per_page'] = $this->_table_pagination_listing_rpp;
+			$pagcfg['per_page'] = $this->_table_pagination_rpp_list;
 			
 			$this->pagination->initialize($pagcfg);
 			$data['view']['links']['pagination'] = $this->pagination->create_links();
@@ -5047,7 +5138,7 @@ class ND_Controller extends UW_Controller {
 					$foreign_table = array_pop(array_diff($this->_get_multiple_rel_table_names($header[$i], $this->_name), array($this->_name)));
 
 					/* Get foreign table fields list */
-					$ftable_fields = $this->db->list_fields($foreign_table);
+					$ftable_fields = $this->_get_table_fields($foreign_table);
 
 					/* Initialize multiple relationship values array */
 					$rel[$header[$i]] = array();
@@ -5116,7 +5207,7 @@ class ND_Controller extends UW_Controller {
 					$foreign_table = substr($header[$i], 0, -3);
 
 					/* Get foreign table fields list */
-					$ftable_fields = $this->db->list_fields($foreign_table);
+					$ftable_fields = $this->_get_table_fields($foreign_table);
 					
 					/* If there is a separator set, we need to compare the CSV value with the resulting value of concatenated fields */
 					if (isset($this->_rel_table_fields_config[$foreign_table])) {
@@ -5364,13 +5455,13 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
 
 		if ($order_field == NULL)
-			$order_field = $this->_table_field_result_order;
+			$order_field = $this->_table_field_order_result;
 
 		if (!$this->security->safe_names($order_field, $this->_security_safe_chars))
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->_charset, !$this->request->is_ajax());
 
 		if ($order_type == NULL)
-			$order_type = $this->_table_field_result_order_modifier;
+			$order_type = $this->_table_field_order_result_modifier;
 
 		/* Initialize $data */
 		$data = array();
@@ -5390,7 +5481,7 @@ class ND_Controller extends UW_Controller {
 				'operation' => 'RESULT',
 				'_table' => $this->_name,
 				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->_table_pagination_result_rpp) + 1) . ' / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)) : ('0 / ' . ($order_field ? $order_field : $this->_table_field_result_order) . ' / ' . ($order_type ? $order_type : $this->_table_field_result_order_modifier)),
+				'entryid' => ($page >= 0) ? ((($page / $this->_table_pagination_rpp_result) + 1) . ' / ' . ($order_field ? $order_field : $this->_table_field_order_result) . ' / ' . ($order_type ? $order_type : $this->_table_field_order_result_modifier)) : ('0 / ' . ($order_field ? $order_field : $this->_table_field_order_result) . ' / ' . ($order_type ? $order_type : $this->_table_field_order_result_modifier)),
 				'value_new' => (($type == "basic") ? $_POST['search_value'] : (($type == "query") ? $result_query : json_encode($_POST, JSON_PRETTY_PRINT))),
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
@@ -5430,7 +5521,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_list;
 		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
-		$data['config']['choices_class'] = $this->_table_row_choice_class;
+		$data['config']['choices_class'] = $this->_rel_table_row_choice_class;
 
 		/* FIXME: Avoid using 2 calls to _get_fields() ... Use an unfiltered _get_fields() and generate two filtered lists from it */
 		$ftypes = $this->_get_fields(NULL, $this->_hide_fields_search); /* _get_fields() uses a perm_read filter by default */
@@ -5451,7 +5542,7 @@ class ND_Controller extends UW_Controller {
 				/* Search mixed relationships */
 				if ($ftypes[$field]['type'] == 'mixed') {
 					/* Fetch mixed table fields */
-					$mt_fields = $this->db->list_fields($field);
+					$mt_fields = $this->_get_table_fields($field);
 
 					/* Join the mixed table to the query */
 					$this->db->join($field, '`' . $this->_name . '`.`id` = `' . $field . '`.`' . $this->_name . '_id`', 'left');
@@ -5547,7 +5638,7 @@ class ND_Controller extends UW_Controller {
 					if (isset($this->_rel_table_fields_config[$ftype['table']]) && 
 							($this->_rel_table_fields_config[$ftype['table']][2] != NULL) &&
 							(count($this->_rel_table_fields_config[$ftype['table']][2]) > 1)) {
-						$table_fields = $this->db->list_fields($ftype['table']);
+						$table_fields = $this->_get_table_fields($ftype['table']);
 							
 						foreach ($this->_rel_table_fields_config[$ftype['table']][2] as $rel_field) {
 							$this->db->or_like($this->_field_unambig($table_fields[$rel_field], $ftype), '%' . $_POST['search_value'] . '%');
@@ -5650,7 +5741,7 @@ class ND_Controller extends UW_Controller {
 					/* Search all fields in mixed_* table for matching entries based on criteria */
 
 					/* Fetch mixed table fields */
-					$mt_fields = $this->db->list_fields($field);
+					$mt_fields = $this->_get_table_fields($field);
 
 					/* Join the mixed table to the query */
 					$this->db->join($field, '`' . $this->_name . '`.`id` = `' . $field . '`.`' . $this->_name . '_id`', 'left');
@@ -5936,7 +6027,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Pagination */
 			if ($page >= 0)
-				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->_table_pagination_result_rpp;
+				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->_table_pagination_rpp_result;
 			
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
 			$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
@@ -5982,7 +6073,7 @@ class ND_Controller extends UW_Controller {
 			/* If this is a REST call, do not limit the results (as in, display all) */
 			if ($this->_json_replies !== true && $page >= 0) {
 				/* Limit results to the number of rows per page (pagination) */
-				$this->db->limit($this->_table_pagination_result_rpp, $page);
+				$this->db->limit($this->_table_pagination_rpp_result, $page);
 			}
 			
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
@@ -6000,11 +6091,11 @@ class ND_Controller extends UW_Controller {
 
 		/* Pagination */
 		if ($page >= 0) {
-			$pagcfg['page'] = ($page / $this->_table_pagination_result_rpp) + 1;
+			$pagcfg['page'] = ($page / $this->_table_pagination_rpp_result) + 1;
 			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->_name . '/result/query/' . $data['view']['result_query'] . '/' . $order_field . '/' . $order_type . '/@ROW_NR@';
 			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_result(event, \'' . $this->_name . '\', \'' . $data['view']['result_query'] . '\', \'' . $order_field . '\', \'' . $order_type . '\', \'@ROW_NR@\');';
 			$pagcfg['total_rows'] = $total_rows; 
-			$pagcfg['per_page'] = $this->_table_pagination_result_rpp;
+			$pagcfg['per_page'] = $this->_table_pagination_rpp_result;
 			
 			$this->pagination->initialize($pagcfg);
 			$data['view']['links']['pagination'] = $this->pagination->create_links();
@@ -6248,7 +6339,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['hidden_fields'] = $this->_hide_fields_export;
 
 		/* Setup choices class */
-		$data['config']['choices_class'] = $this->_table_row_choice_class;
+		$data['config']['choices_class'] = $this->_rel_table_row_choice_class;
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/export_leave.php') as $plugin)
@@ -6361,7 +6452,7 @@ class ND_Controller extends UW_Controller {
 		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
-		$data['config']['choices'] = count($this->_table_create_rel_choice_hide_fields) ? $this->_table_create_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
+		$data['config']['choices'] = count($this->_rel_choice_hide_fields_create) ? $this->_rel_choice_hide_fields_create : $this->_rel_choice_hide_fields;
 		$data['config']['mixed'] = array();
 		$data['config']['mixed']['autocomplete'] = $this->_mixed_views_autocomplete;
 
@@ -6766,7 +6857,7 @@ class ND_Controller extends UW_Controller {
 		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
-		$data['config']['choices'] = count($this->_table_edit_rel_choice_hide_fields) ? $this->_table_edit_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
+		$data['config']['choices'] = count($this->_rel_choice_hide_fields_edit) ? $this->_rel_choice_hide_fields_edit : $this->_rel_choice_hide_fields;
 		$data['config']['render'] = array();
 		$data['config']['render']['images'] = $this->_view_image_file_rendering;
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_view;
@@ -6976,6 +7067,10 @@ class ND_Controller extends UW_Controller {
 	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
+		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
+		if ($id)
+			$_POST['id'] = $id;
+
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
@@ -6990,10 +7085,6 @@ class ND_Controller extends UW_Controller {
 
 		if (!$this->_table_row_filter_perm($_POST['id']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
-
-		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
-		if ($id)
-			$_POST['id'] = $id;
 
 		/* Set/Update the value of the specified field. (JSON REST API) */
 		if ($field !== NULL && $value !== NULL)
@@ -7271,7 +7362,7 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links'] = array();
 		$data['view']['links']['submenu'] = $this->_links_submenu_body_remove;
 
-		$data['config']['choices'] = count($this->_table_remove_rel_choice_hide_fields) ? $this->_table_remove_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
+		$data['config']['choices'] = count($this->_rel_choice_hide_fields_remove) ? $this->_rel_choice_hide_fields_remove : $this->_rel_choice_hide_fields;
 		$data['config']['render']['images'] = $this->_view_image_file_rendering;
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_view;
 		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
@@ -7569,7 +7660,7 @@ class ND_Controller extends UW_Controller {
 
 		$data['config']['charts'] = array();
 		$data['config']['charts']['total'] = count($this->_charts_foreign);
-		$data['config']['choices'] = count($this->_table_view_rel_choice_hide_fields) ? $this->_table_view_rel_choice_hide_fields : $this->_table_rel_choice_hide_fields;
+		$data['config']['choices'] = count($this->_rel_choice_hide_fields_view) ? $this->_rel_choice_hide_fields_view : $this->_rel_choice_hide_fields;
 		$data['config']['render']['images'] = $this->_view_image_file_rendering;
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_view;
 		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;

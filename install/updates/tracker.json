@@ -61,17 +61,19 @@
 			"application/views/themes/Blueish/home/home_header.php",
 			"application/views/themes/Blueish/logging/error_log.php",
 			"application/views/themes/Blueish/footer.php",
+			"documentation/NDCA.pdf",
 			"install/languages/en_US.php",
 			"install/perm_setup.sh.inc",
 			"install/updates/tracker.json",
 			"install/autoload.php",
 			"install/ndphp.sql",
 			"logs/.htaccess",
-			"logs/error.log",
 			"tmp/.htaccess",
 			"user/core/ND_Controller.php",
 			"user/utils/language.php",
 			"VERSION"
+		],
+		"touch": [
 		],
 		"post_update_redirect": "/update/post_update/any/master",
 		"data_model_queries": [

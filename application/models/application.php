@@ -1641,8 +1641,8 @@ class UW_Application extends UW_Model {
 		$controller_ide_region = '' . "\n" .
 			'	protected $_table_type_view = ' . ($menu['type'] == 'custom' ? 'true' : 'false') . ';' . "\n" .
 			'' . "\n" .
-			'	protected $_table_pagination_listing_rpp = ' . $menu['properties']['rpp'] . ';' . "\n" .
-			'	protected $_table_pagination_result_rpp = ' . $menu['properties']['rpp'] . ';' . "\n" .
+			'	protected $_table_pagination_rpp_list = ' . $menu['properties']['rpp'] . ';' . "\n" .
+			'	protected $_table_pagination_rpp_result = ' . $menu['properties']['rpp'] . ';' . "\n" .
 			'' . "\n" .
 			'	protected $_hide_fields_create = ' . $hide_create_str . ';' . "\n" .
 			'	protected $_hide_fields_edit = ' . $hide_edit_str . ';' . "\n" .
@@ -1681,16 +1681,16 @@ class UW_Application extends UW_Model {
 			'	);' . "\n" .
 			'' . "\n" .
 			'	/* Field by which the listing views shall be ordered by */' . "\n" .
-			'	protected $_table_field_listing_order = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
+			'	protected $_table_field_order_list = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
 			'' . "\n" .
 			'	/* Field by which the result views shall be ordered by */' . "\n" .
-			'	protected $_table_field_result_order = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
+			'	protected $_table_field_order_result = \'' . strtolower($menu['properties']['order_field']) . '\';' . "\n" .
 			'' . "\n" .
 			'	/* Direction by which the listing views shall be ordered by */' . "\n" .
-			'	protected $_table_field_listing_order_modifier = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
+			'	protected $_table_field_order_list_modifier = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
 			'' . "\n" .
 			'	/* Direction by which the result views shall be ordered by */' . "\n" .
-			'	protected $_table_field_result_order_modifier = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
+			'	protected $_table_field_order_result_modifier = \'' . strtolower($menu['properties']['order_direction']) . '\';' . "\n" .
 			'' . "\n" .
 			'	protected $_accounting = ' . ($menu['options']['accounting'] ? 'true' : 'false') . ';' . "\n" .
 			'	protected $_logging = ' . ($menu['options']['logging'] ? 'true' : 'false') . ';' . "\n" .

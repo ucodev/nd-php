@@ -91,7 +91,7 @@
 				<tr>
 					<td><strong>ALL VIEWS</strong></td>
 					<td>
-						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_table_rel_choice_hide_fields</span> = <span class="type">array</span>(<br />
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_hide_fields</span> = <span class="type">array</span>(<br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* 'field_id' => array(</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;1 => array('field_to_hide1', 'field_to_hide2'),</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;7 => array('field_to_hide3', 'field_to_hide8'),</span><br />
@@ -104,7 +104,7 @@
 				<tr>
 					<td><strong>CREATE VIEW</strong></td>
 					<td>
-						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_table_create_rel_choice_hide_fields</span> = <span class="type">array</span>(<br />
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_hide_fields_create</span> = <span class="type">array</span>(<br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* 'field_id' => array(</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;1 => array('field_to_hide1', 'field_to_hide2'),</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;7 => array('field_to_hide3', 'field_to_hide8'),</span><br />
@@ -117,7 +117,7 @@
 				<tr>
 					<td><strong>EDIT VIEW</strong></td>
 					<td>
-						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_table_edit_rel_choice_hide_fields</span> = <span class="type">array</span>(<br />
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_hide_fields_edit</span> = <span class="type">array</span>(<br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* 'field_id' => array(</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;1 => array('field_to_hide1', 'field_to_hide2'),</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;7 => array('field_to_hide3', 'field_to_hide8'),</span><br />
@@ -130,7 +130,7 @@
 				<tr>
 					<td><strong>VISUALIZATION VIEW</strong></td>
 					<td>
-						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_table_view_rel_choice_hide_fields</span> = <span class="type">array</span>(<br />
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_hide_fields_view</span> = <span class="type">array</span>(<br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* 'field_id' => array(</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;1 => array('field_to_hide1', 'field_to_hide2'),</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;7 => array('field_to_hide3', 'field_to_hide8'),</span><br />
@@ -143,7 +143,7 @@
 				<tr>
 					<td><strong>REMOVE VIEW</strong></td>
 					<td>
-						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_table_remove_rel_choice_hide_fields</span> = <span class="type">array</span>(<br />
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_hide_fields_remove</span> = <span class="type">array</span>(<br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* 'field_id' => array(</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;1 => array('field_to_hide1', 'field_to_hide2'),</span><br />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;&nbsp;7 => array('field_to_hide3', 'field_to_hide8'),</span><br />
@@ -178,7 +178,7 @@
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black.</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> */</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_table_row_choice_class</span> = <span class="type">array</span>(<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_table_row_choice_class</span> = <span class="type">array</span>(<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/*</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'rel_field' =&gt; 'field_id',</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'class_even' =&gt; 'even',</span><br />
@@ -202,7 +202,7 @@
 		<a name="group_concatenation">
 		<fieldset>
 			<legend>GROUP CONCATENATION</legend>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_group_concat_sep</span> = <span class="literal">' | '</span>;<span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;/* The separator to be used when GROUP_CONCAT() is invoked */</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_group_concat_sep</span> = <span class="literal">' | '</span>;<span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;/* The separator to be used when GROUP_CONCAT() is invoked */</span><br />
 		</fieldset>
 		<a name="csv_export_settings">
 		<fieldset>

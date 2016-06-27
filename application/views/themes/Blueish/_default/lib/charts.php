@@ -54,6 +54,6 @@
 ?>
 <?php for ($i = 0; $i < $config['charts']['total']; $i ++): ?>
 	<div id="chart_<?=$i?>" class="chart">
-		<img class="chart" src="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/chart_publish/<?=$i?>/<?=rand(100000, 999999)?>" />
+		<img class="chart" src="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/chart_publish/<?=$i?>/<?=rand(100000, 999999)?><?=isset($view['result_query') ? ('/' . $view['result_query']) : ''?>" />
 	</div>
 <?php endfor; ?>
