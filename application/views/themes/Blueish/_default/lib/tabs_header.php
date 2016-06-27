@@ -135,6 +135,9 @@
 		jQuery('div[id^=entry_tabs]').tabs();
 		jQuery('div[id^=entry_tabs]').on('tabsactivate', function(event, ui) {
 			ndphp.current.tab_index = ui.newTab.index();
+			<?php if (isset($tabs_result) || isset($tabs_listing)): ?>
+				ndphp.current.tab_index_list_result = ndphp.current.tab_index;
+			<?php endif; ?>
 		});
 		jQuery('div[id^=entry_tabs]').removeClass("ui-widget");
 		jQuery('div[id^=entry_tabs]').css('border-radius', '0px');

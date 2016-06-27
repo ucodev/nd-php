@@ -320,6 +320,43 @@ class UW_Application extends UW_Model {
 	}
 
 
+	/*********************/
+	/*   VALIDATION API  */
+	/*********************/
+
+	private function _validate_field($menu, $field) {
+		/* Check if field contains a name */
+		if (!$field['name']) {
+			error_log('_validate_field(): Menu "' . $menu['type'] . '/' . $menu['name'] . '" contains a field of type "' . $field['type'] . '" with an empty name.');
+			return false;
+		}
+
+		/* Check if field name contains invalid characters */
+		if (!preg_match('/^[a-zA-Z0-9_\ ]+$/', $field['name'])) {
+			error_log('_validate_field(): Field "' . $field['type'] . '/' . $field['name'] . '" from Menu "' . $menu['type'] . '/' . $menu['name'] . '" contains invalid characters.');
+			return false;
+		}
+
+		/* TODO ... */
+	}
+
+	private function _validate_menu($menu) {
+		/* Check if menu contains a name */
+		if (!$menu['name']) {
+			error_log('_validate_field(): Menu "' . $menu['type'] . '" has no name defined.');
+			return false;
+		}
+
+		/* Check if menu name contains invalid characters */
+		if (!preg_match('/^[a-zA-Z0-9_\ ]+$/', $menu['name'])) {
+			error_log('_validate_field(): Menu "' . $menu['type'] . '/' . $menu['name'] . '" contains invalid characters in its name.');
+			return false;
+		}
+
+		/* TODO ... */
+	}
+
+
 	/********************/
 	/*    PARSING API   */
 	/********************/

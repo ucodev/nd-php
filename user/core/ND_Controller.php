@@ -42,13 +42,13 @@
  * TODO:
  *
  * + Add imagemap to charts (pChart imagemap).
- * + IDE application model should validate everything that was previously validated by ide.js.
+ * * IDE application model should validate everything that was previously validated by ide.js.
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
  * * Turn UI responsive.
  * * Add command line to IDE Builder.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
- * * timer fields shall still count time even if the interface is closed without hiting the stop button wasn't pressed.
+ * * timer fields shall still count time even if the interface is closed without hiting the stop button.
  * * Add special extra field/query pairs to _field_resolve() and _field_value_mangle()
  * * Add a rollback context menu button on Logging (on View and Quick View) [currently only a Quick Rollback button is present on Listing/Result].
  * * Export View should export mixed relationships.
@@ -81,6 +81,8 @@
  * FIXME:
  *
  * + Charts generators should attempt to trigger both list and result filter hook.
+ * * Framework core tables should be prefixed with nd_*
+ * * Grouping features (Group views) requires a huge refactoring (current performance is very poor).
  * * Mixed and multiple relationships must work properly when javascript is disabled.
  * * Advanced search must work properly when javascript is disabled.
  * * Saved searches results do not have full breadcrumb support.
@@ -107,7 +109,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02e';		// Framework version
+	protected $_ndphp_version = '0.02e1';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline

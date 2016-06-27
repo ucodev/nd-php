@@ -79,7 +79,11 @@
 		jQuery('a[title="<?=filter_js_str(NDPHP_LANG_MOD_OP_EXPORT_PDF, $config['charset'])?>"]').attr('href', '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/<?=filter_html_js_str($view['ctrl'], $config['charset'])?>/export/<?=filter_html_js_str($view['export_query'], $config['charset'])?>');
 		jQuery('a[title="<?=filter_js_str(NDPHP_LANG_MOD_OP_EXPORT_CSV, $config['charset'])?>"]').attr('href', '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/<?=filter_html_js_str($view['ctrl'], $config['charset'])?>/export/<?=filter_html_js_str($view['export_query'], $config['charset'])?>/csv');
 
-		/* Reset current tab index */
+		/* Switch to last seen tab (from listing / result), if any */
+		if (ndphp.current.tab_index_list_result != null)
+			jQuery('#entry_tabs').tabs('option', 'active', ndphp.current.tab_index_list_result);
+
+		/* Reset current CRUD tab index */
 		ndphp.current.tab_index = null;
 	});
 

@@ -75,7 +75,7 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
     var pat = /^[a-zA-Z0-9_\ ]+$/;
 
     if (!pat.test(menu['name'])) {
-        alert('Menu "' + menu['title'] + '/' + menu['name'] + '" contains invalid characters on its name.');
+        alert('Menu "' + menu['title'] + '/' + menu['name'] + '" contains invalid characters in its name.');
         return false;
     }
 
@@ -211,7 +211,7 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
     var pat = /^[a-zA-Z0-9_\ ]+$/;
 
     if (!pat.test(field['name'])) {
-        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains invalid characters on its name.');
+        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains invalid characters in its name.');
         return false;
     }
 
