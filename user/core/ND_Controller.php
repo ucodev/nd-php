@@ -45,6 +45,8 @@
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
  * * Turn UI responsive.
+ * * Forward/Back button should work with partial page updates (when performed via ajax).
+ * * Refresh button should refresh the the last updated contents (even if performed via ajax).
  * * Add command line to IDE Builder.
  * * Controller methods such as insert() and update() when detect invalid data should return the offending fields back to the view ajax error handler.
  * * timer fields shall still count time even if the interface is closed without hiting the stop button.
@@ -80,6 +82,9 @@
  * FIXME:
  *
  * + Charts generators should attempt to trigger both list and result filter hook.
+ * + Missing multiple and mixed relationship logging support (only basic fields are supported).
+ * + On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
+ * + Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries)
  * * Framework core tables should be prefixed with nd_*
  * * Grouping features (Group views) requires a huge refactoring (current performance is very poor).
  * * Mixed and multiple relationships must work properly when javascript is disabled.
@@ -89,16 +94,12 @@
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
- * * Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries).
  * * When groups contain no data, a message "No entries found for this group" should be displayed in the group listing/results.
- * * On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * * Export to pdf (on listing/results) is not rendering images from _file_* fields.
  * * Advanced search: "Different than" option for mixed searches is currently bugged (due to the enclosure hack) and shall not be used as it'll return incorrect results
  * * Mixed relationship edits are retrieving the newer values of dropdowns (instead of reading the old static values)
- * * Missing multiple and mixed relationship logging support (only basic fields are supported).
  * * Mixed relationship _timer_ not fully supported (missing start and stop buttons).
  * * Paypal payments interface is outdated.
- * - [REQUIRED?] mixed relationships _tc_ fields are not being converted (if datetime) to/from user timezone.
  *
  *
  */
@@ -107,30 +108,41 @@ class ND_Controller extends UW_Controller {
 	/** Configuration **/
 	public $config = array(); /* Will be populated in constructor */
 
-	/** General settings **/
-	protected $_ndphp_version = '0.02f';		// Framework version
-	protected $_author = "ND PHP Framework";	// Project Author
-	protected $_project_name = "ND php";		// The project name
-	protected $_tagline = "Framework";			// The project tagline
-	protected $_description = "An handy PHP Framework"; // The project description
+	/* Framework version */
+	protected $_ndphp_version = '0.02g';
+
+	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
 	protected $_viewhname;			// The name used in the view headers
+
+	/* The default words (natural language) that will be used to indicate True and False values to the user */
 	protected $_word_true = NDPHP_LANG_MOD_WORD_TRUE;
 	protected $_word_false = NDPHP_LANG_MOD_WORD_FALSE;
+
+	/* Built-in features (not yet configurable through features configuration menu) */
+	protected $_logging = true;
+	protected $_accounting = true;
+
+	/* Default settings */
+	protected $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	protected $_default_timezone = NDPHP_LANG_MOD_DEFAULT_TIMEZONE;
 	protected $_default_locale = NDPHP_LANG_MOD_DEFAULT_LOCALE;
 	protected $_default_database = 'default';
-	protected $_theme = 'Blueish';
-	protected $_security_safe_chars = "a-zA-Z0-9_"; /* Mainly used to validate table names */
-	protected $_base_url = 'http://localhost/ndphp/';
-	protected $_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
-	protected $_logging = true;
-	protected $_accounting = true;
+	protected $_default_theme = 'Blueish';
+
+	/* Project information */
+	protected $_project_author = "ND PHP Framework";			// Project Author
+	protected $_project_name = "ND php";						// The project name
+	protected $_project_tagline = "Framework";					// The project tagline
+	protected $_project_description = "An handy PHP Framework";	// The project description
 
 	/* Truncate strings settings */
 	protected $_string_truncate_len = 40;
 	protected $_string_truncate_trail = 5;
 	protected $_string_truncate_sep = '...';
+
+	/* Base URL for this application */
+	protected $_base_url = 'http://localhost/ndphp/';
 
 	/* Temporary directory */
 	protected $_temp_dir = SYSTEM_BASE_DIR . '/tmp/';
@@ -282,7 +294,7 @@ class ND_Controller extends UW_Controller {
 	 * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black
 	 *
 	 */
-	protected $_rel_table_row_choice_class = array(
+	protected $_rel_choice_table_row_class = array(
 		/*
 		'rel_field' => 'field_id',
 		'class_even' => 'even',
@@ -483,10 +495,10 @@ class ND_Controller extends UW_Controller {
 	protected $_upload_file_encryption = true;
 
 	/* Upload max file size */
-	protected $_upload_max_file_size = 10485760; /* 10MiB by default */
+	protected $_upload_file_max_size = 10485760; /* 10MiB by default */
 
 	/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */
-	protected $_upload_filter_file_name = 'a-zA-Z0-9_\.';
+	protected $_upload_file_name_filter = 'a-zA-Z0-9_\.';
 
 	/* Session data buffer (will be populated with construct) */
 	protected $_session_data = array();
@@ -507,6 +519,11 @@ class ND_Controller extends UW_Controller {
 	protected $_cache_table_desc = array(); /* This array will be populated by _get_table_desc() method. */
 	protected $_cache_table_fields = array(); /* This array will be populated by _get_table_fields() method. */
 	protected $_cache_help = array(); /* This array will be populated by _get_help() method */
+
+
+	/* Security */
+	protected $_security_safe_chars = "a-zA-Z0-9_"; /* Mainly used to validate table names */
+	protected $_security_perms = array();			/* Will be populated by $this->security->perm_get() */
 
 
 	/** Hooks - Construct **/
@@ -659,10 +676,6 @@ class ND_Controller extends UW_Controller {
 
 	/** Custom functions **/
 
-
-	/** Security **/
-
-	protected $_security_perms = array();
 
 
 	/** Charts **/
@@ -869,7 +882,7 @@ class ND_Controller extends UW_Controller {
 		$dataset = array();
 
 		/* Fetch the foreign controller object */
-		$fctrl = $this->configuration->controller($chart['ftable']);
+		$fctrl = $this->access->controller($chart['ftable']);
 
 		/* Prepare dataset */
 		$i = 0;
@@ -1427,7 +1440,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1443,7 +1456,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1498,7 +1511,7 @@ class ND_Controller extends UW_Controller {
 			case 'area'    : $pimage->drawAreaChart(array('RecordImageMap' => true));        break;
 			case 'stacked' : $pimage->drawStackedAreaChart(array('RecordImageMap' => true)); break;
 			default: {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -1577,7 +1590,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1593,7 +1606,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1604,7 +1617,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Also filter rows based on foreign controller $_table_row_filtering_config if this isn't a mixed table */
 		if (substr($chart['ftable'], 0, 6) != 'mixed_') {
-			$fctrl = $this->configuration->controller($chart['ftable']);
+			$fctrl = $this->access->controller($chart['ftable']);
 
 			if ($fctrl->config['table_row_filtering']) {
 				$table_fields = $this->_get_table_fields($chart['ftable']);
@@ -1637,7 +1650,7 @@ class ND_Controller extends UW_Controller {
 			case 'area'    : $pimage->drawAreaChart(array('RecordImageMap' => true));        break;
 			case 'stacked' : $pimage->drawStackedAreaChart(array('RecordImageMap' => true)); break;
 			default: {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -1691,7 +1704,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1707,7 +1720,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1789,7 +1802,7 @@ class ND_Controller extends UW_Controller {
 			} break;
 
 			default: {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -1857,7 +1870,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1873,7 +1886,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -1884,7 +1897,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Also filter rows based on foreign controller $_table_row_filtering_config if ftable isn't mixed */
 		if (substr($chart['ftable'], 0, 6) != 'mixed_') {
-			$fctrl = $this->configuration->controller($chart['ftable']);
+			$fctrl = $this->access->controller($chart['ftable']);
 
 			if ($fctrl->config['table_row_filtering']) {
 				$table_fields = $this->_get_table_fields($chart['ftable']);
@@ -1944,7 +1957,7 @@ class ND_Controller extends UW_Controller {
 			} break;
 
 			default: {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -1996,7 +2009,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -2012,7 +2025,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -2102,7 +2115,7 @@ class ND_Controller extends UW_Controller {
 			} break;
 
 			default: {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -2186,7 +2199,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['start_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' >=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -2202,7 +2215,7 @@ class ND_Controller extends UW_Controller {
 				$interval_fields = $this->_get_interval_fields($chart['end_ts']);
 
 				if (!$interval_fields)
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT, $this->_default_charset, !$this->request->is_ajax());
 
 				$this->db->where($chart['field_ts'] . ' <=', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 			} else {
@@ -2213,7 +2226,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Also filter rows based on foreign controller $_table_row_filtering_config if table isn't mixed */
 		if (substr($chart['ftable'], 0, 6) != 'mixed_') {
-			$fctrl = $this->configuration->controller($chart['ftable']);
+			$fctrl = $this->access->controller($chart['ftable']);
 
 			if ($fctrl->config['table_row_filtering']) {
 				$table_fields = $this->_get_table_fields($chart['ftable']);
@@ -2281,7 +2294,7 @@ class ND_Controller extends UW_Controller {
 			} break;
 
 			default: {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -2300,11 +2313,11 @@ class ND_Controller extends UW_Controller {
 		if (in_array($chart['type'], $this->_charts_types)) {
 			/* Grant that the required handlers to generate the chart exist */
 			if (!method_exists($this, '_chart_generate_' . $chart['type']))
-				$this->response->code('500', NDPHP_LANG_MOD_UNDEFINED_METHOD . ': _chart_generate_' . $chart['type'] . '().', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNDEFINED_METHOD . ': _chart_generate_' . $chart['type'] . '().', $this->_default_charset, !$this->request->is_ajax());
 
 			/* Grant that the chart type only contains alphanumeric and underscore characters */
 			if (!preg_match('/^[A-Za-z0-9\_]+$/', $chart['type']))
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_TYPE_NAME, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_TYPE_NAME, $this->_default_charset, !$this->request->is_ajax());
 
 			/* Generate the chart based on the custom handlers */
 			eval('$chart_array[$chart_id][\'pimage\'] = $this->_chart_generate_' . $chart['type'] . '($chart);');
@@ -2314,7 +2327,7 @@ class ND_Controller extends UW_Controller {
 				return false;
 		} else {
 			/* The requested chart type is undefined or invalid */
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_TYPE . ': ' . $chart['type'], $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_TYPE . ': ' . $chart['type'], $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* All good */
@@ -2329,7 +2342,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Check if the requested chart id is defined */
 		if ($chart_id >= count($chart_array))
-			$this->response->code('404', NDPHP_LANG_MOD_UNDEFINED_CHART_ID, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('404', NDPHP_LANG_MOD_UNDEFINED_CHART_ID, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Set chart id to chart object */
 		$chart_array[$chart_id]['id'] = $chart_id;
@@ -2440,7 +2453,7 @@ class ND_Controller extends UW_Controller {
 
 	public function json_doc() {
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_FORBIDDEN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_FORBIDDEN, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Setup basic view data */
 		$data = $this->_get_view_data_generic('JSON REST API', 'JSON REST API');
@@ -2556,7 +2569,7 @@ class ND_Controller extends UW_Controller {
 		/* Any attempt to manipulate the views path to access parent directories should be blocked */
 		if (strpos($theme, '..')) {
 			/* We need to fail hard here... */
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Craft the views base directory path */
@@ -2567,7 +2580,7 @@ class ND_Controller extends UW_Controller {
 			return $views_base_dir;
 
 		/* We need to fail hard here... */
-		$this->response->code('500', NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR, $this->_charset, !$this->request->is_ajax());
+		$this->response->code('500', NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR, $this->_default_charset, !$this->request->is_ajax());
 	}
 
 	protected function _get_view_data_generic($title = 'NO_TITLE', $description = "NO_DESCRIPTION") {
@@ -2576,7 +2589,7 @@ class ND_Controller extends UW_Controller {
 		/* Configuration data - Used for configuration and control. It should not be used as 'printable' data */
 		$data['config'] = array();
 		$data['config']['theme'] = $this->_get_theme();
-		$data['config']['charset'] = $this->_charset;
+		$data['config']['charset'] = $this->_default_charset;
 		$data['config']['features'] = $this->_get_features();
 		$data['config']['fk_linking'] = $this->_table_fk_linking;
 		$data['config']['truncate'] = array();
@@ -2602,10 +2615,10 @@ class ND_Controller extends UW_Controller {
 
 		/* Project data - Aditional project information. May be used as 'printable' data */
 		$data['project'] = array();
-		$data['project']['author'] = $this->_author;
+		$data['project']['author'] = $this->_project_author;
 		$data['project']['name'] = $this->_project_name;
-		$data['project']['tagline'] = $this->_tagline;
-		$data['project']['description'] = $this->_description;
+		$data['project']['tagline'] = $this->_project_tagline;
+		$data['project']['description'] = $this->_project_description;
 		$data['project']['build'] = $this->_get_build();
 		$data['project']['ndphp_version'] = $this->_ndphp_version;
 
@@ -2715,7 +2728,7 @@ class ND_Controller extends UW_Controller {
 			return false;
 
 		/* Grant that we've an acceptable sign (or equivalent word which requires translation) */
-		switch (iconv($this->_charset, 'ASCII//TRANSLIT', $interval_fields[0])) { /* iconv() is used to get rid of accents */
+		switch (iconv($this->_default_charset, 'ASCII//TRANSLIT', $interval_fields[0])) { /* iconv() is used to get rid of accents */
 			case NDPHP_LANG_MOD_SEARCH_INTERVAL_PREVIOUS:
 			case NDPHP_LANG_MOD_SEARCH_INTERVAL_LAST:
 			case '-': $interval_fields[0] = '-'; break;
@@ -2919,7 +2932,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If the table cannot be found, we cannot proceed */
 		if ($mixed_foreign_table === NULL)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Retrieve table, field and mixed id */
 		$mixed_field[0] = $mixed_foreign_table;
@@ -2952,7 +2965,7 @@ class ND_Controller extends UW_Controller {
 						/* Security Permissions Check */
 						if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $fmeta['rel_table'])) {
 							$this->db->trans_rollback();
-							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 						}
 	        	
 						$this->db->where($this->_name . '_id', $last_id);
@@ -2985,7 +2998,7 @@ class ND_Controller extends UW_Controller {
 							/* Grant that the user has privileges to access the foreign table item */
 							if (!$this->_table_row_filter_perm($mixed_field_val_id, $mixed_field_table_name)) {
 								$this->db->trans_rollback();
-								$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+								$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 							}
         	
 							/* Exclude the ID portion of the mixed_field_value and get only corresponding value */
@@ -3022,7 +3035,7 @@ class ND_Controller extends UW_Controller {
 						/* If empty, there's no permissions */
 						if (!$query_mixed->num_rows()) {
 							$this->db->trans_rollback();
-							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 						}
         	
 						$row_mixed = $query_mixed->row_array();
@@ -3090,7 +3103,7 @@ class ND_Controller extends UW_Controller {
 								$mixed_insert_values[$mixed_table_fields[3]] = $this->_mixed_table_set_missing[$mixed_table];
 							} else {
 								$this->db->trans_rollback();
-								$this->response->code('403', NDPHP_LANG_MOD_INVALID_MIXED_VALUE, $this->_charset, !$this->request->is_ajax());
+								$this->response->code('403', NDPHP_LANG_MOD_INVALID_MIXED_VALUE, $this->_default_charset, !$this->request->is_ajax());
 							}
 						} else {
 							$row = $srtf_query->row_array();
@@ -3104,7 +3117,7 @@ class ND_Controller extends UW_Controller {
 						/* Security Permissions Check */
 						if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $mixed_table)) {
 							$this->db->trans_rollback();
-							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 						}
 
 						$mixed_insert_values[$this->_name . '_id'] = $last_id;
@@ -3213,11 +3226,11 @@ class ND_Controller extends UW_Controller {
 	public function scheduler_external() {
 		/* Grant that only ROLE_ADMIN is able to execute this method */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If the scheduler configuration type isn't set as 'external', deny this request */
 		if ($this->_scheduler['type'] != 'external')
-			$this->response->code('403', NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Process and execute scheduled entries */
 		$this->_scheduler_process();
@@ -3228,38 +3241,38 @@ class ND_Controller extends UW_Controller {
 
 	private function _process_file_upload($table, $id, $field) {
 		if (!isset($_FILES[$field]['error']) || is_array($_FILES[$field]['error']))
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Grant that there are no errors */
 		if ($_FILES[$field]['error'] > 0)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']), $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']), $this->_default_charset, !$this->request->is_ajax());
 
 		/* Validate file size (This is a fallback for php settings) */
-		if ($_FILES[$field]['size'] > $this->_upload_max_file_size)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->_charset, !$this->request->is_ajax());
+		if ($_FILES[$field]['size'] > $this->_upload_file_max_size)
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Craft destination path */
 		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->_session_data['user_id'] . '/' . $table . '/' . $id . '/' . $field;
 
 		/* Create directory if it doesn't exist */
 		if (mkdir($dest_path, 0750, true) === false)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Compute file hash */
 		$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
 
 		if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Encrypt file, if required */
 		if ($this->_upload_file_encryption === true) {
 			/* FIXME: TODO: For limited type tables, we should use the user's private encryption key here */
 			$content_ciphered = $this->encrypt->encode(file_get_contents($dest_path . '/' . $file_hash));
 			if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false)
-				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_default_charset, !$this->request->is_ajax());
 
 			if (fwrite($fp, $content_ciphered) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_default_charset, !$this->request->is_ajax());
 
 			fclose($fp);
 		}
@@ -3314,16 +3327,18 @@ class ND_Controller extends UW_Controller {
 		$this->config['accounting']								= $this->_accounting;
 
 		$this->config['base_url']								= $this->_base_url;
-		$this->config['author']									= $this->_author;
-		$this->config['project_name']							= $this->_project_name;
-		$this->config['tagline']								= $this->_tagline;
-		$this->config['description']							= $this->_description;
+		$this->config['temp_dir']								= $this->_temp_dir;
+
+		$this->config['default_charset']						= $this->_default_charset;
 		$this->config['default_timezone']						= $this->_default_timezone;
 		$this->config['default_locale']							= $this->_default_locale;
 		$this->config['default_database']						= $this->_default_database;
-		$this->config['charset']								= $this->_charset;
-		$this->config['theme']									= $this->_theme;
-		$this->config['temp_dir']								= $this->_temp_dir;
+		$this->config['default_theme']							= $this->_default_theme;
+
+		$this->config['project_author']							= $this->_project_author;
+		$this->config['project_name']							= $this->_project_name;
+		$this->config['project_tagline']						= $this->_project_tagline;
+		$this->config['project_description']					= $this->_project_description;
 
 		$this->config['string_truncate_len']					= $this->_string_truncate_len;
 		$this->config['string_truncate_trail']					= $this->_string_truncate_trail;
@@ -3359,14 +3374,14 @@ class ND_Controller extends UW_Controller {
 		$this->config['table_type_view']						= $this->_table_type_view;
 		$this->config['table_type_view_query']					= $this->_table_type_view_query;
 
-		$this->config['rel_table_fields_config']				= $this->_rel_table_fields_config;
-		$this->config['rel_group_concat_sep']					= $this->_rel_group_concat_sep;
 		$this->config['rel_choice_hide_fields']					= $this->_rel_choice_hide_fields;
 		$this->config['rel_choice_hide_fields_create']			= $this->_rel_choice_hide_fields_create;
 		$this->config['rel_choice_hide_fields_edit']			= $this->_rel_choice_hide_fields_edit;
 		$this->config['rel_choice_hide_fields_view']			= $this->_rel_choice_hide_fields_view;
 		$this->config['rel_choice_hide_fields_remove']			= $this->_rel_choice_hide_fields_remove;
-		$this->config['rel_table_row_choice_class']				= $this->_rel_table_row_choice_class;
+		$this->config['rel_choice_table_row_class']				= $this->_rel_choice_table_row_class;
+		$this->config['rel_group_concat_sep']					= $this->_rel_group_concat_sep;
+		$this->config['rel_table_fields_config']				= $this->_rel_table_fields_config;
 
 		$this->config['mixed_fieldset_legend_config']			= $this->_mixed_fieldset_legend_config;
 		$this->config['mixed_hide_fields_create']				= $this->_mixed_hide_fields_create;
@@ -3408,8 +3423,8 @@ class ND_Controller extends UW_Controller {
 		$this->config['links_submenu_body_groups']				= $this->_links_submenu_body_groups;
 
 		$this->config['upload_file_encryption']					= $this->_upload_file_encryption;
-		$this->config['upload_filter_file_name']				= $this->_upload_filter_file_name;
-		$this->config['upload_max_file_size']					= $this->_upload_max_file_size;
+		$this->config['upload_file_name_filter']				= $this->_upload_file_name_filter;
+		$this->config['upload_file_max_size']					= $this->_upload_file_max_size;
 
 		$this->config['charts_enable_list']						= $this->_charts_enable_list;
 		$this->config['charts_enable_result']					= $this->_charts_enable_result;
@@ -3490,7 +3505,7 @@ class ND_Controller extends UW_Controller {
 				$query = $this->db->get();
 
 				if (!$query->num_rows())
-					$this->response->code('403', '{"status":false,"reason":"' . NDPHP_LANG_MOD_INVALID_CREDENTIALS . '"}', $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', '{"status":false,"reason":"' . NDPHP_LANG_MOD_INVALID_CREDENTIALS . '"}', $this->_default_charset, !$this->request->is_ajax());
 
 				/* Setup user roles */
 				$user_roles = array();
@@ -3508,7 +3523,7 @@ class ND_Controller extends UW_Controller {
 					$privenckey = $this->encrypt->decrypt($row['privenckey'], $json_req['_password'], false);
 
 					if (strlen($privenckey) != 256)
-						$this->response->code('500', '{"status":false,"reason":"' . NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY . '"}', $this->_charset, !$this->request->is_ajax());
+						$this->response->code('500', '{"status":false,"reason":"' . NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY . '"}', $this->_default_charset, !$this->request->is_ajax());
 				}
 
 				/* Get user id */
@@ -3563,7 +3578,7 @@ class ND_Controller extends UW_Controller {
 					$sessions_id = $row['id'];
 				} else {
 					/* The session doesn't exist... Unauthorized */
-					$this->response->code('403', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_default_charset, !$this->request->is_ajax());
 				}
 
 				/* Commit transaction if everything is fine. */
@@ -3595,12 +3610,12 @@ class ND_Controller extends UW_Controller {
 		$config = $this->configuration->get();
 
 		$this->_base_url = $config['base_url'];
-		$this->_author = $config['author'];
+		$this->_project_author = $config['author'];
 		$this->_project_name = $config['project_name'];
-		$this->_tagline = $config['tagline'];
-		$this->_description = $config['description'];
+		$this->_project_tagline = $config['tagline'];
+		$this->_project_description = $config['description'];
 		$this->_default_timezone = $config['timezone'];
-		$this->_theme = $config['theme'];
+		$this->_default_theme = $config['theme'];
 		$this->_table_pagination_rpp_list = $config['page_rows'];
 		$this->_table_pagination_rpp_result = $config['page_rows'];
 		$this->_temp_dir = $config['temporary_directory'];
@@ -3610,14 +3625,14 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		/* Set default locale (in the format xx_XX.CHARSET (eg: en_US.UTF-8) */
-		setlocale(LC_ALL, $this->_default_locale . '.' . $this->_charset);
+		setlocale(LC_ALL, $this->_default_locale . '.' . $this->_default_charset);
 
 		/* Set the default timezone */
 		date_default_timezone_set($this->_default_timezone);
 
 		/* Check if we're under maintenance mode */
 		if ($config['maintenance'] && !$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Setup security settings for this user */
 		$this->_security_perms = $this->security->perm_get($this->_session_data['user_id']);
@@ -3625,7 +3640,7 @@ class ND_Controller extends UW_Controller {
 		/* Setup VIEW table type if required */
 		if ($this->_table_type_view === true) {
 			if (!$this->_table_type_view_query)
-				$this->response->code('500', NDPHP_LANG_MOD_UNDEFINED_CTRL_VIEW_QUERY, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNDEFINED_CTRL_VIEW_QUERY, $this->_default_charset, !$this->request->is_ajax());
 
 			$this->db->query('CREATE OR REPLACE VIEW ' . $GLOBALS['__controller'] . ' AS ' . $this->_table_type_view_query);
 		}
@@ -3654,7 +3669,7 @@ class ND_Controller extends UW_Controller {
 	public function worker($thread) {
 		/* Grant that the supplied parameter is an object. This will also filter remote calls to this method. */
 		if (!is_object($thread))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ, $this->_default_charset, !$this->request->is_ajax());
 
 		/** BEGIN OF WORKER MAIN **/
 
@@ -3674,7 +3689,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If we're unable to retrieve the database tables, we can't proceed */
 		if (!$query)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Populate the tables list */
 		foreach ($query->result_array() as $field => $value) {
@@ -3792,7 +3807,7 @@ class ND_Controller extends UW_Controller {
 		$this->db->from('themes');
 		$this->db->join('themes_animations_default', 'themes_animations_default.id = themes.themes_animations_default_id', 'left');
 		$this->db->join('themes_animations_ordering', 'themes_animations_ordering.id = themes.themes_animations_ordering_id', 'left');
-		$this->db->where('theme', $this->_theme);
+		$this->db->where('theme', $this->_default_theme);
 		$q = $this->db->get();
 
 		return $q->row_array();
@@ -3807,7 +3822,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Re-initialize breadcrumb */
 		$this->breadcrumb->set('levels', array());
-		$this->breadcrumb->set('charset', $this->_charset);
+		$this->breadcrumb->set('charset', $this->_default_charset);
 		$this->breadcrumb->set('separator', $this->_view_breadcrumb_sep);
 
 		/* Add first level */
@@ -3824,7 +3839,7 @@ class ND_Controller extends UW_Controller {
 				$second_level,
 				$second_level,
 				base_url() . 'index.php/' . $this->_name . '/' . $method,
-				'ndphp.ajax.load_body_op(event, \'' . filter_html_js_str($this->_name, $this->_charset) . '\', \'' . filter_html_js_str($method, $this->_charset) . '\');'
+				'ndphp.ajax.load_body_op(event, \'' . filter_html_js_str($this->_name, $this->_default_charset) . '\', \'' . filter_html_js_str($method, $this->_default_charset) . '\');'
 			);
 		}
 
@@ -3849,7 +3864,7 @@ class ND_Controller extends UW_Controller {
 				/* $id is a single identifier for the second level method */
 				$params = $id;
 				$url = base_url() . 'index.php/' . $this->_name . '/' . $method . '/' . $params;
-				$onclick = 'ndphp.ajax.load_body_op_id(event, \'' . filter_html_js_str($this->_name, $this->_charset) . '\', \'' . filter_html_js_str($method, $this->_charset) . '\', \'' . filter_html_js_str($id, $this->_charset) . '\');';
+				$onclick = 'ndphp.ajax.load_body_op_id(event, \'' . filter_html_js_str($this->_name, $this->_default_charset) . '\', \'' . filter_html_js_str($method, $this->_default_charset) . '\', \'' . filter_html_js_str($id, $this->_default_charset) . '\');';
 			}
 
 			$this->breadcrumb->add(
@@ -4413,7 +4428,7 @@ class ND_Controller extends UW_Controller {
 			/* Get hidden mixed fields. FIXME: TODO: This will filter fields for all views, so currently we don't support
 			 * customized hidden fields per view (create/edit/view/remove)
 			 */
-			$mixed_hide_fields = $this->configuration->table_hidden_fields_mixed($rel);
+			$mixed_hide_fields = $this->access->controller($rel)['mixed_hide_fields_view'];
 
 			/* Resolve foreign table field names aliases */
 			$table_fields_aliases = array();
@@ -4548,13 +4563,13 @@ class ND_Controller extends UW_Controller {
 	/** Custom loaders **/
 	protected function _load_view($view_name, $data = NULL, $customizable = false, $return_data = false, $ctrl_override = NULL) {
 		if ($customizable) {
-			if (file_exists('application/views/themes/' . $this->_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name . '.php')) {
-				return $this->load->view('themes/' . $this->_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name, $data, $return_data);
+			if (file_exists('application/views/themes/' . $this->_default_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name . '.php')) {
+				return $this->load->view('themes/' . $this->_default_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name, $data, $return_data);
 			} else {
-				return $this->load->view('themes/' . $this->_theme . '/' . '_default/' . $view_name, $data, $return_data);
+				return $this->load->view('themes/' . $this->_default_theme . '/' . '_default/' . $view_name, $data, $return_data);
 			}
 		} else {
-			return $this->load->view('themes/' . $this->_theme . '/' . $view_name, $data, $return_data);
+			return $this->load->view('themes/' . $this->_default_theme . '/' . $view_name, $data, $return_data);
 		}
 	}
 
@@ -4733,7 +4748,7 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		$data['config'] = array();
-		$data['config']['charset'] = $this->_charset;
+		$data['config']['charset'] = $this->_default_charset;
 
 		$data['view'] = array();
 		$data['view']['field'] = $fields[$field];
@@ -4746,7 +4761,7 @@ class ND_Controller extends UW_Controller {
 	protected function groups_generic() {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Initialize $data variable */
 		$data = array();
@@ -4922,7 +4937,7 @@ class ND_Controller extends UW_Controller {
 	protected function list_generic($field = NULL, $order = NULL, $page = 0) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Setup ordering field if none was specified */
 		if ($field == NULL)
@@ -4930,7 +4945,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that field contains only safe characters */
 		if (!$this->security->safe_names($field, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Setup ordering */
 		if ($order == NULL)
@@ -4991,7 +5006,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_list;
 		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
-		$data['config']['choices_class'] = $this->_rel_table_row_choice_class;
+		$data['config']['choices_class'] = $this->_rel_choice_table_row_class;
 
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_list); /* _get_fields() uses a perm_read filter by default */
 
@@ -5233,76 +5248,76 @@ class ND_Controller extends UW_Controller {
 	public function import($type = 'csv') {
 		/* Currently, only csv imports are supported */
 		if ($type != 'csv')
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_REQUEST, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_REQUEST, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Some sanity checks first */
 		if (!in_array($_POST['import_csv_sep'], array(',', ';')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!in_array($_POST['import_csv_delim'], array('"', '\'')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!in_array($_POST['import_csv_esc'], array('\\')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!in_array($_POST['import_csv_rel_type'], array('value', 'id')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Craft CSV file destination path */
 		$dest_path = SYSTEM_BASE_DIR . '/uploads/import/' . $this->_session_data['user_id'] . '/' . $this->_name;
 
 		/* Create directory if it doesn't exist */
 		if (!file_exists($dest_path) && mkdir($dest_path, 0750, true) === false)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Pre-process the CSV file (or direct input), creating a local CSV file */
 		if (isset($_FILES['import_csv_file'])) {
 			$field = 'import_csv_file';
 
 			if (!isset($_FILES[$field]['error']) || is_array($_FILES[$field]['error']))
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->_default_charset, !$this->request->is_ajax());
 
 			/* Grant that there are no errors */
 			if ($_FILES[$field]['error'] > 0)
-				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']), $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']), $this->_default_charset, !$this->request->is_ajax());
 
 			/* Validate file size (This is a fallback for php settings) */
-			if ($_FILES[$field]['size'] > $this->_upload_max_file_size)
-				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->_charset, !$this->request->is_ajax());
+			if ($_FILES[$field]['size'] > $this->_upload_file_max_size)
+				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->_default_charset, !$this->request->is_ajax());
 
 			/* Compute file hash */
 			$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
 
 			if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
-				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->_default_charset, !$this->request->is_ajax());
 
 			/* Open CSV file */
 			if (($fp_csv = fopen($dest_path . '/' . $file_hash, 'r')) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_READ . ' "' . $dest_path . '/' . $file_hash . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_READ . ' "' . $dest_path . '/' . $file_hash . '"', $this->_default_charset, !$this->request->is_ajax());
 		} else if ($_POST['import_csv_text']) {
 			/* Create a temporary file hash */
 			$file_hash = openssl_digest($dest_path . mt_rand(1000000, 9999999), 'sha256');
 
 			/* Create a temporary CSV file */
 			if (($fp_csv = fopen($dest_path . '/' . $file_hash, 'w')) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_default_charset, !$this->request->is_ajax());
 
 			/* Write CSV contents to file */
 			if (fwrite($fp_csv, $_POST['import_csv_text']) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->_default_charset, !$this->request->is_ajax());
 
 			/* Close the CSV file so we can re-open it as read-only */
 			fclose($fp_csv);
 
 			/* Re-open CSV file as read-only */
 			if (($fp_csv = fopen($dest_path . '/' . $file_hash, 'r')) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_READ . ' "' . $dest_path . '/' . $file_hash . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_READ . ' "' . $dest_path . '/' . $file_hash . '"', $this->_default_charset, !$this->request->is_ajax());
 		} else {
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		
@@ -5316,7 +5331,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that CSV entry is valid and EOF was not reached */
 		if ($header === false || $header === NULL)
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '. #2', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '. #2', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Convert CSV headers to controller field names */
 		$fields = $this->_get_fields();
@@ -5341,7 +5356,7 @@ class ND_Controller extends UW_Controller {
 			}
 
 			if (!$field_found)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_CSV_FIELD_CTRL, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_CSV_FIELD_CTRL, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Assign the resolved fields array to $header */
@@ -5433,7 +5448,7 @@ class ND_Controller extends UW_Controller {
 							/* The foreign key wasn't found */
 							$this->db->trans_rollback();
 
-							$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->_charset, !$this->request->is_ajax());
+							$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->_default_charset, !$this->request->is_ajax());
 						}
 
 						array_push($rel[$header[$i]], $rel_value_id);
@@ -5496,7 +5511,7 @@ class ND_Controller extends UW_Controller {
 						/* The foreign key wasn't found */
 						$this->db->trans_rollback();
 
-						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->_charset, !$this->request->is_ajax());
+						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->_default_charset, !$this->request->is_ajax());
 					}
 				}
 
@@ -5529,7 +5544,7 @@ class ND_Controller extends UW_Controller {
 		/* Check if transaction was successful */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Commit transaction */
@@ -5552,7 +5567,7 @@ class ND_Controller extends UW_Controller {
 	public function search_save_insert() {
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		$this->db->trans_begin();
 
@@ -5566,7 +5581,7 @@ class ND_Controller extends UW_Controller {
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_SAVED_SEARCH, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_SAVED_SEARCH, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -5583,13 +5598,13 @@ class ND_Controller extends UW_Controller {
 		$q = $this->db->get();
 
 		if (!$q->num_rows())
-			$this->response->code('500', NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE, $this->_charset, !$this->request->is_ajax()); /* Keep the reason ambiguous */
+			$this->response->code('500', NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE, $this->_default_charset, !$this->request->is_ajax()); /* Keep the reason ambiguous */
 
 		$this->db->delete('_saved_searches', array('id' => $search_saved_id));
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DELETE_SAVED_SEARCH, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DELETE_SAVED_SEARCH, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -5598,7 +5613,7 @@ class ND_Controller extends UW_Controller {
 	protected function search_generic($advanced = true) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If logging is enabled, log this search request */
 		if ($this->_logging === true) {
@@ -5689,17 +5704,17 @@ class ND_Controller extends UW_Controller {
 							$order_field = NULL, $order_type = NULL, $page = 0) {
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if ($order_field == NULL)
 			$order_field = $this->_table_field_order_result;
 
 		if (!$this->security->safe_names($order_field, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->_default_charset, !$this->request->is_ajax());
 
 		if ($order_type == NULL)
 			$order_type = $this->_table_field_order_result_modifier;
@@ -5761,7 +5776,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['render']['size'] = $this->_view_image_file_rendering_size_list;
 		$data['config']['render']['ext'] = $this->_view_image_file_rendering_ext;
 
-		$data['config']['choices_class'] = $this->_rel_table_row_choice_class;
+		$data['config']['choices_class'] = $this->_rel_choice_table_row_class;
 
 		/* FIXME: Avoid using 2 calls to _get_fields() ... Use an unfiltered _get_fields() and generate two filtered lists from it */
 		$ftypes = $this->_get_fields(NULL, $this->_hide_fields_search); /* _get_fields() uses a perm_read filter by default */
@@ -5921,11 +5936,11 @@ class ND_Controller extends UW_Controller {
 
 			/* Grant that Id field is selected on result fields */
 			if (!in_array('id', $_POST['fields_result']))
-				$this->response->code('403', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->_default_charset, !$this->request->is_ajax());
 
 			/* Grant that at least one search criteria field is selected */
 			if (!count($_POST['fields_criteria']))
-				$this->response->code('403', NDPHP_LANG_MOD_MISSING_SEARCH_CRITERIA, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_MISSING_SEARCH_CRITERIA, $this->_default_charset, !$this->request->is_ajax());
 
 			/* TODO:
 			 * 
@@ -6079,7 +6094,7 @@ class ND_Controller extends UW_Controller {
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
-								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_charset, !$this->request->is_ajax());
+								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_default_charset, !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
 							$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
@@ -6096,7 +6111,7 @@ class ND_Controller extends UW_Controller {
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
-								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_charset, !$this->request->is_ajax());
+								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_default_charset, !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
 							$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
@@ -6114,7 +6129,7 @@ class ND_Controller extends UW_Controller {
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
-								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_charset, !$this->request->is_ajax());
+								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_default_charset, !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
 							$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
@@ -6151,7 +6166,7 @@ class ND_Controller extends UW_Controller {
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
-									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_charset, !$this->request->is_ajax());
+									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_default_charset, !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
 								$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
@@ -6168,7 +6183,7 @@ class ND_Controller extends UW_Controller {
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
-									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_charset, !$this->request->is_ajax());
+									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_default_charset, !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
 								$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
@@ -6186,7 +6201,7 @@ class ND_Controller extends UW_Controller {
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
-									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_charset, !$this->request->is_ajax());
+									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->_default_charset, !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
 								$_POST[$field . '_to'] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
@@ -6514,7 +6529,7 @@ class ND_Controller extends UW_Controller {
 	public function export($export_query = NULL, $type = 'pdf') {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Initialize $data */
 		$data = array();
@@ -6579,7 +6594,7 @@ class ND_Controller extends UW_Controller {
 		$data['config']['hidden_fields'] = $this->_hide_fields_export;
 
 		/* Setup choices class */
-		$data['config']['choices_class'] = $this->_rel_table_row_choice_class;
+		$data['config']['choices_class'] = $this->_rel_choice_table_row_class;
 
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/export_leave.php') as $plugin)
@@ -6660,11 +6675,11 @@ class ND_Controller extends UW_Controller {
 	protected function create_generic() {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' CREATE.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' CREATE.', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_create, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Initialize $data */
 		$data = array();
@@ -6770,7 +6785,7 @@ class ND_Controller extends UW_Controller {
 			$this->db->where($field_name, $field_data);
 
 			if (!$this->_table_row_filter_perm($field_data, $this->_name, $field_name))
-				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 			$this->db->from($this->_name);
 
@@ -6824,15 +6839,15 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' INSERT.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' INSERT.', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_create, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #1', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #1', $this->_default_charset, !$this->request->is_ajax());
 
 		$ftypes = $this->_get_fields();
 
@@ -6855,7 +6870,7 @@ class ND_Controller extends UW_Controller {
 				continue;
 
 			/* Filter filename */
-			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_file_name_filter . ']+/', '_', $_FILES[$k]['name']);
 
 			switch ($_FILES[$k]['error']) {
 				case UPLOAD_ERR_NO_FILE:
@@ -6929,13 +6944,13 @@ class ND_Controller extends UW_Controller {
 			/* Grant that foreign table id is eligible to be inserted */
 			if (substr($field, -3) == '_id') {
 				if (!$this->_table_row_filter_perm($value, substr($field, 0, -3)))
-					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #2', $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #2', $this->_default_charset, !$this->request->is_ajax());
 			}
 
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field]))
-					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -6954,7 +6969,7 @@ class ND_Controller extends UW_Controller {
 		
 		if (!$last_id) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_INSERT_ENTRY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_INSERT_ENTRY, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* If logging is enabled, check for changed fields and log them */
@@ -7015,7 +7030,7 @@ class ND_Controller extends UW_Controller {
 
 					if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
 						$this->db->trans_rollback();
-						$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #3', $this->_charset, !$this->request->is_ajax());
+						$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #3', $this->_default_charset, !$this->request->is_ajax());
 					}
 
 					$this->db->insert($table, array($this->_name . '_id' => $last_id, $rel_table . '_id' => $rel_id));
@@ -7029,7 +7044,7 @@ class ND_Controller extends UW_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_INSERT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_INSERT, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -7062,14 +7077,14 @@ class ND_Controller extends UW_Controller {
 	protected function edit_generic($id = 0) {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' EDIT.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' EDIT.', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!$this->_table_row_filter_perm($id))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Initialize $data */
 		$data = array();
@@ -7224,7 +7239,7 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
 		$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
@@ -7252,7 +7267,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->_default_database);
 
 			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table))
-				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 			$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
 			$this->db->where($foreign_table . '_id', $foreign_id);
@@ -7313,18 +7328,18 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' UPDATE.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' UPDATE.', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!$this->_table_row_filter_perm($_POST['id']))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Set/Update the value of the specified field. (JSON REST API) */
 		if ($field !== NULL && $value !== NULL)
@@ -7353,7 +7368,7 @@ class ND_Controller extends UW_Controller {
 				continue;
 
 			/* Filter filename */
-			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_filter_file_name . ']+/', '_', $_FILES[$k]['name']);
+			$_FILES[$k]['name'] = preg_replace('/[^' . $this->_upload_file_name_filter . ']+/', '_', $_FILES[$k]['name']);
 
 			switch ($_FILES[$k]['error']) {
 				case UPLOAD_ERR_NO_FILE:
@@ -7432,7 +7447,7 @@ class ND_Controller extends UW_Controller {
 
 				if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
 					$this->db->trans_rollback();
-					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 				}
 
 				$this->db->insert($table, array($this->_name . '_id' => $_POST['id'], $rel_table . '_id' => $rel_id));
@@ -7473,7 +7488,7 @@ class ND_Controller extends UW_Controller {
 			if (substr($field, -3) == '_id') {
 				if (!$this->_table_row_filter_perm($value, substr($field, 0, -3))) {
 					$this->db->trans_rollback();
-					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 				}
 			}
 
@@ -7485,7 +7500,7 @@ class ND_Controller extends UW_Controller {
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field])) {
-					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->_default_charset, !$this->request->is_ajax());
 				}
 			}
 		}
@@ -7531,7 +7546,7 @@ class ND_Controller extends UW_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -7560,17 +7575,17 @@ class ND_Controller extends UW_Controller {
 	protected function remove_generic($id = 0) {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' REMOVE.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' REMOVE.', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_delete, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!$this->_table_row_filter_perm($id))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Initialize $data */
 		$data = array();
@@ -7686,7 +7701,7 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
 		$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
@@ -7714,7 +7729,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->_default_database);
 
 			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table))
-				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 			$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
 			$this->db->where($foreign_table . '_id', $foreign_id);
@@ -7771,18 +7786,18 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that $_POST keys are safe */
 		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' DELETE.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' DELETE.', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_delete, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!$this->_table_row_filter_perm($_POST['id']))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		$ftypes = $this->_get_fields();
 
@@ -7825,7 +7840,7 @@ class ND_Controller extends UW_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DELETE_ENTRY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DELETE_ENTRY, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -7861,10 +7876,10 @@ class ND_Controller extends UW_Controller {
 	protected function view_generic($id = 0, $export = NULL) {
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		if (!$this->_table_row_filter_perm($id))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Initialize $data */
 		$data = array();
@@ -7997,7 +8012,7 @@ class ND_Controller extends UW_Controller {
 		$this->load->database($this->_default_database);
 
 		if (!$this->_table_row_filter_perm($foreign_id, $foreign_table))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
 		$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
@@ -8026,7 +8041,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->_default_database);
 
 			if (!$this->_table_row_filter_perm($foreign_id, $foreign_table))
-				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 			$this->db->from('mixed_' . $foreign_table . '_' . $this->_name);
 			$this->db->where($foreign_table . '_id', $foreign_id);

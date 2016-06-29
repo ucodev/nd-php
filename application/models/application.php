@@ -34,8 +34,8 @@ class UW_Application extends UW_Model {
 	/***************************/
 	/*  Current Configuration  */
 	/***************************/
-	private $_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
-	private $_theme = 'Blueish';
+	private $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
+	private $_default_theme = 'Blueish';
 
 	public function __construct() {
 		parent::__construct();
@@ -54,7 +54,7 @@ class UW_Application extends UW_Model {
 
 		$row = $q->row_array();
 
-		$this->_theme = $row['name'];
+		$this->_default_theme = $row['name'];
 	}
 
 
@@ -1750,6 +1750,11 @@ class UW_Application extends UW_Model {
 				'		$this->_viewhname = get_class();' . "\n" .
 				'		$this->_name = strtolower($this->_viewhname);' . "\n" .
 				'		$this->_hide_global_search_controllers = $this->_hide_menu_entries;' . "\n" .
+				'' . "\n" .
+				'		/* Populate controller configuration */' . "\n" .
+				'		$this->config_populate();' . "\n" .
+				'' . "\n" .
+				'		/* Call construct hook */' . "\n" .
 				'		$this->_hook_construct();' . "\n" .
 				'	}' . "\n" .
 				'' . "\n" .
@@ -1824,18 +1829,18 @@ class UW_Application extends UW_Model {
 		/* Recreate the menu icon if required */
 		if (!isset($menu['properties']['icon'])) {
 			/* If it doesn't exist, create a blank icon. */
-			return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
+			return copy($images_path . '/themes/' . $this->_default_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
 		} else if ($menu['properties']['icon'] == "custom") {
 			/* If the icon is custom, do not replace it if already present. */
 			if (file_exists($images_path . '/menu/' . $menu['db']['name'] . '.png')) {
 				return true; /* Icon exists and it's customized... ignoring... */
 			} else {
 				/* If it doesn't exist, create a blank icon. */
-				return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
+				return copy($images_path . '/themes/' . $this->_default_theme . '/menu/iconset/png/96x96/Empty button.png', $images_path . '/menu/' . $menu['db']['name'] . '.png');
 			}
 		} else {
 			/* A specific icon was selected... replace the menu icon with it... */
-			return copy($images_path . '/themes/' . $this->_theme . '/menu/iconset/png/96x96/' . $menu['properties']['icon'], $images_path . '/menu/' . $menu['db']['name'] . '.png');
+			return copy($images_path . '/themes/' . $this->_default_theme . '/menu/iconset/png/96x96/' . $menu['properties']['icon'], $images_path . '/menu/' . $menu['db']['name'] . '.png');
 		}
 
 		return false;

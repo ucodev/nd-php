@@ -37,14 +37,19 @@ class Features extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 	
 	/** Hooks **/

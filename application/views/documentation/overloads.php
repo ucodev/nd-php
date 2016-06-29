@@ -274,12 +274,12 @@
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Upload max file size */</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_max_file_size</span> = <span class="literal">10485760</span>; <span class="comment">/* 10MiB by default */</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_file_max_size</span> = <span class="literal">10485760</span>; <span class="comment">/* 10MiB by default */</span><br />
 			<br />
 			<br />
 			<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_filter_file_name</span> = <span class="literal">'a-zA-Z0-9_\.'</span>;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_upload_file_name_filter</span> = <span class="literal">'a-zA-Z0-9_\.'</span>;<br />
 		</fieldset>
 		<a name="custom_controller_setup">
 		<fieldset>

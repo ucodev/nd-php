@@ -1,3 +1,11 @@
+v0.02g (2016-06-29):
+
+ - Updated documentation.
+ - Refactored some core controller variables and code.
+ - Added a new access model.
+ - Updated tracker.
+
+
 v0.02f (2016-06-29):
 
  - Added imagemap support for charts.

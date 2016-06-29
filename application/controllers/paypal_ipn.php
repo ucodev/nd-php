@@ -31,7 +31,8 @@
  */
 
 class Paypal_ipn extends UW_Controller {
-	private $_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
+	private $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
+	private $_default_theme = 'Blueish';
 
 	private $paypal_host = "www.paypal.com";
 	private $paypal_email = "paypal@your.domain";
@@ -61,7 +62,7 @@ class Paypal_ipn extends UW_Controller {
 		$this->db->from('themes');
 		$this->db->join('themes_animations_default', 'themes_animations_default.id = themes.themes_animations_default_id', 'left');
 		$this->db->join('themes_animations_ordering', 'themes_animations_ordering.id = themes.themes_animations_ordering_id', 'left');
-		$this->db->where('theme', $this->_theme);
+		$this->db->where('theme', $this->_default_theme);
 		$q = $this->db->get();
 
 		return $q->row_array();
@@ -85,7 +86,7 @@ class Paypal_ipn extends UW_Controller {
 		$query = $this->db->get();
 
 		if (!$query->num_rows())
-			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_UNABLE_ID_USER, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_UNABLE_ID_USER, $this->_default_charset, !$this->request->is_ajax());
 
 		$row_payment = $query->row_array();
 
@@ -101,7 +102,7 @@ class Paypal_ipn extends UW_Controller {
 
 		if (!$query->num_rows()) {
 			$this->db->trans_rollback();
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_USER_CREDIT_INFO, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_USER_CREDIT_INFO, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$row_user = $query->row_array();
@@ -123,7 +124,7 @@ class Paypal_ipn extends UW_Controller {
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal_ipn.php: users_credit_update_from_payment(): ' . NDPHP_LANG_MOD_FAILED_TRANSACTION);
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -166,7 +167,7 @@ class Paypal_ipn extends UW_Controller {
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal_ipn.php: payment_update(): Transaction failed.');
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_INFO_PAYMENT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INFO_PAYMENT_UPDATE . ': ' . NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -180,17 +181,17 @@ class Paypal_ipn extends UW_Controller {
 		$data = array();
 
 		$data['config'] = array();
-		$data['config']['charset'] = $this->_charset;
+		$data['config']['charset'] = $this->_default_charset;
 		$data['config']['theme'] = $this->_get_theme();
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'paypal/payment');
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment');
 	}
 
 	public function payment_successful() {
 		$data = array();
 
 		$data['config'] = array();
-		$data['config']['charset'] = $this->_charset;
+		$data['config']['charset'] = $this->_default_charset;
 		$data['config']['theme'] = $this->_get_theme();
 
 		$data['project'] = array();
@@ -206,14 +207,14 @@ class Paypal_ipn extends UW_Controller {
 		$data['view']['payment_currency'] = $_POST['mc_currency'];
 		$data['view']['payment_transaction_id'] = $_POST['txn_id'];
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'paypal/payment_successful', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment_successful', $data);
 	}
 
 	public function payment_cancelled() {
 		$data = array();
 
 		$data['config'] = array();
-		$data['config']['charset'] = $this->_charset;
+		$data['config']['charset'] = $this->_default_charset;
 		$data['config']['theme'] = $this->_get_theme();
 
 		$data['project'] = array();
@@ -226,7 +227,7 @@ class Paypal_ipn extends UW_Controller {
 		$data['view']['title'] = NDPHP_LANG_MOD_PAYMENT_PAYPAL_IPN_CANCEL;
 		$data['view']['description'] = NDPHP_LANG_MOD_PAYMENT_PAYPAL_IPN_CANCEL;
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'paypal/payment_cancelled');
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment_cancelled');
 	}
 
 	public function payment_response() {
@@ -283,7 +284,7 @@ class Paypal_ipn extends UW_Controller {
 
 		if (!curl_exec($ch)) {
 			error_log('paypal_ipn.php: cURL error: ' . curl_error($ch));
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_VERIFY_TRANSACTION, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_VERIFY_TRANSACTION, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$res = curl_multi_getcontent($ch);

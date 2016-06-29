@@ -55,28 +55,4 @@ class UW_Configuration extends UW_Model {
 		/* All good */
 		return $query->row_array();
 	}
-
-	public function controller($name, $session_enable = false, $json_replies = false) {
-		/* Load the controller file */
-		require_once(SYSTEM_BASE_DIR . '/application/controllers/' . $name . '.php');
-
-		if (!preg_match('/^[a-zA-Z0-9\_]+$/i', $name)) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_INVALID_CTRL_NAME . ': ' . $name);
-		}
-
-		/* Create the controller object. (TODO: FIXME: Store the object (to reduce overhead on further calls)) */
-		eval('$ctrl = new ' . ucfirst($name) . '(' . ($session_enable ? 'true' : 'false') . ', ' . ($json_replies ? 'true' : 'false') . ');');
-
-		/* Populate public configuration */
-		$ctrl->config_populate();
-
-		/* NOTE: We can only access $ctrl protected properties/methods if this function is called from ND_Controller */
-		return $ctrl;
-	}
-
-	public function table_hidden_fields_mixed($table) {
-		/* NOTE: We can only access $table controller protected properties/methods if this function is called from ND_Controller */
-		return $this->controller($table)->config['mixed_hide_fields_view'];
-	}
 }

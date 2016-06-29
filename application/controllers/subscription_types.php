@@ -37,10 +37,15 @@ class Subscription_types extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 	
 	/** Hooks **/
@@ -82,7 +87,7 @@ class Subscription_types extends ND_Controller {
 	public function subscriptions_form_upgrade_ajax() {
 		$data = $this->subscriptions_form_upgrade_generic();
 
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/upgrade', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/upgrade', $data);
 	}
 
 	public function subscription_upgrade() {
@@ -113,10 +118,10 @@ class Subscription_types extends ND_Controller {
 		}
 
 		if ($plan_id_exists === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SUBSCRIPTION_TYPE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SUBSCRIPTION_TYPE, $this->_default_charset, !$this->request->is_ajax());
 
 		if ($user_current_plan_id >= $_POST['subscription_types_id'])
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DOWNGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DOWNGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		$this->db->trans_begin();
 
@@ -131,7 +136,7 @@ class Subscription_types extends ND_Controller {
 
 		if (($user_credit < $plan_price) && ($allow_negative != '1')) {
 			$this->db->trans_rollback();
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCR_CREDIT . ' ' . NDPHP_LANG_MOD_ATTN_ADD_FUNDS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCR_CREDIT . ' ' . NDPHP_LANG_MOD_ATTN_ADD_FUNDS, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$user_credit -= $plan_price;
@@ -154,7 +159,7 @@ class Subscription_types extends ND_Controller {
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCRIPTION . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -164,7 +169,7 @@ class Subscription_types extends ND_Controller {
 		$data['view']['plan_name'] = $plan_name;
 		$data['view']['plan_price'] = $plan_price;
 
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/upgrade_successful.php', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/upgrade_successful.php', $data);
 	}
 }
 

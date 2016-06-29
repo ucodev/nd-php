@@ -37,10 +37,15 @@ class Home extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 
 	/* Custom functions */
@@ -66,19 +71,19 @@ class Home extends ND_Controller {
 	public function home() {
 		$data = $this->home_generic();
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_data', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_footer', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_data', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
 	}
 
 	public function home_body_ajax() {
 		$data = $this->home_generic();
 
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_data', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_data', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
 	}
 
 	public function index() {
@@ -129,7 +134,7 @@ class Home extends ND_Controller {
 				continue;
 
 			/* Instantiate foreign object */
-			$cobj = $this->configuration->controller($ctrl, true, true); /* JSON replies is enabled in order to disable pagination */
+			$cobj = $this->access->controller($ctrl, true, true); /* JSON replies is enabled in order to disable pagination */
 
 			/* Search the controller for the search_value key value (in the $_POST) */
 			$cobj_data = $cobj->result_generic('basic');
@@ -176,18 +181,18 @@ class Home extends ND_Controller {
 	public function result_global() {
 		$data = $this->result_global_generic();
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_result_global', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_footer', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_result_global', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
 	}
 
 	public function result_global_body_ajax() {
 		$data = $this->result_global_generic();
 
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_result_global', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/home_footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_result_global', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
 	}
 }

@@ -37,10 +37,15 @@ class Items extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 	
 	/** Hooks **/

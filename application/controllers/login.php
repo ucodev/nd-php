@@ -32,18 +32,22 @@
 
 class Login extends UW_Controller {
 	/* General settings */
-	protected $_author = "ND PHP Framework";	// Project Author
-	protected $_project_name = "ND php";
-	protected $_tagline = "Framework";
-	protected $_description = "An handy PHP Framework";
 	protected $_name;					// Controller segment / Table name (must be lower case)
 	protected $_viewhname;			// The name used in the view headers
+
+	protected $_project_author = "ND PHP Framework";	// Project Author
+	protected $_project_name = "ND php";
+	protected $_project_tagline = "Framework";
+	protected $_project_description = "An handy PHP Framework";
+
+	protected $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	protected $_default_timezone = NDPHP_LANG_MOD_DEFAULT_TIMEZONE;
 	protected $_default_database = 'default';
-	protected $_theme = 'Blueish';
+	protected $_default_theme = 'Blueish';
+
 	protected $_base_url = 'http://localhost/ndphp/';
 	protected $_temp_dir = '/tmp/';
-	protected $_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
+
 	protected $_logging = true;
 
 	protected $_word_true = NDPHP_LANG_MOD_WORD_TRUE;
@@ -63,7 +67,7 @@ class Login extends UW_Controller {
 		$this->db->from('themes');
 		$this->db->join('themes_animations_default', 'themes_animations_default.id = themes.themes_animations_default_id', 'left');
 		$this->db->join('themes_animations_ordering', 'themes_animations_ordering.id = themes.themes_animations_ordering_id', 'left');
-		$this->db->where('theme', $this->_theme);
+		$this->db->where('theme', $this->_default_theme);
 		$q = $this->db->get();
 
 		return $q->row_array();
@@ -84,12 +88,15 @@ class Login extends UW_Controller {
 		$config = $this->configuration->get();
 
 		$this->_base_url = $config['base_url'];
-		$this->_author = $config['author'];
-		$this->_project_name = $config['project_name'];
-		$this->_tagline = $config['tagline'];
-		$this->_description = $config['description'];
+
 		$this->_default_timezone = $config['timezone'];
-		$this->_theme = $config['theme'];
+		$this->_default_theme = $config['theme'];
+
+		$this->_project_author = $config['author'];
+		$this->_project_name = $config['project_name'];
+		$this->_project_tagline = $config['tagline'];
+		$this->_project_description = $config['description'];
+
 		$this->_temp_dir = $config['temporary_directory'];
 		$this->_maintenance_enabled = $config['maintenance'];
 
@@ -98,14 +105,14 @@ class Login extends UW_Controller {
 
 	public function login($referer = NULL) {
 		$data['config'] = array();
-		$data['config']['charset'] = $this->_charset;
+		$data['config']['charset'] = $this->_default_charset;
 		$data['config']['theme'] = $this->_get_theme();
 
 		$data['project'] = array();
-		$data['project']['author'] = $this->_author;
+		$data['project']['author'] = $this->_project_author;
 		$data['project']['name'] = $this->_project_name;
-		$data['project']['tagline'] = $this->_tagline;
-		$data['project']['description'] = $this->_description;
+		$data['project']['tagline'] = $this->_project_tagline;
+		$data['project']['description'] = $this->_project_description;
 
 		$data['view'] = array();
 		$data['view']['ctrl'] = $this->_name;
@@ -129,7 +136,7 @@ class Login extends UW_Controller {
 			include($plugin);
 
 		/* Load view */
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/login_form', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/login_form', $data);
 	}
 
 	public function index() {
@@ -142,10 +149,10 @@ class Login extends UW_Controller {
 	private function session_setup($user_id = NULL, $username = NULL, $plain_password = NULL, $email = NULL, $first_name = NULL, $photo = NULL) {
 		/* Sanity checks */
 		if (!$user_id || !$username || !$plain_password || !$email)
-			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_default_charset, !$this->request->is_ajax());
 
 		if ($this->request->remote_addr() == 'Unspecified')
-			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Get user's roles */
 		$this->db->select('roles_id');
@@ -196,7 +203,7 @@ class Login extends UW_Controller {
 		$query = $this->db->get();
 
 		if (!$query->num_rows())
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_default_charset, !$this->request->is_ajax());
 
 		$pek_row = $query->row_array();
 
@@ -204,7 +211,7 @@ class Login extends UW_Controller {
 		$privenckey = $this->encrypt->decrypt($pek_row['privenckey'], $plain_password, false);
 
 		if (strlen($privenckey) != 256)
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Regenrate user session */
 		$this->session->regenerate();
@@ -261,7 +268,7 @@ class Login extends UW_Controller {
 			$sessions_id = $row['id'];
 		} else {
 			/* The session doesn't exist... Unauthorized */
-			$this->response->code('401', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('401', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Commit transaction if everything is fine. */
@@ -293,10 +300,10 @@ class Login extends UW_Controller {
 			if ($query->num_rows() == 1) {
 				$row = $query->row_array();
 			} else {
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_API_KEY, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_API_KEY, $this->_default_charset, !$this->request->is_ajax());
 			}
 		} else if (!isset($_POST['username'])) {
-			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			/* Retrive username information from database */
 			$this->db->where('username', $_POST['username']);
@@ -305,7 +312,7 @@ class Login extends UW_Controller {
 
 			/* Validade if user exists */
 			if (!$row)
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_default_charset, !$this->request->is_ajax());
 
 			/* Check encryption algorithm */
 			if (substr($row['password'], 0, 7) == '$2y$10$') {
@@ -316,21 +323,21 @@ class Login extends UW_Controller {
 				$passwd_digest = openssl_digest($_POST['password'], 'sha512');
 			} else {
 				/* Unrecognized hash */
-				$this->response->code('403', NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 			}
 
 			/* Validade password */
 			if ($passwd_digest != $row['password'])
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Check if account is active */
 		if ($row['active'] != 1)
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if account is locked */
 		if ($row['locked'] != 0)
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if account is expired */
 		if ($row['expire']) {
@@ -338,12 +345,12 @@ class Login extends UW_Controller {
 			$current_date = time();
 
 			if ($current_date >= $expired_date)
-				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Validade email address (regex) */		
 		if ($this->validate_email($row['email']) == false)
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		/**** All sanity checks successfully passed ****/
 
@@ -352,7 +359,7 @@ class Login extends UW_Controller {
 
 		/* Check if we're under maintenance mode */
 		if ($this->_maintenance_enabled && !$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If logging is enabled, log this LOGIN entry */
 		if ($this->_logging === true) {

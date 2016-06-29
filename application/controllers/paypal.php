@@ -62,10 +62,15 @@ class Paypal extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 
 	private function payment_init($quantity = 10) {
@@ -111,13 +116,13 @@ class Paypal extends ND_Controller {
 
 		if (!$payments_id) {
 			error_log('paypal.php: payment_init(): Insert failed.');
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal.php: payment_init(): Transaction failed.');
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #2', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #2', $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -139,7 +144,7 @@ class Paypal extends ND_Controller {
 		if (isset($_POST['item_quantity'])) {
 			$new_data['item_quantity'] = intval($POST['item_quantity']);
 		} else {
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$POST = $new_data;
@@ -225,15 +230,15 @@ class Paypal extends ND_Controller {
 	public function index() {
 		$data = $this->_get_view_data_generic($this->_viewhname, $this->_viewhname);
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . 'paypal/payment', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
 	}
 
 	public function payment_form_ajax() {
 		$data = $this->_get_view_data_generic($this->_viewhname, $this->_viewhname);
 
-		$this->load->view('themes/' . $this->_theme . '/' . 'paypal/payment', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment', $data);
 	}
 
 	public function payment_request() {
@@ -244,7 +249,7 @@ class Paypal extends ND_Controller {
 
 		/* Validate payment ammount */
 		if ($this->payment_validate_quantity($item_quantity) !== true)
-			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT, $this->_default_charset, !$this->request->is_ajax());
 
 		$payment_data = $this->payment_init($item_quantity);
 

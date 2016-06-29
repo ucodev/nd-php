@@ -37,14 +37,19 @@ class Configuration extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 
 
@@ -63,7 +68,7 @@ class Configuration extends ND_Controller {
 			 * one will be active after this update is performed.
 			 */
 			if ($q->num_rows() < 2)
-				$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		return $hook_pre_return;
@@ -80,7 +85,7 @@ class Configuration extends ND_Controller {
 
 		if ($q->num_rows()) {
 			/* If so, we cannot allow that... */
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		return $hook_pre_return;
@@ -259,14 +264,14 @@ class Configuration extends ND_Controller {
 		if (($fp = fopen($filename_db_dump, 'w')) === FALSE) {
 			/* Leave Maintenance Mode */
 			$this->maintenance_leave();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ': ' . $filename_db_dump, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ': ' . $filename_db_dump, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Write dump to file */
 		if (fwrite($fp, $db_dump) === FALSE) {
 			/* Leave Maintenance Mode */
 			$this->maintenance_leave();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . $filename_db_dump, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . $filename_db_dump, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Flush file data */
@@ -292,7 +297,7 @@ class Configuration extends ND_Controller {
 			/* Leave Maintenance Mode */
 			$this->maintenance_leave();
 
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_BACKUP_PROJECT_DIR, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_BACKUP_PROJECT_DIR, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Unlink unnecessary files */
@@ -322,7 +327,7 @@ class Configuration extends ND_Controller {
 	}
 
 	public function charts_body_ajax() {
-		$fctrl = $this->configuration->controller('charts_config', true);
+		$fctrl = $this->access->controller('charts_config', true);
 
 		$data = $fctrl->list_generic();
 		
@@ -331,7 +336,7 @@ class Configuration extends ND_Controller {
 	}
 
 	public function scheduler_body_ajax() {
-		$fctrl = $this->configuration->controller('scheduler', true);
+		$fctrl = $this->access->controller('scheduler', true);
 
 		$data = $fctrl->list_generic();
 		

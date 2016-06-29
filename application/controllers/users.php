@@ -44,10 +44,15 @@ class Users extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 
 		/* TODO: FIXME: If sharding is enabled, we must load the main database here ('default') and then
 		 * grant that all changes are also replicated to the user shard.
@@ -64,7 +69,7 @@ class Users extends ND_Controller {
 		/* Check if we're under multi or single user mode */
 		if (!$features['multi_user']) {
 			/* If we're under single user mode, user registration is not available */
-			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Generate user's private key for encryption
@@ -100,7 +105,7 @@ class Users extends ND_Controller {
 			/* Try to delete the newly inserted user */
 			$this->db->delete('users', array('id' => $id));
 
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -112,7 +117,7 @@ class Users extends ND_Controller {
 
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
 		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles']))
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If password was changed ... */
 		$this->db->select('password,privenckey');
@@ -132,7 +137,7 @@ class Users extends ND_Controller {
 				/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
 				 * to be changed.
 				 */
-				$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS, $this->_default_charset, !$this->request->is_ajax());
 			}
 
 			/* Re-encrypt the user private encryption key with the new password */
@@ -174,7 +179,7 @@ class Users extends ND_Controller {
 				 */
 				$this->db->trans_rollback();
 
-				$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_default_charset, !$this->request->is_ajax());
 			} else {
 				$this->db->trans_commit();
 			}
@@ -192,7 +197,7 @@ class Users extends ND_Controller {
 		$query = $this->db->get();
 
 		if (!$query->num_rows())
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_UPDATE_SESSION_DATA . ' ' . NDPHP_LANG_MOD_ATTN_LOGOUT_LOGIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_UPDATE_SESSION_DATA . ' ' . NDPHP_LANG_MOD_ATTN_LOGOUT_LOGIN, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Only update session data if the user being updated is the user who's performing the update */
 		if ($this->_session_data['user_id'] == $id) {
@@ -219,7 +224,7 @@ class Users extends ND_Controller {
 		$hook_pre_return = NULL;
 		
 		if ($id == 1)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER, $this->_default_charset, !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}

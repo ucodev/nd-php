@@ -30,36 +30,20 @@
  *
  */
 
-class Payment_actions extends ND_Controller {
-	/* Constructor */
-	public function __construct($session_enable = true, $json_replies = false) {
-		parent::__construct($session_enable, $json_replies);
+class UW_Access extends UW_Model {
+	public function controller($name, $session_enable = false, $json_replies = false) {
+		/* Load the controller file */
+		require_once(SYSTEM_BASE_DIR . '/application/controllers/' . $name . '.php');
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
+		if (!preg_match('/^[a-zA-Z0-9\_]+$/i', $name)) {
+			header('HTTP/1.1 500 Internal Server Error');
+			die(NDPHP_LANG_MOD_INVALID_CTRL_NAME . ': ' . $name);
+		}
 
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
+		/* Create the controller object. (TODO: FIXME: Store the object (to reduce overhead on further calls)) */
+		eval('$ctrl = new ' . ucfirst($name) . '(' . ($session_enable ? 'true' : 'false') . ', ' . ($json_replies ? 'true' : 'false') . ');');
 
-		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* NOTE: We can only access $ctrl protected properties/methods if this function is called from ND_Controller (sibling objects) */
+		return $ctrl;
 	}
-	
-	/** Hooks **/
-	
-	/** Other overloads **/
-
-	/* Aliases for the current table field names */
-	protected $_table_field_aliases = array(
-	);
-
-	/** Custom functions **/
-
 }

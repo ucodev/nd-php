@@ -37,10 +37,15 @@ class Roles extends ND_Controller {
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
-		$this->_hook_construct();
 
 		/* Include any setup procedures from ide builder. */
 		include('lib/ide_setup.php');
+
+		/* Populate controller configuration */
+		$this->config_populate();
+
+		/* Call construct hook */
+		$this->_hook_construct();
 	}
 
 	/** Hooks **/
@@ -49,7 +54,7 @@ class Roles extends ND_Controller {
 
 		/* Do not allow changes to ROLE_ADMIN name */
 		if ($id == 1 && isset($POST['role']) && $POST['role'] != 'ROLE_ADMIN')
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN, $this->_default_charset, !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}
@@ -59,7 +64,7 @@ class Roles extends ND_Controller {
 
 		/* Do now allow the ROLE_ADMIN to be deleted */
 		if ($id == 1)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN, $this->_default_charset, !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}
@@ -84,7 +89,7 @@ class Roles extends ND_Controller {
 
 		/* If the users doesn't belong to ROLE_ADMIN, then it's not allowed to edit roles */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		$data = $this->_get_view_data_generic();
 
@@ -145,20 +150,20 @@ class Roles extends ND_Controller {
 		$data['view']['table_col_perms'] = $table_col_perms;
 
 		/* Load views */
-		$this->load->view('themes/' . $this->_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . $this->_name . '/setup_role', $data);
-		$this->load->view('themes/' . $this->_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/setup_role', $data);
+		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
 	}
 
 	public function setup_role_update() {
 		/* If the users doesn't belong to ROLE_ADMIN, then it's not allowed to edit roles */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
 
 		$role_id = intval($_POST['role_id']);
 		
 		if (!$role_id)
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_default_charset, !$this->request->is_ajax());
 		
 		unset($_POST['role_id']);
 		
@@ -185,13 +190,13 @@ class Roles extends ND_Controller {
 			$field_p = explode('_', $field);
 			
 			if ($field_p[0] != 'perm')
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_default_charset, !$this->request->is_ajax());
 
 			$field_name = implode('_', array_slice($field_p, 3));
 
 			if ($field_p[2] == 'table') {
 				if (!isset($trans['table'][$field_p[1]]))
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_default_charset, !$this->request->is_ajax());
 
 				if (isset($table_perms[$field_name])) {
 					$table_perms[$field_name] .= $trans['table'][$field_p[1]];
@@ -200,7 +205,7 @@ class Roles extends ND_Controller {
 				}
 			} else if ($field_p[2] == 'field') {
 				if (!isset($trans['field'][$field_p[1]]))
-					$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_default_charset, !$this->request->is_ajax());
 
 				$__tcsep = explode('-', $field_name);
 				$__table_name = $__tcsep[0];
@@ -211,7 +216,7 @@ class Roles extends ND_Controller {
 					$table_col_perms[$__table_name][$__field_name] = $trans['field'][$field_p[1]];
 				}
 			} else {
-				$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->_default_charset, !$this->request->is_ajax());
 			}
 		}
 
@@ -246,7 +251,7 @@ class Roles extends ND_Controller {
 		/* Check if everything was done */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_ROLE_UPDATE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_ROLE_UPDATE, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$this->db->trans_commit();

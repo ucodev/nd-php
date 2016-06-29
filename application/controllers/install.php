@@ -36,7 +36,7 @@
  */
 
 class Install extends UW_Controller {
-	protected $_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
+	protected $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	protected $_default_timezone = NDPHP_LANG_MOD_DEFAULT_TIMEZONE;
 
 	/* ND PHP Framework - update settings */
@@ -184,19 +184,19 @@ class Install extends UW_Controller {
 		$php_version = explode('.', phpversion());
 
 		if (intval($php_version[0]) < 5 || (intval($php_version[0]) == 5 && intval($php_version[1]) < 6))
-			$this->response->code('501', NDPHP_LANG_MOD_ATTN_PHP_VERSION, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('501', NDPHP_LANG_MOD_ATTN_PHP_VERSION, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if the framework is already installed */
 		if (($fp = @fopen(SYSTEM_BASE_DIR . '/install/' . $this->_inst_ctl_file, 'r')) !== false) {
 			@fclose($fp);
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE, $this->_default_charset, !$this->request->is_ajax());
 		}
 	}
 
 	public function pre_check() {
 		$this->ndphp->no_cache();
 
-		$data['charset'] = $this->_charset;
+		$data['charset'] = $this->_default_charset;
 		$data['errors'] = false;
 
 		/* Check PHP extensions */
@@ -239,7 +239,7 @@ class Install extends UW_Controller {
 
 		/* Test a database connection... all the variables are received in a safe (see Documentation) base64 encoded format */
 		if (!$this->db->test($this->ndphp->safe_b64decode(rawurldecode($dbhost)), $this->ndphp->safe_b64decode(rawurldecode($dbname)), $this->ndphp->safe_b64decode(rawurldecode($dbuser)), $this->ndphp->safe_b64decode(rawurldecode($dbpass)), $this->ndphp->safe_b64decode(rawurldecode($dbport))))
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_CONNECT, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_CONNECT, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If $test_privs is set to '1', we need test all privileges on the database */
 		if ($test_privs == '1') {
@@ -256,7 +256,7 @@ class Install extends UW_Controller {
 
 			if ($this->db->trans_status() === false) {
 				$this->db->trans_rollback();
-				$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_OPERATION . ' (CREATE / INSERT / UPDATE / DELETE / SELECT / ALTER / DROP): "' . $this->ndphp->safe_b64decode($dbname) . '"', $this->_charset, !$this->request->is_ajax());
+				$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_OPERATION . ' (CREATE / INSERT / UPDATE / DELETE / SELECT / ALTER / DROP): "' . $this->ndphp->safe_b64decode($dbname) . '"', $this->_default_charset, !$this->request->is_ajax());
 			}
 
 			$this->db->trans_commit();
@@ -268,7 +268,7 @@ class Install extends UW_Controller {
 	public function db_config() {
 		$this->ndphp->no_cache();
 
-		$data['charset'] = $this->_charset;
+		$data['charset'] = $this->_default_charset;
 
 		$this->load->view('install/db_config', $data);
 	}
@@ -279,7 +279,7 @@ class Install extends UW_Controller {
 
 		/* Check if we can open the file for writing */
 		if ($fp === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/database.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/database.php', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Craft database configuration */
 		$database_config = '' .
@@ -309,7 +309,7 @@ class Install extends UW_Controller {
 
 		/* Write the configuration data to database configuration file */
 		if (fwrite($fp, $database_config) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/database.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/database.php', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Close the handler */
 		fflush($fp);
@@ -329,7 +329,7 @@ class Install extends UW_Controller {
 
 		/* Import ND PHP Database base data */
 		if ($this->_db_import_dump(SYSTEM_BASE_DIR . '/' . $this->_db_dump_file) !== true)
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_IMPORT . ': ' . SYSTEM_BASE_DIR . '/' . $this->_db_dump_file, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_IMPORT . ': ' . SYSTEM_BASE_DIR . '/' . $this->_db_dump_file, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Set an initial active configuration */
 		$this->db->trans_begin();
@@ -391,7 +391,7 @@ class Install extends UW_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_ENTRY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_DB_ENTRY, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$this->db->trans_commit();
@@ -408,7 +408,7 @@ class Install extends UW_Controller {
 	public function user_config() {
 		$this->ndphp->no_cache();
 
-		$data['charset'] = $this->_charset;
+		$data['charset'] = $this->_default_charset;
 
 		$this->load->view('install/user_config', $data);
 	}
@@ -460,7 +460,7 @@ class Install extends UW_Controller {
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_UPDATE_ADMIN, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_UPDATE_ADMIN, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$this->db->trans_commit();
@@ -473,7 +473,7 @@ class Install extends UW_Controller {
 	public function app_config() {
 		$this->ndphp->no_cache();
 
-		$data['charset'] = $this->_charset;
+		$data['charset'] = $this->_default_charset;
 
 		$this->load->view('install/app_config', $data);
 	}
@@ -502,7 +502,7 @@ class Install extends UW_Controller {
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_UPDATE_APP, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_UPDATE_APP, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$this->db->trans_commit();
@@ -522,7 +522,7 @@ class Install extends UW_Controller {
 
 		/* Check if we can open the file for writing */
 		if ($fp === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Generate a session name */
 		if (!($session_name = trim(base_dir(), '/'))) {
@@ -558,7 +558,7 @@ class Install extends UW_Controller {
 
 		/* Write the configuration data to session configuration file */
 		if (fwrite($fp, $session_config) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/session.php', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Close the handler */
 		fflush($fp);
@@ -574,7 +574,7 @@ class Install extends UW_Controller {
 
 		/* Check if we can open the file for writing */
 		if ($fp === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/encrypt.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/encrypt.php', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Craft database configuration */
 		$encryption_config = '' .
@@ -588,7 +588,7 @@ class Install extends UW_Controller {
 
 		/* Write the configuration data to session configuration file */
 		if (fwrite($fp, $encryption_config) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/encrypt.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/encrypt.php', $this->_default_charset, !$this->request->is_ajax());
 
 		/* Close the handler */
 		fflush($fp);
@@ -600,10 +600,10 @@ class Install extends UW_Controller {
 
 	public function base_config_setup() {
 		if (copy(SYSTEM_BASE_DIR . '/install/autoload.php', SYSTEM_BASE_DIR . '/user/config/autoload.php') === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/autoload.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/autoload.php', $this->_default_charset, !$this->request->is_ajax());
 
 		if (copy(SYSTEM_BASE_DIR . '/install/base.php', SYSTEM_BASE_DIR . '/user/config/base.php') === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/base.php', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/base.php', $this->_default_charset, !$this->request->is_ajax());
 
 		echo(NDPHP_LANG_MOD_INSTALL_SUCCESS_BASE_CONFIG . '<br />');
 	}
@@ -2355,7 +2355,7 @@ class Install extends UW_Controller {
 
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_INSERT_DATA, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_INSERT_DATA, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$this->db->trans_commit();
@@ -2391,11 +2391,11 @@ class Install extends UW_Controller {
 
 		/* Create a control file to indicate installation is complete */
 		if (($fp = fopen(SYSTEM_BASE_DIR . '/install/' . $this->_inst_ctl_file, 'w')) === false)
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/install/' . $this->_inst_ctl_file, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/install/' . $this->_inst_ctl_file, $this->_default_charset, !$this->request->is_ajax());
 
 		fclose($fp);
 
-		$data['charset'] = $this->_charset;
+		$data['charset'] = $this->_default_charset;
 
 		$this->load->view('install/finish', $data);
 	}
@@ -2435,7 +2435,7 @@ class Install extends UW_Controller {
 
 		/* Are we good? */
 		if (!$retries)
-			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_FETCH_OK_URL . ': ' . $url, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_FETCH_OK_URL . ': ' . $url, $this->_default_charset, !$this->request->is_ajax());
 	}
 
 	public function validate_db_config() {
