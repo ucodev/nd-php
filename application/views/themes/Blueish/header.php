@@ -82,6 +82,7 @@
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/jquery-timer/dist/timer.jquery.js"></script>
 
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/tinymce/3.5.8/jscripts/tiny_mce/tiny_mce.js"></script>
+	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/pchart/imagemap.js"></script>
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/base64/base64.js"></script>
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/charset/utf8.js"></script>
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/validate/codes.js"></script>

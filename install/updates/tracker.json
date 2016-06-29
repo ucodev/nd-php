@@ -2,6 +2,7 @@
 	"any": {
 		"to": "master",
 		"directories": [
+			"application/static/js/lib/pchart",
 			"application/views/_templates",
 			"application/views/_templates/errors",
 			"logs",
@@ -43,9 +44,11 @@
 			"application/static/js/lib/ndphp/ide.js.php",
 			"application/static/js/lib/ndphp/install.js.php",
 			"application/static/js/lib/ndphp/ndphp.js.php",
+			"application/static/js/lib/pchart/imagemap.js",
 			"application/views/_templates/errors/status_code.php",
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/lib/charts.php",
+			"application/views/themes/Blueish/_default/lib/charts_foreign.php",
 			"application/views/themes/Blueish/_default/lib/search_bar.php",
 			"application/views/themes/Blueish/_default/lib/tabs_header.php",
 			"application/views/themes/Blueish/_default/create_data.php",
@@ -66,6 +69,7 @@
 			"application/views/themes/Blueish/_default/view_data.php",
 			"application/views/themes/Blueish/home/home_header.php",
 			"application/views/themes/Blueish/logging/error_log.php",
+			"application/views/themes/Blueish/header.php",
 			"application/views/themes/Blueish/footer.php",
 			"documentation/NDCA.pdf",
 			"install/languages/en_US.php",

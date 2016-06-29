@@ -1,7 +1,12 @@
+v0.02f (2016-06-29):
+
+ - Added imagemap support for charts.
+
+
 v0.02e1 (2016-06-27):
 
  - Added sticky tabs for list/result views (chosen tab becomes persistent).
- - Added validation API skeleton to applciation model interface.
+ - Added validation API skeleton to application model interface.
 
 
 v0.02e (2016-06-27):

@@ -54,6 +54,13 @@
 ?>
 <?php for ($i = 0; $i < $config['charts']['total']; $i ++): ?>
 	<div id="chart_<?=$i?>" class="chart">
-		<img class="chart" src="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/chart_publish/<?=$i?>/<?=rand(100000, 999999)?><?=isset($view['result_query']) ? ('/' . $view['result_query']) : ''?>" />
+		<img id="chart_name_local_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=$i?>_<?=filter_html($session['user_id'], $config['charset'])?>" class="chart" src="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/chart_publish/<?=$i?>/<?=rand(100000, 999999)?>/<?=isset($view['result_query']) ? filter_html($view['result_query'], $config['charset']) : 'NULL'?>" />
 	</div>
+	<script type="text/javascript">
+		addImage(
+			'chart_name_local_<?=filter_js_str($view['ctrl'], $config['charset'])?>_<?=$i?>_<?=filter_js_str($session['user_id'], $config['charset'])?>',
+			'chart_map_local_<?=filter_js_str($view['ctrl'], $config['charset'])?>_<?=$i?>_<?=filter_js_str($session['user_id'], $config['charset'])?>',
+			'<?=filter_js_str(base_url(), $config['charset'])?>index.php/<?=filter_js_str($view['ctrl'], $config['charset'])?>/chart_publish/<?=$i?>/<?=rand(100000, 999999)?>/<?=isset($view['result_query']) ? filter_js_str($view['result_query'], $config['charset']) : 'NULL'?>/1'
+		);
+	</script>
 <?php endfor; ?>

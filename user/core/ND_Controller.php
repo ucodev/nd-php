@@ -41,7 +41,6 @@
  *
  * TODO:
  *
- * + Add imagemap to charts (pChart imagemap).
  * * IDE application model should validate everything that was previously validated by ide.js.
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
@@ -109,7 +108,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/** General settings **/
-	protected $_ndphp_version = '0.02e1';		// Framework version
+	protected $_ndphp_version = '0.02f';		// Framework version
 	protected $_author = "ND PHP Framework";	// Project Author
 	protected $_project_name = "ND php";		// The project name
 	protected $_tagline = "Framework";			// The project tagline
@@ -753,6 +752,35 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
+	private function _chart_process_image_map($chart, &$pimage) {
+		$chart_imagemap_name = 'chart_name_' . ($chart['foreign'] ? 'foreign' : 'local') . '_ '. $this->_name . '_' . $chart['id'] . '_' . $this->_session_data['user_id'];
+		$chart_imagemap_map = 'chart_map_' . ($chart['foreign'] ? 'foreign' : 'local') . '_ '. $this->_name . '_' . $chart['id'] . '_' . $this->_session_data['user_id'];
+
+		/* If this is a imagemap request, dump it.
+		 * FIXME: There's no need to deliver the image map at this later stage. A new method should be implemented
+		 * such as chart_publish_imagemap() to read the imagemap file directly from the temporary directory and deliver it
+		 * without the need to create a new dataset and create a image object just to deliver what is already created.
+		 */
+		if ($chart['imagemap_request']) {
+			$pimage->dumpImageMap(
+				$chart_imagemap_name,	/* Image map name */
+				IMAGE_MAP_STORAGE_FILE,	/* Storage type */
+				$chart_imagemap_map,	/* Unique ID */
+				$this->_temp_dir		/* Storage directory */
+			);
+
+			/* NOTE: Execution was terminated by the above call */
+		}
+
+		/* Initialize imagemap */
+		$pimage->initialiseImageMap(
+			$chart_imagemap_name,	/* Image map name */
+			IMAGE_MAP_STORAGE_FILE,	/* Storage type */
+			$chart_imagemap_map,	/* Unique ID */
+			$this->_temp_dir		/* Storage directory */
+		);
+	}
+
 	/* Generates a time-series dataset object for $chart, based on a query object $q, to be used as chart_build_image_ts() */
 	protected function chart_build_dataset_ts($chart, $q) {
 		$dataset = array();
@@ -1046,6 +1074,9 @@ class ND_Controller extends UW_Controller {
 		/* Instantiate image object */
 		$pimage = $this->pchart->pImage($chart['width'] ? $chart['width'] : $this->_charts_canvas_width, $chart['height'] ? $chart['height'] : $this->_charts_canvas_height, $dataset);
 
+		/* Process imagemap */
+		$this->_chart_process_image_map($chart, $pimage);
+
 		/* Set the chart area within canvas */
 		$pimage->setGraphArea($this->_charts_graph_area['X1'], $this->_charts_graph_area['Y1'], $this->_charts_graph_area['X2'], $this->_charts_graph_area['Y2']);
 
@@ -1086,6 +1117,9 @@ class ND_Controller extends UW_Controller {
 		/* Instantiate image object */
 		$pimage = $this->pchart->pImage($chart['width'] ? $chart['width'] : $this->_charts_canvas_width, $chart['height'] ? $chart['height'] : $this->_charts_canvas_height, $dataset);
 
+		/* Process imagemap */
+		$this->_chart_process_image_map($chart, $pimage);
+
 		/* Set the chart area within canvas */
 		$pimage->setGraphArea($this->_charts_graph_area['X1'], $this->_charts_graph_area['Y1'], $this->_charts_graph_area['X2'], $this->_charts_graph_area['Y2']);
 
@@ -1125,6 +1159,9 @@ class ND_Controller extends UW_Controller {
 	protected function chart_build_image_rel($chart, $dataset) {
 		$pimage = $this->pchart->pImage($chart['width'] ? $chart['width'] : $this->_charts_canvas_width, $chart['height'] ? $chart['height'] : $this->_charts_canvas_height, $dataset);
 
+		/* Process imagemap */
+		$this->_chart_process_image_map($chart, $pimage);
+
 		/* Set font for title */
 		$pimage->setFontProperties(array(
 			'FontName' => $this->pchart->fonts_path() . '/' . $this->_charts_font_family . '.ttf',
@@ -1155,6 +1192,9 @@ class ND_Controller extends UW_Controller {
 
 	protected function chart_build_image_totals($chart, $dataset) {
 		$pimage = $this->pchart->pImage($chart['width'] ? $chart['width'] : $this->_charts_canvas_width, $chart['height'] ? $chart['height'] : $this->_charts_canvas_height, $dataset);
+
+		/* Process imagemap */
+		$this->_chart_process_image_map($chart, $pimage);
 
 		/* Set font for title */
 		$pimage->setFontProperties(array(
@@ -1201,6 +1241,8 @@ class ND_Controller extends UW_Controller {
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
 			'pimage'	=> NULL,
+			'imagemap_request' => false,
+			'foreign'	=> false,
 			'imported'	=> false,
 			'imp_ctrl'	=> NULL,
 			'imp_id'	=> NULL,
@@ -1221,6 +1263,8 @@ class ND_Controller extends UW_Controller {
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
 			'pimage'	=> NULL,
+			'imagemap_request' => false,
+			'foreign'	=> true,
 			'imported'	=> false,
 			'imp_ctrl'	=> NULL,
 			'imp_id'	=> NULL,
@@ -1239,6 +1283,8 @@ class ND_Controller extends UW_Controller {
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
 			'pimage'	=> NULL,
+			'imagemap_request' => false,
+			'foreign'	=> false,
 			'imported'	=> false,
 			'imp_ctrl'	=> NULL,
 			'imp_id'	=> NULL,
@@ -1259,6 +1305,8 @@ class ND_Controller extends UW_Controller {
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
 			'pimage'	=> NULL,
+			'imagemap_request' => false,
+			'foreign'	=> true,
 			'imported'	=> false,
 			'imp_ctrl'	=> NULL,
 			'imp_id'	=> NULL,
@@ -1284,6 +1332,8 @@ class ND_Controller extends UW_Controller {
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
 			'pimage'	=> NULL,
+			'imagemap_request' => false,
+			'foreign'	=> false,
 			'imported'	=> false,
 			'imp_ctrl'	=> NULL,
 			'imp_id'	=> NULL,
@@ -1311,6 +1361,8 @@ class ND_Controller extends UW_Controller {
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
 			'pimage'	=> NULL,
+			'imagemap_request' => false,
+			'foreign'	=> true,
 			'imported'	=> false,
 			'imp_ctrl'	=> NULL,
 			'imp_id'	=> NULL,
@@ -1323,6 +1375,8 @@ class ND_Controller extends UW_Controller {
 		array_push($this->_charts, array(
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
+			'imagemap_request' => false,
+			'foreign'	=> false,
 			'imported'	=> true,
 			'imp_ctrl'	=> $controller,
 			'imp_id'	=> $chart_id
@@ -1333,6 +1387,8 @@ class ND_Controller extends UW_Controller {
 		array_push($this->_charts_foreign, array(
 			'start_ts'	=> $start_ts,
 			'end_ts'	=> $end_ts,
+			'imagemap_request' => false,
+			'foreign'	=> true,
 			'imported'	=> true,
 			'imp_ctrl'	=> $controller,
 			'imp_id'	=> $chart_id
@@ -1437,10 +1493,10 @@ class ND_Controller extends UW_Controller {
 
 		/* Set chart type */
 		switch ($chart['geometry']) {
-			case 'line'    : $pimage->drawLineChart();        break;
-			case 'spline'  : $pimage->drawSplineChart();      break;
-			case 'area'    : $pimage->drawAreaChart();        break;
-			case 'stacked' : $pimage->drawStackedAreaChart(); break;
+			case 'line'    : $pimage->drawLineChart(array('RecordImageMap' => true));        break;
+			case 'spline'  : $pimage->drawSplineChart(array('RecordImageMap' => true));      break;
+			case 'area'    : $pimage->drawAreaChart(array('RecordImageMap' => true));        break;
+			case 'stacked' : $pimage->drawStackedAreaChart(array('RecordImageMap' => true)); break;
 			default: {
 				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
 			}
@@ -1576,10 +1632,10 @@ class ND_Controller extends UW_Controller {
 
 		/* Set chart type */
 		switch ($chart['geometry']) {
-			case 'line'    : $pimage->drawLineChart();        break;
-			case 'spline'  : $pimage->drawSplineChart();      break;
-			case 'area'    : $pimage->drawAreaChart();        break;
-			case 'stacked' : $pimage->drawStackedAreaChart(); break;
+			case 'line'    : $pimage->drawLineChart(array('RecordImageMap' => true));        break;
+			case 'spline'  : $pimage->drawSplineChart(array('RecordImageMap' => true));      break;
+			case 'area'    : $pimage->drawAreaChart(array('RecordImageMap' => true));        break;
+			case 'stacked' : $pimage->drawStackedAreaChart(array('RecordImageMap' => true)); break;
 			default: {
 				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHART_GEOMETRY . ': ' . $chart['geometry'], $this->_charset, !$this->request->is_ajax());
 			}
@@ -1706,8 +1762,9 @@ class ND_Controller extends UW_Controller {
 
 				/* Draw the pie */
 				$pie->draw2DPie($this->_charts_canvas_width / 2, $this->_charts_canvas_height / 2, array(
-					'DrawLabels'	=> true,
-					'Border'		=> true
+					'DrawLabels'	 => true,
+					'Border'		 => true,
+					'RecordImageMap' => true
 				));
 			} break;
 
@@ -1726,7 +1783,9 @@ class ND_Controller extends UW_Controller {
 				));
 
 				/* Dar the bar chart */
-				$pimage->drawBarChart();
+				$pimage->drawBarChart(array(
+					'RecordImageMap' => true
+				));
 			} break;
 
 			default: {
@@ -1859,7 +1918,8 @@ class ND_Controller extends UW_Controller {
 				/* Draw the pie */
 				$pie->draw2DPie($this->_charts_canvas_width / 2, $this->_charts_canvas_height / 2, array(
 					'DrawLabels'	=> true,
-					'Border'		=> true
+					'Border'		=> true,
+					'RecordImageMap' => true
 				));
 			} break;
 
@@ -1878,7 +1938,9 @@ class ND_Controller extends UW_Controller {
 				));
 
 				/* Dar the bar chart */
-				$pimage->drawBarChart();
+				$pimage->drawBarChart(array(
+					'RecordImageMap' => true
+				));
 			} break;
 
 			default: {
@@ -2006,7 +2068,8 @@ class ND_Controller extends UW_Controller {
 				/* Draw the pie */
 				$pie->draw2DPie($this->_charts_canvas_width / 2, $this->_charts_canvas_height / 2, array(
 					'DrawLabels'	=> true,
-					'Border'		=> true
+					'Border'		=> true,
+					'RecordImageMap' => true
 				));
 			} break;
 
@@ -2025,7 +2088,9 @@ class ND_Controller extends UW_Controller {
 				));
 
 				/* Dar the bar chart */
-				$pimage->drawBarChart();
+				$pimage->drawBarChart(array(
+					'RecordImageMap' => true
+				));
 
 				/* Draw Legend */
 				$pimage->drawLegend($this->_charts_canvas_width - 80, 20, array(
@@ -2182,7 +2247,8 @@ class ND_Controller extends UW_Controller {
 				/* Draw the pie */
 				$pie->draw2DPie($this->_charts_canvas_width / 2, $this->_charts_canvas_height / 2, array(
 					'DrawLabels'	=> true,
-					'Border'		=> true
+					'Border'		=> true,
+					'RecordImageMap' => true
 				));
 			} break;
 
@@ -2201,7 +2267,9 @@ class ND_Controller extends UW_Controller {
 				));
 
 				/* Dar the bar chart */
-				$pimage->drawBarChart();
+				$pimage->drawBarChart(array(
+					'RecordImageMap' => true
+				));
 
 				/* Draw Legend */
 				$pimage->drawLegend($this->_charts_canvas_width - 80, 20, array(
@@ -2253,7 +2321,7 @@ class ND_Controller extends UW_Controller {
 		return true;
 	}
 
-	protected function _chart_publish_generic(&$chart_array, $chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $result_query = NULL, $start_ts = NULL, $end_ts = NULL) {
+	protected function _chart_publish_generic(&$chart_array, $chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $result_query = NULL, $imagemap = NULL, $start_ts = NULL, $end_ts = NULL) {
 		/* NOTE: The $refresh_rand argument should be a random value in order to force browsers to reload the image */
 
 		/* Setup charts */
@@ -2262,6 +2330,13 @@ class ND_Controller extends UW_Controller {
 		/* Check if the requested chart id is defined */
 		if ($chart_id >= count($chart_array))
 			$this->response->code('404', NDPHP_LANG_MOD_UNDEFINED_CHART_ID, $this->_charset, !$this->request->is_ajax());
+
+		/* Set chart id to chart object */
+		$chart_array[$chart_id]['id'] = $chart_id;
+
+		/* Is this a imagemap request? */
+		if ($imagemap !== NULL)
+			$chart_array[$chart_id]['imagemap_request'] = true;
 
 		/* Check if there's a result query that will apply additional filters on the chart (not available for imported nor foreign charts) */
 		if ($result_query !== NULL && !$chart_array[$chart_id]['imported'])
@@ -2338,15 +2413,24 @@ class ND_Controller extends UW_Controller {
 		imagedestroy($nodata_img);
 	}
 
-	public function chart_publish($chart_id = 0, $refresh_rand = NULL, $result_query = NULL, $start_ts = NULL, $end_ts = NULL) {
-		if ($this->_chart_publish_generic($this->_charts, $chart_id, NULL, $refresh_rand, $result_query, $start_ts, $end_ts) === false) {
+	public function chart_publish($chart_id = 0, $refresh_rand = NULL, $result_query = NULL, $imagemap = NULL, $start_ts = NULL, $end_ts = NULL) {
+		if ($result_query == 'NULL')
+			$result_query = NULL;
+
+		if ($imagemap == 'NULL')
+			$imagemap = NULL;
+
+		if ($this->_chart_publish_generic($this->_charts, $chart_id, NULL, $refresh_rand, $result_query, $imagemap, $start_ts, $end_ts) === false) {
 			/* No data */
 			$this->_chart_render_nodata($this->_charts[$chart_id]['title']);
 		}
 	}
 
-	public function chart_foreign_publish($chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $start_ts = NULL, $end_ts = NULL) {
-		if ($this->_chart_publish_generic($this->_charts_foreign, $chart_id, $entry_id, $refresh_rand, NULL, $start_ts, $end_ts) === false) {
+	public function chart_foreign_publish($chart_id = 0, $entry_id = NULL, $refresh_rand = NULL, $imagemap = NULL, $start_ts = NULL, $end_ts = NULL) {
+		if ($imagemap == 'NULL')
+			$imagemap = NULL;
+
+		if ($this->_chart_publish_generic($this->_charts_foreign, $chart_id, $entry_id, $refresh_rand, NULL, $imagemap, $start_ts, $end_ts) === false) {
 			/* No data */
 			$this->_chart_render_nodata($this->_charts_foreign[$chart_id]['title']);
 		}
