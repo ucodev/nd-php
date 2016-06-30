@@ -829,7 +829,7 @@ CREATE TABLE `sessions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `session` varchar(40) NOT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
-  `user_agent` varchar(120) DEFAULT NULL,
+  `user_agent` varchar(1024) DEFAULT NULL,
   `start_time` datetime NOT NULL,
   `change_time` datetime NOT NULL,
   `end_time` datetime DEFAULT NULL,

@@ -104,6 +104,7 @@
 		],
 		"post_update_redirect": "/update/post_update/any/master",
 		"data_model_queries": [
+			"ALTER TABLE sessions CHANGE COLUMN user_agent user_agent varchar(1024) NULL"
 		],
 		"replace": [
 			[ "user/config/autoload.php", "install/autoload.php" ]

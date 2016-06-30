@@ -1,3 +1,12 @@
+v0.02h (2016-06-30):
+
+ - Increased user_agent field size from table sessions (Edge user agent string size was longer than the previous allowed size).
+ - Safe Base64 convertions now won't convert the '=' character (',' character used as convertion must not be allowed on the URL).
+ - Installation process now checks if the connection is HTTPS. If so, cookie secure flag is enabled.
+ - Added new methods to request model.
+ - Updated tracker.
+
+
 v0.02g (2016-06-29):
 
  - Updated documentation.

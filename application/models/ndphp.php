@@ -108,11 +108,13 @@ class UW_Ndphp extends UW_Model {
 	}
 
 	public function safe_b64encode($input) {
-		return str_replace(array('+', '/', '='), array('-', '_', ','), base64_encode($input));
+		//return str_replace(array('+', '/', '='), array('-', '_', ','), base64_encode($input));
+		return str_replace(array('+', '/'), array('-', '_'), base64_encode($input)); /* The '=' char is acceptable in the ND PHP Framework */
 	}
 
 	public function safe_b64decode($input) {
-		return base64_decode(str_replace(array('-', '_', ','), array('+', '/', '='), $input));
+		//return base64_decode(str_replace(array('-', '_', ','), array('+', '/', '='), $input));
+		return base64_decode(str_replace(array('-', '_'), array('+', '/'), $input)); /* The '=' char is acceptable in the ND PHP Framework */
 	}
 
 	public function no_cache() {

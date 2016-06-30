@@ -80,11 +80,15 @@ class UW_Request extends UW_Model {
 	}
 
 	public function is_ajax() {
-		return (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == strtolower('XMLHttpRequest'));
+		return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == strtolower('XMLHttpRequest'));
 	}
 
 	public function is_json() {
 		return $this->json() !== NULL;
+	}
+
+	public function is_https() {
+		return isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off');
 	}
 
 	public function headers() {

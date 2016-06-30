@@ -542,7 +542,7 @@ class Install extends UW_Controller {
 			'$session' . "['cookie_lifetime']	= 7200;\n" .
 			'$session' . "['cookie_path']		= '" . base_dir() . "';\n" .
 			'$session' . "['cookie_domain']		= '" . $_SERVER['SERVER_NAME'] . "';\n" .
-			'$session' . "['cookie_secure']		= false;\n" .
+			'$session' . "['cookie_secure']		= " . ((isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off')) ? 'true' : 'false') . ";\n" .
 			'$session' . "['cookie_httponly']	= true;\n" .
 			'$session' . "['sssh_db_enabled']	= true;\n" .
 			'$session' . "['sssh_db_alias']		= 'default';\n" .
