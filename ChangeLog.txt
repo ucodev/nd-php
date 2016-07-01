@@ -1,3 +1,13 @@
+v0.02i (2016-07-01):
+
+ - Updated INSTALL.txt
+ - Updated installation scripts.
+ - Updated ndphp JS libraries with the new safe base64 encoding settings.
+ - Added autocomplete feature on create forms.
+ - Added a base64 encoder/decoder tool to builder controller.
+ - Updated tracker.
+
+
 v0.02h (2016-06-30):
 
  - Increased user_agent field size from table sessions (Edge user agent string size was longer than the previous allowed size).

@@ -63,7 +63,8 @@ if (typeof ndphp == 'undefined') {
 ndphp.utils = {};
 
 ndphp.utils.safe_b64encode = function(input) {
-	return base64.encode(input).replace('+', '-').replace('/', '_').replace('=', ',');
+	// return base64.encode(input).replace('+', '-').replace('/', '_').replace('=', ',');
+    return base64.encode(input).replace('+', '-').replace('/', '_');
 };
 
 /* Installation handlers */

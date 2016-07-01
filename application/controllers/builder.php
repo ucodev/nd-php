@@ -282,5 +282,12 @@ class Builder extends ND_Controller {
 		/* Redirect to the IDE Builder */
 		redirect('/builder/ide');
 	}
+
+	/** Tools **/
+	public function base64() {
+		$data = $this->_get_view_data_generic('ND PHP Framework - Base64 Converter', 'Base64 Converter');
+
+		$this->load->view($this->_name . '/base64', $data);
+	}
 }
 

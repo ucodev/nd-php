@@ -63,6 +63,8 @@
 			"application/static/js/lib/ndphp/ndphp.js.php",
 			"application/static/js/lib/pchart/imagemap.js",
 			"application/views/_templates/errors/status_code.php",
+			"application/views/builder/base64.php",
+			"application/views/builder/ide.php",
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/lib/charts.php",
 			"application/views/themes/Blueish/_default/lib/charts_foreign.php",

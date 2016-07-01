@@ -5,21 +5,27 @@ Basic instructions to install the ND PHP Framework
   See the documentation/videos/01_Installation.mp4
 
 
-1. Debian Installation
+1. Pre-requisites
 
- Perform the following commands as super-user:
+ Perform the following commands as super-user (on Debian based distributions):
 
-  # apt-get install php5-mcrypt php5-gd
-  # php5enmod mcrypt gd
+  # apt-get install php5-mcrypt php5-gd php5-curl php5-memcached
+  # php5enmod mcrypt gd curl memcached
   # service apache2 restart
-  # mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -p mysql
 
 
 2. Apache Settings
 
- Set 'AllowOverride all' on project VirtualHost directory.
+ Set 'AllowOverride all' and 'Options -Indexes' on project VirtualHost directory.
 
  Set the VirtualHost ErrorLog directive value to logs/error.log .
+
+ Example when using /var/www/html/ as the root directory for your deploy:
+
+  <Directory "/var/www/html/">
+      Options -Indexes
+      AllowOverride all
+  </Directory>
 
 
 3. PHP Settings
@@ -47,6 +53,11 @@ Basic instructions to install the ND PHP Framework
   mysql> GRANT ALL PRIVILEGES ON ndphp.* TO 'ndphp_user'@'localhost';
   mysql> FLUSH PRIVILEGES;
 
+ If your MySQL / MariaDB installation did not imported the zoneinfo data, run
+ the following command:
+
+  $ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -p mysql
+
 
 5. ND PHP Framework Settings
 
@@ -63,6 +74,7 @@ Basic instructions to install the ND PHP Framework
   # chown -R www-data:www-data nd-php/install
   # chown -R www-data:www-data nd-php/uploads
   # chown -R www-data:www-data nd-php/logs
+  # chown -R www-data:www-data nd-php/tmp
   # chown -R www-data:www-data nd-php/user/config
 
  or run the following command (exactly as stated, with all the dots):

@@ -81,7 +81,8 @@
  *
  * FIXME:
  *
- * + Charts generators should attempt to trigger both list and result filter hook.
+ * + Chart generators should attempt to trigger both list and result filter hook.
+ + + Chart imagemaps display incorrect captions on bar charts.
  * + Missing multiple and mixed relationship logging support (only basic fields are supported).
  * + On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * + Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries)
@@ -109,7 +110,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02h';
+	protected $_ndphp_version = '0.02i';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -6672,7 +6673,7 @@ class ND_Controller extends UW_Controller {
 		}
 	}
 
-	protected function create_generic() {
+	protected function create_generic($autocomplete = NULL) {
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' CREATE.', $this->_default_charset, !$this->request->is_ajax());
@@ -6714,6 +6715,15 @@ class ND_Controller extends UW_Controller {
 		$data['view']['fields'] = $this->_filter_fields($this->_security_perms, $this->security->perm_create, $this->_get_fields(NULL, $this->_hide_fields_create)); /* Filter fields (The perm_read permission is already being validated on $this->_get_fields() */
 		$data['view']['links']['submenu'] = $this->_links_submenu_body_create;
 		$data['view']['links']['breadcrumb'] = $this->_get_breadcrumb('create', NDPHP_LANG_MOD_OP_CREATE);
+
+		/* Check if there is any autocomplete data set in a POST */
+		if (isset($_POST['autocomplete'])) {
+			/* If so... the POST data always have precedence over the URL data */
+			$data['view']['autocomplete'] = json_decode($_POST['autocomplete'], true);
+		} else if ($autocomplete !== NULL) {
+			/* URL parameters always come encoded in safe base64 format */
+			$data['view']['autocomplete'] = json_decode($this->ndphp->safe_b64decode($autocomplete), true);
+		}
 
 		/* Required fields are extracted from information schema
 		 *
@@ -6808,8 +6818,8 @@ class ND_Controller extends UW_Controller {
 		$this->_load_view('create_mixed', $data, true);
 	}
 
-	public function create($body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
-		$data = $this->create_generic();
+	public function create($autocomplete = NULL, $body_only = false, $body_header = true, $body_footer = true, $modalbox = false) {
+		$data = $this->create_generic($autocomplete);
 
 		if ($modalbox)
 			$data['config']['modalbox'] = true;
@@ -6822,16 +6832,16 @@ class ND_Controller extends UW_Controller {
 		$this->_load_method_views(__FUNCTION__, $data, $body_only, $body_header, $body_footer);
 	}
 
-	public function create_body_ajax() {
-		$this->create(true);
+	public function create_body_ajax($autocomplete = NULL) {
+		$this->create($autocomplete, true);
 	}
 
-	public function create_data_ajax() {
-		$this->create(true, false);
+	public function create_data_ajax($autocomplete = NULL) {
+		$this->create($autocomplete, true, false);
 	}
 
-	public function create_data_modalbox() {
-		$this->create(true, false, true, true);
+	public function create_data_modalbox($autocomplete = NULL) {
+		$this->create($autocomplete, true, false, true, true);
 	}
 
 	public function insert($retid = false) {

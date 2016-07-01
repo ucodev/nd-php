@@ -6,5 +6,6 @@ chown -R www-data:www-data ./backups
 chown -R www-data:www-data ./install
 chown -R www-data:www-data ./uploads
 chown -R www-data:www-data ./logs
+chown -R www-data:www-data ./tmp
 chown -R www-data:www-data ./user/config
 

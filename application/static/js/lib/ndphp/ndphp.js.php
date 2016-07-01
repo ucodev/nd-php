@@ -149,7 +149,8 @@ ndphp.utils.crlf_callback = function(e, callback) {
 };
 
 ndphp.utils.safe_b64encode = function(input) {
-	return base64.encode(input).replace('+', '-').replace('/', '_').replace('=', ',');
+	// return base64.encode(input).replace('+', '-').replace('/', '_').replace('=', ',');
+	return base64.encode(input).replace('+', '-').replace('/', '_');
 };
 
 /* Global UI Management */
