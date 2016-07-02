@@ -1,3 +1,13 @@
+v0.02j (2016-07-02):
+
+ - Current page value on pagination is now highlighted.
+ - Replaced base64 encoder/decoder with a new transcoder view.
+ - Added a decimal converter to Builder tools.
+ - Updated tracker.
+ - Update controller will now process the touch compoenent elements from the tracker.
+ - Update controller is now able to remove unused files based on tracker data.
+
+
 v0.02i (2016-07-01):
 
  - Updated INSTALL.txt

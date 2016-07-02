@@ -805,7 +805,7 @@ h2.crud_warning {
 #pagination span {
 	margin: 0;
 	background-color: #777777;
-	color: white;
+	color: #DDDDDD;
 	font-weight: bold;
 	padding-left: 8px;
 	padding-right: 8px;
@@ -813,10 +813,15 @@ h2.crud_warning {
 
 #pagination a {
 	background-color: #777777;
-	color: white;
+	color: #DDDDDD;
 	font-weight: bold;
 	padding-left: 8px;
 	padding-right: 8px;
+}
+
+#uw_current_page {
+	font-weight: bolder !important;
+	color: white !important;
 }
 
 #list, div.list, #create, div.create, #edit, div.edit, #remove, div.remove, #result, div.result, #view, div.view, div.search, #search, div.groups, #groups {

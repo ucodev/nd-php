@@ -63,8 +63,9 @@
 			"application/static/js/lib/ndphp/ndphp.js.php",
 			"application/static/js/lib/pchart/imagemap.js",
 			"application/views/_templates/errors/status_code.php",
-			"application/views/builder/base64.php",
+			"application/views/builder/converter.php",
 			"application/views/builder/ide.php",
+			"application/views/builder/transcoder.php",
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/lib/charts.php",
 			"application/views/themes/Blueish/_default/lib/charts_foreign.php",
@@ -102,10 +103,16 @@
 			"user/utils/language.php",
 			"VERSION"
 		],
+		"remove": [
+			"application/views/builder/base64.php"
+		],
 		"touch": [
+			"logs/error.log"
 		],
 		"post_update_redirect": "/update/post_update/any/master",
 		"data_model_queries": [
+			"ALTER TABLE builder CHANGE COLUMN model model mediumtext NULL",
+			"ALTER TABLE configuration CHANGE COLUMN model model mediumtext NULL",
 			"ALTER TABLE sessions CHANGE COLUMN user_agent user_agent varchar(1024) NULL"
 		],
 		"replace": [

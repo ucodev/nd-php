@@ -125,7 +125,15 @@ class Update extends ND_Controller {
 					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
 			}
 
-			/** Stage 5: Fetch and replace files **/
+			/** Stage 5: Touch files **/
+			foreach ($tracker[$from_version]['touch'] as $file) {
+				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
+
+				if ($fp === false)
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
+			}
+
+			/** Stage 6: Fetch and update files **/
 			foreach ($tracker[$from_version]['files'] as $file) {
 				$ch = curl_init();
 				$headers = array(
@@ -158,13 +166,18 @@ class Update extends ND_Controller {
 				set_time_limit(30); /* Reset the limit counter. We do not expect that a file update will take longer than 30 seconds... */
 			}
 
-			/** Stage 6: Replace files **/
+			/** Stage 7: Remove unused files **/
+			foreach ($tracker[$from_version]['remove'] as $file) {
+				unlink(SYSTEM_BASE_DIR . '/' . $file);
+			}
+
+			/** Stage 8: Replace files **/
 			foreach ($tracker[$from_version]['replace'] as $file_rep) {
 				if (copy(SYSTEM_BASE_DIR . '/' . $file_rep[1], SYSTEM_BASE_DIR . '/' . $file_rep[0]) === false)
 					$this->response->code('500', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file_rep[0], $this->_default_charset, !$this->request->is_ajax());
 			}
 
-			/** Stage 7: Execute any required SQL queries **/
+			/** Stage 9: Execute any required SQL queries **/
 			foreach ($tracker[$from_version]['data_model_queries'] as $query) {
 				$this->db->trans_begin();
 
@@ -178,10 +191,10 @@ class Update extends ND_Controller {
 				$this->db->trans_commit();
 			}
 
-			/** Stage 8: Wait a little while... */
+			/** Stage 10: Wait a little while... */
 			sleep(3);
 
-			/** Stage 9: Redirect to the post update method **/
+			/** Stage 11: Redirect to the post update method **/
 			redirect($tracker[$from_version]['post_update_redirect']);
 		}
 	}
