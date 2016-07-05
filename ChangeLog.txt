@@ -1,3 +1,16 @@
+v0.02k (2016-07-05):
+
+ - Fixed mixed configuration access of foreign controller on ND core controller.
+ - POST data validation is now performed on controller construct.
+ - POST data keys are now always converted to lowercase.
+ - Exising views' data array is now recursively merged to _get_view_data_generic() values.
+ - Detection of changed POST data (relative to database data) now account for mixed and multiple relationships.
+ - Fixed some typos all around.
+ - Added logging support for multiple and mixed relationship data changes.
+ - Restructured some core controllers' code.
+ - Fixed an issue with multiple configuration entries.
+
+
 v0.02j (2016-07-02):
 
  - Current page value on pagination is now highlighted.

@@ -272,7 +272,7 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
     }
 
     /* TODO: FIXME: Also check for duplicate Multiple and Mixed relationships that will generate similar relationship tables
-     *              if created under diferent controllers but pointing to the same place (AKA ambiguity).
+     *              if created under different controllers but pointing to the same place (AKA ambiguity).
      */
 
     /* Validate the field length value */

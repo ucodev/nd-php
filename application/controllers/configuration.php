@@ -61,13 +61,14 @@ class Configuration extends ND_Controller {
 			/* Check if there's another active configuration */
 			$this->db->from('configuration');
 			$this->db->where('active', 1);
+			$this->db->where('id !=', $id);
 			$q = $this->db->get();
 
-			/* We check if there are, at least, two active configurations because
-			 * if this one is going to be inactive, we need to grant that at least
-			 * one will be active after this update is performed.
+			/* Check if there is, at least, one other active configuration.
+			 * If this one is going to be inactive, we need to grant that there will be
+			 * at least another active configuration after this update is performed.
 			 */
-			if ($q->num_rows() < 2)
+			if ($q->num_rows() < 1)
 				$this->response->code('403', NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE, $this->_default_charset, !$this->request->is_ajax());
 		}
 

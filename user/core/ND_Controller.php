@@ -41,6 +41,7 @@
  *
  * TODO:
  *
+ * * Add support for hooks on static file requests.
  * * IDE application model should validate everything that was previously validated by ide.js.
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
@@ -78,12 +79,14 @@
  * - Add support for context awareness under hooks (the hook should know which preceeding operations (workflow) preceeded their invocation)
  * - Support edition on previously saved searches.
  * - Improve UI accessibility with ARIA attributes
+ * - Rollback operation on Logging controller should be able to also rollback multiple and mixed relationship values.
  *
  * FIXME:
  *
+ * + Do not allow 0000-00-00 date (or date component of datetime) values.
+ * + Multiple relationship buttons and timer buttons styles must be redesigned.
  * + Chart generators should attempt to trigger both list and result filter hook.
  + + Chart imagemaps display incorrect captions on bar charts.
- * + Missing multiple and mixed relationship logging support (only basic fields are supported).
  * + On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * + Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries)
  * * Framework core tables should be prefixed with nd_*
@@ -110,7 +113,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02j';
+	protected $_ndphp_version = '0.02k';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2564,6 +2567,82 @@ class ND_Controller extends UW_Controller {
 	}
 
 
+	/** Value fetchers **/
+
+	protected function value_from_post($id, $field, $POST = NULL) {
+		if ($POST === NULL)
+			$POST = $_POST;
+
+		return $POST[$field];
+	}
+
+	protected function value_from_database($id, $field, $table = NULL) {
+		if ($table === NULL)
+			$table = $this->_name;
+
+		if (substr($field, 0, 6) == 'mixed_') {
+			/* Parse the mixed field */
+			$mixed_field = $this->_mixed_parse_crud_field($field);
+
+			/* Fetch the data from the database for this particular mixed field */
+			$this->db->select($mixed_field[1]);
+			$this->db->from('mixed_' . $this->_name . '_' . $mixed_field[0]);
+			$this->db->where($table . '_id', $id);
+			$this->db->limit(1, $mixed_field[2] - 1); /* Fetch only the nth entry */
+			$q_mixed = $this->db->get();
+
+			/* If the nth entry does not exist, return boolean false (never return NULL, as NULL is a possible field value) */
+			if (!$q_mixed->num_rows())
+				return false;
+
+			/* Fetch the row */
+			$row_mixed = $q_mixed->row_array();
+
+			/* Return the field value */
+			return $row_mixed[$mixed_field[1]];
+		} else if (substr($field, 0, 4) == 'rel_') {
+			/* Determine te foreign table name and fetch data from the relational table for this $id */
+			$foreign_table = array_pop(array_diff($this->_get_multiple_rel_table_names($field, $table), array($table)));
+
+			/* Fetch data from the database for this multiple relationship */
+			$this->db->select($foreign_table . '_id');
+			$this->db->from($field);
+			$this->db->where($table . '_id', $id);
+			$q_rel = $this->db->get();
+
+			/* If there are no relationships, return an empty array */
+			if (!$q_rel->num_rows())
+				return array();
+
+			/* Create a result array for the stored values of the field */
+			$rel_db_values = array();
+			foreach ($q_rel->result_array() as $row_rel) {
+				array_push($rel_db_values, $row_rel[$foreign_table . '_id']);
+			}
+
+			/* Return all the relationship values as array() */
+			return $rel_db_values;
+		} else {
+			/* Fetch the regular field value */
+			$this->db->select($field);
+			$this->db->from($table);
+			$this->db->where('id', $id);
+			$q = $this->db->get();
+
+			/* If no entries were found for this ID, return boolean false (never return NULL, as NULL is a possible field value) */
+			if (!$q->num_rows())
+				return false;
+
+			$row = $q->row_array();
+
+			return $row[$field];
+		}
+
+		/* Unreachable... we hope */
+		return false;
+	}
+
+
 	/** View Data **/
 
 	private function _get_views_base_dir($theme) {
@@ -2634,43 +2713,15 @@ class ND_Controller extends UW_Controller {
 		return $data;
 	}
 
+
 	/** User input (POST) **/
-
-	protected function post_changed_fields_list($table, $id, $POST) {
-		/* Returns a list of fields whose values differ from the $POST data to the database (stored) data */
-
-		/* Fetch the stored data */
-		$this->db->from($table);
-		$this->db->where('id', $id);
-		$q = $this->db->get();
-
-		/* Check if there are any results */
-		if (!$q->num_rows())
-			return array();
-
-		$row = $q->row_array();
-
-		$changed_list = array();
-
-		/* Compare the stored data with the $POST data */
-		foreach ($POST as $key => $value) {
-			if (!isset($row[$key]))
-				continue;
-
-			/* Check if there was a change for this field... */
-			if ($row[$key] != $value) {
-				/* ... and if so, add it to the result. TODO: FIXME: mixed and multiple relationships not yet supported  */
-				array_push($changed_list, $key);
-			}
-		}
-
-		return $changed_list;
-	}
 
 	protected function post_changed_fields_data($table, $id, $POST) {
 		/* Returns a list of fields, including the changed data, whose values differ,
 		 * from the $POST data to the database (stored) data
 		 */
+
+		$mixed_data = array(); /* If there are mixed relationships present in the POST data, we'll store the data in this array for later processing */
 
 		/* Fetch the stored data */
 		$this->db->from($table);
@@ -2687,20 +2738,143 @@ class ND_Controller extends UW_Controller {
 
 		/* Compare the stored data with the $POST data */
 		foreach ($POST as $key => $value) {
-			if (!isset($row[$key]))
-				continue;
+			if (substr($key, 0, 6) == 'mixed_') {
+				/* Check if the mixed relationship field value is about to be changed */
 
-			/* Check if there was a change for this field... */
-			if ($row[$key] != $value) {
-				/* ... and if so, add it to the result. TODO: FIXME: mixed and multiple relationships not yet supported  */
-				array_push($changed_data, array(
-					'field' => $key,
-					'value_old' => $row[$key],
-					'value_new' => $value
-				));
+				/* Parse mixed field */
+				$mixed_field = $this->_mixed_parse_crud_field($key);
+
+				/* Keep track of existing db and post entries */
+				if (!isset($mixed_data[$mixed_field[0]])) {
+					/* Initialize the mixed data entry for this mixed table */
+					$mixed_data[$mixed_field[0]] = array();
+					$mixed_data[$mixed_field[0]]['fields'] = array(); /* This array will contain the field _set_ for the mixed relationship */
+					$mixed_data[$mixed_field[0]]['entries_post'] = array(); /* This array will contain the mixed_id _set_ present on the post data for this mixed relationship */
+					$mixed_data[$mixed_field[0]]['total_post_entries'] = 0; /* Will be incremented for each mixed entry (not mixed field) */
+
+					/* Fetch the total number of rows currently stored in the database belonging to this $id and the current mixed relationship */
+					$this->db->from('mixed_' . $this->_name . '_' . $mixed_field[0]);
+					$this->db->where($this->_name . '_id', $id);
+					$q_mixed_entries_db = $this->db->get();
+
+					/* Set the total number of found rows in the database for this mixed relationship (assigned to $id) */
+					$mixed_data[$mixed_field[0]]['total_db_entries'] = $q_mixed_entries_db->num_rows();
+				}
+
+				/* Populate one more field to $mixed_data[$mixed_field[0]]['fields'] array, if it isn't already present */
+				if (!in_array($mixed_field[1], $mixed_data[$mixed_field[0]]['fields']))
+					array_push($mixed_data[$mixed_field[0]]['fields'], $mixed_field[1]);
+
+				/* Populate one more field to $mixed_data[$mixed_field[0]]['entries_post'] array, if it isn't already present */
+				if (!in_array($mixed_field[2], $mixed_data[$mixed_field[0]]['entries_post'])) {
+					$mixed_data[$mixed_field[0]]['total_post_entries'] ++;
+					array_push($mixed_data[$mixed_field[0]]['entries_post'], $mixed_field[2]);
+				}
+
+				/* Craft mixed crud field name.
+				 * POST mixed fields may assume any mixed_id and may not be sorted (and there may even be gaps between entries).
+				 * So we need to craft a ordered entry list in order to keep track of the changes in a sorted fashion.
+				 */
+				$mixed_crud_field = 'mixed_' . $mixed_field[0] . '_' . $mixed_field[1] . '_' . $mixed_data[$mixed_field[0]]['total_post_entries'];
+
+				/* Now fetch the data from the database for this particular mixed field */
+				$mixed_db_value = $this->value_from_database($id, $mixed_crud_field);
+
+				/* Check if there isn't an existing entry on the database for this mixed field... */
+				if ($mixed_db_value === false) {
+					array_push($changed_data, array(
+						'field' => $mixed_crud_field,
+						'value_old' => '',
+						'value_new' => $value
+					)); /* If not, then something is about to be changed (a new row will be added) */
+				} else if ($mixed_db_value != $value) {
+					array_push($changed_data, array(
+						'field' => $mixed_crud_field,
+						'value_old' => $mixed_db_value,
+						'value_new' => $value
+					));
+				}
+
+				/* We still need to check for removed mixed entries, but since the changes were already identified, the
+				 * removed entries are the leftovers not present in the POST data. This will be processed ouside of this loop,
+				 * at the end of this method.
+				 */
+			} else if (substr($key, 0, 4) == 'rel_') {
+				/* If the last element of '$value' is zero (a control value), pop it out */
+				if (!end($value))
+					array_pop($value);
+
+				$rel_db_values = $this->value_from_database($id, $key);
+
+				/* Check if the number of entries in the database match the number of entries on the field's POST data */
+				if (count($rel_db_values) != count($value)) {
+					array_push($changed_data, array(
+						'field' => $key,
+						'value_old' => implode(',', $rel_db_values),
+						'value_new' => implode(',', $value)
+					));
+
+					continue; /* If the number of entries do not match, then something was changed */
+				}
+
+				/* Check if all the entries on the database are present on this field's POST data */
+				foreach ($rel_db_values as $rel_db_value) {
+					if (!in_array($rel_db_value, $value)) {
+						array_push($changed_data, array(
+							'field' => $key,
+							'value_old' => implode(',', $rel_db_values),
+							'value_new' => implode(',', $value)
+						));
+						break; /* If at least one element is not present, then we can safely assume that this field was changed */
+					}
+				}
+			} else if (!isset($row[$key])) { /* We must need to check $row keys after 'mixed_' and 'rel_' fields as they do not exist in the database */
+				/* If there's a POST key that is not present in the database table, just ignore it */
+				continue;
+			} else {
+				/* Check if there was a change for this field... */
+				if ($row[$key] != $value) {
+					/* ... and if so, add it to the result. TODO: FIXME: mixed and multiple relationships not yet supported  */
+					array_push($changed_data, array(
+						'field' => $key,
+						'value_old' => $row[$key],
+						'value_new' => $value
+					));
+				}
 			}
 		}
 
+		/* Post-process mixed relationships. We'll need to add to $changed_data array any mixed entries that might have been deleted
+		 * and were not caught by the previous routines (because they're based on POST data, not database data... so if there are more
+		 * database entries than POST data entries for a particular mixed relationship, the exceeding database entries would
+		 * be ignored if the following routine wasn't performed).
+		 */
+		foreach ($mixed_data as $mixed_table => $mixed_meta) {
+			if ($mixed_meta['total_db_entries'] > count($mixed_meta['entries_post'])) {
+				for ($i = count($mixed_meta['entries_post']); $i < $mixed_meta['total_db_entries']; $i ++) {
+					foreach ($mixed_meta['fields'] as $mixed_field) {
+						/* Craft mixed crud field name */
+						$mixed_crud_field = 'mixed_' . $mixed_table . '_' . $mixed_field . '_' . ($i + 1);
+
+						/* Fetch value for this field from the database */
+						$mixed_db_value = $this->value_from_database($id, $mixed_crud_field);
+
+						/* If an entry wasn't found, skip it */
+						if ($mixed_db_value === false)
+							break;
+
+						/* Insert the value that will be deleted */
+						array_push($changed_data, array(
+							'field' => $mixed_crud_field,
+							'value_old' => $mixed_db_value,
+							'value_new' => ''
+						));
+					}
+				}
+			}
+		}
+
+		/* All good */
 		return $changed_data;
 	}
 
@@ -2899,7 +3073,7 @@ class ND_Controller extends UW_Controller {
 
 	/** Mixed handlers **/
 
-	protected function _mixed_process_post_field($field) {
+	protected function _mixed_parse_crud_field($field) {
 		$mixed_field = array();
 
 		/* Mixed field format is:
@@ -3455,6 +3629,19 @@ class ND_Controller extends UW_Controller {
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_pre.php') as $plugin)
 			include($plugin);
+
+		/* POST data handlers */
+		if (count($_POST)) {
+			/* Set all $_POST keys to lowercase */
+			foreach ($_POST as $key => $value) {
+				unset($_POST[$key]);
+				$_POST[strtolower($key)] = $value;
+			}
+
+			/* Grant that $_POST keys are safe, if any */
+			if (!$this->request->is_json() && count($_POST) && !$this->security->safe_keys($_POST, $this->_security_safe_chars))
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
+		}
 
 		/* Check if JSON replies should be enabled */
 		if ($json_replies)
@@ -4429,7 +4616,7 @@ class ND_Controller extends UW_Controller {
 			/* Get hidden mixed fields. FIXME: TODO: This will filter fields for all views, so currently we don't support
 			 * customized hidden fields per view (create/edit/view/remove)
 			 */
-			$mixed_hide_fields = $this->access->controller($rel)['mixed_hide_fields_view'];
+			$mixed_hide_fields = $this->access->controller($rel)->config['mixed_hide_fields_view'];
 
 			/* Resolve foreign table field names aliases */
 			$table_fields_aliases = array();
@@ -4802,7 +4989,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_GROUPS . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_groups); /* _get_fields() uses a perm_read filter by default */
@@ -4994,7 +5181,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_LIST . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['view']['links']['quick'] = $this->_links_quick_modal_list;
@@ -5250,10 +5437,6 @@ class ND_Controller extends UW_Controller {
 		/* Currently, only csv imports are supported */
 		if ($type != 'csv')
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_REQUEST, $this->_default_charset, !$this->request->is_ajax());
-
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Some sanity checks first */
 		if (!in_array($_POST['import_csv_sep'], array(',', ';')))
@@ -5566,10 +5749,6 @@ class ND_Controller extends UW_Controller {
 	}
 
 	public function search_save_insert() {
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
-
 		$this->db->trans_begin();
 
 		$this->db->insert('_saved_searches', array(
@@ -5653,7 +5832,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_SEARCH . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_filter_fields($this->_security_perms, $this->security->perm_search, $this->_get_fields(NULL, $this->_hide_fields_search)); /* _get_fields() uses a perm_read filter by default */
@@ -5703,10 +5882,6 @@ class ND_Controller extends UW_Controller {
 
 	protected function result_generic($type = 'advanced', $result_query = NULL,
 							$order_field = NULL, $order_type = NULL, $page = 0) {
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
-
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->_security_perms, $this->security->perm_read, $this->_name))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
@@ -5763,7 +5938,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_RESULT . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['view']['links'] = array();
@@ -6576,7 +6751,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_EXPORT . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_export); /* _get_fields() uses a perm_read filter by default */
@@ -6705,7 +6880,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_CREATE . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['config']['choices'] = count($this->_rel_choice_hide_fields_create) ? $this->_rel_choice_hide_fields_create : $this->_rel_choice_hide_fields;
@@ -6847,9 +7022,7 @@ class ND_Controller extends UW_Controller {
 	public function insert($retid = false) {
 		/* NOTE: If $retid is true, an integer value is returned on success (on failure, die() will always be called) */
 
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
+		$log_removed_fields = array(); /* Keep track of unset fields from POST data that still need to be logged */
 
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
@@ -6897,7 +7070,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($_POST as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
-				$mixed_field = $this->_mixed_process_post_field($field);
+				$mixed_field = $this->_mixed_parse_crud_field($field);
 
 				/* 
 				 * Description:
@@ -6917,6 +7090,8 @@ class ND_Controller extends UW_Controller {
 				/* Assign mixed rel value */
 				$mixed_rels[$mixed_field[0]][$mixed_field[2]][$mixed_field[1]] = $value;
 
+				/* Keep track of the mixed field and remove it from $_POST */
+				$log_removed_fields[$field] = $_POST[$field];
 				unset($_POST[$field]);
 				continue;
 			}
@@ -6931,6 +7106,8 @@ class ND_Controller extends UW_Controller {
 			if (substr($field, 0, 4) == 'rel_') {
 				$table = $field;
 				$rel[$table] = $value;
+				/* Keep track of the relational field and remove it from $_POST */
+				$log_removed_fields[$field] = $_POST[$field];
 				unset($_POST[$field]);
 			} else if ($ftypes[$field]['type'] == 'datetime') {
 				/* Datetime field types requires special processing in order to append
@@ -6989,13 +7166,17 @@ class ND_Controller extends UW_Controller {
 
 			$log_transaction_id = openssl_digest('INSERT' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
-			foreach ($_POST as $pfield => $pvalue) {
+			foreach (array_merge($_POST, $log_removed_fields) as $pfield => $pvalue) {
+				/* If $pvalue is of type array and contains a control value (zero value) as it's last element, pop it out */
+				if ((gettype($pvalue) == 'array') && !end($pvalue))
+					array_pop($pvalue);
+
 				$this->db->insert('logging', array(
 					'operation' => 'INSERT',
 					'_table' => $this->_name,
 					'_field' => $pfield,
 					'entryid' => $last_id,
-					'value_new' => $pvalue,
+					'value_new' => (gettype($pvalue) == 'array') ? implode(',', $pvalue) : $pvalue,
 					'transaction' => $log_transaction_id,
 					'registered' => date('Y-m-d H:i:s'),
 					'sessions_id' => $this->_session_data['sessions_id'],
@@ -7119,7 +7300,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_EDIT . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['config']['choices'] = count($this->_rel_choice_hide_fields_edit) ? $this->_rel_choice_hide_fields_edit : $this->_rel_choice_hide_fields;
@@ -7332,13 +7513,11 @@ class ND_Controller extends UW_Controller {
 	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
+		$log_removed_fields = array(); /* Keep track of unset fields from POST data that still need to be logged */
+
 		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
 		if ($id)
 			$_POST['id'] = $id;
-
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
@@ -7358,6 +7537,7 @@ class ND_Controller extends UW_Controller {
 		/* Retrieve fields meta data */
 		$ftypes = $this->_get_fields();
 		$mixed_rels = array();
+		$multiple_rels = array();
 
 		/* Array containing file names to be uploaded */
 		$file_uploads = array();
@@ -7395,7 +7575,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($_POST as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
-				$mixed_field = $this->_mixed_process_post_field($field);
+				$mixed_field = $this->_mixed_parse_crud_field($field);
 
 				/* 
 				 * Description:
@@ -7415,7 +7595,10 @@ class ND_Controller extends UW_Controller {
 				/* Assign mixed rel value */
 				$mixed_rels[$mixed_field[0]][$mixed_field[2]][$mixed_field[1]] = $value;
 
+				/* Keep track of the mixed field and remove it from $_POST */
+				$log_removed_fields[$field] = $_POST[$field];
 				unset($_POST[$field]);
+
 				continue;
 			}
 
@@ -7447,23 +7630,17 @@ class ND_Controller extends UW_Controller {
 			if (!$this->security->perm_check($this->_security_perms, $this->security->perm_update, $this->_name, $field))
 				continue;
 
-			/* Remove all related entries from relational table */
-			$this->db->delete($table, array($this->_name . '_id' => $_POST['id']));
-			
-			/* Insert new relationships */
-			foreach ($value as $rel_id) {
-				if (!$rel_id) /* Ignore the None (hidden) value */
-					continue;
+			/* Add multiple relationship data to $multiple_rels array to be processed later
+			 * (TODO: the following procedure should be consolidated into a _rel_process_post_field() method)
+			 */
+			$multiple_rels[$field] = array(
+				'table' => $table,
+				'rel_table' => $rel_table,
+				'values' => $value
+			);
 
-				if (!$this->_table_row_filter_perm($rel_id, $rel_table)) {
-					$this->db->trans_rollback();
-					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
-				}
-
-				$this->db->insert($table, array($this->_name . '_id' => $_POST['id'], $rel_table . '_id' => $rel_id));
-			}
-
-			/* Remove relational field from $_POST */
+			/* Keep track of the relational field and remove it from $_POST */
+			$log_removed_fields[$field] = $_POST[$field];
 			unset($_POST[$field]);
 		}
 
@@ -7517,7 +7694,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->_logging === true) {
-			$changed_fields = $this->post_changed_fields_data($this->_name, $_POST['id'], $_POST);
+			$changed_fields = $this->post_changed_fields_data($this->_name, $_POST['id'], array_merge($_POST, $log_removed_fields));
 
 			$log_transaction_id = openssl_digest('UPDATE' . $this->_name . $this->_session_data['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
@@ -7552,6 +7729,25 @@ class ND_Controller extends UW_Controller {
 
 		/* Process mixed relationships if there are any to be updated */
 		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes, true);
+
+		/* Process multiple relationships (TODO: the following procedures should be consolidated into a _rel_process_post_data() method) */
+		foreach ($multiple_rels as $rel_field) {
+			/* Remove all related entries from relational table */
+			$this->db->delete($rel_field['table'], array($this->_name . '_id' => $_POST['id']));
+
+			/* Insert new relationships */
+			foreach ($rel_field['values'] as $rel_id) {
+				if (!$rel_id) /* Ignore the None (hidden) value */
+					continue;
+
+				if (!$this->_table_row_filter_perm($rel_id, $rel_field['rel_table'])) {
+					$this->db->trans_rollback();
+					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->_default_charset, !$this->request->is_ajax());
+				}
+
+				$this->db->insert($rel_field['table'], array($this->_name . '_id' => $_POST['id'], $rel_field['rel_table'] . '_id' => $rel_id));
+			}
+		}
 
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
@@ -7620,7 +7816,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_REMOVE . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific view data */
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_remove); /* _get_fields() uses a perm_read filter by default */
@@ -7794,10 +7990,6 @@ class ND_Controller extends UW_Controller {
 	public function delete($id = 0, $retbool = false) {
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
-		/* Grant that $_POST keys are safe */
-		if (!$this->security->safe_keys($_POST, $this->_security_safe_chars))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
-
 		/* Check if this is a view table type */
 		if ($this->_table_type_view)
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' DELETE.', $this->_default_charset, !$this->request->is_ajax());
@@ -7917,7 +8109,7 @@ class ND_Controller extends UW_Controller {
 		$description = NDPHP_LANG_MOD_OP_VIEW . " " . $this->_viewhname;
 
 		/* Setup basic view data */
-		$data = array_merge($data, $this->_get_view_data_generic($title, $description));
+		$data = array_merge_recursive($data, $this->_get_view_data_generic($title, $description));
 
 		/* Setup specific View data */
 		$data['view']['fields'] = $this->_get_fields(NULL, $this->_hide_fields_view); /* _get_fields() uses a perm_read filter by default */
