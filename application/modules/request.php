@@ -30,7 +30,7 @@
  *
  */
 
-class UW_Request extends UW_Model {
+class UW_Request extends UW_Module {
 	private $_raw_data = NULL;
 	private $_headers = array();
 

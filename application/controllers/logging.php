@@ -148,6 +148,8 @@ class Logging extends ND_Controller {
 		$log_transaction_id = openssl_digest('ROLLBACK' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
 
 		foreach ($q_log->result_array() as $row) {
+			/* TODO: FIXME: Missing handler for 'rel_' and 'mixed_' fields */
+
 			/* Fetch the current value for this field */
 			$this->db->select($row['_field']);
 			$this->db->from($row['_table']);

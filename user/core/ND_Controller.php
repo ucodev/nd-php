@@ -113,7 +113,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02k';
+	protected $_ndphp_version = '0.02l';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -526,7 +526,7 @@ class ND_Controller extends UW_Controller {
 
 
 	/* Security */
-	protected $_security_safe_chars = "a-zA-Z0-9_"; /* Mainly used to validate table names */
+	protected $_security_safe_chars = "a-zA-Z0-9_"; /* Mainly used to validate names of tables, fields and keys */
 	protected $_security_perms = array();			/* Will be populated by $this->security->perm_get() */
 
 
@@ -1481,6 +1481,9 @@ class ND_Controller extends UW_Controller {
 
 		/* Check if there are additional filters to append to the query WHERE component */
 		if ($chart['result_query']) {
+			/* Join all relationships */
+			$this->_table_join_rels($this->_name, 'left');
+
 			/* Decode and decipher the query */
 			$result_query = gzuncompress($this->encrypt->decode($this->ndphp->safe_b64decode(rawurldecode($chart['result_query']))));
 
@@ -1745,6 +1748,9 @@ class ND_Controller extends UW_Controller {
 
 		/* Check if there are additional filters to append to the query WHERE component */
 		if ($chart['result_query']) {
+			/* Join all relationships, excluding the one that was already joined before */
+			$this->_table_join_rels($this->_name, 'left', array($foreign_table));
+
 			/* Decode and decipher the query */
 			$result_query = gzuncompress($this->encrypt->decode($this->ndphp->safe_b64decode(rawurldecode($chart['result_query']))));
 
@@ -2050,6 +2056,9 @@ class ND_Controller extends UW_Controller {
 
 		/* Check if there are additional filters to append to the query WHERE component */
 		if ($chart['result_query']) {
+			/* Join all relationships */
+			$this->_table_join_rels($this->_name, 'left');
+
 			/* Decode and decipher the query */
 			$result_query = gzuncompress($this->encrypt->decode($this->ndphp->safe_b64decode(rawurldecode($chart['result_query']))));
 
@@ -3626,6 +3635,10 @@ class ND_Controller extends UW_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct();
 
+		/* Grant that the configured cookie domain matches the server name */
+		if (current_config()['session']['cookie_domain'] != $_SERVER['SERVER_NAME'])
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
+
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_pre.php') as $plugin)
 			include($plugin);
@@ -4082,6 +4095,10 @@ class ND_Controller extends UW_Controller {
 		return ($foreign_table_raw[0] == '_') ? array($target, trim($foreign_table_raw, '_')) : array(trim($foreign_table_raw, '_'), $target);
 	}
 
+	private function _get_single_rel_table_name($rel) {
+		return substr($rel, 0, -3);
+	}
+
 	private function _get_multiple_rel_table_names($rel, $target = NULL) {
 		return $this->_get_rel_table_names($rel, $target, false);
 	}
@@ -4095,30 +4112,40 @@ class ND_Controller extends UW_Controller {
 		if (!$target)
 			$target = $this->_name;
 
-		/* Setup prefix */
-		if ($type == 'multiple') {
-			$prefix = 'rel_';
-		} else if ($type == 'mixed') {
-			$prefix = 'mixed_';
-		}
-
 		$relative = array();
 
-		/* Build a list of tables that are related to $target, based on $type prefix */
-		foreach ($this->_get_tables() as $table) {
-			if (substr($table, 0, strlen($prefix)) == $prefix) {
-				/* If $type is multiple, any of the slices that match $target is a relationship */
-				if ($type == 'multiple') {
-					$slices = $this->_get_multiple_rel_table_names($table, $target);
+		if ($type == 'single') {
+			/* Single relationships are based on fields with '_id' suffix */
+			$fields = $this->_get_table_fields($target);
 
-					if ($slices[0] == $target || $slices[1] == $target)
-						array_push($relative, $table);
-				} else if ($type == 'mixed') {
-					$slices = $this->_get_mixed_rel_table_names($table, $target);
+			foreach ($fields as $field) {
+				if (substr($rel, -3) == '_id')
+					array_push($relative, $this->_get_single_rel_table_name($rel));
+			}
+		} else {
+			/* Setup prefix */
+			if ($type == 'multiple') {
+				$prefix = 'rel_';
+			} else if ($type == 'mixed') {
+				$prefix = 'mixed_';
+			}
 
-					/* If the $type is mixed, only $slice[1] matches is considered a relationship */
-					if ($slices[0] == $target)
-						array_push($relative, $table);
+			/* Build a list of tables that are related to $target, based on $type prefix */
+			foreach ($this->_get_tables() as $table) {
+				if (substr($table, 0, strlen($prefix)) == $prefix) {
+					/* If $type is multiple, any of the slices that match $target is a relationship */
+					if ($type == 'multiple') {
+						$slices = $this->_get_multiple_rel_table_names($table, $target);
+
+						if ($slices[0] == $target || $slices[1] == $target)
+							array_push($relative, $table);
+					} else if ($type == 'mixed') {
+						$slices = $this->_get_mixed_rel_table_names($table, $target);
+
+						/* If the $type is mixed, only $slice[1] matches is considered a relationship */
+						if ($slices[0] == $target)
+							array_push($relative, $table);
+					}
 				}
 			}
 		}
@@ -4749,6 +4776,7 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Custom loaders **/
+
 	protected function _load_view($view_name, $data = NULL, $customizable = false, $return_data = false, $ctrl_override = NULL) {
 		if ($customizable) {
 			if (file_exists('application/views/themes/' . $this->_default_theme . '/' . ($ctrl_override ? $ctrl_override : $this->_name) . '/' . $view_name . '.php')) {
@@ -4779,6 +4807,7 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Field analysis and mangling **/
+
 	protected function _field_value_mangle($fields, $query) {
 		$result_mangled = array();
 
@@ -4916,6 +4945,55 @@ class ND_Controller extends UW_Controller {
 			return '`' . $types[$field]['table'] . '`.`' . $field . '`';
 		} else {
 			return '`' . $this->_name . '`.`' . $field . '`';
+		}
+	}
+
+
+	/** Table analysis and handlers **/
+
+	protected function _table_join_rels($table, $join_type = 'left', $excludes = array()) {
+		/* Join all single relationship tables */
+		$rel_single_list = $this->_get_relative_tables($table, 'single');
+
+		foreach ($rel_single_list as $rel_single) {
+			if (in_array($rel_single, $excludes))
+				continue;
+
+			$this->db->join($rel_single, '`' . $table . '`.`' . $rel_single . '_id` = `' . $rel_single . '`.`id`', $join_type);
+		}
+
+		/* Join all multiple relationship tables */
+		$rel_multiple_list = $this->_get_relative_tables($table, 'multiple');
+
+		foreach ($rel_multiple_list as $rel_multiple) {
+			if (in_array($rel_multiple, $excludes))
+				continue;
+
+			$this->db->join($rel_multiple, '`' . $rel_multiple . '`.`' . $table . '_id` = `' . $table . '`.`id`', $join_type);
+
+			$foreign_table = array_pop(array_diff($this->_get_multiple_rel_table_names($rel_multiple, $table), array($table)));
+
+			if (in_array($foreign_table, $excludes))
+				continue;
+
+			$this->db->join($foreign_table, '`' . $rel_multiple . '`.`' . $foreign_table . '_id` = `' . $foreign_table . '`.`id`', $join_type);
+		}
+
+		/* Join all mixed relationship tables */
+		$rel_mixed_list = $this->_get_relative_tables($table, 'mixed');
+
+		foreach ($rel_mixed_list as $rel_mixed) {
+			if (in_array($rel_mixed, $excludes))
+				continue;
+
+			$this->db->join($rel_mixed, '`' . $rel_mixed . '`.`' . $table . '_id` = `' . $table . '`.`id`', $join_type);
+
+			$foreign_table = array_pop(array_diff($this->_get_mixed_rel_table_names($rel_mixed, $table), array($table)));
+
+			if (in_array($foreign_table, $excludes))
+				continue;
+
+			$this->db->join($foreign_table, '`' . $rel_mixed . '`.`' . $foreign_table . '_id` = `' . $foreign_table . '`.`id`', $join_type);
 		}
 	}
 

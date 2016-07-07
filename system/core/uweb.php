@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 05/06/2016
+ * Date: 06/07/2016
  * License: GPLv3
  */
 
@@ -2172,6 +2172,10 @@ class UW_Load extends UW_Model {
 		return $this->_model->load($model);
 	}
 
+	public function module($module) {
+		return $this->_model->load($module);
+	}
+
 	public function database($database, $return_self = false) {
 		return $this->_database->load($database, $return_self);
 	}
@@ -2187,9 +2191,10 @@ class UW_Load extends UW_Model {
 	}
 }
 
-class UW_Controller extends UW_Model {
+class UW_Module extends UW_Model {
 	public $view = NULL;
 	public $model = NULL;
+	public $module = NULL;
 	public $extension = NULL;
 	public $library = NULL;
 	public $load = NULL;
@@ -2201,6 +2206,9 @@ class UW_Controller extends UW_Model {
 		
 		/* Initialize model class */
 		$this->model = $this;
+
+		/* Initialize module class */
+		$this->module = $this;
 
 		/* Initialize system view controller */
 		$this->view = new UW_View;
@@ -2225,5 +2233,17 @@ class UW_Controller extends UW_Model {
 		/* Autoload configured models */
 		foreach ($config['autoload']['models'] as $_model)
 			$this->load->model($_model);
+	}
+}
+
+class UW_Controller extends UW_Module {
+	public function __construct() {
+		global $config;
+
+		parent::__construct();
+
+		/* Autoload configured interfaces */
+		foreach ($config['autoload']['modules'] as $_module)
+			$this->load->module($_module);
 	}
 }

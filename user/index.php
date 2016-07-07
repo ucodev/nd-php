@@ -42,6 +42,10 @@ include('user/core/index.php');
 foreach (glob("user/models/*.php") as $user_model)
     include($user_model);
 
+/* Include all user modules */
+foreach (glob("user/modules/*.php") as $user_interface)
+    include($user_interface);
+
 /* Include user extensions */
 foreach (glob("user/extensions/*.php") as $user_ext)
     include($user_ext);

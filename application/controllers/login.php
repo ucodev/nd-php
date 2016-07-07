@@ -53,6 +53,8 @@ class Login extends UW_Controller {
 	protected $_word_true = NDPHP_LANG_MOD_WORD_TRUE;
 	protected $_word_false = NDPHP_LANG_MOD_WORD_FALSE;
 
+	protected $_security_safe_chars = "a-zA-Z0-9_"; /* Mainly used to validate names of tables, fields and keys */
+
 	private $_table_users = "users";
 	private $_table_rel_roles = "rel_users_roles";
 
@@ -80,6 +82,23 @@ class Login extends UW_Controller {
 
 	public function __construct() {
 		parent::__construct();
+
+		/* Grant that the configured cookie domain matches the server name */
+		if (current_config()['session']['cookie_domain'] != $_SERVER['SERVER_NAME'])
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
+
+		/* POST data handlers */
+		if (count($_POST)) {
+			/* Set all $_POST keys to lowercase */
+			foreach ($_POST as $key => $value) {
+				unset($_POST[$key]);
+				$_POST[strtolower($key)] = $value;
+			}
+
+			/* Grant that $_POST keys are safe, if any */
+			if (count($_POST) && !$this->security->safe_keys($_POST, $this->_security_safe_chars))
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
+		}
 
 		$this->_viewhname = get_class();
 		$this->_name = strtolower($this->_viewhname);
@@ -213,7 +232,7 @@ class Login extends UW_Controller {
 		if (strlen($privenckey) != 256)
 			$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_default_charset, !$this->request->is_ajax());
 
-		/* Regenrate user session */
+		/* Regenerate user session */
 		$this->session->regenerate();
 
 		/* Setup user session */

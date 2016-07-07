@@ -1,3 +1,14 @@
+v0.02l (2016-07-06):
+
+ - Upgraded uWeb to include the new modules layer that lies between models and controllers.
+ - Request with server names that don't match the cookie domain are now explicitly rejected (fixing the silent rejection issue).
+ - Login controller now also analyze, mangle and filter POST keys.
+ - Updated tracker.
+ - Updated language files.
+ - Fixed some comment typos.
+ - Added the missing joins for result queries on charts filtered by searches.
+
+
 v0.02k (2016-07-05):
 
  - Fixed mixed configuration access of foreign controller on ND core controller.

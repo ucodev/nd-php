@@ -30,7 +30,7 @@
  *
  */
 
-class UW_Response extends UW_Model {
+class UW_Response extends UW_Module {
 	/* RFC2616 Section 10 */
 	private $_code_name_desc = array(
 		/* Informational 1xx */
@@ -97,7 +97,6 @@ class UW_Response extends UW_Model {
 			$data['view']['code']['number'] = $code;
 			$data['view']['code']['name'] = $this->_code_name_desc[$code][0];
 			$data['view']['code']['description'] = $this->_code_name_desc[$code][1];
-			$this->load('view'); /* We shouldn't really do this... but it's handy... and the script is dying anyway... */
 			die($this->view->load('_templates/errors/status_code', $data, true));
 		} else {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);

@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 26/04/2016
+ * Date: 06/07/2016
  * License: GPLv3
  */
 
@@ -41,6 +41,10 @@ foreach (glob("system/core/*.php") as $sys_core) {
 foreach (glob("system/models/*.php") as $sys_model)
     include($sys_model);
 
+/* Include all system modules */
+foreach (glob("system/modules/*.php") as $sys_model)
+    include($sys_model);
+
 /* Include all system extensions */
 foreach (glob("system/extensions/*.php") as $sys_ext)
     include($sys_ext);
@@ -48,3 +52,7 @@ foreach (glob("system/extensions/*.php") as $sys_ext)
 /* Include all application models */
 foreach (glob("application/models/*.php") as $app_model)
     include($app_model);
+
+/* Include all application modules */
+foreach (glob("application/modules/*.php") as $app_interface)
+    include($app_interface);

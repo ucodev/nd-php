@@ -2,9 +2,12 @@
 	"any": {
 		"to": "master",
 		"directories": [
+			"application/modules",
 			"application/static/js/lib/pchart",
 			"application/views/_templates",
 			"application/views/_templates/errors",
+			"system/modules"
+			"user/modules"
 			"logs",
 			"tmp"
 		],
@@ -54,8 +57,9 @@
 			"application/models/application.php",
 			"application/models/configuration.php",
 			"application/models/ndphp.php",
-			"application/models/request.php",
-			"application/models/response.php",
+			"application/models/security.php",
+			"application/modules/request.php",
+			"application/modules/response.php",
 			"application/static/css/themes/Blueish/main.css.php",
 			"application/static/images/themes/Blueish/icons/group_small.png",
 			"application/static/js/lib/ndphp/ide.js.php",
@@ -98,12 +102,16 @@
 			"install/autoload.php",
 			"install/ndphp.sql",
 			"logs/.htaccess",
+			"system/modules/dummy.php",
 			"tmp/.htaccess",
 			"user/core/ND_Controller.php",
+			"user/modules/dummy.php",
 			"user/utils/language.php",
 			"VERSION"
 		],
 		"remove": [
+			"application/models/request.php",
+			"application/models/response.php",
 			"application/views/builder/base64.php"
 		],
 		"touch": [

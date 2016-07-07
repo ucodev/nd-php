@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 26/04/2016
+ * Date: 06/07/2016
  * License: GPLv3
  */
 
@@ -68,6 +68,12 @@ function current_controller() {
 	global $__controller;
 
 	return $__controller;
+}
+
+function current_config() {
+	global $config;
+
+	return $config;
 }
 
 function redirect($directory, $with_index = true, $full_url = false) {
