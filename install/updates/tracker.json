@@ -6,8 +6,8 @@
 			"application/static/js/lib/pchart",
 			"application/views/_templates",
 			"application/views/_templates/errors",
-			"system/modules"
-			"user/modules"
+			"system/modules",
+			"user/modules",
 			"logs",
 			"tmp"
 		],
