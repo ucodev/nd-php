@@ -4119,8 +4119,8 @@ class ND_Controller extends UW_Controller {
 			$fields = $this->_get_table_fields($target);
 
 			foreach ($fields as $field) {
-				if (substr($rel, -3) == '_id')
-					array_push($relative, $this->_get_single_rel_table_name($rel));
+				if (substr($field, -3) == '_id')
+					array_push($relative, $this->_get_single_rel_table_name($field));
 			}
 		} else {
 			/* Setup prefix */
