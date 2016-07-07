@@ -102,12 +102,15 @@
 			"install/autoload.php",
 			"install/ndphp.sql",
 			"logs/.htaccess",
+			"system/core/index.php",
+			"system/core/uweb.php",
 			"system/modules/dummy.php",
 			"system/utils/base.php",
 			"tmp/.htaccess",
 			"user/core/ND_Controller.php",
 			"user/modules/dummy.php",
 			"user/utils/language.php",
+			"user/index.php",
 			"VERSION"
 		],
 		"remove": [
