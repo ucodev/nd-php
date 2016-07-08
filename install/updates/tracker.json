@@ -78,6 +78,7 @@
 			"application/views/themes/Blueish/_default/create_data.php",
 			"application/views/themes/Blueish/_default/edit_data.php",
 			"application/views/themes/Blueish/_default/edit_footer.php",
+			"application/views/themes/Blueish/_default/import_csv.php",
 			"application/views/themes/Blueish/_default/list_data.php",
 			"application/views/themes/Blueish/_default/list_footer.php",
 			"application/views/themes/Blueish/_default/list_group_data.php",
