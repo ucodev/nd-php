@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 07/05/2016
+ * Date: 22/07/2016
  * License: GPLv3
  */
 
@@ -34,6 +34,9 @@ include('system/config/index.php');
 include('user/config/index.php');
 
 /* Initialize globals */
+$__objects = array();
+$__objects['autoload'] = array();
+$__objects['adhoc'] = array();
 $__controller = NULL;
 $__function = NULL;
 $__args = NULL;

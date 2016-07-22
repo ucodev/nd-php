@@ -35,17 +35,8 @@ class Files extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 	}
 	
 	/** Hooks **/
@@ -69,20 +60,20 @@ class Files extends ND_Controller {
 		}
 
 		/* Check if file exists and if there are enough permissions to reveal it */
-		if (!file_exists($file_path) || !$this->security->perm_check($this->_security_perms, $this->security->perm_read, $table, $field_perm)) {
+		if (!file_exists($file_path) || !$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $table, $field_perm)) {
 			/* TODO: Log the failed request? */
 
 			/* NOTE: Do not reveal if the true cause ... */
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$file_contents = file_get_contents($file_path);
 
 			/* Unencrypt file contents if required*/
-			if ($this->_upload_file_encryption === true)
+			if ($this->config['upload_file_encryption'] === true)
 				$file_contents = $this->encrypt->decode($file_contents);
 
 			/* If logging is enabled, check for changed fields and log them */
-			if ($this->_logging === true) {
+			if ($this->config['logging'] === true) {
 				$log_transaction_id = openssl_digest(date('Y-m-d H:i:s') . mt_rand(100000, 999999), 'md5');
 
 				$this->db->insert('logging', array(

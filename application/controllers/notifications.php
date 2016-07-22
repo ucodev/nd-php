@@ -35,17 +35,8 @@ class Notifications extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 	}
 	
 
@@ -54,7 +45,7 @@ class Notifications extends ND_Controller {
 		/* Mark the notification as seen */
 		$this->db->where('id', $id);
 		$this->db->where('when <', date('Y-m-d H:i:s'));
-		$this->db->update($this->_name, array(
+		$this->db->update($this->config['name'], array(
 			'seen' => true
 		));
 
@@ -97,7 +88,7 @@ class Notifications extends ND_Controller {
 	/** Custom functions **/
 	public function get_count() {
 		$this->db->select('COUNT(id) AS total', false);
-		$this->db->from($this->_name);
+		$this->db->from($this->config['name']);
 		$this->db->where('users_id', $this->session->userdata('user_id'));
 		$this->db->where('seen', false);
 		$this->db->where('when <=', date('Y-m-d H:i:s'));

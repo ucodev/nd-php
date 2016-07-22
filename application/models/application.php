@@ -1747,15 +1747,9 @@ class UW_Application extends UW_Model {
 				'	public function __construct($session_enable = true, $json_replies = false) {' . "\n" .
 				'		parent::__construct($session_enable, $json_replies);' . "\n" .
 				'' . "\n" .
-				'		$this->_viewhname = get_class();' . "\n" .
-				'		$this->_name = strtolower($this->_viewhname);' . "\n" .
-				'		$this->_hide_global_search_controllers = $this->_hide_menu_entries;' . "\n" .
-				'' . "\n" .
-				'		/* Populate controller configuration */' . "\n" .
-				'		$this->config_populate();' . "\n" .
-				'' . "\n" .
-				'		/* Call construct hook */' . "\n" .
-				'		$this->_hook_construct();' . "\n" .
+				'		/* Initialize controller */' . "\n" .
+				'		$this->_init(get_class());' . "\n" .
+				'' . "\n" . 
 				'	}' . "\n" .
 				'' . "\n" .
 				'' . "\t" . str_replace("\n", "\n\t", $menu['controller']['code']) . "\n";

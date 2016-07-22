@@ -60,17 +60,8 @@ class Paypal extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 	}
 
 	private function payment_init($quantity = 10) {
@@ -102,7 +93,7 @@ class Paypal extends ND_Controller {
 		$qinsdata['users_id'] = $this->session->userdata('user_id');
 		$qinsdata['payment_actions_id'] = $this->payment_actions_pending_id;
 
-		$features = $this->_get_features();
+		$features = $this->get->features();
 
 		if ($features['register_confirm_vat_eu']) {
 			$qinsdata['tax_rate'] = $this->payment_user_vat_eu(); /* TODO: FIXME: Not yet implemented */
@@ -116,13 +107,13 @@ class Paypal extends ND_Controller {
 
 		if (!$payments_id) {
 			error_log('paypal.php: payment_init(): Insert failed.');
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #1', $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
 		if ($this->db->trans_status() === FALSE) {
 			error_log('paypal.php: payment_init(): Transaction failed.');
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #2', $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . '. #2', $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -144,7 +135,7 @@ class Paypal extends ND_Controller {
 		if (isset($_POST['item_quantity'])) {
 			$new_data['item_quantity'] = intval($POST['item_quantity']);
 		} else {
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
 		$POST = $new_data;
@@ -228,17 +219,17 @@ class Paypal extends ND_Controller {
 	}
 
 	public function index() {
-		$data = $this->_get_view_data_generic($this->_viewhname, $this->_viewhname);
+		$data = $this->get->view_data_generic($this->config['viewhname'], $this->config['viewhname']);
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'paypal/payment', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'footer', $data);
 	}
 
 	public function payment_form_ajax() {
-		$data = $this->_get_view_data_generic($this->_viewhname, $this->_viewhname);
+		$data = $this->get->view_data_generic($this->config['viewhname'], $this->config['viewhname']);
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'paypal/payment', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'paypal/payment', $data);
 	}
 
 	public function payment_request() {
@@ -249,7 +240,7 @@ class Paypal extends ND_Controller {
 
 		/* Validate payment ammount */
 		if ($this->payment_validate_quantity($item_quantity) !== true)
-			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$payment_data = $this->payment_init($item_quantity);
 

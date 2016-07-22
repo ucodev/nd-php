@@ -59,21 +59,12 @@ class Builder extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 	
 
@@ -97,11 +88,11 @@ class Builder extends ND_Controller {
 		$this->db->from('roles');
 		$query = $this->db->get();
 
-		$data = $this->_get_view_data_generic('ND PHP Framework - Builder IDE', 'Builder IDE');
+		$data = $this->get->view_data_generic('ND PHP Framework - Builder IDE', 'Builder IDE');
 
 		/* Setup view data: Load available menu icons */
 		$data['view']['menu_icons'] = array();
-		foreach (glob(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/themes/' . $this->_default_theme . '/menu/iconset/png/24x24/*') as $icon_file_path) {
+		foreach (glob(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/themes/' . $this->config['default_theme'] . '/menu/iconset/png/24x24/*') as $icon_file_path) {
 			/* Strip the directory path, leaving only the filename ... */
 			array_push($data['view']['menu_icons'], end(explode('/', $icon_file_path)));
 		}
@@ -118,13 +109,13 @@ class Builder extends ND_Controller {
 		$row = $query->row_array();
 		if ($row['model']) {
 			if (($data['view']['application'] = json_decode($row['model'], true)) === NULL)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$data['view']['application'] = array();
 		}
 
 		/* Load IDE Builder view */
-		$this->load->view($this->_name . '/ide', $data);
+		$this->load->view($this->config['name'] . '/ide', $data);
 	}
 
 	public function save_model() {
@@ -132,7 +123,7 @@ class Builder extends ND_Controller {
 		$json_raw = file_get_contents('php://input');
 
 		if (($application = json_decode($json_raw, true)) === NULL)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Save the new application model */
 		$this->db->trans_begin();
@@ -143,7 +134,7 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -156,7 +147,7 @@ class Builder extends ND_Controller {
 		$json_raw = file_get_contents('php://input');
 
 		if (($application = json_decode($json_raw, true)) === NULL)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Save the new application model */
 		$this->db->trans_begin();
@@ -167,14 +158,14 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
 
 		/* Process the raw application model, deploy it, and receive the complete application model */
 		if (($app_model = $this->application->deploy_model($application)) === false)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PROCESS_APP_MODEL, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PROCESS_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Update the new application model with a more complete set of data */
 		$this->db->trans_begin();
@@ -185,7 +176,7 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -233,7 +224,7 @@ class Builder extends ND_Controller {
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -245,7 +236,7 @@ class Builder extends ND_Controller {
 	public function wipe($magic = NULL, $wipe_models = false) {
 		/* Grant (to a certain level) that we're not calling this method by mistake */
 		if ($magic != gmdate('YmdHi'))
-			$this->response->code('403', 'Incorrect magic identifier.', $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', 'Incorrect magic identifier.', $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Drop all main tables */
 		$this->db->select('db_table AS table');
@@ -285,15 +276,15 @@ class Builder extends ND_Controller {
 
 	/** Tools **/
 	public function transcoder() {
-		$data = $this->_get_view_data_generic('ND PHP Framework - Transcoder', 'Transcoder');
+		$data = $this->get->view_data_generic('ND PHP Framework - Transcoder', 'Transcoder');
 
-		$this->load->view($this->_name . '/transcoder', $data);
+		$this->load->view($this->config['name'] . '/transcoder', $data);
 	}
 
 	public function converter() {
-		$data = $this->_get_view_data_generic('ND PHP Framework - Converter', 'Converter');
+		$data = $this->get->view_data_generic('ND PHP Framework - Converter', 'Converter');
 
-		$this->load->view($this->_name . '/converter', $data);
+		$this->load->view($this->config['name'] . '/converter', $data);
 	}
 }
 

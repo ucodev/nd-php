@@ -40,8 +40,15 @@ class UW_Access extends UW_Model {
 			die(NDPHP_LANG_MOD_INVALID_CTRL_NAME . ': ' . $name);
 		}
 
+		/* Save and load a new context */
+		$save_context = $GLOBALS['_core_context'];
+		$GLOBALS['_core_context'] = $name;
+
 		/* Create the controller object. (TODO: FIXME: Store the object (to reduce overhead on further calls)) */
 		eval('$ctrl = new ' . ucfirst($name) . '(' . ($session_enable ? 'true' : 'false') . ', ' . ($json_replies ? 'true' : 'false') . ');');
+
+		/* Restore previously saved context */
+		$GLOBALS['_core_context'] = $save_context;
 
 		/* NOTE: We can only access $ctrl protected properties/methods if this function is called from ND_Controller (sibling objects) */
 		return $ctrl;

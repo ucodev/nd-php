@@ -39,21 +39,12 @@ class Update extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 
 	
@@ -79,8 +70,8 @@ class Update extends ND_Controller {
 
 		$version = explode(' ', $version_file_contents);
 
-		if ($version[0] == $this->_ndphp_version) {
-			error_log('Already at the newest version (' . $this->_ndphp_version . ').');
+		if ($version[0] == $this->config['ndphp_version']) {
+			error_log('Already at the newest version (' . $this->config['ndphp_version'] . ').');
 
 			/** Nothing to do **/
 			redirect('/');
@@ -97,16 +88,16 @@ class Update extends ND_Controller {
 			curl_close($ch);
 
 			if (($tracker = json_decode($tracker_file_contents, true)) === NULL)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER, $this->config['default_charset'], !$this->request->is_ajax());
 
 			/** Stage 2: Determine the tracker entry to be used **/
-			$from_version = $this->_ndphp_version;
+			$from_version = $this->config['ndphp_version'];
 
 			if (!isset($tracker[$from_version]))
 				$from_version = 'any';
 
 			if (!isset($tracker[$from_version]))
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION, $this->config['default_charset'], !$this->request->is_ajax());
 
 			/** Stage 3: Create required directories **/
 			foreach ($tracker[$from_version]['directories'] as $directory) {
@@ -114,7 +105,7 @@ class Update extends ND_Controller {
 					continue;
 
 				if (mkdir(SYSTEM_BASE_DIR . '/' . $directory) === false)
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY . ': ' . SYSTEM_BASE_DIR . '/' . $directory, $this->config['default_charset'], !$this->request->is_ajax());
 			}
 
 			/** Stage 4: Check if we've permissions to overwrite the files to be updated **/
@@ -122,7 +113,7 @@ class Update extends ND_Controller {
 				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
 				if ($fp === false)
-					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->config['default_charset'], !$this->request->is_ajax());
 			}
 
 			/** Stage 5: Touch files **/
@@ -130,7 +121,7 @@ class Update extends ND_Controller {
 				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'a+');
 
 				if ($fp === false)
-					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->config['default_charset'], !$this->request->is_ajax());
 			}
 
 			/** Stage 6: Fetch and update files **/
@@ -147,18 +138,18 @@ class Update extends ND_Controller {
 				/* Grant that we've received the file contents... and not just some error... */
 				/* FIXME: We need to put some further validations here in order to grant that the validity and integrity of the contents */
 				if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200)
-					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->config['default_charset'], !$this->request->is_ajax());
 
 				curl_close($ch);
 
 				$fp = fopen(SYSTEM_BASE_DIR . '/' . $file, 'w');
 
 				if ($fp === false)
-					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->config['default_charset'], !$this->request->is_ajax());
 
 				/* Update file contents */
 				if (fwrite($fp, $file_contents) === false)
-					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file, $this->config['default_charset'], !$this->request->is_ajax());
 
 				fclose($fp);
 
@@ -174,7 +165,7 @@ class Update extends ND_Controller {
 			/** Stage 8: Replace files **/
 			foreach ($tracker[$from_version]['replace'] as $file_rep) {
 				if (copy(SYSTEM_BASE_DIR . '/' . $file_rep[1], SYSTEM_BASE_DIR . '/' . $file_rep[0]) === false)
-					$this->response->code('500', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file_rep[0], $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/' . $file_rep[0], $this->config['default_charset'], !$this->request->is_ajax());
 			}
 
 			/** Stage 9: Execute any required SQL queries **/
@@ -185,7 +176,7 @@ class Update extends ND_Controller {
 
 				if ($this->db->trans_status() === false) {
 					$this->db->trans_rollback();
-					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
 				$this->db->trans_commit();
@@ -200,7 +191,7 @@ class Update extends ND_Controller {
 	}
 
 	public function index() {
-		$this->response->code('500', 'RELOAD THE PAGE', $this->_default_charset, !$this->request->is_ajax());
+		$this->response->code('500', 'RELOAD THE PAGE', $this->config['default_charset'], !$this->request->is_ajax());
 	}
 
 	public function post_update($from, $to) {

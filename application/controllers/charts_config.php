@@ -35,21 +35,12 @@ class Charts_config extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 	
 	/** Hooks **/

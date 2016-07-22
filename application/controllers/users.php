@@ -42,17 +42,8 @@ class Users extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 
 		/* TODO: FIXME: If sharding is enabled, we must load the main database here ('default') and then
 		 * grant that all changes are also replicated to the user shard.
@@ -64,12 +55,12 @@ class Users extends ND_Controller {
 		/* Create a hook context */
 		$hook_pre_return = array();
 
-		$features = $this->_get_features();
+		$features = $this->get->features();
 
 		/* Check if we're under multi or single user mode */
 		if (!$features['multi_user']) {
 			/* If we're under single user mode, user registration is not available */
-			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
 		/* Generate user's private key for encryption
@@ -105,7 +96,7 @@ class Users extends ND_Controller {
 			/* Try to delete the newly inserted user */
 			$this->db->delete('users', array('id' => $id));
 
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -117,11 +108,11 @@ class Users extends ND_Controller {
 
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
 		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles']))
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* If password was changed ... */
 		$this->db->select('password,privenckey');
-		$this->db->from($this->_name);
+		$this->db->from($this->config['name']);
 		$this->db->where('id', $id);
 		$query = $this->db->get();
 		$row = $query->row_array();
@@ -137,7 +128,7 @@ class Users extends ND_Controller {
 				/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
 				 * to be changed.
 				 */
-				$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS, $this->config['default_charset'], !$this->request->is_ajax());
 			}
 
 			/* Re-encrypt the user private encryption key with the new password */
@@ -179,7 +170,7 @@ class Users extends ND_Controller {
 				 */
 				$this->db->trans_rollback();
 
-				$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 			} else {
 				$this->db->trans_commit();
 			}
@@ -197,10 +188,10 @@ class Users extends ND_Controller {
 		$query = $this->db->get();
 
 		if (!$query->num_rows())
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_UPDATE_SESSION_DATA . ' ' . NDPHP_LANG_MOD_ATTN_LOGOUT_LOGIN, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_UPDATE_SESSION_DATA . ' ' . NDPHP_LANG_MOD_ATTN_LOGOUT_LOGIN, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Only update session data if the user being updated is the user who's performing the update */
-		if ($this->_session_data['user_id'] == $id) {
+		if ($this->config['session_data']['user_id'] == $id) {
 			$user_roles = array();
 
 			foreach ($query->result_array() as $row) {
@@ -208,15 +199,15 @@ class Users extends ND_Controller {
 			}
 			
 			/* Update user session data */
-			$this->_session_data['username'] = $row['username'];
-			$this->_session_data['photo'] = $row['photo'] ? (base_url() . 'index.php/files/access/users/' . $id . '/_file_photo/' . $row['photo']) : NULL;
-			$this->_session_data['email'] = $row['email'];
-			$this->_session_data['timezone'] = $row['timezone'];
-			$this->_session_data['privenckey'] = base64_encode($row['privenckey']);
+			$this->config['session_data']['username'] = $row['username'];
+			$this->config['session_data']['photo'] = $row['photo'] ? (base_url() . 'index.php/files/access/users/' . $id . '/_file_photo/' . $row['photo']) : NULL;
+			$this->config['session_data']['email'] = $row['email'];
+			$this->config['session_data']['timezone'] = $row['timezone'];
+			$this->config['session_data']['privenckey'] = base64_encode($row['privenckey']);
 			/* FIXME: Missing database variable? */
-			$this->_session_data['roles'] = $user_roles;
+			$this->config['session_data']['roles'] = $user_roles;
 
-			$this->session->set_userdata($this->_session_data);
+			$this->session->set_userdata($this->config['session_data']);
 		}
 	}
 
@@ -224,7 +215,7 @@ class Users extends ND_Controller {
 		$hook_pre_return = NULL;
 		
 		if ($id == 1)
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER, $this->config['default_charset'], !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}

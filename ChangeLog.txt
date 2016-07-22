@@ -1,3 +1,9 @@
+v0.02m (2016-07-22):
+
+ - Major refactoring on core controllers.
+ - Updated tracker.
+
+
 v0.02l (2016-07-06):
 
  - Upgraded uWeb to include the new modules layer that lies between models and controllers.

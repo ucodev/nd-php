@@ -31,8 +31,7 @@
  */
 
 class Register extends ND_Register {
-	public function __construct()
-	{
+	public function __construct() {
 		parent::__construct();
 	}
 

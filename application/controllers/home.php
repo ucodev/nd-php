@@ -35,28 +35,19 @@ class Home extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 	}
 
 	/* Custom functions */
 	public function home_generic() {
 		/* If logging is enabled, log this listing request */
-		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('VIEW' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
+		if ($this->config['logging'] === true) {
+			$log_transaction_id = openssl_digest('VIEW' . $this->config['name'] . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'VIEW',
-				'_table' => $this->_name,
+				'_table' => $this->config['name'],
 				'_field' => 'DASHBOARD',
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
@@ -65,25 +56,25 @@ class Home extends ND_Controller {
 			));
 		}
 
-		return $this->_get_view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD);
+		return $this->get->view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD);
 	}
 
 	public function home() {
 		$data = $this->home_generic();
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_data', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_data', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'footer', $data);
 	}
 
 	public function home_body_ajax() {
 		$data = $this->home_generic();
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_data', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_data', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_footer', $data);
 	}
 
 	public function index() {
@@ -92,12 +83,12 @@ class Home extends ND_Controller {
 
 	public function result_global_generic() {
 		/* If logging is enabled, log this listing request */
-		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('RESULT GLOBAL' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
+		if ($this->config['logging'] === true) {
+			$log_transaction_id = openssl_digest('RESULT GLOBAL' . $this->config['name'] . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
 
 			$this->db->insert('logging', array(
 				'operation' => 'RESULT GLOBAL',
-				'_table' => $this->_name,
+				'_table' => $this->config['name'],
 				'transaction' => $log_transaction_id,
 				'registered' => date('Y-m-d H:i:s'),
 				'sessions_id' => $this->session->userdata('sessions_id'),
@@ -106,7 +97,7 @@ class Home extends ND_Controller {
 		}
 
 		/* Fetch generic view data */
-		$data = $this->_get_view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_OP_RESULT, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_OP_RESULT);
+		$data = $this->get->view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_OP_RESULT, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_OP_RESULT);
 
 		/* Initialize result array */
 		$data['view']['result_array'] = array();
@@ -123,7 +114,7 @@ class Home extends ND_Controller {
 		$apikey = $userinfo['apikey'];
 
 		/* Fetch all eligible tables */
-		$controllers = $this->_get_controller_list();
+		$controllers = $this->get->controller_list();
 
 		/* Search on every controller [NOTE: Database persistent connection should be enabled,
 		 * otherwise this will cause a HUGE ammount of concurrent connections]
@@ -153,8 +144,8 @@ class Home extends ND_Controller {
 			/* Check if there is an alias set for this controller */
 			$viewname = NULL;
 
-			if (isset($this->_menu_entries_aliases[$ctrl])) {
-				$viewname = $this->_menu_entries_aliases[$ctrl];
+			if (isset($this->config['menu_entries_aliases'][$ctrl])) {
+				$viewname = $this->config['menu_entries_aliases'][$ctrl];
 			} else {
 				/* If not, use the default (capitalize the first character) */
 				$viewname = ucfirst($ctrl);
@@ -181,18 +172,18 @@ class Home extends ND_Controller {
 	public function result_global() {
 		$data = $this->result_global_generic();
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_result_global', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . 'footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_result_global', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'footer', $data);
 	}
 
 	public function result_global_body_ajax() {
 		$data = $this->result_global_generic();
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_header', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_result_global', $data);
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/home_footer', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_header', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_result_global', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_footer', $data);
 	}
 }

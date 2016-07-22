@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 06/07/2016
+ * Date: 22/07/2016
  * License: GPLv3
  */
 
@@ -2125,14 +2125,26 @@ class UW_Model {
 	}
 	
 	public function load($model, $is_library = false, $tolower = false) {
+		global $__objects;
+
 		if (!preg_match('/^[a-zA-Z0-9_]+$/', $model))
 			return false;
 
 		if ($is_library === true) {
 			/* We're loading a library */
-			eval('$this->' . ($tolower ? strtolower($model) : $model) . ' = new ' . $model . ';');
+			eval('$this->' . ($tolower ? strtolower($model) : $model) . ' = new ' . $model . '();');
 		} else {
-			eval('$this->' . $model . ' = new UW_' . ucfirst($model) . ';');
+			/* Be default, model objects are instantiated only once and, on subsequent calls, a reference to the existing
+			 * (instantiated) object is passed.
+			 */
+			if (isset($__objects['autoload'][$model])) {
+				eval('$this->' . $model . ' = &$__objects[\'autoload\'][\'' . $model . '\'];');
+			} else if (isset($__objects['adhoc'][$model])) {
+				eval('$this->' . $model . ' = &$__objects[\'adhoc\'][\'' . $model . '\'];');
+			} else {
+				eval('$__objects[\'adhoc\'][\'' . $model . '\'] = new UW_' . ucfirst($model) . '();');
+				eval('$this->' . $model . ' = &$__objects[\'adhoc\'][\'' . $model . '\'];');
+			}
 		}
 
 		return true;
@@ -2169,11 +2181,11 @@ class UW_Load extends UW_Model {
 	}
 
 	public function model($model) {
-		return $this->_model->load($model);
+		return $this->_model->load($model, false, false);
 	}
 
 	public function module($module) {
-		return $this->_model->load($module);
+		return $this->_model->load($module, false, false);
 	}
 
 	public function database($database, $return_self = false) {

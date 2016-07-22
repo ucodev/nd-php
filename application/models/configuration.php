@@ -55,4 +55,20 @@ class UW_Configuration extends UW_Model {
 		/* All good */
 		return $query->row_array();
 	}
+
+	public function core_context_set($context) {
+		$GLOBALS['_core_context'] = $context;
+	}
+
+	public function core_context_get() {
+		return $GLOBALS['_core_context'];
+	}
+
+	public function core_set($config) {
+		$GLOBALS['_core_config'][$this->core_context_get()] = $config;
+	}
+
+	public function core_get() {
+		return $GLOBALS['_core_config'][$this->core_context_get()];
+	}
 }

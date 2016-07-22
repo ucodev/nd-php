@@ -35,17 +35,8 @@ class Documentation extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 	}
 	
 	/** Hooks **/
@@ -63,7 +54,7 @@ class Documentation extends ND_Controller {
 	/* Documentation */
 	private function _doc_revision() {
 		/* Fetch documentation revision */
-		$q = $this->db->get($this->_name);
+		$q = $this->db->get($this->config['name']);
 
 		if ($q->num_rows()) {
 			$row = $q->row_array();
@@ -74,7 +65,7 @@ class Documentation extends ND_Controller {
 	}
 
 	public function hooks() {
-		$data = $this->_get_view_data_generic();
+		$data = $this->get->view_data_generic();
 
 		$data['view']['doc_revision'] = $this->_doc_revision();
 
@@ -83,7 +74,7 @@ class Documentation extends ND_Controller {
 	}
 
 	public function overloads() {
-		$data = $this->_get_view_data_generic();
+		$data = $this->get->view_data_generic();
 
 		$data['view']['doc_revision'] = $this->_doc_revision();
 
@@ -92,7 +83,7 @@ class Documentation extends ND_Controller {
 	}
 
 	public function api() {
-		$data = $this->_get_view_data_generic();
+		$data = $this->get->view_data_generic();
 
 		$data['view']['doc_revision'] = $this->_doc_revision();
 
@@ -101,7 +92,7 @@ class Documentation extends ND_Controller {
 	}
 
 	public function internals() {
-		$data = $this->_get_view_data_generic();
+		$data = $this->get->view_data_generic();
 
 		$data['view']['doc_revision'] = $this->_doc_revision();
 
@@ -111,10 +102,10 @@ class Documentation extends ND_Controller {
 
 	public function rest($controller = 'index') {
 		if ($controller == 'index') {
-			$data = $this->_get_view_data_generic();
+			$data = $this->get->view_data_generic();
 
 			$data['view']['doc_revision'] = $this->_doc_revision();
-			$data['view']['controllers'] = $this->_get_controller_list();
+			$data['view']['controllers'] = $this->get->controller_list();
 
 			/* Load documentation view */
 			$this->load->view('documentation/rest', $data);
@@ -124,7 +115,7 @@ class Documentation extends ND_Controller {
 	}
 
 	public function ide() {
-		$data = $this->_get_view_data_generic();
+		$data = $this->get->view_data_generic();
 
 		$data['view']['doc_revision'] = $this->_doc_revision();
 
@@ -133,7 +124,7 @@ class Documentation extends ND_Controller {
 	}
 
 	public function index() {
-		$data = $this->_get_view_data_generic();
+		$data = $this->get->view_data_generic();
 
 		$data['view']['doc_revision'] = $this->_doc_revision();
 

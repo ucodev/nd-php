@@ -35,21 +35,12 @@ class Logging extends ND_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
 
-		$this->_viewhname = get_class();
-		$this->_name = strtolower($this->_viewhname);
-
-		/* Include any setup procedures from ide builder. */
-		include('lib/ide_setup.php');
+		/* Initialize controller */
+		$this->_init(get_class(), true);
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
 		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->_default_charset, !$this->request->is_ajax());
-
-		/* Populate controller configuration */
-		$this->config_populate();
-
-		/* Call construct hook */
-		$this->_hook_construct();
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 	
 	/** Hooks **/
@@ -140,12 +131,12 @@ class Logging extends ND_Controller {
 		$q_log = $this->db->get();
 
 		if (!$q_log->num_rows())
-			$this->response->code('404', NDPHP_LANG_MOD_UNABLE_FIND_TRANSACTION . ': ' . $transaction, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('404', NDPHP_LANG_MOD_UNABLE_FIND_TRANSACTION . ': ' . $transaction, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Start the rollback process */
 		$this->db->trans_begin();
 
-		$log_transaction_id = openssl_digest('ROLLBACK' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+		$log_transaction_id = openssl_digest('ROLLBACK' . $this->config['name'] . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
 
 		foreach ($q_log->result_array() as $row) {
 			/* TODO: FIXME: Missing handler for 'rel_' and 'mixed_' fields */
@@ -167,7 +158,7 @@ class Logging extends ND_Controller {
 				if ($row_current[$row['_field']] != $row['value_new']) {
 					$this->db->trans_rollback();
 
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ' (' . $transaction . '): ' . NDPHP_LANG_MOD_INFO_ENTRY_CHANGED, $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ' (' . $transaction . '): ' . NDPHP_LANG_MOD_INFO_ENTRY_CHANGED, $this->config['default_charset'], !$this->request->is_ajax());
 				}
 			}
 
@@ -201,7 +192,7 @@ class Logging extends ND_Controller {
 		/* Commit database transaction */
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ':' . $transaction, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_ROLLBACK_TRANSACTION . ':' . $transaction, $this->config['default_charset'], !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -212,8 +203,8 @@ class Logging extends ND_Controller {
 
 	public function rollback_modalbox($id) {
 		$data['config']['modalbox'] = true;
-		$data['config']['charset'] = $this->_default_charset;
-		$data['view']['ctrl'] = $this->_name;
+		$data['config']['charset'] = $this->config['default_charset'];
+		$data['view']['ctrl'] = $this->config['name'];
 
 		/* Fetch transaction identifier from database */
 		$this->db->select('operation,transaction,rolled_back');
@@ -224,7 +215,7 @@ class Logging extends ND_Controller {
 
 		/* Check if the transaction was already rolled back */
 		if ($row['rolled_back'])
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY . ' (' . $row['transaction'] . ').', $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY . ' (' . $row['transaction'] . ').', $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Fetch all the changed items related to the transaction */
 		$this->db->select('_table,_field,entryid,value_old,value_new,registered');
@@ -235,14 +226,14 @@ class Logging extends ND_Controller {
 
 		/* Check if this operation is prone to rollbacks */
 		if ($row['operation'] != 'UPDATE')
-			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ROLLBACK_NON_UPDATE, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ROLLBACK_NON_UPDATE, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Setup view data */
 		$data['view']['transaction'] = $row['transaction'];
 		$data['view']['changes'] = $changes;
 
 		/* Load confirmation view */
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/rollback_transaction', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/rollback_transaction', $data);
 	}
 
 	public function error_log() {
@@ -251,12 +242,12 @@ class Logging extends ND_Controller {
 
 		/* Check if we've been able to read it */
 		if ($error_log === false)
-			$this->response->code('403', 'Unable to retrieve contents from file' . ': ' . ' logs/error.log', $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('403', 'Unable to retrieve contents from file' . ': ' . ' logs/error.log', $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Setup view data */
-		$data['config']['charset'] = $this->_default_charset;
+		$data['config']['charset'] = $this->config['default_charset'];
 		$data['view']['error_log'] = $error_log;
 
-		$this->load->view('themes/' . $this->_default_theme . '/' . $this->_name . '/error_log', $data);
+		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/error_log', $data);
 	}
 }
