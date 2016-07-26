@@ -1,3 +1,9 @@
+v0.02n (2016-07-26):
+
+ - Detached process, rest, scheduler and upload modules from the ND core controller.
+ - Updated tracker.
+
+
 v0.02m (2016-07-22):
 
  - Major refactoring on core controllers.

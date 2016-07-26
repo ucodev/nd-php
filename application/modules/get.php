@@ -1084,4 +1084,306 @@ class UW_Get extends UW_Module {
 		/* All good */
 		return $interval_fields; /* Interval fields format: [0] - positive (+) or negative (-), [1] - Integer value, [2] - SECONDS/MINUTE/HOUR/... */
 	}
+
+
+	/** Value fetchers **/
+
+	public function value_from_post($id, $field, $POST = NULL) {
+		if ($POST === NULL)
+			$POST = $_POST;
+
+		return $POST[$field];
+	}
+
+	public function value_from_database($id, $field, $table = NULL) {
+		if ($table === NULL)
+			$table = $this->config['name'];
+
+		if (substr($field, 0, 6) == 'mixed_') {
+			/* Parse the mixed field */
+			$mixed_field = $this->_mixed_parse_crud_field($field);
+
+			/* Fetch the data from the database for this particular mixed field */
+			$this->db->select($mixed_field[1]);
+			$this->db->from('mixed_' . $this->config['name'] . '_' . $mixed_field[0]);
+			$this->db->where($table . '_id', $id);
+			$this->db->limit(1, $mixed_field[2] - 1); /* Fetch only the nth entry */
+			$q_mixed = $this->db->get();
+
+			/* If the nth entry does not exist, return boolean false (never return NULL, as NULL is a possible field value) */
+			if (!$q_mixed->num_rows())
+				return false;
+
+			/* Fetch the row */
+			$row_mixed = $q_mixed->row_array();
+
+			/* Return the field value */
+			return $row_mixed[$mixed_field[1]];
+		} else if (substr($field, 0, 4) == 'rel_') {
+			/* Determine te foreign table name and fetch data from the relational table for this $id */
+			$foreign_table = array_pop(array_diff($this->multiple_rel_table_names($field, $table), array($table)));
+
+			/* Fetch data from the database for this multiple relationship */
+			$this->db->select($foreign_table . '_id');
+			$this->db->from($field);
+			$this->db->where($table . '_id', $id);
+			$q_rel = $this->db->get();
+
+			/* If there are no relationships, return an empty array */
+			if (!$q_rel->num_rows())
+				return array();
+
+			/* Create a result array for the stored values of the field */
+			$rel_db_values = array();
+			foreach ($q_rel->result_array() as $row_rel) {
+				array_push($rel_db_values, $row_rel[$foreign_table . '_id']);
+			}
+
+			/* Return all the relationship values as array() */
+			return $rel_db_values;
+		} else {
+			/* Fetch the regular field value */
+			$this->db->select($field);
+			$this->db->from($table);
+			$this->db->where('id', $id);
+			$q = $this->db->get();
+
+			/* If no entries were found for this ID, return boolean false (never return NULL, as NULL is a possible field value) */
+			if (!$q->num_rows())
+				return false;
+
+			$row = $q->row_array();
+
+			return $row[$field];
+		}
+
+		/* Unreachable... we hope */
+		return false;
+	}
+
+
+	/** User input (POST) **/
+
+	public function post_changed_fields_data($table, $id, $POST) {
+		/* Returns a list of fields, including the changed data, whose values differ,
+		 * from the $POST data to the database (stored) data
+		 */
+
+		$mixed_data = array(); /* If there are mixed relationships present in the POST data, we'll store the data in this array for later processing */
+
+		/* Fetch the stored data */
+		$this->db->from($table);
+		$this->db->where('id', $id);
+		$q = $this->db->get();
+
+		/* Check if there are any results */
+		if (!$q->num_rows())
+			return array();
+
+		$row = $q->row_array();
+
+		$changed_data = array();
+
+		/* Compare the stored data with the $POST data */
+		foreach ($POST as $key => $value) {
+			if (substr($key, 0, 6) == 'mixed_') {
+				/* Check if the mixed relationship field value is about to be changed */
+
+				/* Parse mixed field */
+				$mixed_field = $this->_mixed_parse_crud_field($key);
+
+				/* Keep track of existing db and post entries */
+				if (!isset($mixed_data[$mixed_field[0]])) {
+					/* Initialize the mixed data entry for this mixed table */
+					$mixed_data[$mixed_field[0]] = array();
+					$mixed_data[$mixed_field[0]]['fields'] = array(); /* This array will contain the field _set_ for the mixed relationship */
+					$mixed_data[$mixed_field[0]]['entries_post'] = array(); /* This array will contain the mixed_id _set_ present on the post data for this mixed relationship */
+					$mixed_data[$mixed_field[0]]['total_post_entries'] = 0; /* Will be incremented for each mixed entry (not mixed field) */
+
+					/* Fetch the total number of rows currently stored in the database belonging to this $id and the current mixed relationship */
+					$this->db->from('mixed_' . $this->config['name'] . '_' . $mixed_field[0]);
+					$this->db->where($this->config['name'] . '_id', $id);
+					$q_mixed_entries_db = $this->db->get();
+
+					/* Set the total number of found rows in the database for this mixed relationship (assigned to $id) */
+					$mixed_data[$mixed_field[0]]['total_db_entries'] = $q_mixed_entries_db->num_rows();
+				}
+
+				/* Populate one more field to $mixed_data[$mixed_field[0]]['fields'] array, if it isn't already present */
+				if (!in_array($mixed_field[1], $mixed_data[$mixed_field[0]]['fields']))
+					array_push($mixed_data[$mixed_field[0]]['fields'], $mixed_field[1]);
+
+				/* Populate one more field to $mixed_data[$mixed_field[0]]['entries_post'] array, if it isn't already present */
+				if (!in_array($mixed_field[2], $mixed_data[$mixed_field[0]]['entries_post'])) {
+					$mixed_data[$mixed_field[0]]['total_post_entries'] ++;
+					array_push($mixed_data[$mixed_field[0]]['entries_post'], $mixed_field[2]);
+				}
+
+				/* Craft mixed crud field name.
+				 * POST mixed fields may assume any mixed_id and may not be sorted (and there may even be gaps between entries).
+				 * So we need to craft a ordered entry list in order to keep track of the changes in a sorted fashion.
+				 */
+				$mixed_crud_field = 'mixed_' . $mixed_field[0] . '_' . $mixed_field[1] . '_' . $mixed_data[$mixed_field[0]]['total_post_entries'];
+
+				/* Now fetch the data from the database for this particular mixed field */
+				$mixed_db_value = $this->value_from_database($id, $mixed_crud_field);
+
+				/* Check if there isn't an existing entry on the database for this mixed field... */
+				if ($mixed_db_value === false) {
+					array_push($changed_data, array(
+						'field' => $mixed_crud_field,
+						'value_old' => '',
+						'value_new' => $value
+					)); /* If not, then something is about to be changed (a new row will be added) */
+				} else if ($mixed_db_value != $value) {
+					array_push($changed_data, array(
+						'field' => $mixed_crud_field,
+						'value_old' => $mixed_db_value,
+						'value_new' => $value
+					));
+				}
+
+				/* We still need to check for removed mixed entries, but since the changes were already identified, the
+				 * removed entries are the leftovers not present in the POST data. This will be processed ouside of this loop,
+				 * at the end of this method.
+				 */
+			} else if (substr($key, 0, 4) == 'rel_') {
+				/* If the last element of '$value' is zero (a control value), pop it out */
+				if (!end($value))
+					array_pop($value);
+
+				$rel_db_values = $this->value_from_database($id, $key);
+
+				/* Check if the number of entries in the database match the number of entries on the field's POST data */
+				if (count($rel_db_values) != count($value)) {
+					array_push($changed_data, array(
+						'field' => $key,
+						'value_old' => implode(',', $rel_db_values),
+						'value_new' => implode(',', $value)
+					));
+
+					continue; /* If the number of entries do not match, then something was changed */
+				}
+
+				/* Check if all the entries on the database are present on this field's POST data */
+				foreach ($rel_db_values as $rel_db_value) {
+					if (!in_array($rel_db_value, $value)) {
+						array_push($changed_data, array(
+							'field' => $key,
+							'value_old' => implode(',', $rel_db_values),
+							'value_new' => implode(',', $value)
+						));
+						break; /* If at least one element is not present, then we can safely assume that this field was changed */
+					}
+				}
+			} else if (!isset($row[$key])) { /* We must need to check $row keys after 'mixed_' and 'rel_' fields as they do not exist in the database */
+				/* If there's a POST key that is not present in the database table, just ignore it */
+				continue;
+			} else {
+				/* Check if there was a change for this field... */
+				if ($row[$key] != $value) {
+					/* ... and if so, add it to the result. TODO: FIXME: mixed and multiple relationships not yet supported  */
+					array_push($changed_data, array(
+						'field' => $key,
+						'value_old' => $row[$key],
+						'value_new' => $value
+					));
+				}
+			}
+		}
+
+		/* Post-process mixed relationships. We'll need to add to $changed_data array any mixed entries that might have been deleted
+		 * and were not caught by the previous routines (because they're based on POST data, not database data... so if there are more
+		 * database entries than POST data entries for a particular mixed relationship, the exceeding database entries would
+		 * be ignored if the following routine wasn't performed).
+		 */
+		foreach ($mixed_data as $mixed_table => $mixed_meta) {
+			if ($mixed_meta['total_db_entries'] > count($mixed_meta['entries_post'])) {
+				for ($i = count($mixed_meta['entries_post']); $i < $mixed_meta['total_db_entries']; $i ++) {
+					foreach ($mixed_meta['fields'] as $mixed_field) {
+						/* Craft mixed crud field name */
+						$mixed_crud_field = 'mixed_' . $mixed_table . '_' . $mixed_field . '_' . ($i + 1);
+
+						/* Fetch value for this field from the database */
+						$mixed_db_value = $this->value_from_database($id, $mixed_crud_field);
+
+						/* If an entry wasn't found, skip it */
+						if ($mixed_db_value === false)
+							break;
+
+						/* Insert the value that will be deleted */
+						array_push($changed_data, array(
+							'field' => $mixed_crud_field,
+							'value_old' => $mixed_db_value,
+							'value_new' => ''
+						));
+					}
+				}
+			}
+		}
+
+		/* All good */
+		return $changed_data;
+	}
+
+
+	/** Mixed handlers **/
+
+	public function mixed_crud_field($field) {
+		$mixed_field = array();
+
+		/* Mixed field format is:
+		 * 
+		 * mixed_<table>_<field>_<mixed id>
+		 *
+		 * There's an exception for files and time counter fields which start with an underscore prefix.
+		 * We'll first evaluate the $field contents for these exceptions before applying the default parser.
+		 *
+		 */
+
+		/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
+		 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
+		 * mixed_<table>_<field>_<mixed id> ...
+		 *
+		 * Probably this won't be fixed in a near future, but should be well documented.
+		 */
+
+		/* Get foreign table name from $field */
+		$mixed_foreign_table = NULL;
+
+		foreach ($this->relative_tables($this->config['name'], 'mixed') as $mixed_rel_table) {
+			$mixed_rel_foreign_table = array_pop(array_diff($this->mixed_rel_table_names($mixed_rel_table, $this->config['name']), array($this->config['name'])));
+
+			/* Check if the field prefix matches the foreign table name */
+			if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
+				$mixed_foreign_table = $mixed_rel_foreign_table;
+				break;
+			}
+		}
+
+		/* If the table cannot be found, we cannot proceed */
+		if ($mixed_foreign_table === NULL)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Retrieve table, field and mixed id */
+		$mixed_field[0] = $mixed_foreign_table;
+		$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
+		$mixed_field[2] = end(explode('_', $field));
+
+		/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
+		if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
+			$mixed_field[1] = '_' . $mixed_field[1];
+		}
+
+		/* 
+		 * Description:
+		 * 
+		 * $mixed_field[0] --> table name
+		 * $mixed_field[1] --> field name
+		 * $mixed_field[2] --> mixed field id
+		 * 
+		 */
+
+		return $mixed_field;
+	}
 }

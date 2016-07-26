@@ -113,7 +113,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02m';
+	protected $_ndphp_version = '0.02n';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -533,6 +533,41 @@ class ND_Controller extends UW_Controller {
 	protected $_security_perms = array();			/* Will be populated by $this->security->perm_get() */
 
 
+	/** Charts **/
+	protected $_charts_enable_list = true;
+	protected $_charts_enable_result = true;
+	protected $_charts_enable_view = true;
+
+	protected $_charts_types = array('ts', 'foreign_ts', 'rel', 'foreign_rel', 'totals', 'foreign_totals');
+	protected $_charts_font_family = 'verdana'; /* See fonts/ directory on pChart library package */
+	protected $_charts_axis_font_size = 8;
+	protected $_charts_title_font_size = 10;
+	protected $_charts_canvas_width = 500;
+	protected $_charts_canvas_height = 240;
+	protected $_charts_graph_area = array(
+		'X1' => 60,
+		'Y1' => 40,
+		'X2' => 470,
+		'Y2' => 190
+	);
+
+	protected $_charts = array(
+		/*
+		array(
+			'title'    => 'Chart Title',
+			'type'     => 'ts',
+			'fields'   => array('field_name1', 'field_name2', ...),
+			'absicssa' => 'field_name1',
+			'start_ts' => 1460000000,
+			'end_ts'   => 1461000000
+		),
+		...
+		*/
+	);
+
+	protected $_charts_foreign = array();
+
+
 	/** Hooks - Construct **/
 
 	protected function _hook_construct() {
@@ -682,817 +717,6 @@ class ND_Controller extends UW_Controller {
 
 
 	/** Custom functions **/
-
-
-
-	/** Charts **/
-
-	protected $_charts_enable_list = true;
-	protected $_charts_enable_result = true;
-	protected $_charts_enable_view = true;
-
-	protected $_charts_types = array('ts', 'foreign_ts', 'rel', 'foreign_rel', 'totals', 'foreign_totals');
-	protected $_charts_font_family = 'verdana'; /* See fonts/ directory on pChart library package */
-	protected $_charts_axis_font_size = 8;
-	protected $_charts_title_font_size = 10;
-	protected $_charts_canvas_width = 500;
-	protected $_charts_canvas_height = 240;
-	protected $_charts_graph_area = array(
-		'X1' => 60,
-		'Y1' => 40,
-		'X2' => 470,
-		'Y2' => 190
-	);
-
-	protected $_charts = array(
-		/*
-		array(
-			'title'    => 'Chart Title',
-			'type'     => 'ts',
-			'fields'   => array('field_name1', 'field_name2', ...),
-			'absicssa' => 'field_name1',
-			'start_ts' => 1460000000,
-			'end_ts'   => 1461000000
-		),
-		...
-		*/
-	);
-
-	protected $_charts_foreign = array();
-
-
-	/** JSON **/
-
-	public function json_doc() {
-		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_FORBIDDEN, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Setup basic view data */
-		$data = $this->get->view_data_generic('JSON REST API', 'JSON REST API');
-
-		$data['view']['data_fields'] = $this->get->fields();
-
-		/* Get user api key */
-		$this->db->select('apikey');
-		$this->db->from('users');
-		$this->db->where('id', $this->config['session_data']['user_id']);
-		$q = $this->db->get();
-		$userinfo = $q->row_array();
-
-		/* Setup specific view data */
-		$data['view']['user_id'] = $this->config['session_data']['user_id'];
-		$data['view']['apikey'] = $userinfo['apikey'];
-
-		/* TODO: Load a table entry (if exists) in order to create valid (and real) cURL examples for insert/update calls */
-
-
-		/* TODO: FIXME: Missing multiple and mixed relationship documentation */
-		$this->load->view('documentation/json', $data);
-	}
-
-	protected function json_view($data) {
-		$json_res['status'] = true;
-		$json_res['data']['fields'] = $data['view']['result_array'];
-		$json_res['data']['rel'] = $data['view']['rel'];
-		$json_res['data']['mixed'] = array();
-
-		/* Fetch mixed relationship tables */
-		$mixed_rels = $this->get->relative_tables($this->config['name'], 'mixed');
-		
-		/* Populate 'mixed' object with all mixed entries found per table */
-		foreach ($mixed_rels as $mixed) {
-			/* Fetch all entries related to this item from the mixed table */
-			$this->db->from($mixed);
-			$this->db->where($this->config['name'] . '_id', $data['view']['result_array'][0]['id']); /* Id must always be present */
-			$q = $this->db->get();
-
-			$json_res['data']['mixed'][$mixed] = array();
-
-			foreach ($q->result_array() as $row) {
-				array_push($json_res['data']['mixed'][$mixed], $row);
-			}
-		}
-
-		/* Update accounting counters if accounting is enabled */
-		if ($this->config['accounting'])
-			$this->accounting->user_counter_increment($this->config['session_data']['user_id'], 'acct_rest_view');
-
-		/* All good */
-		return json_encode($json_res);
-	}
-
-	protected function json_list($data) {
-		$json_res['status'] = true;
-		$json_res['data'] = $data['view']['result_array'];
-
-		/* Update accounting counters if accounting is enabled */
-		if ($this->config['accounting'])
-			$this->accounting->user_counter_increment($this->config['session_data']['user_id'], 'acct_rest_list');
-
-		return json_encode($json_res);
-	}
-
-	protected function json_result($data) {
-		$json_res['status'] = true;
-		$json_res['data'] = $data['view']['result_array'];
-
-		/* Update accounting counters if accounting is enabled */
-		if ($this->config['accounting'])
-			$this->accounting->user_counter_increment($this->config['session_data']['user_id'], 'acct_rest_result');
-
-		return json_encode($json_res);
-	}
-
-	protected function json_insert($insert_id) {
-		$json_res['status'] = true;
-		$json_res['data']['insert_id'] = $insert_id;
-
-		/* Update accounting counters if accounting is enabled */
-		if ($this->config['accounting'])
-			$this->accounting->user_counter_increment($this->config['session_data']['user_id'], 'acct_rest_insert');
-
-		return json_encode($json_res);
-	}
-
-	protected function json_update() {
-		$json_res['status'] = true;
-
-		/* Update accounting counters if accounting is enabled */
-		if ($this->config['accounting'])
-			$this->accounting->user_counter_increment($this->config['session_data']['user_id'], 'acct_rest_update');
-
-		return json_encode($json_res);
-	}
-
-	protected function json_delete($data) {
-		$json_res['status'] = true;
-
-		/* Update accounting counters if accounting is enabled */
-		if ($this->config['accounting'])
-			$this->accounting->user_counter_increment($this->config['session_data']['user_id'], 'acct_rest_delete');
-
-		return json_encode($json_res);
-	}
-
-
-	/** Value fetchers **/
-
-	protected function value_from_post($id, $field, $POST = NULL) {
-		if ($POST === NULL)
-			$POST = $_POST;
-
-		return $POST[$field];
-	}
-
-	protected function value_from_database($id, $field, $table = NULL) {
-		if ($table === NULL)
-			$table = $this->config['name'];
-
-		if (substr($field, 0, 6) == 'mixed_') {
-			/* Parse the mixed field */
-			$mixed_field = $this->_mixed_parse_crud_field($field);
-
-			/* Fetch the data from the database for this particular mixed field */
-			$this->db->select($mixed_field[1]);
-			$this->db->from('mixed_' . $this->config['name'] . '_' . $mixed_field[0]);
-			$this->db->where($table . '_id', $id);
-			$this->db->limit(1, $mixed_field[2] - 1); /* Fetch only the nth entry */
-			$q_mixed = $this->db->get();
-
-			/* If the nth entry does not exist, return boolean false (never return NULL, as NULL is a possible field value) */
-			if (!$q_mixed->num_rows())
-				return false;
-
-			/* Fetch the row */
-			$row_mixed = $q_mixed->row_array();
-
-			/* Return the field value */
-			return $row_mixed[$mixed_field[1]];
-		} else if (substr($field, 0, 4) == 'rel_') {
-			/* Determine te foreign table name and fetch data from the relational table for this $id */
-			$foreign_table = array_pop(array_diff($this->get->multiple_rel_table_names($field, $table), array($table)));
-
-			/* Fetch data from the database for this multiple relationship */
-			$this->db->select($foreign_table . '_id');
-			$this->db->from($field);
-			$this->db->where($table . '_id', $id);
-			$q_rel = $this->db->get();
-
-			/* If there are no relationships, return an empty array */
-			if (!$q_rel->num_rows())
-				return array();
-
-			/* Create a result array for the stored values of the field */
-			$rel_db_values = array();
-			foreach ($q_rel->result_array() as $row_rel) {
-				array_push($rel_db_values, $row_rel[$foreign_table . '_id']);
-			}
-
-			/* Return all the relationship values as array() */
-			return $rel_db_values;
-		} else {
-			/* Fetch the regular field value */
-			$this->db->select($field);
-			$this->db->from($table);
-			$this->db->where('id', $id);
-			$q = $this->db->get();
-
-			/* If no entries were found for this ID, return boolean false (never return NULL, as NULL is a possible field value) */
-			if (!$q->num_rows())
-				return false;
-
-			$row = $q->row_array();
-
-			return $row[$field];
-		}
-
-		/* Unreachable... we hope */
-		return false;
-	}
-
-
-	/** User input (POST) **/
-
-	protected function post_changed_fields_data($table, $id, $POST) {
-		/* Returns a list of fields, including the changed data, whose values differ,
-		 * from the $POST data to the database (stored) data
-		 */
-
-		$mixed_data = array(); /* If there are mixed relationships present in the POST data, we'll store the data in this array for later processing */
-
-		/* Fetch the stored data */
-		$this->db->from($table);
-		$this->db->where('id', $id);
-		$q = $this->db->get();
-
-		/* Check if there are any results */
-		if (!$q->num_rows())
-			return array();
-
-		$row = $q->row_array();
-
-		$changed_data = array();
-
-		/* Compare the stored data with the $POST data */
-		foreach ($POST as $key => $value) {
-			if (substr($key, 0, 6) == 'mixed_') {
-				/* Check if the mixed relationship field value is about to be changed */
-
-				/* Parse mixed field */
-				$mixed_field = $this->_mixed_parse_crud_field($key);
-
-				/* Keep track of existing db and post entries */
-				if (!isset($mixed_data[$mixed_field[0]])) {
-					/* Initialize the mixed data entry for this mixed table */
-					$mixed_data[$mixed_field[0]] = array();
-					$mixed_data[$mixed_field[0]]['fields'] = array(); /* This array will contain the field _set_ for the mixed relationship */
-					$mixed_data[$mixed_field[0]]['entries_post'] = array(); /* This array will contain the mixed_id _set_ present on the post data for this mixed relationship */
-					$mixed_data[$mixed_field[0]]['total_post_entries'] = 0; /* Will be incremented for each mixed entry (not mixed field) */
-
-					/* Fetch the total number of rows currently stored in the database belonging to this $id and the current mixed relationship */
-					$this->db->from('mixed_' . $this->config['name'] . '_' . $mixed_field[0]);
-					$this->db->where($this->config['name'] . '_id', $id);
-					$q_mixed_entries_db = $this->db->get();
-
-					/* Set the total number of found rows in the database for this mixed relationship (assigned to $id) */
-					$mixed_data[$mixed_field[0]]['total_db_entries'] = $q_mixed_entries_db->num_rows();
-				}
-
-				/* Populate one more field to $mixed_data[$mixed_field[0]]['fields'] array, if it isn't already present */
-				if (!in_array($mixed_field[1], $mixed_data[$mixed_field[0]]['fields']))
-					array_push($mixed_data[$mixed_field[0]]['fields'], $mixed_field[1]);
-
-				/* Populate one more field to $mixed_data[$mixed_field[0]]['entries_post'] array, if it isn't already present */
-				if (!in_array($mixed_field[2], $mixed_data[$mixed_field[0]]['entries_post'])) {
-					$mixed_data[$mixed_field[0]]['total_post_entries'] ++;
-					array_push($mixed_data[$mixed_field[0]]['entries_post'], $mixed_field[2]);
-				}
-
-				/* Craft mixed crud field name.
-				 * POST mixed fields may assume any mixed_id and may not be sorted (and there may even be gaps between entries).
-				 * So we need to craft a ordered entry list in order to keep track of the changes in a sorted fashion.
-				 */
-				$mixed_crud_field = 'mixed_' . $mixed_field[0] . '_' . $mixed_field[1] . '_' . $mixed_data[$mixed_field[0]]['total_post_entries'];
-
-				/* Now fetch the data from the database for this particular mixed field */
-				$mixed_db_value = $this->value_from_database($id, $mixed_crud_field);
-
-				/* Check if there isn't an existing entry on the database for this mixed field... */
-				if ($mixed_db_value === false) {
-					array_push($changed_data, array(
-						'field' => $mixed_crud_field,
-						'value_old' => '',
-						'value_new' => $value
-					)); /* If not, then something is about to be changed (a new row will be added) */
-				} else if ($mixed_db_value != $value) {
-					array_push($changed_data, array(
-						'field' => $mixed_crud_field,
-						'value_old' => $mixed_db_value,
-						'value_new' => $value
-					));
-				}
-
-				/* We still need to check for removed mixed entries, but since the changes were already identified, the
-				 * removed entries are the leftovers not present in the POST data. This will be processed ouside of this loop,
-				 * at the end of this method.
-				 */
-			} else if (substr($key, 0, 4) == 'rel_') {
-				/* If the last element of '$value' is zero (a control value), pop it out */
-				if (!end($value))
-					array_pop($value);
-
-				$rel_db_values = $this->value_from_database($id, $key);
-
-				/* Check if the number of entries in the database match the number of entries on the field's POST data */
-				if (count($rel_db_values) != count($value)) {
-					array_push($changed_data, array(
-						'field' => $key,
-						'value_old' => implode(',', $rel_db_values),
-						'value_new' => implode(',', $value)
-					));
-
-					continue; /* If the number of entries do not match, then something was changed */
-				}
-
-				/* Check if all the entries on the database are present on this field's POST data */
-				foreach ($rel_db_values as $rel_db_value) {
-					if (!in_array($rel_db_value, $value)) {
-						array_push($changed_data, array(
-							'field' => $key,
-							'value_old' => implode(',', $rel_db_values),
-							'value_new' => implode(',', $value)
-						));
-						break; /* If at least one element is not present, then we can safely assume that this field was changed */
-					}
-				}
-			} else if (!isset($row[$key])) { /* We must need to check $row keys after 'mixed_' and 'rel_' fields as they do not exist in the database */
-				/* If there's a POST key that is not present in the database table, just ignore it */
-				continue;
-			} else {
-				/* Check if there was a change for this field... */
-				if ($row[$key] != $value) {
-					/* ... and if so, add it to the result. TODO: FIXME: mixed and multiple relationships not yet supported  */
-					array_push($changed_data, array(
-						'field' => $key,
-						'value_old' => $row[$key],
-						'value_new' => $value
-					));
-				}
-			}
-		}
-
-		/* Post-process mixed relationships. We'll need to add to $changed_data array any mixed entries that might have been deleted
-		 * and were not caught by the previous routines (because they're based on POST data, not database data... so if there are more
-		 * database entries than POST data entries for a particular mixed relationship, the exceeding database entries would
-		 * be ignored if the following routine wasn't performed).
-		 */
-		foreach ($mixed_data as $mixed_table => $mixed_meta) {
-			if ($mixed_meta['total_db_entries'] > count($mixed_meta['entries_post'])) {
-				for ($i = count($mixed_meta['entries_post']); $i < $mixed_meta['total_db_entries']; $i ++) {
-					foreach ($mixed_meta['fields'] as $mixed_field) {
-						/* Craft mixed crud field name */
-						$mixed_crud_field = 'mixed_' . $mixed_table . '_' . $mixed_field . '_' . ($i + 1);
-
-						/* Fetch value for this field from the database */
-						$mixed_db_value = $this->value_from_database($id, $mixed_crud_field);
-
-						/* If an entry wasn't found, skip it */
-						if ($mixed_db_value === false)
-							break;
-
-						/* Insert the value that will be deleted */
-						array_push($changed_data, array(
-							'field' => $mixed_crud_field,
-							'value_old' => $mixed_db_value,
-							'value_new' => ''
-						));
-					}
-				}
-			}
-		}
-
-		/* All good */
-		return $changed_data;
-	}
-
-
-	/** Mixed handlers **/
-
-	protected function _mixed_parse_crud_field($field) {
-		$mixed_field = array();
-
-		/* Mixed field format is:
-		 * 
-		 * mixed_<table>_<field>_<mixed id>
-		 *
-		 * There's an exception for files and time counter fields which start with an underscore prefix.
-		 * We'll first evaluate the $field contents for these exceptions before applying the default parser.
-		 *
-		 */
-
-		/* NOTE: The following approach is not bullet proof... there is a possibility that two foreign table names
-		 * may collide if a field name with underscores (or a table name) cause a multiple matches under the format
-		 * mixed_<table>_<field>_<mixed id> ...
-		 *
-		 * Probably this won't be fixed in a near future, but should be well documented.
-		 */
-
-		/* Get foreign table name from $field */
-		$mixed_foreign_table = NULL;
-
-		foreach ($this->get->relative_tables($this->config['name'], 'mixed') as $mixed_rel_table) {
-			$mixed_rel_foreign_table = array_pop(array_diff($this->get->mixed_rel_table_names($mixed_rel_table, $this->config['name']), array($this->config['name'])));
-
-			/* Check if the field prefix matches the foreign table name */
-			if (('mixed_' . $mixed_rel_foreign_table . '_') == substr($field, 0, 7 + strlen($mixed_rel_foreign_table))) {
-				$mixed_foreign_table = $mixed_rel_foreign_table;
-				break;
-			}
-		}
-
-		/* If the table cannot be found, we cannot proceed */
-		if ($mixed_foreign_table === NULL)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FIND_MIXED_REL_FIELD . ': ' . $field, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Retrieve table, field and mixed id */
-		$mixed_field[0] = $mixed_foreign_table;
-		$mixed_field[1] = implode('_', array_slice(explode('_', ltrim(str_replace($mixed_foreign_table, '', substr($field, 6)), '_')), 0, -1));
-		$mixed_field[2] = end(explode('_', $field));
-
-		/* Minor fix for special field types _file_* and _timer_* which have a '_' prefix */
-		if (preg_match('/^mixed_[a-zA-Z0-9]+__file_.+$/i', $field) || preg_match('/^mixed_[a-zA-Z0-9]+__timer_.+$/i', $field)) {
-			$mixed_field[1] = '_' . $mixed_field[1];
-		}
-
-		/* 
-		 * Description:
-		 * 
-		 * $mixed_field[0] --> table name
-		 * $mixed_field[1] --> field name
-		 * $mixed_field[2] --> mixed field id
-		 * 
-		 */
-
-		return $mixed_field;
-	}
-
-	protected function _mixed_process_post_data($mixed_rels, $last_id, $ftypes, $remove_existing = false) {
-		if (count($mixed_rels) /* If $mixed_rels array is empty, do not insert, remove nor process updates on mixed fields */) {
-			if ($remove_existing) {
-				/* Remove old mixed relationship entries */
-				foreach ($ftypes as $fname => $fmeta) {
-					if ($fmeta['type'] == 'mixed') {
-						/* Security Permissions Check */
-						if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $fmeta['rel_table'])) {
-							$this->db->trans_rollback();
-							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
-						}
-	        	
-						$this->db->where($this->config['name'] . '_id', $last_id);
-						$this->db->delete($fmeta['table']);
-					}
-				}
-			}
-        	
-			/* Update mixed relationships */
-			$mixed_foreign_value_id = array(); /* Will contain the entry id of foreign single relationship tables... (used by $_mixed_table_add_missing) */
-
-			foreach ($mixed_rels as $mixed_table => $mixed_table_value) {
-				foreach ($mixed_table_value as $mixed_id => $mixed_id_value) {
-					foreach ($mixed_id_value as $mixed_field => $mixed_field_value) {
-						if (($mixed_field_value == '') || ($mixed_field_value == NULL) || isset($mixed_insert_values[$mixed_field]))
-							continue;
-        	
-						/* Check for exceptions, for example, datetime fields are split into _time and _date suffixes */
-						if (isset($mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'])) {
-							$mixed_insert_values[$mixed_field] = $this->timezone->convert($mixed_field_value . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field . '_time'], $this->config['session_data']['timezone'], $this->config['default_timezone']);
-						} else if ((substr($mixed_field, -5) == '_time')) {
-							$mixed_insert_values[substr($mixed_field, 0, -5)] = $this->timezone->convert($mixed_rels[$mixed_table][$mixed_id][substr($mixed_field, 0, -5)] . ' ' . $mixed_rels[$mixed_table][$mixed_id][$mixed_field], $this->config['session_data']['timezone'], $this->config['default_timezone']);
-						} else if ((substr($mixed_field, -3) == '_id') && (strpos($mixed_field_value, '_'))) {
-							/* Single relationship fields' identifiers on mixed relationships use the <id>_<value> format */
-							$mixed_field_val_raw = explode('_', $mixed_field_value);
-							$mixed_field_val_id = $mixed_field_val_raw[0];
-							$mixed_field_val_value = $mixed_field_val_raw[1];
-							$mixed_field_table_name = substr($mixed_field, 0, -3);
-        	
-							/* Grant that the user has privileges to access the foreign table item */
-							if (!$this->filter->table_row_perm($mixed_field_val_id, $mixed_field_table_name)) {
-								$this->db->trans_rollback();
-								$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
-							}
-        	
-							/* Exclude the ID portion of the mixed_field_value and get only corresponding value */
-							/* Note that the format of relational mixed fields is: '<id>_<value>' */
-							$mixed_insert_values[$mixed_field] = $mixed_field_val_value;
-
-							/* Also store the entry id... this may be required for later use if we need to add a missing entry */
-							$mixed_foreign_value_id[$mixed_field_table_name] = $mixed_field_val_id;
-						} else {
-							$mixed_insert_values[$mixed_field] = $mixed_field_value;
-						}
-					}
-        	
-					/* Get optional fields and retrieve the respective values, if any */
-					$mixed_table_fields = $this->get->table_fields('mixed_' . $this->config['name'] . '_' . $mixed_table);
-					foreach ($mixed_table_fields as $mixed_field) {
-						/* Check if this is a private field */
-						if (substr($mixed_field, 0, 2) != '__')
-							continue;
-        	
-						$pmfield = explode('_tc_', substr($mixed_field, 2));
-        	
-						$ftname = $pmfield[0];	/* Foreign Table name */
-						$ftcname = $pmfield[1];	/* Foreign Table Column name */
-						
-						$this->db->select($ftcname);
-						$this->db->distinct();	/* NOTE: Not required since the key we're looking for must be UNIQUE. */
-						$this->db->from($ftname);
-						$this->db->where('id', strstr($mixed_rels[$mixed_table][$mixed_id][$ftname . '_id'], '_', true));
-						$this->filter->table_row_apply($ftname);
-        	
-						$query_mixed = $this->db->get();
-        	
-						/* If empty, there's no permissions */
-						if (!$query_mixed->num_rows()) {
-							$this->db->trans_rollback();
-							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
-						}
-        	
-						$row_mixed = $query_mixed->row_array();
-						$mixed_insert_values[$mixed_field] = $row_mixed[$ftcname];
-					}
-        	
-					/* Check if all secondary relational table foreign keys exist */
-					$srtf_field_found = false;
-					foreach ($mixed_insert_values as $field => $value) {
-						if ($field == $mixed_table_fields[3]) {
-							$srtf_field_found = true;
-							break;
-						}
-					}
-
-					if ($srtf_field_found === false) {
-						/* Before checking for a matching key, validate if there's any value to search for... */
-						if (!isset($mixed_insert_values[$mixed_table_fields[1]]) || $mixed_insert_values[$mixed_table_fields[1]] === NULL || $mixed_insert_values[$mixed_table_fields[1]] == '')
-							continue; /* Nothing to be done with this entry as the key identifier isn't set or it's empty. */
-
-						/* Update mixed_insert_values with missing relational field */
-						$this->db->select('id');
-						$this->db->from(substr($mixed_table_fields[3], 0, -3));
-						$this->db->where($mixed_table_fields[1], $mixed_insert_values[$mixed_table_fields[1]]);
-
-						$srtf_query = $this->db->get();
-
-						if (!$srtf_query->num_rows()) {
-							/* If $_mixed_table_add_missing is true, insert the element on the foreign table */
-							if ($this->config['mixed_table_add_missing'] === true) {
-								/* Clone the values to be inserted on mixed table */
-								$secondary_insert_values = $mixed_insert_values;
-
-								/* Unset relationships */
-								unset($secondary_insert_values[$mixed_table_fields[2]]);
-								unset($secondary_insert_values[$mixed_table_fields[3]]);
-
-								/* Clear any _tc_ fields */
-								foreach ($secondary_insert_values as $field => $value) {
-									if (count(explode('_tc_', $field)) > 1) {
-										unset($secondary_insert_values[$field]);
-									}
-								}
-
-								/* Resolve single relationships back to their original entry id */
-								foreach ($secondary_insert_values as $field => $value) {
-									/* Ignore fields that are not single relationships */
-									if (substr($field, -3) != '_id')
-										continue;
-
-									/* Fetch the previously stored entry id related to this single relationship */
-									$secondary_insert_values[$field] = $mixed_foreign_value_id[substr($field, -3)];
-								}
-
-								/* Set any existing filtering fields */
-								$secondary_insert_values = array_merge($secondary_insert_values, $this->filter->table_row_get($mixed_table));
-
-								/* Insert data into the secondary table */
-								$this->db->insert($mixed_table, $secondary_insert_values);
-
-								/* Set the newly inserted id as the mixed relationship id */
-								$mixed_insert_values[$mixed_table_fields[3]] = $this->db->last_insert_id();
-							} else if (isset($this->config['mixed_table_set_missing'][$mixed_table])) {
-								/* There's a default id to be used associated to this mixed table */
-								$mixed_insert_values[$mixed_table_fields[3]] = $this->config['mixed_table_set_missing'][$mixed_table];
-							} else {
-								$this->db->trans_rollback();
-								$this->response->code('403', NDPHP_LANG_MOD_INVALID_MIXED_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
-							}
-						} else {
-							$row = $srtf_query->row_array();
-
-							$mixed_insert_values[$mixed_table_fields[3]] = $row['id'];
-						}
-					}
-
-					/* If there's anything to be inserted, do it */
-					if (isset($mixed_insert_values)) {
-						/* Security Permissions Check */
-						if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $mixed_table)) {
-							$this->db->trans_rollback();
-							$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
-						}
-
-						$mixed_insert_values[$this->config['name'] . '_id'] = $last_id;
-						$this->db->insert('mixed_' . $this->config['name'] . '_' . $mixed_table, $mixed_insert_values);
-						unset($mixed_insert_values);
-					}
-				}
-			}
-		}
-	}
-
-
-	/** Scheduler **/
-
-	private function _scheduler_exec_queued_entries() {
-		/* Execute scheduled entries */
-		foreach ($this->config['scheduler']['queue'] as $entry) {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $entry['url']);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$ret = curl_exec($ch);
-			curl_close($ch);
-
-			/* Check if $row['next_run_val'] date is in the past... if so, we need to keep adding period until we
-			 * get a date pointing to the future.
-			 */
-			if ($entry['next_run_val'] !== NULL && $entry['next_run_val'] > 1451606400) { /* next run must be at least close to this epoch to be considered valid */
-				while ($entry['next_run_val'] < time())
-					$entry['next_run_val'] += $entry['period'];
-			} else {
-				/* Othersite, set it to the current time */
-				$entry['next_run_val'] = time();
-			}
-
-			/* Initialize transaction */
-			$this->db->trans_begin();
-
-			$this->db->where('id', $entry['id']);
-			$this->db->update('scheduler', array(
-				'last_run' => date('Y-m-d H:i:s'),
-				'next_run' => date('Y-m-d H:i:s', $entry['next_run_val']),
-				'output' => strip_tags($ret),
-				'queued' => false
-			));
-
-			/* Check if transaction succeeded */
-			if ($this->db->trans_status() === false) {
-				$this->db->trans_rollback();
-
-				error_log('_scheduler_exec_queued_entries(): Failed to execute scheduled entry: ' . $entry['id']);
-			}
-
-			/* Commit transaction */
-			$this->db->trans_commit();
-		}
-
-		/* Reset scheduled entries */
-		$this->config['sched_entries'] = array();
-	}
-
-	private function _scheduler_process() {
-		/* Initialize transaction */
-		$this->db->trans_begin();
-
-		/* Fetch scheduler entries requiring immediate processing */
-		$q = $this->db->query('SELECT *,UNIX_TIMESTAMP(DATE_ADD(next_run, INTERVAL period SECOND)) AS next_run_val FROM scheduler WHERE active = 1 AND queued = 0 AND (next_run <= NOW() OR next_run IS NULL)');
-
-		/* Nothing to process */
-		if (!$q->num_rows()) {
-			$this->db->trans_commit();
-			return;
-		}
-
-		/* Re-Initialize scheduler entries array */
-		$this->config['scheduler']['queue'] = array();
-
-		/* Populate scheduler entries array */
-		foreach ($q->result_array() as $row) {
-			array_push($this->config['scheduler']['queue'], $row);
-
-			/* Set the 'queued' flag to avoid concurrent proccessing for the same entry */
-			$this->db->where('id', $row['id']);
-			$this->db->update('scheduler', array(
-				'queued' => true
-			));
-		}
-
-		/* Check if transaction succeeded */
-		if ($this->db->trans_status() === false) {
-			$this->db->trans_rollback();
-
-			error_log('_scheduler_process(): Failed to process scheduled entry: ' . $row['id']);
-		}
-
-		/* Commit transaction */
-		$this->db->trans_commit();
-
-		if ($this->config['threading'] && $this->config['scheduler']['type'] == 'threaded') {
-			/* TODO: Not implemented */
-		} else {
-			// if ($this->_scheduler['type'] == 'request' || $this->_scheduler['type'] == 'external') ...
-			$this->_scheduler_exec_queued_entries();
-		}
-	}
-
-	public function scheduler_external() {
-		/* Grant that only ROLE_ADMIN is able to execute this method */
-		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* If the scheduler configuration type isn't set as 'external', deny this request */
-		if ($this->config['scheduler']['type'] != 'external')
-			$this->response->code('403', NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Process and execute scheduled entries */
-		$this->_scheduler_process();
-	}
-
-
-	/** Upload handlers **/
-
-	private function _process_file_upload($table, $id, $field) {
-		if (!isset($_FILES[$field]['error']) || is_array($_FILES[$field]['error']))
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Grant that there are no errors */
-		if ($_FILES[$field]['error'] > 0)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']), $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Validate file size (This is a fallback for php settings) */
-		if ($_FILES[$field]['size'] > $this->config['upload_file_max_size'])
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Craft destination path */
-		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
-
-		/* Create directory if it doesn't exist */
-		if (mkdir($dest_path, 0750, true) === false)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Compute file hash */
-		$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
-
-		if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
-
-		/* Encrypt file, if required */
-		if ($this->config['upload_file_encryption'] === true) {
-			/* FIXME: TODO: For limited type tables, we should use the user's private encryption key here */
-			$content_ciphered = $this->encrypt->encode(file_get_contents($dest_path . '/' . $file_hash));
-			if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false)
-				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
-
-			if (fwrite($fp, $content_ciphered) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
-
-			fclose($fp);
-		}
-	}
-
-	private function _remove_file_upload($table, $id, $field) {
-		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
-
-		$this->_rrmdir($dest_path);
-	}
-
-	private function _delete_entry_uploads($table, $id) {
-		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id;
-
-		$this->_rrmdir($dest_path);
-	}
-
-	private function _rrmdir($dir) {
-		/* Sanity checks */
-		if (strpos($dir, '/..') || substr($dir, 0, 2) == '..')
-			return;
-
-		/* Recursively deletes a directory and all its contents */
-		if (is_dir($dir)) {
-			$objects = scandir($dir);
-
-			foreach ($objects as $object) {
-				if (($object != ".") && ($object != "..")) {
-					if (filetype($dir . "/" . $object) == "dir") {
-						$this->_rrmdir($dir . "/" . $object);
-					} else {
-						unlink($dir . "/" . $object);
-					}
-				}
-			}
-
-			reset($objects);
-			rmdir($dir);
-		}
-	}
 
 	public function config_populate() {
 		/* Populate public configuration ($config) */
@@ -1644,7 +868,7 @@ class ND_Controller extends UW_Controller {
 		$this->configuration->core_set($this->config);
 	}
 
-	private function _load_module($name, $share_base = false) {
+	protected function _load_module($name, $share_base = false) {
 		$this->load->module($name);
 
 		if ($share_base === true) {
@@ -1655,9 +879,11 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function _core_modules() {
+		/* TODO: FIXME: Not all of the following modules are required to be loaded by default */
 		$this->_load_module('get', true);
 		$this->_load_module('filter', true);
 		$this->_load_module('field', true);
+		$this->_load_module('rest', true);
 		$this->_load_module('table', true);
 	}
 
@@ -1686,6 +912,10 @@ class ND_Controller extends UW_Controller {
 
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct();
+
+		/* If JSON replies are enabled, load rest module */
+		if ($json_replies)
+			$this->_load_module('rest', true);
 
 		/* Grant that the configured cookie domain matches the server name */
 		if (current_config()['session']['cookie_domain'] != $_SERVER['SERVER_NAME'])
@@ -1912,8 +1142,10 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* Process scheduler entries if the scheduler is not set as external (which, in that case, will require a cron job) */
-		if ($this->_scheduler['type'] != 'external')
-			$this->_scheduler_process();
+		if ($this->_scheduler['type'] != 'external') {
+			$this->_load_module('scheduler', true);
+			$this->scheduler->process();
+		}
 	}
 
 
@@ -2143,7 +1375,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->json_list($data));
+			echo($this->rest->json_list($data));
 			return;
 		}
 
@@ -2340,7 +1572,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->json_list($data));
+			echo($this->rest->json_list($data));
 			return;
 		}
 
@@ -2444,7 +1676,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->json_list($data));
+			echo($this->rest->json_list($data));
 			return;
 		}
 
@@ -3616,7 +2848,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->json_result($data));
+			echo($this->rest->json_result($data));
 			return;
 		}
 
@@ -3723,7 +2955,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->json_result($data));
+			echo($this->rest->json_result($data));
 			return;
 		}
 
@@ -4061,6 +3293,8 @@ class ND_Controller extends UW_Controller {
 	}
 
 	public function insert($retid = false) {
+		$this->_load_module('upload', true);
+
 		/* NOTE: If $retid is true, an integer value is returned on success (on failure, die() will always be called) */
 
 		$log_removed_fields = array(); /* Keep track of unset fields from POST data that still need to be logged */
@@ -4111,7 +3345,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($_POST as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
-				$mixed_field = $this->_mixed_parse_crud_field($field);
+				$mixed_field = $this->get->mixed_crud_field($field);
 
 				/* 
 				 * Description:
@@ -4231,7 +3465,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
-			$this->_process_file_upload($this->config['name'], $last_id, $file);
+			$this->upload->process_file($this->config['name'], $last_id, $file);
 		}
 
 		/* Insert relationships, if any */
@@ -4271,7 +3505,8 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Insert mixed relationships. */
-		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes);
+		$this->_load_module('process', true);
+		$this->process->mixed_post_data($mixed_rels, $last_id, $ftypes);
 
 		/* Commit transaction */
 		if ($this->db->trans_status() === false) {
@@ -4296,7 +3531,7 @@ class ND_Controller extends UW_Controller {
 			 * in the success handler of the ajax call.
 			 */
 			if ($this->config['json_replies'] === true) {
-				echo($this->json_insert($last_id));
+				echo($this->rest->json_insert($last_id));
 				return;
 			} else if ($this->request->is_ajax()) {
 				echo($last_id);
@@ -4552,6 +3787,8 @@ class ND_Controller extends UW_Controller {
 	}
 
 	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
+		$this->_load_module('upload', true);
+
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
 		$log_removed_fields = array(); /* Keep track of unset fields from POST data that still need to be logged */
@@ -4616,7 +3853,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($_POST as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
-				$mixed_field = $this->_mixed_parse_crud_field($field);
+				$mixed_field = $this->get->mixed_crud_field($field);
 
 				/* 
 				 * Description:
@@ -4735,7 +3972,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If logging is enabled, check for changed fields and log them */
 		if ($this->config['logging'] === true) {
-			$changed_fields = $this->post_changed_fields_data($this->config['name'], $_POST['id'], array_merge($_POST, $log_removed_fields));
+			$changed_fields = $this->get->post_changed_fields_data($this->config['name'], $_POST['id'], array_merge($_POST, $log_removed_fields));
 
 			$log_transaction_id = openssl_digest('UPDATE' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
@@ -4761,15 +3998,16 @@ class ND_Controller extends UW_Controller {
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
-			$this->_remove_file_upload($this->config['name'], $_POST['id'], $file);
-			$this->_process_file_upload($this->config['name'], $_POST['id'], $file);
+			$this->upload->remove_file($this->config['name'], $_POST['id'], $file);
+			$this->upload->process_file($this->config['name'], $_POST['id'], $file);
 		}
 
 		/* Set the last inserted ID variable */
 		$last_id = $_POST['id'];
 
 		/* Process mixed relationships if there are any to be updated */
-		$this->_mixed_process_post_data($mixed_rels, $last_id, $ftypes, true);
+		$this->_load_module('process', true);
+		$this->process->mixed_post_data($mixed_rels, $last_id, $ftypes, true);
 
 		/* Process multiple relationships (TODO: the following procedures should be consolidated into a _rel_process_post_data() method) */
 		foreach ($multiple_rels as $rel_field) {
@@ -4809,7 +4047,7 @@ class ND_Controller extends UW_Controller {
 			return true;
 		} else {
 			if ($this->config['json_replies'] === true) {
-				echo($this->json_update());
+				echo($this->rest->json_update());
 				return;
 			} else if ($this->request->is_ajax()) {
 				echo($_POST['id']);
@@ -5029,6 +4267,8 @@ class ND_Controller extends UW_Controller {
 	}
 
 	public function delete($id = 0, $retbool = false) {
+		$this->_load_module('upload', true);
+
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
 		/* Check if this is a view table type */
@@ -5089,7 +4329,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Delete uploaded files, if any */
-		$this->_delete_entry_uploads($this->config['name'], $_POST['id']);
+		$this->upload->purge_entry_files($this->config['name'], $_POST['id']);
 
 		/* NOTE: All relationships (including mixed relationships) shall be deleted through CASCADE events defined on the
 		 * DBMS data model.
@@ -5106,7 +4346,7 @@ class ND_Controller extends UW_Controller {
 			return true;
 		} else {
 			if ($this->config['json_replies'] === true) {
-				echo($this->json_delete());
+				echo($this->rest->json_delete());
 				return;
 			} else if ($this->request->is_ajax()) {
 				echo('OK'); /* FIXME: What should be replied? */
@@ -5322,7 +4562,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->json_view($data));
+			echo($this->rest->json_view($data));
 			return;
 		}
 
@@ -5421,6 +4661,9 @@ class ND_Controller extends UW_Controller {
 		return false;
 	}
 
+
+	/** Charts public interface **/
+
 	public function chart_publish($chart_id = 0, $refresh_rand = NULL, $result_query = NULL, $imagemap = NULL, $start_ts = NULL, $end_ts = NULL) {
 		$this->_load_module('charts', true);
 
@@ -5431,5 +4674,32 @@ class ND_Controller extends UW_Controller {
 		$this->_load_module('charts', true);
 
 		$this->charts->chart_foreign_publish($chart_id, $entry_id, $refresh_rand, $imagemap, $start_ts, $end_ts);
+	}
+
+
+	/** JSON documentation **/
+
+	public function json_doc() {
+		$this->_load_module('rest', true);
+
+		$this->rest->json_doc();
+	}
+
+
+	/** Scheduler **/
+
+	public function scheduler_external() {
+		$this->_load_module('scheduler', true);
+
+		/* Grant that only ROLE_ADMIN is able to execute this method */
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* If the scheduler configuration type isn't set as 'external', deny this request */
+		if ($this->config['scheduler']['type'] != 'external')
+			$this->response->code('403', NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Process and execute scheduled entries */
+		$this->scheduler->process();
 	}
 }
