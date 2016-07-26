@@ -113,7 +113,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02n';
+	protected $_ndphp_version = '0.02o';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -871,6 +871,13 @@ class ND_Controller extends UW_Controller {
 	protected function _load_module($name, $share_base = false) {
 		$this->load->module($name);
 
+		/* Grant that there are no special characters on module name */
+		if (!preg_match('/^[a-zA-Z0-9\_]+$/i', $name)) {
+			header('HTTP/1.1 500 Internal Server Error');
+			die(NDPHP_LANG_MOD_INVALID_CTRL_NAME . ': ' . $name);
+		}
+
+		/* Share the underlying models? */
 		if ($share_base === true) {
 			eval('$this->' . $name . '->db = &$this->db;');
 			eval('$this->' . $name . '->session = &$this->session;');
@@ -883,7 +890,6 @@ class ND_Controller extends UW_Controller {
 		$this->_load_module('get', true);
 		$this->_load_module('filter', true);
 		$this->_load_module('field', true);
-		$this->_load_module('rest', true);
 		$this->_load_module('table', true);
 	}
 

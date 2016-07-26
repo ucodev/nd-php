@@ -1101,7 +1101,7 @@ class UW_Get extends UW_Module {
 
 		if (substr($field, 0, 6) == 'mixed_') {
 			/* Parse the mixed field */
-			$mixed_field = $this->_mixed_parse_crud_field($field);
+			$mixed_field = $this->mixed_crud_field($field);
 
 			/* Fetch the data from the database for this particular mixed field */
 			$this->db->select($mixed_field[1]);
@@ -1190,7 +1190,7 @@ class UW_Get extends UW_Module {
 				/* Check if the mixed relationship field value is about to be changed */
 
 				/* Parse mixed field */
-				$mixed_field = $this->_mixed_parse_crud_field($key);
+				$mixed_field = $this->mixed_crud_field($key);
 
 				/* Keep track of existing db and post entries */
 				if (!isset($mixed_data[$mixed_field[0]])) {

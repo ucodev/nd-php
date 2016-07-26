@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 22/07/2016
+ * Date: 27/07/2016
  * License: GPLv3
  */
 
@@ -2137,13 +2137,17 @@ class UW_Model {
 			/* Be default, model objects are instantiated only once and, on subsequent calls, a reference to the existing
 			 * (instantiated) object is passed.
 			 */
-			if (isset($__objects['autoload'][$model])) {
-				eval('$this->' . $model . ' = &$__objects[\'autoload\'][\'' . $model . '\'];');
-			} else if (isset($__objects['adhoc'][$model])) {
-				eval('$this->' . $model . ' = &$__objects[\'adhoc\'][\'' . $model . '\'];');
+			if ($__objects['enabled'] === true) {
+				if (isset($__objects['autoload'][$model])) {
+					eval('$this->' . $model . ' = &$__objects[\'autoload\'][\'' . $model . '\'];');
+				} else if (isset($__objects['adhoc'][$model])) {
+					eval('$this->' . $model . ' = &$__objects[\'adhoc\'][\'' . $model . '\'];');
+				} else {
+					eval('$__objects[\'adhoc\'][\'' . $model . '\'] = new UW_' . ucfirst($model) . '();');
+					eval('$this->' . $model . ' = &$__objects[\'adhoc\'][\'' . $model . '\'];');
+				}
 			} else {
-				eval('$__objects[\'adhoc\'][\'' . $model . '\'] = new UW_' . ucfirst($model) . '();');
-				eval('$this->' . $model . ' = &$__objects[\'adhoc\'][\'' . $model . '\'];');
+				eval('$this->' . $model . ' = new UW_' . ucfirst($model) . '();');
 			}
 		}
 

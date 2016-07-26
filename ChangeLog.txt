@@ -1,3 +1,11 @@
+v0.02o (2016-07-27):
+
+ - Fixed mixed relationship issues.
+ - _load_module() now grants that module names does not contain any special characters.
+ - Access model now disables uWeb object caching when instantiating new controllers.
+ - Updated tracker.
+
+
 v0.02n (2016-07-26):
 
  - Detached process, rest, scheduler and upload modules from the ND core controller.
