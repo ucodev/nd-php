@@ -41,16 +41,22 @@ class UW_Access extends UW_Model {
 		}
 
 		/* Save and load a new context */
-		$save_context = $GLOBALS['_core_context'];
-		$GLOBALS['_core_context'] = $name;
-		$GLOBALS['__objects']['enabled'] = false; /* Force uWeb to instantiate new models instead of reusing them */
+		$saved_context = core_context_get();
+		core_context_set($name);
+
+		/* Temporarily disable object cache. This will force uWeb to instantiate new models instead of reusing them,
+		 * avoiding any conflicts with the previously saved context.
+		 */
+		core_object_cache_disable();
 
 		/* Create the controller object. (TODO: FIXME: Store the object (to reduce overhead on further calls)) */
 		eval('$ctrl = new ' . ucfirst($name) . '(' . ($session_enable ? 'true' : 'false') . ', ' . ($json_replies ? 'true' : 'false') . ');');
 
 		/* Restore previously saved context */
-		$GLOBALS['_core_context'] = $save_context;
-		$GLOBALS['__objects']['enabled'] = true; /* Re-enable uWeb object cache */
+		core_context_set($saved_context);
+
+		/* Re-enable uWeb object cache */
+		core_object_cache_enable();
 
 		/* NOTE: We can only access $ctrl protected properties/methods if this function is called from ND_Controller (sibling objects) */
 		return $ctrl;

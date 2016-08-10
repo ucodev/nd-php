@@ -118,9 +118,11 @@
 			"system/core/uweb.php",
 			"system/modules/dummy.php",
 			"system/utils/base.php",
+			"system/utils/core.php",
 			"tmp/.htaccess",
 			"user/core/ND_Controller.php",
 			"user/modules/dummy.php",
+			"user/utils/core.php",
 			"user/utils/language.php",
 			"user/index.php",
 			"VERSION"

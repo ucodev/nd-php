@@ -77,7 +77,12 @@ class UW_Process extends UW_Module {
 
 			foreach ($mixed_rels as $mixed_table => $mixed_table_value) {
 				foreach ($mixed_table_value as $mixed_id => $mixed_id_value) {
+					/* Grant that mixed_insert_values is not set for the next field iteration */
+					unset($mixed_insert_values);
+
 					foreach ($mixed_id_value as $mixed_field => $mixed_field_value) {
+						/* If the value is empty, non-existent or already set, ignore this entry */
+						/* TODO: FIXME: If the value is empty, shouldn't it be set to clear the old value on updates? */
 						if (($mixed_field_value == '') || ($mixed_field_value == NULL) || isset($mixed_insert_values[$mixed_field]))
 							continue;
         	

@@ -1,3 +1,10 @@
+v0.02p (2016-08-10):
+
+ - Fixed mixed relationship processing issues on multiple mixed table controller.
+ - Upgraded uWeb to include core_*() utils.
+ - Updated tracker.
+
+
 v0.02o (2016-07-27):
 
  - Fixed mixed relationship issues.
