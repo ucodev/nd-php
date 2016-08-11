@@ -178,7 +178,7 @@
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black.</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> */</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_table_row_choice_class</span> = <span class="type">array</span>(<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_table_row_class</span> = <span class="type">array</span>(<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/*</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'rel_field' =&gt; 'field_id',</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'class_even' =&gt; 'even',</span><br />

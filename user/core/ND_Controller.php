@@ -113,7 +113,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02p';
+	protected $_ndphp_version = '0.02q';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -225,8 +225,11 @@ class ND_Controller extends UW_Controller {
 	);
 
 	/* Pagination */
-	protected $_table_pagination_rpp_list = 10;
-	protected $_table_pagination_rpp_result = 10;
+	protected $_table_pagination_rpp_list_inherit_config = true; /* If set to false, the value of $_table_pagination_rpp_list will be used for this controller */
+	protected $_table_pagination_rpp_list = 10; /* Maximum rows per page for listings */
+
+	protected $_table_pagination_rpp_result_inherit_config = true; /* If set to false, the value of $_table_pagination_rpp_result will be used for this controller */
+	protected $_table_pagination_rpp_result = 10; /* Maximum rows per page for results */
 
 	/* Anchor foreign key values
 	 * This option will enable or disable the links (anchors) created in the lists/results
@@ -771,7 +774,9 @@ class ND_Controller extends UW_Controller {
 		$this->config['table_field_order_result_modifier']		= $this->_table_field_order_result_modifier;
 		$this->config['table_field_aliases']					= $this->_table_field_aliases;
 		$this->config['table_fk_linking']						= $this->_table_fk_linking;
+		$this->config['table_pagination_rpp_list_inherit_config'] = $this->_table_pagination_rpp_list_inherit_config;
 		$this->config['table_pagination_rpp_list']				= $this->_table_pagination_rpp_list;
+		$this->config['table_pagination_rpp_result_inherit_config'] = $this->_table_pagination_rpp_result_inherit_config;
 		$this->config['table_pagination_rpp_result']			= $this->_table_pagination_rpp_result;
 		$this->config['table_row_filtering']					= $this->_table_row_filtering;
 		$this->config['table_row_filtering_config']				= $this->_table_row_filtering_config;
@@ -1105,9 +1110,15 @@ class ND_Controller extends UW_Controller {
 		$this->_project_description = $config['description'];
 		$this->_default_timezone = $config['timezone'];
 		$this->_default_theme = $config['theme'];
-		$this->_table_pagination_rpp_list = $config['page_rows'];
-		$this->_table_pagination_rpp_result = $config['page_rows'];
 		$this->_temp_dir = $config['temporary_directory'];
+
+		/* Only set list rpp value if inherit config is set to true */
+		if ($this->_table_pagination_rpp_list_inherit_config === true)
+			$this->_table_pagination_rpp_list = $config['page_rows'];
+
+		if ($this->_table_pagination_rpp_result_inherit_config === true)
+			$this->_table_pagination_rpp_result = $config['page_rows'];
+
 
 		/* Set default database */
 		$this->_default_database = $this->_session_data['database'];

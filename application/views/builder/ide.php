@@ -466,7 +466,7 @@
 					<td class="properties_table_field_title">Icon</td>
 					<td class="properties_table_field_value">
 						<select id="property_icon" name="property_icon">
-							<option value="Empty button.png">Custom...</option>
+							<option value="custom">Custom...</option>
 							<?php foreach ($view['menu_icons'] as $icon): ?>
 								<option value="<?=$icon?>"><?=explode('.', $icon)[0]?></option>
 							<?php endforeach; ?>

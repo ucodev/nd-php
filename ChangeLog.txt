@@ -1,3 +1,11 @@
+v0.02q (2016-08-11):
+
+ - Updated documentation.
+ - Rows per page for listings and results can now choose to inherit from global configuration or from the controller itself.
+ - Fixed issues with images path on IDE Builder.
+ - Fixed custom menu icons issue that was causing custom icons to be replaced at every IDE rebuild.
+
+
 v0.02p (2016-08-10):
 
  - Fixed mixed relationship processing issues on multiple mixed table controller.

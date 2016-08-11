@@ -92,7 +92,8 @@ class Builder extends ND_Controller {
 
 		/* Setup view data: Load available menu icons */
 		$data['view']['menu_icons'] = array();
-		foreach (glob(SYSTEM_BASE_DIR . implode('/', array_slice(explode('/', static_images_dir()), 2)) . '/themes/' . $this->config['default_theme'] . '/menu/iconset/png/24x24/*') as $icon_file_path) {
+		$images_path = SYSTEM_BASE_DIR . '/' . preg_replace('/' . preg_quote(base_dir(), '/') . '/', '', static_images_dir(), 1);
+		foreach (glob($image_path . '/themes/' . $this->config['default_theme'] . '/menu/iconset/png/24x24/*') as $icon_file_path) {
 			/* Strip the directory path, leaving only the filename ... */
 			array_push($data['view']['menu_icons'], end(explode('/', $icon_file_path)));
 		}
