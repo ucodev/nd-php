@@ -113,7 +113,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02q';
+	protected $_ndphp_version = '0.02r';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -3428,7 +3428,7 @@ class ND_Controller extends UW_Controller {
 
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
-				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field]))
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $_POST[$field]))
 					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 			}
 		}
@@ -3981,7 +3981,7 @@ class ND_Controller extends UW_Controller {
 
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
-				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/', $_POST[$field])) {
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $_POST[$field])) {
 					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 				}
 			}

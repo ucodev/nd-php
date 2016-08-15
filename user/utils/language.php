@@ -153,6 +153,7 @@ define('NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ',		'Invalid type. The supplied param
 define('NDPHP_LANG_MOD_INVALID_POST_KEYS',			'Invalid keys found in POST data.');
 define('NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS','Invalid characters found on views base directory path.');
 define('NDPHP_LANG_MOD_INVALID_SERVER_NAME',		'The specified URL host is not allowed.');
+define('NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT',	'Username must be at least 5 characters long.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');

@@ -1614,8 +1614,12 @@ class UW_Application extends UW_Model {
 		}
 
 		/* Validate if we've all the required values, or assume default ones if they're unset */
-		if (!$menu['properties']['rpp'])
+		$rpp_inherit_config = true;
+		if (!$menu['properties']['rpp']) {
 			$menu['properties']['rpp'] = 10; /* FIXME: TODO: Fetch from app configuration */
+		} else {
+			$rpp_inherit_config = false;
+		}
 
 		if (!$menu['properties']['order_field'])
 			$menu['properties']['order_field'] = 'id';
@@ -1678,7 +1682,9 @@ class UW_Application extends UW_Model {
 		$controller_ide_region = '' . "\n" .
 			'	protected $_table_type_view = ' . ($menu['type'] == 'custom' ? 'true' : 'false') . ';' . "\n" .
 			'' . "\n" .
+			'	protected $_table_pagination_rpp_list_inherit_config = ' . ($rpp_inherit_config ? 'true' : 'false') . ';' . "\n" .
 			'	protected $_table_pagination_rpp_list = ' . $menu['properties']['rpp'] . ';' . "\n" .
+			'	protected $_table_pagination_rpp_result_inherit_config = ' . ($rpp_inherit_config ? 'true' : 'false') . ';' . "\n" .
 			'	protected $_table_pagination_rpp_result = ' . $menu['properties']['rpp'] . ';' . "\n" .
 			'' . "\n" .
 			'	protected $_hide_fields_create = ' . $hide_create_str . ';' . "\n" .
@@ -2004,14 +2010,24 @@ class UW_Application extends UW_Model {
 		}
 	}
 
-	private function _field_require_keys($field) {
-		switch ($field['type']) {
-			case 'dropdown'	: return true;
-			case 'multiple'	: return true;
-			case 'mixed'	: return true;
+	private function _field_require_keys($app_model, $field) {
+		/* Only dropdown, multiple and mixed type fields may contain keys */
+		if (($field['type'] != 'dropdown') && ($field['type'] != 'multiple') && ($field['type'] != 'mixed'))
+			return false;
+
+		/* Check if the field references a custom menu */
+		for ($i = 0; $i < count($app_model['menus']); $i ++) {
+			if (($app_model['menus'][$i]['name'] == $field['name']) && ($app_model['menus'][$i]['type'] == 'custom')) {
+				return false; 	/* Since a custom menu is a database VIEW, no keys shall be created for this field
+								 * since we cannot create foreign keys referencing the VIEW.
+								 */
+			}
 		}
 
-		return false;
+		/* The field is one of dropdown, multiple or mixed type and does not reference a database VIEW,
+		 * so it requires keys.
+		 */
+		return true;
 	}
 
 	private function _field_type_is_database_table($field) {
@@ -2089,7 +2105,7 @@ class UW_Application extends UW_Model {
 				/* Set database table column name */
 				$app_model['menus'][$i]['fields'][$j]['db']['name'] = $this->_field_name_translate_to_database(strtolower($app_model['menus'][$i]['name']), $app_model['menus'][$i]['fields'][$j]);
 				/* Indicate if there are keys to be created for this column */
-				$app_model['menus'][$i]['fields'][$j]['db']['has_keys'] = $this->_field_require_keys($app_model['menus'][$i]['fields'][$j]);
+				$app_model['menus'][$i]['fields'][$j]['db']['has_keys'] = $this->_field_require_keys($app_model, $app_model['menus'][$i]['fields'][$j]);
 				/* Indicate if this is a relational table instead of a database table column */
 				$app_model['menus'][$i]['fields'][$j]['db']['is_table'] = $this->_field_type_is_database_table($app_model['menus'][$i]['fields'][$j]);
 				/* Is this column required? */

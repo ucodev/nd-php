@@ -63,6 +63,11 @@ class Users extends ND_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
+		/* Check if the username is at least 5 characters long */
+		if (strlen($POST['username']) < 5) {
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
 		/* Generate user's private key for encryption
 		 *
 		 * This key will be a pseudo random string with 256 bytes of length.
@@ -109,6 +114,11 @@ class Users extends ND_Controller {
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
 		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles']))
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Check if the username is at least 5 characters long */
+		if (strlen($POST['username']) < 5) {
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->config['default_charset'], !$this->request->is_ajax());
+		}
 
 		/* If password was changed ... */
 		$this->db->select('password,privenckey');

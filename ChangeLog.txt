@@ -1,3 +1,11 @@
+v0.02r (2016-08-15):
+
+ - Controller input pattern validation now accounts for UTF8.
+ - Fixed rows per page configuration on IDE Builder.
+ - Username length is now checked upon insert and update operations under the Users controller.
+ - Custom menu types can now be referenced on Dropdown, Multiple and Mixed type fields on IDE Builder.
+
+
 v0.02q (2016-08-11):
 
  - Updated documentation.
