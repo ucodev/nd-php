@@ -1,3 +1,9 @@
+v0.02s (2016-08-16):
+
+ - Fixed the issue that was preventing a non-admin user to be updated.
+ - Custom controllers are now correctly initialized during the build process from IDE Builder.
+
+
 v0.02r (2016-08-15):
 
  - Controller input pattern validation now accounts for UTF8.

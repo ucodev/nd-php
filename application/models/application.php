@@ -2198,6 +2198,21 @@ class UW_Application extends UW_Model {
 		/* Commit changes */
 		$this->db->trans_commit();
 
+		/* Call all custom controllers once via cURL in order to create the correct view */
+		for ($i = 0; $i < count($app_model['menus']); $i ++) {
+			if ($app_model['menus'][$i]['type'] == 'custom') {
+				$ch = curl_init();
+				$headers = array(
+					'Cache-Control: no-cache'
+				);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+				curl_setopt($ch, CURLOPT_URL, base_url() . 'index.php/' . $app_model['menus'][$i]['db']['name']);
+				curl_exec($ch);
+				curl_close($ch);
+			}
+		}
+
+		/* All good */
 		return $app_model;
 	}
 

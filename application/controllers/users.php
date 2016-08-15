@@ -112,7 +112,7 @@ class Users extends ND_Controller {
 		$hook_pre_return = array();
 
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
-		if (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles']))
+		if (($id == 1) && (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles'])))
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Check if the username is at least 5 characters long */
