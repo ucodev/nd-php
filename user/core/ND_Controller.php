@@ -41,6 +41,7 @@
  *
  * TODO:
  *
+ * * Multi Dropdown filters, allowing a selection of an item from a dropdown to filter the contents of another dropdown (or more)
  * * Add support for hooks on static file requests.
  * * IDE application model should validate everything that was previously validated by ide.js.
  * * [IN_PROGRESS] Database Sharding (per user).
@@ -113,7 +114,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02t';
+	protected $_ndphp_version = '0.02u';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1251,20 +1252,19 @@ class ND_Controller extends UW_Controller {
 		/* Groups hook enter */
 		$hook_enter_return = $this->_hook_groups_generic_enter($data);
 
-		/* If logging is enabled, log this listing request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('VIEW' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		/* If logging is enabled, log this group read access */
+		$this->logging->log(
+			/* op         */ 'VIEW',
+			/* table      */ $this->config['name'],
+			/* field      */ 'GROUPS',
+			/* entry_id   */ NULL,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'VIEW',
-				'_table' => $this->config['name'],
-				'_field' => 'GROUPS',
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
 
 		/* Get view title value */
 		$title = NULL;
@@ -1440,20 +1440,18 @@ class ND_Controller extends UW_Controller {
 		$hook_enter_return = $this->_hook_list_generic_enter($data, $field, $order, $page);
 
 		/* If logging is enabled, log this listing request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('LIST' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		$this->logging->log(
+			/* op         */ 'LIST',
+			/* table      */ $this->config['name'],
+			/* field      */ 'PAGE / FIELD / ORDER',
+			/* entry_id   */ ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_list']) + 1) . ' / ' . ($field ? $field : $this->config['table_field_order_list']) . ' / ' . ($order ? $order : $this->config['table_field_order_list_modifier'])) : ('0 / ' . ($field ? $field : $this->config['table_field_order_list']) . ' / ' . ($order ? $order : $this->config['table_field_order_list_modifier'])),
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'LIST',
-				'_table' => $this->config['name'],
-				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_list']) + 1) . ' / ' . ($field ? $field : $this->config['table_field_order_list']) . ' / ' . ($order ? $order : $this->config['table_field_order_list_modifier'])) : ('0 / ' . ($field ? $field : $this->config['table_field_order_list']) . ' / ' . ($order ? $order : $this->config['table_field_order_list_modifier'])),
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
 
 		/* Setup charts */
 		$this->_load_module('charts', true);
@@ -1616,22 +1614,22 @@ class ND_Controller extends UW_Controller {
 		 * implemented for grouping. The redesign of this feature is required.
 		 *
 		 */
-		/* If logging is enabled, log this search request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('LIST' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
 
-			$this->db->insert('logging', array(
-				'operation' => 'LIST',
-				'_table' => $this->config['name'],
-				'_field' => 'GROUPS',
-				'entryid' => $grouping_field,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
+		/* If logging is enabled, log this group listing request */
+		$this->logging->log(
+			/* op         */ 'LIST',
+			/* table      */ $this->config['name'],
+			/* field      */ 'GROUPS',
+			/* entry_id   */ $grouping_field,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
+
+		/* Retrieve the list generic data */
 		$data = $this->list_generic($field, $order, -1 /* $page */); /* FIXME: We should not rely on list_generic(). A specific implementation for grouping is required. */
 
 		$group_result_array = array();
@@ -2086,18 +2084,18 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* If logging is enabled, log this search request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('SEARCH' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		$this->logging->log(
+			/* op         */ 'SEARCH',
+			/* table      */ $this->config['name'],
+			/* field      */ NULL,
+			/* entry_id   */ NULL,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'SEARCH',
-				'_table' => $this->config['name'],
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
 
 		/* Initialize $data */
 		$data = array();
@@ -2196,21 +2194,17 @@ class ND_Controller extends UW_Controller {
 		$hook_enter_return = $this->_hook_result_generic_enter($data, $type, $result_query, $order_field, $order_type, $page);
 
 		/* If logging is enabled, log this search result request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('RESULT' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'RESULT',
-				'_table' => $this->config['name'],
-				'_field' => 'PAGE / FIELD / ORDER',
-				'entryid' => ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_result']) + 1) . ' / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])) : ('0 / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])),
-				'value_new' => (($type == "basic") ? $_POST['search_value'] : (($type == "query") ? $result_query : json_encode($_POST, JSON_PRETTY_PRINT))),
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
+		$this->logging->log(
+			/* op         */ 'RESULT',
+			/* table      */ $this->config['name'],
+			/* field      */ 'PAGE / FIELD / ORDER',
+			/* entry_id   */ ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_result']) + 1) . ' / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])) : ('0 / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])),
+			/* value_new  */ (($type == "basic") ? $_POST['search_value'] : (($type == "query") ? $result_query : json_encode($_POST, JSON_PRETTY_PRINT))),
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
 		/* Setup charts */
 		$this->_load_module('charts', true);
@@ -2896,21 +2890,19 @@ class ND_Controller extends UW_Controller {
 		 */
 
 		/* If logging is enabled, log this search request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('RESULT' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		$this->logging->log(
+			/* op         */ 'RESULT',
+			/* table      */ $this->config['name'],
+			/* field      */ 'GROUPS',
+			/* entry_id   */ $grouping_field,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'RESULT',
-				'_table' => $this->config['name'],
-				'_field' => 'GROUPS',
-				'entryid' => $grouping_field,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
-
+		/* Load result generic data */
 		$data = $this->result_generic($type, $result_query, $order_field, $order_type, -1 /* $page */); /* FIXME: We should not rely on result_generic(). A specific implementation for grouping is required. */
 
 		$group_result_array = array();
@@ -3007,20 +2999,19 @@ class ND_Controller extends UW_Controller {
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_export_enter($data, $export_query, $type);
 
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('EXPORT' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		/* If logging is enabled, log this export request */
+		$this->logging->log(
+			/* op         */ 'EXPORT',
+			/* table      */ $this->config['name'],
+			/* field      */ strtoupper($type),
+			/* entry_id   */ NULL,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'EXPORT',
-				'_table' => $this->config['name'],
-				'_field' => strtoupper($type),
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
 
 		/* TODO: $export_query shall be passed in a POST method in the future as it can easily
 		 * reach more than 2083 characters, which is the IE limit for URL size.
@@ -3452,33 +3443,32 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true) {
-			/* Temporarily add the 'id' field to POST data */
-			$_POST['id'] = $last_id;
+		$this->logging->trans_begin();
 
-			$log_transaction_id = openssl_digest('INSERT' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		$_POST['id'] = $last_id;
 
-			foreach (array_merge($_POST, $log_removed_fields) as $pfield => $pvalue) {
-				/* If $pvalue is of type array and contains a control value (zero value) as it's last element, pop it out */
-				if ((gettype($pvalue) == 'array') && !end($pvalue))
-					array_pop($pvalue);
+		foreach (array_merge($_POST, $log_removed_fields) as $pfield => $pvalue) {
+			/* If $pvalue is of type array and contains a control value (zero value) as it's last element, pop it out */
+			if ((gettype($pvalue) == 'array') && !end($pvalue))
+				array_pop($pvalue);
 
-				$this->db->insert('logging', array(
-					'operation' => 'INSERT',
-					'_table' => $this->config['name'],
-					'_field' => $pfield,
-					'entryid' => $last_id,
-					'value_new' => (gettype($pvalue) == 'array') ? implode(',', $pvalue) : $pvalue,
-					'transaction' => $log_transaction_id,
-					'registered' => date('Y-m-d H:i:s'),
-					'sessions_id' => $this->config['session_data']['sessions_id'],
-					'users_id' => $this->config['session_data']['user_id']
-				));
-			}
-
-			/* Remove the previously added 'id' field from POST data */
-			unset($_POST['id']);
+			$this->logging->log(
+				/* op         */ 'INSERT',
+				/* table      */ $this->config['name'],
+				/* field      */ $pfield,
+				/* entry_id   */ $last_id,
+				/* value_new  */ (gettype($pvalue) == 'array') ? implode(',', $pvalue) : $pvalue,
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
 		}
+
+		unset($_POST['id']);
+
+		$this->logging->trans_end();
+
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
@@ -3608,21 +3598,18 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['submenu'] = $this->config['links_submenu_body_edit'];
 		$data['view']['id'] = $id;
 
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('READ' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'READ',
-				'_table' => $this->config['name'],
-				'_field' => 'id',
-				'entryid' => $id,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
+		/* If logging is enabled, log this read access */
+		$this->logging->log(
+			/* op         */ 'READ',
+			/* table      */ $this->config['name'],
+			/* field      */ 'id',
+			/* entry_id   */ $id,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
 		/* Select only the fields that were returned by _get_fields() */
 		$this->filter->selected_fields($data['view']['fields'], array($this->config['name'] . '.id' => $id));
@@ -3988,26 +3975,26 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true) {
-			$changed_fields = $this->get->post_changed_fields_data($this->config['name'], $_POST['id'], array_merge($_POST, $log_removed_fields));
+		$this->logging->trans_begin();
 
-			$log_transaction_id = openssl_digest('UPDATE' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		$changed_fields = $this->get->post_changed_fields_data($this->config['name'], $_POST['id'], array_merge($_POST, $log_removed_fields));
 
-			foreach ($changed_fields as $cfield) {
-				$this->db->insert('logging', array(
-					'operation' => 'UPDATE',
-					'_table' => $this->config['name'],
-					'_field' => $cfield['field'],
-					'entryid' => $_POST['id'],
-					'value_old' => $cfield['value_old'],
-					'value_new' => $cfield['value_new'],
-					'transaction' => $log_transaction_id,
-					'registered' => date('Y-m-d H:i:s'),
-					'sessions_id' => $this->config['session_data']['sessions_id'],
-					'users_id' => $this->config['session_data']['user_id']
-				));
-			}
+		foreach ($changed_fields as $cfield) {
+			$this->logging->log(
+				/* op         */ 'UPDATE',
+				/* table      */ $this->config['name'],
+				/* field      */ $cfield['field'],
+				/* entry_id   */ $_POST['id'],
+				/* value_new  */ $cfield['value_new'],
+				/* value_old  */ $cfield['value_old'],
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
 		}
+
+		$this->logging->trans_end();
+
 
 		/* Update entry data */
 		$this->db->where('id', $_POST['id']);
@@ -4126,21 +4113,19 @@ class ND_Controller extends UW_Controller {
 
 		$data['view']['id'] = $id;
 
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('READ' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		/* If logging is enabled, log this read access */
+		$this->logging->log(
+			/* op         */ 'READ',
+			/* table      */ $this->config['name'],
+			/* field      */ 'id',
+			/* entry_id   */ $id,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'READ',
-				'_table' => $this->config['name'],
-				'_field' => 'id',
-				'entryid' => $id,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
 
 		/* Select only the fields that were returned by _get_fields() */
 		$this->filter->selected_fields($data['view']['fields'], array($this->config['name'] . '.id' => $id));
@@ -4315,21 +4300,20 @@ class ND_Controller extends UW_Controller {
 		/* Init transaction */
 		$this->db->trans_begin();
 
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('DELETE' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
+		/* If logging is enabled, log this delete request */
+		/* If logging is enabled, log this read access */
+		$this->logging->log(
+			/* op         */ 'DELETE',
+			/* table      */ $this->config['name'],
+			/* field      */ 'id',
+			/* entry_id   */ $_POST['id'],
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
-			$this->db->insert('logging', array(
-				'operation' => 'DELETE',
-				'_table' => $this->config['name'],
-				'_field' => 'id',
-				'entryid' => $_POST['id'],
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		}
 
 		/* We don't need to follow relationships as the foreign keys must be configured
 		 * as CASCADE ON DELETE on the relational table.
@@ -4421,33 +4405,33 @@ class ND_Controller extends UW_Controller {
 
 		$data['view']['id'] = $id;
 
-		/* If logging is enabled, check for changed fields and log them */
-		if ($this->config['logging'] === true && $export === NULL) {
-			$log_transaction_id = openssl_digest('READ' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'READ',
-				'_table' => $this->config['name'],
-				'_field' => 'id',
-				'entryid' => $id,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
-		} else if ($this->config['logging'] === true && $export !== NULL) {
-			$log_transaction_id = openssl_digest('EXPORT' . $this->config['name'] . $this->config['session_data']['sessions_id'] . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'EXPORT',
-				'_table' => $this->config['name'],
-				'_field' => 'id (' . strtoupper($export) . ')',
-				'entryid' => $id,
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->config['session_data']['sessions_id'],
-				'users_id' => $this->config['session_data']['user_id']
-			));
+		/* Log the request type */
+		if ($export === NULL) {
+			/* If logging is enabled, log this read access */
+			$this->logging->log(
+				/* op         */ 'READ',
+				/* table      */ $this->config['name'],
+				/* field      */ 'id',
+				/* entry_id   */ $id,
+				/* value_new  */ NULL,
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
+		} else {
+			/* If logging is enabled, log this export request */
+			$this->logging->log(
+				/* op         */ 'EXPORT',
+				/* table      */ $this->config['name'],
+				/* field      */ 'id (' . strtoupper($export) . ')',
+				/* entry_id   */ $id,
+				/* value_new  */ NULL,
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
 		}
 
 		/* Select only the fields that were returned by _get_fields() */

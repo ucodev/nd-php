@@ -136,7 +136,7 @@ class Logging extends ND_Controller {
 		/* Start the rollback process */
 		$this->db->trans_begin();
 
-		$log_transaction_id = openssl_digest('ROLLBACK' . $this->config['name'] . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'md5');
+		$this->logging->trans_begin();
 
 		foreach ($q_log->result_array() as $row) {
 			/* TODO: FIXME: Missing handler for 'rel_' and 'mixed_' fields */
@@ -169,19 +169,20 @@ class Logging extends ND_Controller {
 			));
 
 			/* Log this operation */
-			$this->db->insert('logging', array(
-				'operation' => 'ROLLBACK',
-				'_table' => $row['_table'],
-				'_field' => $row['_field'],
-				'entryid' => $row['entryid'],
-				'value_new' => $row['value_old'],
-				'value_old' => $row_current[$row['_field']],
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->session->userdata('sessions_id'),
-				'users_id' => $this->session->userdata('user_id')
-			));
+			$this->logging->log(
+				/* op         */ 'ROLLBACK',
+				/* table      */ $row['_table'],
+				/* field      */ $row['_field'],
+				/* entry_id   */ $row['entryid'],
+				/* value_new  */ $row['value_old'],
+				/* value_old  */ $row_current[$row['_field']],
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
 		}
+
+		$this->logging->trans_end();
 
 		/* Set the transaction as rolled back */
 		$this->db->where('transaction', $transaction);

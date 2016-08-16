@@ -72,23 +72,18 @@ class Files extends ND_Controller {
 			if ($this->config['upload_file_encryption'] === true)
 				$file_contents = $this->encrypt->decode($file_contents);
 
-			/* If logging is enabled, check for changed fields and log them */
-			if ($this->config['logging'] === true) {
-				$log_transaction_id = openssl_digest(date('Y-m-d H:i:s') . mt_rand(100000, 999999), 'md5');
-
-				$this->db->insert('logging', array(
-					'operation' => 'READ',
-					'_table' => $table,
-					'_field' => $field,
-					'entryid' => $entry_id,
-					'value_old' => $filename,
-					'value_new' => $filename,
-					'transaction' => $log_transaction_id,
-					'registered' => date('Y-m-d H:i:s'),
-					'sessions_id' => $this->session->userdata('sessions_id'),
-					'users_id' => $this->session->userdata('user_id')
-				));
-			}
+			/* If logging is enabled, log this read access to the filename */
+			$this->logging->log(
+				/* op         */ 'READ',
+				/* table      */ $table,
+				/* field      */ $field,
+				/* entry_id   */ $entry_id,
+				/* value_new  */ $filename,
+				/* value_old  */ $filename,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
 
 			/* Fetch and set the mime type and dump the file contents */
 			$file_info = new finfo(FILEINFO_MIME);

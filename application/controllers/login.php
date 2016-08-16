@@ -381,18 +381,17 @@ class Login extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If logging is enabled, log this LOGIN entry */
-		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('LOGIN' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'LOGIN',
-				'_table' => 'users',
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->session->userdata('sessions_id'),
-				'users_id' => $row['id']
-			));
-		}
+		$this->logging->log(
+			/* op         */ 'LOGIN',
+			/* table      */ 'users',
+			/* field      */ NULL,
+			/* entry_id   */ NULL,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);		
 
 		/* Load post plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/authenticate_post.php') as $plugin)
@@ -411,18 +410,17 @@ class Login extends UW_Controller {
 
 	public function logout() {
 		/* If logging is enabled, log this LOGOUT request */
-		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest('LOGOUT' . $this->_name . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . mt_rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'LOGOUT',
-				'_table' => 'users',
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->session->userdata('sessions_id'),
-				'users_id' => $this->session->userdata('user_id')
-			));
-		}
+		$this->logging->log(
+			/* op         */ 'LOGOUT',
+			/* table      */ 'users',
+			/* field      */ NULL,
+			/* entry_id   */ NULL,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
 		/* Clear user session dataa */
 		$this->session->set_userdata(array(

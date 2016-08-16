@@ -41,20 +41,18 @@ class Home extends ND_Controller {
 
 	/* Custom functions */
 	public function home_generic() {
-		/* If logging is enabled, log this listing request */
-		if ($this->config['logging'] === true) {
-			$log_transaction_id = openssl_digest('VIEW' . $this->config['name'] . $this->session->userdata('sessions_id') . date('Y-m-d H:i:s') . rand(1000000, 9999999), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'VIEW',
-				'_table' => $this->config['name'],
-				'_field' => 'DASHBOARD',
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'sessions_id' => $this->session->userdata('sessions_id'),
-				'users_id' => $this->session->userdata('user_id')
-			));
-		}
+		/* If logging is enabled, log access to the dashboard */
+		$this->logging->log(
+			/* op         */ 'VIEW',
+			/* table      */ $this->config['name'],
+			/* field      */ 'DASHBOARD',
+			/* entry_id   */ NULL,
+			/* value_new  */ NULL,
+			/* value_old  */ NULL,
+			/* session_id */ $this->config['session_data']['sessions_id'],
+			/* user_id    */ $this->config['session_data']['user_id'],
+			/* log it?    */ $this->config['logging']
+		);
 
 		return $this->get->view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD);
 	}
