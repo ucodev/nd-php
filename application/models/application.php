@@ -2198,6 +2198,13 @@ class UW_Application extends UW_Model {
 		/* Commit changes */
 		$this->db->trans_commit();
 
+		/* Get user api key */
+		$this->db->select('id,apikey');
+		$this->db->from('users');
+		$this->db->where('id', 1); /* TODO: FIXME: We should use the current user ID... */
+		$q = $this->db->get();
+		$userinfo = $q->row_array();
+
 		/* Call all custom controllers once via cURL in order to create the correct view */
 		for ($i = 0; $i < count($app_model['menus']); $i ++) {
 			if ($app_model['menus'][$i]['type'] == 'custom') {
@@ -2206,8 +2213,11 @@ class UW_Application extends UW_Model {
 					'Cache-Control: no-cache'
 				);
 				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-				curl_setopt($ch, CURLOPT_URL, base_url() . 'index.php/' . $app_model['menus'][$i]['db']['name']);
-				curl_exec($ch);
+				curl_setopt($ch, CURLOPT_URL, base_url() . 'index.php/' . $app_model['menus'][$i]['db']['name'] . '/view/1'); /* Doesn't matter if the ID exists or not... We just need to initialize the controller for the first time */
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, '{ "_userid": ' . $userinfo['id'] . ', "_apikey": "' . $userinfo['apikey'] . '" }');
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); /* Prevent output from being printed */
+				curl_exec($ch); /* We don't need to store the output... just ignore it */
 				curl_close($ch);
 			}
 		}

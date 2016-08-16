@@ -1,3 +1,9 @@
+v0.02t (2016-08-16):
+
+ - Custom controllers are now initialized using REST API calls.
+ - Fixed images path issue on IDE Builder icon selection code that was preventing the icons from being listed.
+
+
 v0.02s (2016-08-16):
 
  - Fixed the issue that was preventing a non-admin user to be updated.
