@@ -114,7 +114,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02u';
+	protected $_ndphp_version = '0.02v';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2290,9 +2290,7 @@ class ND_Controller extends UW_Controller {
 						/* FIXME: Currently we only support string matching (partial date and datetime values are not yet implemented) */
 						$this->db->or_like($field . '.' . $mixed_field, '%' . $_POST['search_value'] . '%');
 					}
-				}
-
-				if (($ftype['input_type'] == 'text') || ($ftype['input_type'] == 'textarea') || 
+				} else if (($ftype['input_type'] == 'text') || ($ftype['input_type'] == 'textarea') || 
 						($ftype['input_type'] == 'timer') || ($ftype['input_type'] == 'file')) {
 					if ($ftype['type'] == 'date') {
 						/* If field type is date, compare as it was an integer.

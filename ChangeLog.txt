@@ -1,3 +1,8 @@
+v0.02v (2016-08-17):
+
+ - Fixed an issue that was causing an error when searching numeric values on controllers with mixed relationships.
+
+
 v0.02u (2016-08-16):
 
  - New logging model.
