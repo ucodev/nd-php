@@ -123,7 +123,6 @@
 			"install/docker/devenv/install/Dockerfile",
 			"install/docker/devenv/setup.sh",
 			"install/languages/en_US.php",
-			"install/perm_setup.sh.inc",
 			"install/updates/tracker.json",
 			"install/auto.json",
 			"install/autoload.php",
