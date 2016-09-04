@@ -199,7 +199,7 @@ class Logging extends ND_Controller {
 		}
 
 		/* All good */
-		echo(NDPHP_LANG_MOD_SUCCESS_ROLLBACK_TRANSACTION . ' ' . $transaction . '.');
+		$this->response->output(NDPHP_LANG_MOD_SUCCESS_ROLLBACK_TRANSACTION . ' ' . $transaction . '.');
 	}
 
 	public function rollback_modalbox($id) {

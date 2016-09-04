@@ -1,3 +1,20 @@
+v0.02w (2016-09-05):
+
+ - Updated INSTALL.txt.
+ - Updated README.md.
+ - Added docker support (devenv).
+ - Updated tracker.
+ - Image rendering width for image file type fields is now set to 'auto' by default.
+ - Fixed logging issues on Login controller.
+ - Added auto installer.
+ - Added ndmodel importer.
+ - Added code base for ndapp and nddata importer (nyi).
+ - New output and download methods for response module.
+ - Builder view_model method now receives an optional parameter (download) to download the ndmodel file.
+ - Added Export and Import buttons to IDE Builder operations.
+ - Updated language files.
+
+
 v0.02v (2016-08-17):
 
  - Fixed an issue that was causing an error when searching numeric values on controllers with mixed relationships.

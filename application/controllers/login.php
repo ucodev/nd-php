@@ -388,9 +388,9 @@ class Login extends UW_Controller {
 			/* entry_id   */ NULL,
 			/* value_new  */ NULL,
 			/* value_old  */ NULL,
-			/* session_id */ $this->config['session_data']['sessions_id'],
-			/* user_id    */ $this->config['session_data']['user_id'],
-			/* log it?    */ $this->config['logging']
+			/* session_id */ $this->session->userdata('sessions_id'),
+			/* user_id    */ $this->session->userdata('user_id'),
+			/* log it?    */ $this->_logging
 		);		
 
 		/* Load post plugins */
@@ -417,9 +417,9 @@ class Login extends UW_Controller {
 			/* entry_id   */ NULL,
 			/* value_new  */ NULL,
 			/* value_old  */ NULL,
-			/* session_id */ $this->config['session_data']['sessions_id'],
-			/* user_id    */ $this->config['session_data']['user_id'],
-			/* log it?    */ $this->config['logging']
+			/* session_id */ $this->session->userdata('sessions_id'),
+			/* user_id    */ $this->session->userdata('user_id'),
+			/* log it?    */ $this->_logging
 		);
 
 		/* Clear user session dataa */

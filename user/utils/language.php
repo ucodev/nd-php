@@ -154,6 +154,7 @@ define('NDPHP_LANG_MOD_INVALID_POST_KEYS',			'Invalid keys found in POST data.')
 define('NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS','Invalid characters found on views base directory path.');
 define('NDPHP_LANG_MOD_INVALID_SERVER_NAME',		'The specified URL host is not allowed.');
 define('NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT',	'Username must be at least 5 characters long.');
+define('NDPHP_LANG_MOD_INVALID_MAGIC_IDENTIFIER',	'Incorrect magic identifier.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
@@ -324,6 +325,7 @@ define('NDPHP_LANG_MOD_UNABLE_UPDATE_DECODE_TRACKER','Unable to decode tracker d
 define('NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION','Unable to find a suitable version on tracker data.');
 define('NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR',		'Unable to determine the views base directory.');
 define('NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA',	'Unable to retrieve data for file');
+define('NDPHP_LANG_MOD_UNABLE_LOAD_NDAPP_URL',		'Unable to load ND App from the specified URL');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');
@@ -636,6 +638,13 @@ define('NDPHP_LANG_MOD_INSTALL_HELP_SET_PASSWORD',	'Set a strong password for us
 define('NDPHP_LANG_MOD_INSTALL_HELP_CREATE_DB',		'You\'ll need to create an empty MySQL or MariaDB database.');
 define('NDPHP_LANG_MOD_INSTALL_HELP_NEED_QUESTION',	'Need Help?');
 define('NDPHP_LANG_MOD_INSTALL_INFO_SUCCESSFUL',	'ND PHP Successfully Installed.');
+define('NDPHP_LANG_MOD_INSTALL_DATABASE_TEST_FAILED','Database test failed.');
+define('NDPHP_LANG_MOD_INSTALL_NO_AUTO_DATA',		'No auto install configuration data was detected (install/auto.json file is missing or empty).');
+define('NDPHP_LANG_MOD_INSTALL_UNABLE_DECODE_AUTO_DATA', 'Unable to decode auto installation data.');
+define('NDPHP_LANG_MOD_INSTALL_UNABLE_APPLY_DB_CONFIG','Unable to apply database configuration');
+define('NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_DATABASE','Unable to setup database');
+define('NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_USER',	'Unable to setup user');
+define('NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_APP',	'Unable to setup application');
 
 define('NDPHP_LANG_MOD_PAYMENT_TAX_RATE',			'Tax Rate');
 define('NDPHP_LANG_MOD_PAYMENT_PAYMENT_FEE',		'Payment Fee');

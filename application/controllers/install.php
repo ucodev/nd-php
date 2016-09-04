@@ -194,6 +194,7 @@ class Install extends UW_Controller {
 	}
 
 	public function pre_check() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		$data['charset'] = $this->_default_charset;
@@ -235,6 +236,7 @@ class Install extends UW_Controller {
 	/**************************************/
 
 	public function db_test($dbhost, $dbport, $dbname, $dbuser, $dbpass, $test_privs = false) {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		/* Test a database connection... all the variables are received in a safe (see Documentation) base64 encoded format */
@@ -262,10 +264,11 @@ class Install extends UW_Controller {
 			$this->db->trans_commit();
 		}
 
-		echo('OK');
+		$this->response->output("OK");
 	}
 
 	public function db_config() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		$data['charset'] = $this->_default_charset;
@@ -319,12 +322,16 @@ class Install extends UW_Controller {
 		$this->grant_url_validation(base_url() . '/index.php/install/validate_db_config', $this->_retries_max, $this->_sleep_secs);
 
 		/* All Good */
-		echo(NDPHP_LANG_MOD_INSTALL_SUCCESS_DB_CONFIG . '<br />');
+		$this->response->output(NDPHP_LANG_MOD_INSTALL_SUCCESS_DB_CONFIG . '<br />');
 	}
 
 	public function db_setup() {
 		global $config;
 
+		/* No time limit for database setup */
+		set_time_limit(0);
+
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		/* Import ND PHP Database base data */
@@ -406,6 +413,7 @@ class Install extends UW_Controller {
 	/**********************************************/
 
 	public function user_config() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		$data['charset'] = $this->_default_charset;
@@ -414,6 +422,7 @@ class Install extends UW_Controller {
 	}
 
 	public function user_setup($password, $email) {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		/* Generate user's private key for encryption
@@ -471,6 +480,7 @@ class Install extends UW_Controller {
 
 	/* Application configuration details */
 	public function app_config() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		$data['charset'] = $this->_default_charset;
@@ -479,6 +489,7 @@ class Install extends UW_Controller {
 	}
 
 	public function app_setup($name, $tagline, $description, $author) {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		/* Decode data. FIXME: Filter the data to avoid security issues */
@@ -565,7 +576,7 @@ class Install extends UW_Controller {
 		fclose($fp);
 
 		/* All Good */
-		echo(NDPHP_LANG_MOD_INSTALL_SUCCESS_SESS_CONFIG . '<br />');
+		$this->response->output(NDPHP_LANG_MOD_INSTALL_SUCCESS_SESS_CONFIG . '<br />');
 	}
 
 	public function encryption_setup() {
@@ -595,7 +606,7 @@ class Install extends UW_Controller {
 		fclose($fp);
 
 		/* All Good */
-		echo(NDPHP_LANG_MOD_INSTALL_SUCCESS_ENC_CONFIG . '<br />');
+		$this->response->output(NDPHP_LANG_MOD_INSTALL_SUCCESS_ENC_CONFIG . '<br />');
 	}
 
 	public function base_config_setup() {
@@ -605,7 +616,7 @@ class Install extends UW_Controller {
 		if (copy(SYSTEM_BASE_DIR . '/install/base.php', SYSTEM_BASE_DIR . '/user/config/base.php') === false)
 			$this->response->code('403', NDPHP_LANG_MOD_INSTALL_WRITE_NO_PRIV . ': ' . SYSTEM_BASE_DIR . '/user/config/base.php', $this->_default_charset, !$this->request->is_ajax());
 
-		echo(NDPHP_LANG_MOD_INSTALL_SUCCESS_BASE_CONFIG . '<br />');
+		$this->response->output(NDPHP_LANG_MOD_INSTALL_SUCCESS_BASE_CONFIG . '<br />');
 	}
 
 	public function help_data_setup() {
@@ -2360,10 +2371,11 @@ class Install extends UW_Controller {
 
 		$this->db->trans_commit();
 
-		echo(NDPHP_LANG_MOD_INSTALL_SUCCESS_HELP_DATA . '<br />');
+		$this->response->output(NDPHP_LANG_MOD_INSTALL_SUCCESS_HELP_DATA . '<br />');
 	}
 
 	public function post_install_setup() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		$this->session_setup();
@@ -2387,6 +2399,7 @@ class Install extends UW_Controller {
 	/**********************************/
 
 	public function finish() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		/* Create a control file to indicate installation is complete */
@@ -2406,10 +2419,140 @@ class Install extends UW_Controller {
 	/******************************/
 
 	public function index() {
+		/* Disable caching */
 		$this->ndphp->no_cache();
 
 		/* TODO: Instead of redirecting directly to pre_check, create an introductory page first */
 		redirect('install/pre_check');
+	}
+
+
+	/******************/
+	/* Auto Installer */
+	/******************/
+
+	public function auto() {
+		/* No time limit for install process */
+		set_time_limit(0);
+
+		/* Disable caching */
+		$this->ndphp->no_cache();
+
+		/* Read configuration data */
+		$auto_contents = file_get_contents(SYSTEM_BASE_DIR . '/install/auto.json');
+
+		/* Check if we've read anything */
+		if (!$auto_contents)
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_NO_AUTO_DATA, $this->_default_charset, !$this->request->is_ajax());
+
+		/* Decode auto install configuration data */
+		$auto = json_decode($auto_contents, true);
+
+		/* Check if data was decoded */
+		if ($auto === NULL)
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_DECODE_AUTO_DATA, $this->_default_charset, $this->request->is_ajax());
+
+
+		/** Database configuration **/
+
+		/* Apply database configuration */
+		$ch = curl_init(base_url() . 'index.php/install/db_config_apply/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['db']['host'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['db']['port'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['db']['name'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['db']['username'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['db']['password']))
+		);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		$out = curl_exec($ch);
+
+		if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+			ob_clean();
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_APPLY_DB_CONFIG . ': ' . $code, $this->_default_charset, !$this->request->is_ajax());
+		}
+
+		curl_close($ch);
+
+		/* Test the database connection. $this->_retries_max attempts before failing with a $this->_sleep_secs seconds interval between each */
+		for ($i = 0; $i < $this->_retries_max; $i ++) {
+			$ch = curl_init(base_url() . 'index.php/install/db_test/' .
+				rawurlencode($this->ndphp->safe_b64encode($auto['db']['host'])) . '/' .
+				rawurlencode($this->ndphp->safe_b64encode($auto['db']['port'])) . '/' .
+				rawurlencode($this->ndphp->safe_b64encode($auto['db']['name'])) . '/' .
+				rawurlencode($this->ndphp->safe_b64encode($auto['db']['username'])) . '/' .
+				rawurlencode($this->ndphp->safe_b64encode($auto['db']['password'])) . '/' .
+				'1'
+			);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			$out = curl_exec($ch);
+			curl_close($ch);
+
+			if ($out != "OK") {
+				sleep($this->_sleep_secs); /* Sleep $this->_sleep_secs second before retry */
+				continue;
+			}
+
+			break;
+		}
+
+		/* Check if the test succeeded */
+		if ($i >= $this->_retries_max) {
+			ob_clean();
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_DATABASE_TEST_FAILED, $this->_default_charset, !$this->request->is_ajax());
+		}
+
+		/* Setup database */
+		$ch = curl_init(base_url() . 'index.php/install/db_setup');
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_exec($ch);
+
+		if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+			ob_clean();
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_DATABASE . ': ' . $code, $this->_default_charset, !$this->request->is_ajax());
+		}
+
+		curl_close($ch);
+
+
+		/** Setup User **/
+		$ch = curl_init(base_url() . 'index.php/install/user_setup/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['user']['password'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['user']['email']))
+		);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_exec($ch);
+
+		if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+			ob_clean();
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_USER . ': ' . $code, $this->_default_charset, !$this->request->is_ajax());
+		}
+
+		curl_close($ch);
+
+
+		/** Setup app **/
+		$ch = curl_init(base_url() . 'index.php/install/app_setup/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['app']['name'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['app']['tagline'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['app']['description'])) . '/' .
+			rawurlencode($this->ndphp->safe_b64encode($auto['app']['author']))
+		);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_exec($ch);
+
+		if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+			ob_clean();
+			$this->response->code('500', NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_APP . ': ' . $code, $this->_default_charset, !$this->request->is_ajax());
+		}
+
+		curl_close($ch);
+
+		/* Clean output buffer */
+		ob_clean();
+
+		/** Redirect to base **/
+		redirect('/');
 	}
 
 
@@ -2440,7 +2583,7 @@ class Install extends UW_Controller {
 
 	public function validate_db_config() {
 		$this->db->trans_begin();
-		echo("OK");
+		$this->response->output("OK");
 		$this->db->trans_commit();
 	}
 
@@ -2449,9 +2592,9 @@ class Install extends UW_Controller {
 		global $config;
 
 		if (strlen($config['encrypt']['key']) == $this->_enc_key_len) {
-			echo("OK");
+			$this->response->output("OK");
 		} else {
-			echo('FAIL');
+			$this->response->output('FAIL');
 		}
 	}
 }

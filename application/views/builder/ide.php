@@ -427,6 +427,9 @@
 </textarea>
 			</fieldset>
 			<div id="actions" class="actions">
+				<input type="button" class="button_action" onClick="location.href='<?=base_url()?>index.php/builder/importer';" value="Import" />
+				<input type="button" class="button_action" onClick="location.href='<?=base_url()?>index.php/builder/view_model/download';" value="Export" />
+				&nbsp;
 				<input type="button" class="button_action" onClick="ndphp.ide.check();" value="Check" />
 				<input type="button" class="button_action" onClick="ndphp.ide.save();" value="Save" />
 				<input type="button" class="button_action" onClick="ndphp.ide.deploy();" value="Deploy" />

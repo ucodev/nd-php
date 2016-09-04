@@ -1386,4 +1386,11 @@ class UW_Get extends UW_Module {
 
 		return $mixed_field;
 	}
+
+	/* Generic Fetchers */
+	public function row($id, $table = NULL, $fields = array()) {
+		if (count($fields)) {
+			$this->db->select(implode(',', $fields));
+		}
+	}
 }

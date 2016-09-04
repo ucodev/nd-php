@@ -1,0 +1,19 @@
+{
+	"db": {
+		"host": "localhost",
+		"port": 3306,
+		"name": "ndphp",
+		"username": "ndphp_user",
+		"password": "password"
+	},
+	"user": {
+		"password": "ndphpadmin",
+		"email": "user@domain.tld"
+	},
+	"app": {
+		"name": "ND PHP",
+		"tagline": "Framework",
+		"description": "ND PHP Framework",
+		"author": "ND PHP Framework"
+	}
+}

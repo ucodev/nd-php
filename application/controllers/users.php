@@ -400,7 +400,7 @@ class Users extends ND_Controller {
 		$query = $this->db->get();
 		$rawdata = $query->row_array();
 
-		echo(round($rawdata['credit'], 2));
+		$this->response->output(round($rawdata['credit'], 2));
 	}
 
 	public function user_subscription_get() {
@@ -411,7 +411,7 @@ class Users extends ND_Controller {
 		$query = $this->db->get();
 		$rawdata = $query->row_array();
 
-		echo($rawdata['subscription']);
+		$this->response->output($rawdata['subscription']);
 	}
 
 	public function logout() {

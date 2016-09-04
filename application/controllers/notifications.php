@@ -94,6 +94,6 @@ class Notifications extends ND_Controller {
 		$this->db->where('when <=', date('Y-m-d H:i:s'));
 		$q = $this->db->get();
 		$row = $q->row_array();
-		echo($row['total']);
+		$this->response->output($row['total']);
 	}
 }

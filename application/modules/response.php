@@ -100,7 +100,18 @@ class UW_Response extends UW_Module {
 			die($this->view->load('_templates/errors/status_code', $data, true));
 		} else {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
-			if ($content !== NULL) echo($content);
+			if ($content !== NULL) $this->output($content);
 		}
+	}
+
+	public function output($data) {
+		echo($data);
+	}
+
+	public function download($data, $filename = 'download.txt', $content_type = 'text/plain', $charset = NDPHP_LANG_MOD_DEFAULT_CHARSET, $content_encoding = NDPHP_LANG_MOD_DEFAULT_CHARSET) {
+		$this->header('Content-Encoding', $content_encoding);
+		$this->header('Content-Type', $content_type . '; charset=' . $charset);
+		$this->header('Content-Disposition', 'attachment; filename=' . $filename);
+		$this->output($data);
 	}
 }

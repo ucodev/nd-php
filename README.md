@@ -28,7 +28,7 @@
 
 ## Is it ready for production?
 
- NO! This is currently a PoC. There's still a lot of work to do such as cleanups, optimizations, refactorings, etc.
+ NO and MAYBE! This is currently a PoC. There's still a lot of work to do such as cleanups, optimizations, refactorings, etc. Use at your own risk and/or unless you really know what your doing.
 
 ## Where is the documentation?
 
@@ -44,5 +44,5 @@
 
 ## Where can I get support?
 
- As we currently have no community support forum of our own, we encourage you to ask any technical questions on the best general-purpose community support forum available: [StackOverflow](http://www.stackoverflow.com). The answer may not be that fast as there isn't a lot of people using this framework at the moment, but the question will eventually be answered :).
+ As we currently have no community support forum of our own, we encourage you to ask any technical questions on the best Q&A programming community platform available: [StackOverflow](http://stackoverflow.com). The answer may not be that fast as there isn't a lot of people using this framework at the moment, but the question will eventually be answered :).
 

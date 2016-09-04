@@ -41,7 +41,9 @@
  *
  * TODO:
  *
+ * * Default action for item selection (currently hardcoded as View, but one should be able to change it to Edit).
  * * Multi Dropdown filters, allowing a selection of an item from a dropdown to filter the contents of another dropdown (or more)
+ * * Mixed relationship autocomplete feature shall support user-defined filters.
  * * Add support for hooks on static file requests.
  * * IDE application model should validate everything that was previously validated by ide.js.
  * * [IN_PROGRESS] Database Sharding (per user).
@@ -84,12 +86,15 @@
  *
  * FIXME:
  *
+ * + Export CSV is exporing separators as fields. This should be disabled by default.
+ * + Mixed relationships auto add feature is not assigning single relationships to the foreign table when entry is created.
  * + Do not allow 0000-00-00 date (or date component of datetime) values.
  * + Multiple relationship buttons and timer buttons styles must be redesigned.
  * + Chart generators should attempt to trigger both list and result filter hook.
  + + Chart imagemaps display incorrect captions on bar charts.
  * + On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
  * + Browsing history (from browsing actions) should be cleaned up from time to time (eg, store only the last 20 or so entries)
+ * * When a separator is hidden, all associated fields shall also be hidden by default.
  * * Framework core tables should be prefixed with nd_*
  * * Grouping features (Group views) requires a huge refactoring (current performance is very poor).
  * * Mixed and multiple relationships must work properly when javascript is disabled.
@@ -114,7 +119,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02v';
+	protected $_ndphp_version = '0.02w';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -282,6 +287,17 @@ class ND_Controller extends UW_Controller {
 	protected $_rel_choice_hide_fields_view   = array();
 	protected $_rel_choice_hide_fields_remove = array();
 
+    /* Table relational choices options filters */
+    protected $_rel_choice_filter_fields_options = array(
+    	/*
+    	'field_id' => array(
+    		'filter_field1_id',
+    		'filter_field2_id',
+    		...
+    	)
+    	*/
+    );
+
 	/* Set a custom class for table row based on single relationship field values.
 	 * Any class specified here must exist in a loaded CSS, with the following prefixes:
 	 *
@@ -400,13 +416,13 @@ class ND_Controller extends UW_Controller {
 
 	/* The image scaling for the embedded images under the list / result views */
 	protected $_view_image_file_rendering_size_list = array(
-		'width'  => '32px',
+		'width'  => 'auto',
 		'height' => '32px'
 	);
 
 	/* The image scaling for the embedded images under the entry views */
 	protected $_view_image_file_rendering_size_view = array(
-		'width'  => '256px',
+		'width'  => 'auto',
 		'height' => '256px'
 	);
 
@@ -789,6 +805,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['rel_choice_hide_fields_edit']			= $this->_rel_choice_hide_fields_edit;
 		$this->config['rel_choice_hide_fields_view']			= $this->_rel_choice_hide_fields_view;
 		$this->config['rel_choice_hide_fields_remove']			= $this->_rel_choice_hide_fields_remove;
+		$this->config['rel_choice_filter_fields_options']		= $this->_rel_choice_filter_fields_options;
 		$this->config['rel_choice_table_row_class']				= $this->_rel_choice_table_row_class;
 		$this->config['rel_group_concat_sep']					= $this->_rel_group_concat_sep;
 		$this->config['rel_table_fields_config']				= $this->_rel_table_fields_config;
@@ -1221,6 +1238,15 @@ class ND_Controller extends UW_Controller {
 		redirect($this->config['name'] . '/list_default');
 	}
 
+	public function rel_get_options_filtered($selected_id, $selected_field, $target_field) {
+		$this->db->from(substr($target_field, -3)); /* Selected field format is <table>_id, so we're removing the trailling _id */
+		$this->db->where($selected_field, $selected_id); /* The single relationship shall exist in the target table */
+
+		/* TODO: Call $this->get->fields() and filter $fields[$target]['options'] */
+
+		/* TODO: Load the options.php view with the filtered options list ($fields[$target]['options']) */
+	}
+
 	public function rel_get_options($field, $relationship, $selected_id) {
 		$fields = $this->get->fields();
 
@@ -1392,7 +1418,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->rest->json_list($data));
+			$this->response->output($this->rest->json_list($data));
 			return;
 		}
 
@@ -1587,7 +1613,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->rest->json_list($data));
+			$this->response->output($this->rest->json_list($data));
 			return;
 		}
 
@@ -1691,7 +1717,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->rest->json_list($data));
+			$this->response->output($this->rest->json_list($data));
 			return;
 		}
 
@@ -2332,6 +2358,7 @@ class ND_Controller extends UW_Controller {
 							$this->db->or_where('TIME(CONVERT_TZ('. $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
 						}
 					} else {
+						/* If anything else matched, treat this as a regular string */
 						$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $_POST['search_value'] . '%');
 					}
 				} else if ($ftype['input_type'] == 'checkbox') {
@@ -2857,7 +2884,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->rest->json_result($data));
+			$this->response->output($this->rest->json_result($data));
 			return;
 		}
 
@@ -2962,7 +2989,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->rest->json_result($data));
+			$this->response->output($this->rest->json_result($data));
 			return;
 		}
 
@@ -3117,12 +3144,16 @@ class ND_Controller extends UW_Controller {
 			/* Force CSV download */
 			$download_csv = end(explode('/', $csv_filename));
 
-			$this->response->header('Content-Encoding', $this->config['csv_to_encoding']);
-			$this->response->header('Content-Type', 'text/csv; charset=' . $this->config['csv_to_encoding']);
-			$this->response->header('Content-Disposition', 'attachment; filename=' . $download_csv . '.csv');
+			/* Deliver download */
+			$this->response->download(
+				file_get_contents($csv_filename),
+				$download_csv . '.csv',
+				'text/csv',
+				$this->config['csv_to_encoding'],
+				$this->config['csv_to_encoding']
+			);
 
-			readfile($csv_filename);
-			
+			/* Remove temporary file */
 			unlink($csv_filename);
 		}
 	}
@@ -3163,6 +3194,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup specific view data */
 		$data['config']['choices'] = count($this->config['rel_choice_hide_fields_create']) ? $this->config['rel_choice_hide_fields_create'] : $this->config['rel_choice_hide_fields'];
+		$data['config']['choices_filters'] = $this->config['rel_choice_filter_fields_options'];
 		$data['config']['mixed'] = array();
 		$data['config']['mixed']['autocomplete'] = $this->config['mixed_views_autocomplete'];
 
@@ -3536,10 +3568,10 @@ class ND_Controller extends UW_Controller {
 			 * in the success handler of the ajax call.
 			 */
 			if ($this->config['json_replies'] === true) {
-				echo($this->rest->json_insert($last_id));
+				$this->response->output($this->rest->json_insert($last_id));
 				return;
 			} else if ($this->request->is_ajax()) {
-				echo($last_id);
+				$this->response->output($last_id);
 			} else {
 				redirect($this->config['name'] . "/view/" . $last_id);
 			}
@@ -3585,6 +3617,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Setup specific view data */
 		$data['config']['choices'] = count($this->config['rel_choice_hide_fields_edit']) ? $this->config['rel_choice_hide_fields_edit'] : $this->config['rel_choice_hide_fields'];
+		$data['config']['choices_filters'] = $this->config['rel_choice_filter_fields_options'];
 		$data['config']['render'] = array();
 		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
 		$data['config']['render']['size'] = $this->config['view_image_file_rendering_size_view'];
@@ -3719,7 +3752,7 @@ class ND_Controller extends UW_Controller {
 		$row = $query->row_array();
 		
 		/* Return total rows to ajax request */
-		echo($row['total']);
+		$this->response->output($row['total']);
 	}
 
 	public function edit_mixed_rel($mid, $foreign_table = '', $foreign_id = 0) {
@@ -4049,10 +4082,10 @@ class ND_Controller extends UW_Controller {
 			return true;
 		} else {
 			if ($this->config['json_replies'] === true) {
-				echo($this->rest->json_update());
+				$this->response->output($this->rest->json_update());
 				return;
 			} else if ($this->request->is_ajax()) {
-				echo($_POST['id']);
+				$this->response->output($_POST['id']);
 			} else {
 				redirect($this->config['name'] . '/view/' . $_POST['id']);
 			}
@@ -4105,6 +4138,7 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['submenu'] = $this->config['links_submenu_body_remove'];
 
 		$data['config']['choices'] = count($this->config['rel_choice_hide_fields_remove']) ? $this->config['rel_choice_hide_fields_remove'] : $this->config['rel_choice_hide_fields'];
+		$data['config']['choices_filters'] = array();
 		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
 		$data['config']['render']['size'] = $this->config['view_image_file_rendering_size_view'];
 		$data['config']['render']['ext'] = $this->config['view_image_file_rendering_ext'];
@@ -4197,7 +4231,7 @@ class ND_Controller extends UW_Controller {
 		$row = $query->row_array();
 		
 		/* Return total rows to ajax request */
-		echo($row['total']);
+		$this->response->output($row['total']);
 	}
 
 	public function remove_mixed_rel($mid, $foreign_table = '', $foreign_id = 0) {
@@ -4345,10 +4379,10 @@ class ND_Controller extends UW_Controller {
 			return true;
 		} else {
 			if ($this->config['json_replies'] === true) {
-				echo($this->rest->json_delete());
+				$this->response->output($this->rest->json_delete());
 				return;
 			} else if ($this->request->is_ajax()) {
-				echo('OK'); /* FIXME: What should be replied? */
+				$this->response->output('OK'); /* FIXME: What should be replied? */
 			} else {
 				redirect($this->config['name']);
 			}
@@ -4397,6 +4431,7 @@ class ND_Controller extends UW_Controller {
 
 		$data['config']['charts']['total'] = $this->charts->count_charts_foreign();
 		$data['config']['choices'] = count($this->config['rel_choice_hide_fields_view']) ? $this->config['rel_choice_hide_fields_view'] : $this->config['rel_choice_hide_fields'];
+		$data['config']['choices_filters'] = array();
 		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
 		$data['config']['render']['size'] = $this->config['view_image_file_rendering_size_view'];
 		$data['config']['render']['ext'] = $this->config['view_image_file_rendering_ext'];
@@ -4505,7 +4540,7 @@ class ND_Controller extends UW_Controller {
 		$row = $query->row_array();
 		
 		/* Return total rows to ajax request */
-		echo($row['total']);
+		$this->response->output($row['total']);
 	}
 
 	public function view_mixed_rel($mid, $foreign_table = '', $foreign_id = 0) {
@@ -4561,7 +4596,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is an JSON API request, just reply the data (do not load the views) */
 		if ($this->config['json_replies'] === true) {
-			echo($this->rest->json_view($data));
+			$this->response->output($this->rest->json_view($data));
 			return;
 		}
 

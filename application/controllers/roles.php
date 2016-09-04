@@ -247,7 +247,7 @@ class Roles extends ND_Controller {
 
 		$this->db->trans_commit();
 
-		echo(NDPHP_LANG_MOD_SUCCESS_ROLE_UPDATE);
+		$this->response->output(NDPHP_LANG_MOD_SUCCESS_ROLE_UPDATE);
 
 		redirect('/');
 	}

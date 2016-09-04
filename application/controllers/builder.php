@@ -36,7 +36,7 @@
  * - Add a new property field (named index_uri) which will allow the user to set the default index redirection location for a particular controller.
  * - Change field and menu entry types (Currently we need to remove them and add them again as a new type, losing all the data for that field).
  * - Droping a non-instantiated pool object over an instantiated object of the same family shall change the latest type/title (with confirmation dialog).
- * - Download button to export ndmodel (application model in JSON format)
+ * - [DONE] Download button to export ndmodel (application model in JSON format)
  * - Download button to export nddata (table dump in JSON format)
  * - Import button to import ndmodel (application model in JSON format)
  * - Import button to import nddata (table dump in JSON format)
@@ -140,7 +140,7 @@ class Builder extends ND_Controller {
 			$this->db->trans_commit();
 		}
 
-		echo('Saved.');
+		$this->response->output('Saved.');
 	}
 
 	public function deploy_model() {
@@ -197,47 +197,45 @@ class Builder extends ND_Controller {
 		));
 
 		/* XXX: Debug */
-		echo(ucfirst(NDPHP_LANG_MOD_WORD_BUILD) . ' ' . $build_current . ' ' . NDPHP_LANG_MOD_SUCCESS_DEPLOY_ON . ' ' . date('Y-m-d H:i:s') . '.');
+		$this->response->output(ucfirst(NDPHP_LANG_MOD_WORD_BUILD) . ' ' . $build_current . ' ' . NDPHP_LANG_MOD_SUCCESS_DEPLOY_ON . ' ' . date('Y-m-d H:i:s') . '.');
 	}
 
-	public function view_model() {
+	public function view_model($mode = 'output') {
 		$this->db->select('model');
 		$this->db->from('configuration');
 		$this->db->where('active', true);
 		$query = $this->db->get();
 
-		echo($query->row_array()['model']);
+		if ($mode == 'download') {
+			$this->response->download(
+				/* data */            $query->row_array()['model'],
+				/* filename */        strtolower(str_replace(' ', '_', $this->config['project_name'])) . '.ndmodel',
+				/* content-type */    'application/json',
+				/* charset */         $this->config['default_charset'],
+				/* content-encoding*/ NDPHP_LANG_MOD_DEFAULT_CHARSET
+			);
+		} else {
+			$this->response->output($query->row_array()['model']);
+		}
 	}
 
-	public function load_model() {
+	public function generate_model() {
 		/* TODO: FIXME: 'model' from configuration table should be replaced with a builder_id entry */
 
 		$application = $this->application->generate_model();
 
 		$json_raw = json_encode($application);
 
-		/* Save the new application model */
-		$this->db->trans_begin();
-
-		$this->db->where('active', true);
-		$this->db->update('configuration', array('model' => $json_raw));
-
-		/* Commit transaction */
-		if ($this->db->trans_status() === false) {
-			$this->db->trans_rollback();
-			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
-		} else {
-			$this->db->trans_commit();
-		}
+		$this->_ndmodel_import_deploy($json_raw);
 
 		/* XXX: Debug */
-		echo(NDPHP_LANG_MOD_SUCCESS_LOAD_APP_MODEL);
+		$this->response->output(NDPHP_LANG_MOD_SUCCESS_LOAD_APP_MODEL);
 	}
 
 	public function wipe($magic = NULL, $wipe_models = false) {
 		/* Grant (to a certain level) that we're not calling this method by mistake */
 		if ($magic != gmdate('YmdHi'))
-			$this->response->code('403', 'Incorrect magic identifier.', $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_MAGIC_IDENTIFIER, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Drop all main tables */
 		$this->db->select('db_table AS table');
@@ -275,7 +273,139 @@ class Builder extends ND_Controller {
 		redirect('/builder/ide');
 	}
 
-	/** Tools **/
+
+	/**************/
+	/*  Importer  */
+	/**************/
+
+	protected function _ndapp_import_deploy($ndapp_contents) {
+		/* TODO: Not yet implemented */
+		$this->response->output('nyi<br />');
+		$this->response->output('ndapp contents:<br />');
+		$this->response->output($ndapp_contents);
+	}
+
+	protected function _ndapp_import_from_url($url = NULL) {
+		/* Fetch ND App contents from $url */
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		$ndapp_contents = curl_exec($ch);
+		if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+			ob_clean();
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_LOAD_NDAPP_URL . ': ' . $url, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+		curl_close($ch);
+
+		/* Setup ND App */
+		$this->_ndapp_import_deploy($ndapp_contents);
+	}
+
+	protected function _ndapp_import_from_file() {
+		$ndapp_file = $this->request->upload('ndapp_file', SYSTEM_BASE_DIR . '/uploads/import/ndapp');
+
+		$ndapp_contents = file_get_contents($ndapp_file);
+
+		unlink($ndapp_file);
+
+		/* Setup ND App */
+		$this->_ndmodel_import_deploy($ndapp_contents);
+	}
+
+	protected function _ndmodel_import_deploy($ndmodel_contents) {
+		/* Save the new application model */
+		$this->db->trans_begin();
+
+		$this->db->where('active', true);
+		$this->db->update('configuration', array('model' => $ndmodel_contents));
+
+		/* Commit transaction */
+		if ($this->db->trans_status() === false) {
+			$this->db->trans_rollback();
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
+		} else {
+			$this->db->trans_commit();
+		}
+	}
+
+	protected function _ndmodel_import_from_data($ndmodel_contents) {
+		$this->_ndmodel_import_deploy($ndmodel_contents);
+	}
+
+	protected function _ndmodel_import_from_file() {
+		$ndmodel_file = $this->request->upload('ndmodel_file', SYSTEM_BASE_DIR . '/uploads/import/ndmodel');
+
+		$ndmodel_contents = file_get_contents($ndmodel_file);
+
+		unlink($ndmodel_file);
+
+		$this->_ndmodel_import_deploy($ndmodel_contents);
+	}
+
+	protected function _nddata_import_deploy($nddata_contents) {
+		/* TODO: Not yet implemented */
+		$this->response->output('nyi<br />');
+		$this->response->output('nddata contents:<br />');
+		$this->response->output($nddata_contents);
+	}
+
+	protected function _nddata_import_from_data($nddata_contents) {
+		$this->_ndmodel_import_deploy($nddata_contents);
+	}
+
+	protected function _nddata_import_from_file() {
+		$nddata_file = $this->request->upload('nddata_file', SYSTEM_BASE_DIR . '/uploads/import/nddata');
+
+		$nddata_contents = file_get_contents($nddata_file);
+
+		unlink($nddata_file);
+
+		$this->_nddata_import_deploy($nddata_contents);
+	}
+
+	public function import_ndapp() {
+		/* Check if the application data should be fetched from an URL or from an uploaded file. */
+		if (strlen($this->request->input('ndapp_url'))) {
+			$this->_ndapp_import_from_url($this->request->input('ndapp_url'));
+		} else {
+			$this->_ndapp_import_from_file();
+		}
+
+		//redirect('builder/ide');
+	}
+
+	public function import_ndmodel() {
+		/* Check if the application model should be fetched from the input field or from an uploaded file. */
+		if (strlen($this->request->input('ndmodel_contents'))) {
+			$this->_ndmodel_import_from_data($this->request->input('ndmodel_contents'));
+		} else {
+			$this->_ndmodel_import_from_file();
+		}
+
+		redirect('builder/ide');
+	}
+
+	public function import_nddata() {
+		/* Check if the application model should be fetched from the input field or from an uploaded file. */
+		if (strlen($this->request->input('nddata_contents'))) {
+			$this->_nddata_import_from_data($this->request->input('nddata_contents'));
+		} else {
+			$this->_nddata_import_from_file();
+		}
+
+		//redirect('builder/ide');
+	}
+
+    public function importer() {
+		$data = $this->get->view_data_generic('ND PHP Framework - Importer', 'Importer');
+		$this->load->view($this->config['name'] . '/importer', $data);
+    }
+
+
+    /***********/
+	/*  Tools  */
+	/***********/
+
 	public function transcoder() {
 		$data = $this->get->view_data_generic('ND PHP Framework - Transcoder', 'Transcoder');
 

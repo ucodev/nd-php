@@ -7,18 +7,53 @@ Basic instructions to install the ND PHP Framework
 
 1. Pre-requisites
 
- Perform the following commands as super-user (on Debian based distributions):
+ For Ubuntu based distributions, install the required packages with apt-get:
 
-  # apt-get install php5-mcrypt php5-gd php5-curl php5-memcached
-  # php5enmod mcrypt gd curl memcached
+  # apt-get install php php-mcrypt php-gd php-curl php-memcached \
+                    php-mbstring php-xml php-mysql libapache2-mod-php
+
+  (NOTE: For pure Debian distros, you may need to use 'php5' prefix instead of
+         'php'. For instance: apt-get install php5 php5-mcrypt ...)
+
+ For CentOS based distributions, use the yum package manager:
+
+  # yum install -y php php-mcrypt php-gd php-curl php-memcached \
+                   php-mbstring php-xml php-mysql
+
+ Then enable all the required modules:
+
+  # phpenmod mcrypt gd curl memcached mbstring xml
+
+ And restart the web server:
+
   # service apache2 restart
 
 
-2. Apache Settings
+2. Download and Extract
+
+ Download the latest ND PHP Framework version from GitHub and extract it to the
+ web server html directory:
+
+  # cd /var/www/html
+  # mkdir nd-php
+  # wget https://github.com/ucodev/nd-php/archive/master.tar.gz
+  # tar zxvf master.tar.gz --strip 1 -C nd-php
+  # rm master.tar.gz
+
+ To allow the framework to perform automatic updates from the configuration
+ interface, the entire nd-php directory shall be owned by the web server user
+ and group:
+
+  # chown -R www-data:www-data nd-php
+
+
+3. Apache Settings
 
  Set 'AllowOverride all' and 'Options -Indexes' on project VirtualHost directory.
 
  Set the VirtualHost ErrorLog directive value to logs/error.log .
+
+ Set the VirtualHost CustomLog directive value to logs/access.log combined.
 
  Example when using /var/www/html/ as the root directory for your deploy:
 
@@ -27,8 +62,11 @@ Basic instructions to install the ND PHP Framework
       AllowOverride all
   </Directory>
 
+  ErrorLog /var/www/html/nd-php/logs/error.log
+  CustomLog /var/www/html/nd-php/logs/access.log combined
 
-3. PHP Settings
+
+4. PHP Settings
 
  Edit the /etc/php5/apache2/php.ini file and set the following variables:
 
@@ -43,7 +81,7 @@ Basic instructions to install the ND PHP Framework
   session.use_trans_sid = 1
 
 
-4. Database Configuration
+5. Database Configuration
 
  Create a new database and user under MySQL / MariaDB, granting all privileges
  to the user under the created database.
@@ -59,7 +97,7 @@ Basic instructions to install the ND PHP Framework
   $ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -p mysql
 
 
-5. ND PHP Framework Settings
+6. ND PHP Framework Settings
 
  If the installation process displays a warning stating that there are no write
  permissions on certain directories or files, grant that the user running the
@@ -77,15 +115,19 @@ Basic instructions to install the ND PHP Framework
   # chown -R www-data:www-data nd-php/tmp
   # chown -R www-data:www-data nd-php/user/config
 
- or run the following command (exactly as stated, with all the dots):
+ or run the following command:
 
-  # . ./install/perm_setup.sh.inc
+  # source ./install/perm_setup_strict.sh.inc
 
  If the framework update feature is to be used, all the framework files must
  be writable by the webserver process. In that case, set the owner and group
  as:
 
   # chown -R www-data:www-data nd-php/
+
+ or run the following command:
+
+  # source ./install/perm_setup_regular.sh.inc
 
  Always grant that system timezone is the same as set on the active
  Configuration timezone. Also grant that the DBMS is operating under the
@@ -96,4 +138,11 @@ Basic instructions to install the ND PHP Framework
  project vhost. It also must be readable by the webserver processes that are
  executing the framework scripts. 
 
+
+7. Docker
+
+ You can use Docker to test the ND PHP Framework by using the Dockerfile(s)
+ and/or docker-compose.yml located at:
+
+  - https://github.com/ucodev/automation/docker/compose/ndphp
 

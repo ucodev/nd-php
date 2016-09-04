@@ -94,7 +94,7 @@ class Files extends ND_Controller {
 				$this->response->header('Content-Disposition', 'attachment; filename=' . $filename);
 
 			/* Dump file contents */
-			echo($file_contents);
+			$this->response->output($file_contents);
 		}
 	}
 }

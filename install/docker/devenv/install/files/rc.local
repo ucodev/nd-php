@@ -1,0 +1,12 @@
+#!/bin/sh
+
+service mysql restart
+service apache2 restart
+
+if ! [ -f /var/www/html/nd-php/install/done.ctl ]; then
+	curl -XGET http://$(ifconfig eth0 | head -n 2 | tail -n 1 | awk '{print $2}' | awk -F ':' '{print $2}')/nd-php/index.php/install/auto
+fi
+
+/bin/bash
+
+exit 0

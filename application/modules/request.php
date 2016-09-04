@@ -33,6 +33,8 @@
 class UW_Request extends UW_Module {
 	private $_raw_data = NULL;
 	private $_headers = array();
+	private $_uploads = array();
+	private $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 
 	public function get($key = NULL) {
 		if ($key !== NULL)
@@ -46,6 +48,57 @@ class UW_Request extends UW_Module {
 			return $_POST[$key];
 
 		return $_POST;
+	}
+
+	public function input($key = NULL) {
+		if ($key !== NULL)
+			return $_REQUEST[$key];
+
+		return $this->raw();
+	}
+
+	public function upload($input_name = NULL, $dest_path = SYSTEM_BASE_DIR . '/uploads', $random_filename = false, $upload_max_size = 16777216) {
+		/* Check if the requested file was already processed... */
+		if (isset($this->_uploads[$input_name]))
+			return $this->_uploads[$input_name]; /* If so... just return the stored filename */
+
+		/* We need the response module to throw upload errors back to the client */
+		$this->load->module('response');
+
+		/* Create directory if it doesn't exist */
+		if (!file_exists($dest_path) && mkdir($dest_path, 0750, true) === false)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$input_name]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->_default_charset, !$this->is_ajax());
+
+		/* Upload error pre-check */
+		if (!isset($_FILES[$input_name]['error']) || is_array($_FILES[$input_name]['error']))
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$input_name]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->_default_charset, !$this->is_ajax());
+
+		/* Grant that there are no errors */
+		if ($_FILES[$input_name]['error'] > 0)
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$input_name]['name'] . '": ' . error_upload_file($_FILES[$input_name]['error']), $this->_default_charset, !$this->is_ajax());
+
+		/* Validate file size (This is a fallback for php settings) */
+		if ($_FILES[$input_name]['size'] > $upload_max_size)
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$input_name]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->_default_charset, !$this->is_ajax());
+
+		/* Set the new file name */
+		$file_name = '';
+
+		if ($random_filename === true) {
+			$file_name = openssl_digest($_FILES[$input_name]['name'] . mt_rand(1000000, 9999999), 'sha256');
+		} else {
+			$file_name = $_FILES[$input_name]['name'];
+		}
+
+		/* Move the temporary file to its new, permanent location */
+		if (move_uploaded_file($_FILES[$input_name]['tmp_name'], $dest_path . '/' . $file_name) === false)
+			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$input_name]['name'] . '"', $this->_default_charset, !$this->is_ajax());
+
+		/* Store the new path of the uploaded file */
+		$this->_uploads[$input_name] = $dest_path . '/' . $file_name;
+
+		/* Return the full path of the uploaded file */
+		return $this->_uploads[$input_name];
 	}
 
 	public function raw() {
