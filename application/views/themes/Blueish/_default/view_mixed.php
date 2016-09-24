@@ -95,7 +95,12 @@
 	<?php if ($meta['input_type'] == 'checkbox'): ?>
 			<?php if (isset($view['values'][$field]) && ($view['values'][$field])) { echo(filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED, $config['charset'])); } else { echo(filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED, $config['charset'])); } ?>
 	<?php elseif ($meta['input_type'] == 'file'): /* FIXME: TODO: Missing render image handler */ ?>
-			<a target="_blank" href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['foreign_table'], $config['charset'])?>/<?=filter_html($view['foreign_id'], $config['charset'])?>/mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>/<?=filter_html($view['values'][$field], $config['charset'])?>"><?=filter_html($view['values'][$field], $config['charset'])?></a>
+			<a
+				target="_blank"
+				href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['foreign_table'], $config['charset'])?>/<?=filter_html($view['foreign_id'], $config['charset'])?>/mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>/<?=filter_html($view['values'][$field], $config['charset'])?>"
+			>
+				<?=filter_html($view['values'][$field], $config['charset'])?>
+			</a>
 	<?php elseif ($meta['input_type'] == 'select'): ?>
 		<?php
 			$val_trigger = false;
@@ -104,7 +109,11 @@
 				if ($opt_value == $view['values'][$field]):
 					$val_trigger = true;
 		?>
-					<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($meta['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>" onclick="ndphp.modal.show(this.href, '<?=filter_html_js_special(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>'); return false;">
+					<a
+						href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($meta['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>"
+						title="<?=filter_html(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>"
+						onclick="ndphp.modal.show(this.href, '<?=filter_html_js_special(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>'); return false;"
+					>
 						<?=filter_html($opt_value, $config['charset'])?>
 					</a>
 		<?php
@@ -116,7 +125,11 @@
 		?>
 	<?php elseif ($meta['input_type'] == 'textarea'): ?>
 		<?php if (isset($config['modalbox']) && in_array($field, $config['rich_text'])): ?>
-				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['values']['id'], $config['charset'])?>" onclick="ndphp.ajax.load_body_view_frommodal(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($view['values']['id'], $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_VIEW, $config['charset'])?> <?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>">
+				<a
+					href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['values']['id'], $config['charset'])?>"
+					onclick="ndphp.ajax.load_body_view_frommodal(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($view['values']['id'], $config['charset'])?>);"
+					title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_VIEW, $config['charset'])?> <?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>"
+				>
 					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_VIEW, $config['charset'])?> <?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
 				</a>
 		<?php else: ?>
@@ -134,7 +147,11 @@
 		<?php endif; ?>
 	<?php else: ?>
 		<?php if ($field == 'id'): ?>
-				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['values'][$field], $config['charset'])?>" onclick="ndphp.ajax.load_body_view<?=isset($config['modalbox']) ? '_frommodal' : NULL;?>(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($view['values'][$field], $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_VIEW, $config['charset'])?> <?=filter_html($view['values'][$field], $config['charset'])?>">
+				<a
+					href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($view['values'][$field], $config['charset'])?>"
+					onclick="ndphp.ajax.load_body_view<?=isset($config['modalbox']) ? '_frommodal' : NULL;?>(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($view['values'][$field], $config['charset'])?>);"
+					title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_VIEW, $config['charset'])?> <?=filter_html($view['values'][$field], $config['charset'])?>"
+				>
 					<?=filter_html($view['values'][$field], $config['charset'])?>
 				</a>
 		<?php else: ?>

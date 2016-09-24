@@ -104,16 +104,27 @@
 						<table id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="table table-striped table-hover">
 							<tr class="fields">
 								<?php foreach ($meta['mixed_fields_alias'] as $mixed_field_alias): ?>
-									<th class="fields"><?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?> <?php if ($mixed_field_alias['help_desc'] != null): ?> <a href="<?=filter_html($mixed_field_alias['help_url'], $config['charset'])?>" title="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>"><img width="12" height="12" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png" alt="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>" /></a><?php endif; ?></th>
+									<th>
+										<?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?>
+										<?php if ($mixed_field_alias['help_desc'] != NULL): ?>
+											<a href="<?=filter_html($mixed_field_alias['help_url'], $config['charset'])?>" title="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>">
+												<img width="12" height="12" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png" alt="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>" />
+											</a>
+										<?php endif; ?>
+									</th>
 								<?php endforeach; ?>
-								<th class="fields">&nbsp;</th>
+								<th>&nbsp;</th>
 							</tr>
 						</table>
 					</div>
 
 					<div class="text-center">
 						<?php if ($meta['mixed_type'] != 'single' && security_perm_check($security['perms'], 'U', $view['ctrl'], $field)): ?>
-							<a class="btn btn-primary" href="javascript:void(0);" class="more_op" onclick="ndphp.mixed.new_item('<?=filter_html_js_str(base_url(), $config['charset'])?>', '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', autocomplete_items_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, 'mixed_<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, '<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', '<?=filter_html_js_str($meta['mixed_first_field'], $config['charset'])?>', '', 0); mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?> ++;">
+							<a
+								class="btn btn-primary"
+								href="javascript:void(0);"
+								onclick="ndphp.mixed.new_item('<?=filter_html_js_str(base_url(), $config['charset'])?>', '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', autocomplete_items_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, 'mixed_<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, '<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', '<?=filter_html_js_str($meta['mixed_first_field'], $config['charset'])?>', '', 0); mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?> ++;"
+							>
 								+
 							</a>
 						<?php endif; ?>

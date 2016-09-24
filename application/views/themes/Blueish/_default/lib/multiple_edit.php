@@ -60,7 +60,12 @@
 				<label for="<?=filter_html_special($field, $config['charset'])?>" class="col-sm-2 control-label">
 				</label>
 				<div class="col-sm-3">
-					<select class="form-control" id="<?=filter_html_special($field, $config['charset'])?>" multiple <?php if (!security_perm_check($security['perms'], 'U', $view['ctrl'], $field)) { echo('disabled'); }?> >
+					<select
+						class="form-control"
+						id="<?=filter_html_special($field, $config['charset'])?>"
+						multiple
+						<?php if (!security_perm_check($security['perms'], 'U', $view['ctrl'], $field)) { echo('disabled'); }?>
+					>
 						<?php
 						foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
 							$selected = false;
@@ -80,13 +85,31 @@
 				</div>
 
 				<div class="col-sm-1">
-		 			<input style="width: 100%" class="btn btn-primary btn-sm" type="button" onclick="ndphp.multi.select_multi_add_selected('<?=filter_html_js_str($field, $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>_selected');" value=">>" />
+		 			<input
+		 				style="width: 100%"
+		 				class="btn btn-primary btn-sm"
+		 				type="button"
+		 				onclick="ndphp.multi.select_multi_add_selected('<?=filter_html_js_str($field, $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>_selected');"
+		 				value=">>"
+		 			/>
 		 			<br />
-		 			<input style="width: 100%" class="btn btn-cancel btn-sm" type="button" onclick="ndphp.multi.select_multi_del_selected('<?=filter_html_js_str($field, $config['charset'])?>_selected', '<?=filter_html_js_str($field, $config['charset'])?>');" value="<<" />
+		 			<input
+		 				style="width: 100%"
+		 				class="btn btn-cancel btn-sm"
+		 				type="button"
+		 				onclick="ndphp.multi.select_multi_del_selected('<?=filter_html_js_str($field, $config['charset'])?>_selected', '<?=filter_html_js_str($field, $config['charset'])?>');"
+		 				value="<<"
+		 			/>
 		 		</div>
 
 		 		<div class="col-sm-3">
-					<select class="form-control" id="<?=filter_html_special($field, $config['charset'])?>_selected" name="<?=filter_html($field, $config['charset'])?>[]" multiple <?php if (!security_perm_check($security['perms'], 'U', $view['ctrl'], $field)) { echo('disabled'); }?> >
+					<select
+						class="form-control"
+						id="<?=filter_html_special($field, $config['charset'])?>_selected"
+						name="<?=filter_html($field, $config['charset'])?>[]"
+						multiple
+						<?php if (!security_perm_check($security['perms'], 'U', $view['ctrl'], $field)) { echo('disabled'); }?>
+					>
 						<?php
 						foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
 							$selected = false;
@@ -107,11 +130,23 @@
 
 				<div class="col-sm-1">
 					<?php if ($view['fields'][$field]['help_desc'] != NULL): ?>
-						<a href="<?=filter_html($view['fields'][$field]['help_url'], $config['charset'])?>" title="<?=filter_html($view['fields'][$field]['help_desc'], $config['charset'])?>">
-							<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png" alt="<?=filter_html($view['fields'][$field]['help_desc'], $config['charset'])?>" /></a>
+						<a
+							href="<?=filter_html($view['fields'][$field]['help_url'], $config['charset'])?>"
+							title="<?=filter_html($view['fields'][$field]['help_desc'], $config['charset'])?>"
+						>
+							<img
+								src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png"
+								alt="<?=filter_html($view['fields'][$field]['help_desc'], $config['charset'])?>"
+							/>
+						</a>
 					<?php endif; ?>
 					<?php if (!isset($config['modalbox'])): ?>
-						<a class="btn btn-primary btn-sm" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/create_data_modalbox" title="New <?=filter_html(ucfirst($view['fields'][$field]['table']), $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 800}); return false;">
+						<a
+							class="btn btn-primary btn-sm"
+							href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/create_data_modalbox"
+							title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_NEW, $config['charset'])?> <?=filter_html(ucfirst($view['fields'][$field]['table']), $config['charset'])?>"
+							onclick="ndphp.modal.show(this.href, '<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_NEW, $config['charset'])?> <?=filter_html(ucfirst($view['fields'][$field]['table']), $config['charset'])?>'); return false;"
+						>
 							+
 						</a>
 					<?php endif; ?>

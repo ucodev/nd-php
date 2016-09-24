@@ -62,7 +62,11 @@
 						foreach ($values as $val_id => $val_value):
 							if ($val_id == $opt_id):
 				?>
-								<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 600}); return false;" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($opt_value, $config['charset'])?>" class="view_rel_link">
+								<a
+									href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>"
+									onclick="ndphp.modal.show(this.href, '<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($opt_value, $config['charset'])?>'); return false;"
+									title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($opt_value, $config['charset'])?>"
+								>
 									<?=filter_html($opt_value, $config['charset'])?>
 								</a>
 								<br />

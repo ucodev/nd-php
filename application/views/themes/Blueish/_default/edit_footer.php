@@ -71,14 +71,9 @@
 		<?php if (!isset($config['modalbox'])): ?>
 			/* Set the origin controller */
 			ndphp.origin_controller = '<?=filter_js_str($view['ctrl'], $config['charset'])?>';
-
-		<?php else: ?>
-			/* Set modal box content to 100% (fixing some issues with some content) */
-			jQuery('#MB_content div.edit').css('width', '100%');
 		<?php endif; ?>
 
 		/* Field specific handlers and modifiers */
-		var required_fields_tab_map = [];
 		<?php $tab_index = 0; foreach ($view['fields'] as $field => $meta): ?>
 			<?php if ($meta['type'] == 'separator') { $tab_index ++; continue; }?>
 			<?php if ($meta['type'] == 'rel') continue; ?>

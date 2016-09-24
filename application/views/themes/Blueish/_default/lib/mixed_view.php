@@ -84,9 +84,11 @@
 				<fieldset class="form_fieldset">
 					<div class="table-responsive">
 						<table id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="table table-striped table-hover">
-							<tr class="fields">
+							<tr>
 								<?php foreach ($meta['mixed_fields_alias'] as $mixed_field_alias): ?>
-									<th class="fields"><?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?></th>
+									<th>
+										<?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?>
+									</th>
 								<?php endforeach; ?>
 							</tr>
 						</table>

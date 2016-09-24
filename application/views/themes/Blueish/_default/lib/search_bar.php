@@ -57,7 +57,14 @@
 <div id="searchbar" class="searchbar">
 	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/result/basic" name="searchform" id="searchform" method="post" class="form-horizontal">
 		<div id="searchbar_components">
-			<input id="searchbar_input" class="form-control" type="text" name="search_value" <?=isset($view['search_value']) ? ('value="' . filter_html($view['search_value'], $config['charset']) . '"') : ''?> placeholder="<?=filter_html(NDPHP_LANG_MOD_OP_SEARCH, $config['charset'])?>..." accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH_BASIC, $config['charset'])?>" />
+			<input
+				id="searchbar_input"
+				class="form-control"
+				type="text"
+				name="search_value"
+				<?=isset($view['search_value']) ? ('value="' . filter_html($view['search_value'], $config['charset']) . '"') : ''?> placeholder="<?=filter_html(NDPHP_LANG_MOD_OP_SEARCH, $config['charset'])?>..."
+				accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH_BASIC, $config['charset'])?>"
+			/>
 			<input type="submit" value="Search" style="display: none;" />
 		</div>
 		<script type="text/javascript">

@@ -1,3 +1,9 @@
+v0.03b (2016-09-24):
+
+ - Fixed multiple relationship modal links.
+ - Fixed tab switch on invalid input.
+
+
 v0.03a (2016-09-24):
 
  - Updated tracker.

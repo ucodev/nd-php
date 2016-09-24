@@ -54,7 +54,11 @@
 ?>
 <?php for ($i = 0; $i < $config['charts']['total']; $i ++): ?>
 	<div id="chart_<?=$i?>" class="chart">
-		<img id="chart_name_foreign_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=$i?>_<?=filter_html($session['user_id'], $config['charset'])?>" class="chart" src="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/chart_foreign_publish/<?=$i?>/<?=filter_html($view['id'], $config['charset'])?>/<?=rand(100000, 999999)?>" />
+		<img
+			id="chart_name_foreign_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=$i?>_<?=filter_html($session['user_id'], $config['charset'])?>"
+			class="chart"
+			src="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/chart_foreign_publish/<?=$i?>/<?=filter_html($view['id'], $config['charset'])?>/<?=rand(100000, 999999)?>"
+		/>
 	</div>
 	<script type="text/javascript">
 		addImage(
