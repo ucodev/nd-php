@@ -1,3 +1,16 @@
+v0.03a (2016-09-24):
+
+ - Updated tracker.
+ - Updated docker readme file.
+ - Updated INSTALL.txt.
+ - Updated README.md.
+ - Added validation utilities.
+ - Default theme is now responsive (Bootstrap based).
+ - Removed old Modalbox and respective dependencies (prototype + scriptaculous).
+ - Removed jquery-ui-timepicker dependencies.
+ - Breadcrumb support for home.
+
+
 v0.02w1 (2016-09-05):
 
  - Updated tracker.

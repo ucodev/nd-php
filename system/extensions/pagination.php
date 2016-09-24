@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 06/05/2016
+ * Date: 18/09/2016
  * License: GPLv3
  */
 
@@ -149,16 +149,16 @@ class UW_Pagination {
 			array_push($page_list, array($this->_config['last_link'], $total_pages, ($total_pages - 1) * $this->_config['per_page']));
 
 		/* Create links */
-		$links = '';
+		$links = '<ul class="pagination">';
 		foreach ($page_list as $p) {
 			if ($p[2] === NULL) {
-				$links .= '<span id="uw_current_page">' . $p[1] . '</span>' . $this->_config['separator'];
+				$links .= '<li class="active"><a href="#">' . $p[1] . '</a></li>' . $this->_config['separator'];
 				continue;
 			}
 
-			$links .= '<a href="' . str_replace($this->_config['url_var_row_nr'], $p[2], str_replace($this->_config['url_var_page_nr'], $p[1], $this->_config['base_url'])) . '"' . ($this->_config['onclick'] ? ' onclick="' . str_replace($this->_config['url_var_row_nr'], $p[2], str_replace($this->_config['url_var_page_nr'], $p[1], $this->_config['onclick'])) . '"' : '') . '>' . $p[0] . '</a>' . $this->_config['separator'];
+			$links .= '<li><a href="' . str_replace($this->_config['url_var_row_nr'], $p[2], str_replace($this->_config['url_var_page_nr'], $p[1], $this->_config['base_url'])) . '"' . ($this->_config['onclick'] ? ' onclick="' . str_replace($this->_config['url_var_row_nr'], $p[2], str_replace($this->_config['url_var_page_nr'], $p[1], $this->_config['onclick'])) . '"' : '') . '>' . $p[0] . '</a>' . $this->_config['separator'] . '</li>';
 		}
 
-		return $links;
+		return $links . '</ul>';
 	}
 }

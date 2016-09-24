@@ -75,11 +75,6 @@ class Login extends UW_Controller {
 		return $q->row_array();
 	}
 
-	private function validate_email($email)
-	{
-    		return preg_match("/^[_a-z0-9-]+(\.[_a-z0-9+-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i", $email);
-	}
-
 	public function __construct() {
 		parent::__construct();
 
@@ -368,7 +363,7 @@ class Login extends UW_Controller {
 		}
 
 		/* Validade email address (regex) */		
-		if ($this->validate_email($row['email']) == false)
+		if (validate_email($row['email']) == false)
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		/**** All sanity checks successfully passed ****/

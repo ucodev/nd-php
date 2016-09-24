@@ -508,6 +508,7 @@ define('NDPHP_LANG_MOD_COMMON_URL',					'URL');
 define('NDPHP_LANG_MOD_COMMON_SEEN',				'Seen');
 define('NDPHP_LANG_MOD_COMMON_NOTIFY_ALL',			'Notify All');
 define('NDPHP_LANG_MOD_COMMON_NOTIFY_WHEN',			'Notify When');
+define('NDPHP_LANG_MOD_COMMON_PLACEHOLDER_REPEAT_PASSWORD', '(Repeat password)');
 
 define('NDPHP_LANG_MOD_MENU_BUILDER_NAME',			'Builder');
 define('NDPHP_LANG_MOD_MENU_BUILDER_DESC',			'Builder');
@@ -573,7 +574,7 @@ define('NDPHP_LANG_MOD_MENU_IDE_NAME',				'IDE');
 define('NDPHP_LANG_MOD_MENU_IDE_DESC',				'IDE Builder');
 
 define('NDPHP_LANG_MOD_LOGIN_LOGIN',				'Login');
-define('NDPHP_LANG_MOD_LOGIN_NEW_USER',				'New User?');
+define('NDPHP_LANG_MOD_LOGIN_NEW_USER',				'Sign up');
 define('NDPHP_LANG_MOD_LOGIN_FORGOT_PASSWORD',		'Forgot Password?');
 define('NDPHP_LANG_MOD_LOGIN_USERNAME',				'Username');
 define('NDPHP_LANG_MOD_LOGIN_PASSWORD',				'Password');
@@ -764,6 +765,7 @@ define('NDPHP_LANG_MOD_SEARCH_INTERVAL_LAST',		'last'); /* last x months, years 
 define('NDPHP_LANG_MOD_SEARCH_INTERVAL_NEXT',		'next'); /* next x months, years ... (without accents) */
 define('NDPHP_LANG_MOD_SEARCH_INTERVAL_IN',			'in'); /* in x months, years ... (without accents) */
 
+define('NDPHP_LANG_MOD_SEARCH_GLOBAL_RESULT',		'Global Result');
 define('NDPHP_LANG_MOD_SEARCH_GLOBAL_NRESULT_PREFIX','Found');
 define('NDPHP_LANG_MOD_SEARCH_GLOBAL_NRESULT_SUFFIX','results.');
 

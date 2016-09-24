@@ -80,19 +80,17 @@
 					}
 				});
 			</script>
-			<div id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>_container" style="display: table; margin: 0 auto; padding-top: 34px;">
-				<fieldset class="remove_mixed_fieldset">
-					<legend class="remove_mixed_legend">
-						<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
-					</legend>
-
-					<table id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="fields">
-						<tr class="fields">
-							<?php foreach ($meta['mixed_fields_alias'] as $mixed_field_alias): ?>
-								<th class="fields"><?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?></th>
-							<?php endforeach; ?>
-						</tr>
-					</table>
+			<div class="tab-pane fade" id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>_container">
+				<fieldset class="form_fieldset">
+					<div class="table-responsive">
+						<table id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="table table-striped table-hover">
+							<tr class="fields">
+								<?php foreach ($meta['mixed_fields_alias'] as $mixed_field_alias): ?>
+									<th class="fields"><?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?></th>
+								<?php endforeach; ?>
+							</tr>
+						</table>
+					</div>
 				</fieldset>
 			</div>
 <?php

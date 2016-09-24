@@ -1,2 +1,2 @@
-https://github.com/ucodev/automation/docker/compose/ndphp
+https://github.com/ucodev/automation/tree/master/docker/compose/ndphp
 

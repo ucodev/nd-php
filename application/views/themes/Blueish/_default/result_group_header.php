@@ -84,7 +84,11 @@
 </script>
 
 <div id="crud_title">
-	<h1 class="crud_header"><?=$view['links']['breadcrumb']?></h1>
+	<ul class="breadcrumb">
+		<?php foreach ($view['links']['breadcrumb']['anchors'] as $anchor): ?>
+			<li><?=$anchor?></li>
+		<?php endforeach; ?>
+	</ul>
 	<script type="text/javascript">
 		/* Set correct window title (if this view was loaded via an ajax call, the title needs to be changed) */
 		window.document.title = '<?=filter_js_str(html_entity_decode(strip_tags($project['name'] . " - " . $view['title']), ENT_QUOTES, $config['charset']), $config['charset'])?>';
@@ -108,15 +112,15 @@
 				continue;
 	?>
 			<?php if ($link[4] == 'ajax' && $link[5] !== true): ?>
-				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" onclick="ndphp.ajax.load_body_op(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($link[2], $config['charset'])?>');" title="<?=filter_html($link[0], $config['charset'])?>" class="submenu_link" accesskey="<?=filter_html($link[6], $config['charset'])?>">
+				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" onclick="ndphp.ajax.load_body_op(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($link[2], $config['charset'])?>');" title="<?=filter_html($link[0], $config['charset'])?>" class="btn btn-primary btn-sm" accesskey="<?=filter_html($link[6], $config['charset'])?>">
 			<?php elseif ($link[4] == 'method' && $link[5] !== true): ?>
-				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" class="submenu_link" accesskey="<?=filter_html($link[6], $config['charset'])?>">
+				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" class="btn btn-primary btn-sm" accesskey="<?=filter_html($link[6], $config['charset'])?>">
 			<?php elseif ($link[4] == 'modal' && $link[5] !== true): ?>
-				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 600}); return false;" class="submenu_link" accesskey="<?=filter_html($link[6], $config['charset'])?>">
+				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" onclick="ndphp.modal.show(this.href, '<?=filter_html_js_special($link[0], $config['charset'])?>'); return false;" class="btn btn-primary btn-sm" accesskey="<?=filter_html($link[6], $config['charset'])?>">
 			<?php elseif ($link[4] == 'raw' && $link[5] !== true): ?>
-				<a href="<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" class="submenu_link" accesskey="<?=filter_html($link[6], $config['charset'])?>">
+				<a href="<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" class="btn btn-primary btn-sm" accesskey="<?=filter_html($link[6], $config['charset'])?>">
 			<?php elseif ($link[4] == 'export'): ?>
-				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/export/<?=filter_html($export_query, $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" class="submenu_link" accesskey="<?=filter_html($link[6], $config['charset'])?>">
+				<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/export/<?=filter_html($export_query, $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" class="btn btn-primary btn-sm" accesskey="<?=filter_html($link[6], $config['charset'])?>">
 			<?php endif; ?>
 					<?php if ($link[3] !== NULL): /* If a icon is set */ ?>
 						<img class="submenu_icon" alt="<?=filter_html($link[0], $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/<?=filter_html($link[3], $config['charset'])?>" />

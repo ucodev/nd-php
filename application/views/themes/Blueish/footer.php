@@ -55,13 +55,28 @@
  		<div style="clear: both;"></div>
     </div> <!-- End of div #body -->
 </div> <!-- End of div #container -->
-<div id="footer">
+<div id="footer" class="panel panel-primary">
+	<div id="copy" class="panel-heading">
 	Copyright &copy; <?=date('Y')?> <?=filter_html($project['author'], $config['charset'])?> (<?=filter_html(ucfirst(NDPHP_LANG_MOD_WORD_BUILD), $config['charset'])?>: <?=filter_html($project['build']['number'] . '.' . str_replace('-', '', explode(' ', $project['build']['date'])[0]), $config['charset'])?>)
-</div>
-<div id="powered_by">
-	Powered by ND PHP Framework (v<?=filter_html($project['ndphp_version'], $config['charset'])?>) - <a class="powered_by_link" href="https://www.nd-php.org">www.nd-php.org</a>&nbsp;
+	</div>
+	<div id="powered_by" class="panel-body">
+		Powered by ND PHP Framework (v<?=filter_html($project['ndphp_version'], $config['charset'])?>) - <a class="powered_by_link" href="https://www.nd-php.org">www.nd-php.org</a>&nbsp;
+	</div>
 </div>
 <div id="ajax_error_dialog">
+</div>
+<div class="modal" role="dialog" id="ndphp_modal" style="overflow-y: auto;">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="ndphp.modal.close();">&times;</button>
+        <h4 class="modal-title" id="ndphp_modal_title">title</h4>
+      </div>
+      <div class="modal-body">
+        <p id="ndphp_modal_body">body</p>
+      </div>
+    </div>
+  </div>
 </div>
 </body> <!-- End of BODY -->
 </html>

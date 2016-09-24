@@ -48,7 +48,6 @@
  * * IDE application model should validate everything that was previously validated by ide.js.
  * * [IN_PROGRESS] Database Sharding (per user).
  * * Add support for memcached to lower database overhead.
- * * Turn UI responsive.
  * * Forward/Back button should work with partial page updates (when performed via ajax).
  * * Refresh button should refresh the the last updated contents (even if performed via ajax).
  * * Add command line to IDE Builder.
@@ -64,7 +63,6 @@
  * * Currency (per user) support
  * * Implement guest user support. Authentication for guest user is done automatically for controllers allowing it. This user must be disabled by default.
  * * Total mixed entries as a list_default() / result() field.
- * - Migrate Modalbox to something else (probably jQuery UI Dialog?).
  * - Implement different families of views (configurable per table: backend, blog, shop, page, etc...)
  * - Autocomplete fields (and matching fields) based on the values of a foreign table. (with a simple API)
  * - [POSTPONED] Support a table name resolver to implement quality and development platforms under the same app infrastructure:
@@ -81,15 +79,16 @@
  * - Add per role restrictions for List/Groups/Result/Export visualizations / sub menu access
  * - Add support for context awareness under hooks (the hook should know which preceeding operations (workflow) preceeded their invocation)
  * - Support edition on previously saved searches.
- * - Improve UI accessibility with ARIA attributes
  * - Rollback operation on Logging controller should be able to also rollback multiple and mixed relationship values.
  *
  * FIXME:
  *
+ * + (bootstrap rev) Input patterns not working with the new bootstap theme.
+ * + (bootstrap rev) PDF export has not CSS associated (either for listing and item view).
+ * + (bootstrap rev) No browsing history support.
  * + Export CSV is exporing separators as fields. This should be disabled by default.
  * + Mixed relationships auto add feature is not assigning single relationships to the foreign table when entry is created.
  * + Do not allow 0000-00-00 date (or date component of datetime) values.
- * + Multiple relationship buttons and timer buttons styles must be redesigned.
  * + Chart generators should attempt to trigger both list and result filter hook.
  + + Chart imagemaps display incorrect captions on bar charts.
  * + On REST insert/update functions, when processing single, multiple and mixed relationships, evaluate if the value(s) are integers.. if not, translate the string value based on foreign table contents (useful for REST API calls).
@@ -100,7 +99,6 @@
  * * Mixed and multiple relationships must work properly when javascript is disabled.
  * * Advanced search must work properly when javascript is disabled.
  * * Saved searches results do not have full breadcrumb support.
- * * Home controller do not currently have support for breadcrumb.
  * * Search form user data should be saved (and loaded when search form is loaded again). A form reset button must also be implemented.
  * * Input patterns not being validated on mixed relationship fields under controller code (insert() and update()).
  * * Fix advanced search form reset after a back (from browsing actions) is performed after a search is submited.
@@ -119,7 +117,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.02w1';
+	protected $_ndphp_version = '0.03a';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -429,9 +427,9 @@ class ND_Controller extends UW_Controller {
 	/* Quick Operations Links (Listing and Result views) */
 	protected $_links_quick_modal_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', $modal_width) */
-		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',   600),
-		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',   900),
-		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png', 600)
+		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png')
 	);
 
 	protected $_links_quick_modal_result = array(

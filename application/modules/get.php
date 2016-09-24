@@ -246,7 +246,10 @@ class UW_Get extends UW_Module {
 		}
 
 		/* Create breadcrumb HTML and return the result */
-		return $this->breadcrumb->create();
+		$breadcrumb['html'] = $this->breadcrumb->create();
+		$breadcrumb['anchors'] = $this->breadcrumb->anchors();
+
+		return $breadcrumb;
 	}
 
 	public function rel_table_names($rel, $target = NULL, $mixed = false) {

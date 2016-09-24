@@ -56,18 +56,19 @@
 <?php include($view['base_dir'] . '/_default/lib/current_context.php'); ?>
 
 <div id="home_title">
-	<h1 class="home_header"><?=filter_html($view['title'], $config['charset'])?></h1>
+	<ul class="breadcrumb">
+		<?php foreach ($view['links']['breadcrumb']['anchors'] as $anchor): ?>
+			<li><?=$anchor?></li>
+		<?php endforeach; ?>
+	</ul>
 	<script type="text/javascript">
 		/* Set correct window title (if this view was loaded via an ajax call, the title needs to be changed) */
 		window.document.title = '<?=filter_js_str(html_entity_decode(strip_tags($project['name'] . " - " . $view['title']), ENT_QUOTES, $config['charset']), $config['charset'])?>';
 	</script>
 	<div id="searchbar">
-		<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/result_global" name="globalsearchform" id="globalsearchform" method="post">
+		<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/result_global" name="globalsearchform" id="globalsearchform" method="post">
 			<div id="searchbar_components">
-				<input id="searchbar_input" class="searchbar" type="text" name="search_value" <?=isset($view['search_value']) ? ('value="' . filter_html($view['search_value'], $config['charset']) . '"') : ''?> placeholder="<?=filter_html(NDPHP_LANG_MOD_OP_GLOBAL_SEARCH, $config['charset'])?>..." accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH_BASIC, $config['charset'])?>" />
-				<a href="javascript:void(0);" onclick="ndphp.form.search_global_submitform(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>');">
-					<img width="18" height="18" class="searchbutton" alt="<?=filter_html(NDPHP_LANG_MOD_BUTTON_SEARCH, $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/search_button.png" />
-				</a>
+				<input id="searchbar_input" class="form-control" type="text" name="search_value" <?=isset($view['search_value']) ? ('value="' . filter_html($view['search_value'], $config['charset']) . '"') : ''?> placeholder="<?=filter_html(NDPHP_LANG_MOD_OP_GLOBAL_SEARCH, $config['charset'])?>..." accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH_BASIC, $config['charset'])?>" />
 				<input type="submit" value="Search" style="display: none;" />
 			</div>
 			<script type="text/javascript">

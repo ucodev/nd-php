@@ -55,70 +55,28 @@
 <div id="list" class="list">
 	<?php $tabs_listing = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
 
-	<div class="list_container">
-		<div id="listing">
+	<div class="tab-content">
+		<div class="tab-pane fade active in" id="listing">
 			<?php if (count($view['result_array'])): ?>
 				<?php foreach ($view['grouping_result_array'] as $group => $result_array): ?>
-					<div id="group_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>"> <!-- Begin of Group container div -->
-						<div id="group_header_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_header">
-							<a href="javascript:void(0);" onclick="ndphp.grouping.group_visibility_toggle(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>');" class="group_header_link">
-								<span id="arrow_visible_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_header_arrows" style="display: none;"><img class="group_header_arrows" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/downarrow.png" /></span><span id="arrow_hidden_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_header_arrows"><img class="group_header_arrows" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/rightarrow.png" /></span> <?=filter_html($group, $config['charset'])?> <span class="group_header_counting">(<?=count($result_array)?>)</span>
-							</a>
-						</div>
-						<div id="group_data_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" class="group_data" style="display: none;">
-							<table class="list">
-							<tr class="list">
-							<?php $row = array_values($result_array)[0]; ?>
+					<ul class="list-group" id="group_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>"> <!-- Begin of Group container div -->
+						<a style="width: 100%" href="javascript:void(0);" onclick="ndphp.grouping.group_visibility_toggle(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>');">
+							<li class="list-group-item" id="group_header_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>">
+								<span class="badge"><?=count($result_array)?></span>
+								<span id="arrow_visible_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" style="display: none;">
+									<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/downarrow.png" />
+								</span>
+								<span id="arrow_hidden_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>">
+									<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/rightarrow.png" />
+								</span> <?=filter_html($group, $config['charset'])?>
+							</li>
+						</a>
+						<div id="group_data_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" style="display: none;">
+							<div class="table-responsive">
+								<table class="table table-striped table-hover">
+								<tr>
+								<?php $row = array_values($result_array)[0]; ?>
 
-							<?php foreach ($row as $field => $value): ?>
-								<?php
-									/* Ignore fields without meta data */
-									if (!isset($view['fields'][$field]))
-										continue;
-
-									/* Ignore hidden fields */
-									if (in_array($field, $config['hidden_fields']))
-										continue;
-
-									/* Ignore separators */
-									if ($view['fields'][$field]['type'] == 'separator')
-										continue;
-
-									/* Ignore the $view['grouping_field'] as its value is already standing in the group header */
-									if ($field == $view['grouping_field'])
-										continue;
-								?>
-								<th class="list">
-									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($view['grouping_field'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($config['order'], $config['charset'])?>/<?=filter_html($view['page'], $config['charset'])?>" onclick="ndphp.ajax.load_group_data_ordered_list(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($view['grouping_field'], $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>', '<?=filter_html_js_str($config['order'], $config['charset'])?>', '<?=filter_html_js_str($view['page'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_ORDER_BY, $config['charset'])?> <?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>" class="list_th_link">
-										<?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>
-									</a>
-									<?php if ($config['order_by'] == $field) { echo('&nbsp;'); echo($config['order'] == 'desc' ? '&uarr;' : '&darr;'); }?>
-									<?php if ($view['fields'][$field]['input_type'] == 'select'): ?>
-										<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($field, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_GROUP_BY, $config['charset'])?> <?=ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field)?>" onclick="ndphp.ajax.load_body_group(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>');" class="list_header_grouping_button">
-											<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/group_small.png" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_GROUP_BY, $config['charset'])?> <?=ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field)?>" class="list_header_grouping_button" />
-										</a>
-									<?php endif; ?>
-								</th>
-							<?php endforeach; ?>
-								<th class="list">
-									&nbsp;
-								</th>
-							</tr>
-							<?php $i = 0; foreach ($result_array as $row): ?>
-								<?php
-									/* Setup proper table row class based on controller configuration */
-									$tr_class = 'list_' . ($i % 2 ? 'even' : 'odd');
-
-									if (count($config['choices_class']) && isset($row[$config['choices_class']['rel_field']])) {
-										if (isset($config['choices_class']['values'][$row[$config['choices_class']['rel_field']]])) {
-											$tr_class = 'list_' . $config['choices_class']['values'][$row[$config['choices_class']['rel_field']]];
-										} else {
-											$tr_class = 'list_' . ($i % 2 ? $config['choices_class']['class_even'] : $config['choices_class']['class_odd']);
-										}
-									}
-								?>
-
-								<tr class="<?=filter_html($tr_class, $config['charset'])?>">
 								<?php foreach ($row as $field => $value): ?>
 									<?php
 										/* Ignore fields without meta data */
@@ -137,89 +95,139 @@
 										if ($field == $view['grouping_field'])
 											continue;
 									?>
-										<td class="list">
-										<?php if ($view['fields'][$field]['input_type'] == 'checkbox'): ?>
-												<?=($value == 1 ? filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED, $config['charset']) : filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED, $config['charset']))?>
-										<?php elseif (($view['fields'][$field]['input_type'] == 'select') &&
-															($view['fields'][$field]['type'] != 'rel') &&
-															($config['fk_linking'] === true)): ?>
-											<?php
-												/* Output referal link to foreign field */
-												/* FIXME: Implement caching for fields already resolved.
-												 * 			OR
-												 * 		  Query the database on the controller to output a resolve
-												 * 		  table to be used here as a resolver array (key => value),
-												 * 		  being the key the field value, and the value the field id.
-												 */
-												foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
-													if ($value == $opt_value):
-											?>
-														<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 600}); return false;">
-															<?=filter_html($opt_value, $config['charset'])?>
-														</a>
-											<?php
-													endif;
-												endforeach;
-											?>
-										<?php elseif ($view['fields'][$field]['input_type'] == 'file'): ?>
-												<!-- FIXME: We're using $row['id'] in the URL, but this field may be hidden, thus not available... -->
-												<a id="<?=filter_html_special($field, $config['charset'])?>_<?=$i?>" target="_blank" title="<?=filter_html($value, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>">
-													<?php if ($config['render']['images'] && in_array(end(explode('.', $value)), $config['render']['ext'])): ?>
-														<img alt="<?=filter_html($value, $config['charset'])?>" style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;" src="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>" />
-													<?php else: ?>
-														<?=filter_html($value, $config['charset'])?>
-													<?php endif; ?>
-												</a>
-										<?php else: ?>
-											<?php if ($field == 'id'): ?>
-												<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($value, $config['charset'])?>" onclick="ndphp.ajax.load_body_view(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($value, $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($value, $config['charset'])?>" class="list_td_link">
-													<?=filter_html($value, $config['charset'])?>
-												</a>
+									<th>
+										<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($view['grouping_field'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($config['order'], $config['charset'])?>/<?=filter_html($view['page'], $config['charset'])?>" onclick="ndphp.ajax.load_group_data_ordered_list(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($view['grouping_field'], $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>', '<?=filter_html_js_str($config['order'], $config['charset'])?>', '<?=filter_html_js_str($view['page'], $config['charset'])?>');" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_ORDER_BY, $config['charset'])?> <?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>" class="list_th_link">
+											<?=filter_html(ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field), $config['charset'])?>
+										</a>
+										<?php if ($config['order_by'] == $field) { echo('&nbsp;'); echo($config['order'] == 'desc' ? '&uarr;' : '&darr;'); }?>
+										<?php if ($view['fields'][$field]['input_type'] == 'select'): ?>
+											<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($field, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_GROUP_BY, $config['charset'])?> <?=ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field)?>" onclick="ndphp.ajax.load_body_group(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($field, $config['charset'])?>');" class="list_header_grouping_button">
+												<img src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/group_small.png" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_GROUP_BY, $config['charset'])?> <?=ucfirst(isset($view['fields'][$field]['viewname']) ? $view['fields'][$field]['viewname'] : $field)?>" class="list_header_grouping_button" />
+											</a>
+										<?php endif; ?>
+									</th>
+								<?php endforeach; ?>
+									<th>
+										&nbsp;
+									</th>
+								</tr>
+								<?php $i = 0; foreach ($result_array as $row): ?>
+									<?php
+										/* Setup proper table row class based on controller configuration */
+										$tr_class = '';
+
+										if (count($config['choices_class']) && isset($row[$config['choices_class']['rel_field']])) {
+											if (isset($config['choices_class']['values'][$row[$config['choices_class']['rel_field']]])) {
+												$tr_class = $config['choices_class']['values'][$row[$config['choices_class']['rel_field']]];
+											} else {
+												$tr_class = ($i % 2 ? $config['choices_class']['class_even'] : $config['choices_class']['class_odd']);
+											}
+										}
+									?>
+
+									<tr class="<?=filter_html($tr_class, $config['charset'])?>">
+									<?php foreach ($row as $field => $value): ?>
+										<?php
+											/* Ignore fields without meta data */
+											if (!isset($view['fields'][$field]))
+												continue;
+
+											/* Ignore hidden fields */
+											if (in_array($field, $config['hidden_fields']))
+												continue;
+
+											/* Ignore separators */
+											if ($view['fields'][$field]['type'] == 'separator')
+												continue;
+
+											/* Ignore the $view['grouping_field'] as its value is already standing in the group header */
+											if ($field == $view['grouping_field'])
+												continue;
+										?>
+											<td>
+											<?php if ($view['fields'][$field]['input_type'] == 'checkbox'): ?>
+													<?=($value == 1 ? filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_CHECKED, $config['charset']) : filter_html(NDPHP_LANG_MOD_STATUS_CHECKBOX_UNCHECKED, $config['charset']))?>
+											<?php elseif (($view['fields'][$field]['input_type'] == 'select') &&
+																($view['fields'][$field]['type'] != 'rel') &&
+																($config['fk_linking'] === true)): ?>
+												<?php
+													/* Output referal link to foreign field */
+													/* FIXME: Implement caching for fields already resolved.
+													 * 			OR
+													 * 		  Query the database on the controller to output a resolve
+													 * 		  table to be used here as a resolver array (key => value),
+													 * 		  being the key the field value, and the value the field id.
+													 */
+													foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
+														if ($value == $opt_value):
+												?>
+															<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" title="<?=filter_html(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>" onclick="ndphp.modal.show(this.href, '<?=filter_html_js_special(NDPHP_LANG_MOD_OP_QUICK_VIEW, $config['charset'])?>'); return false;">
+																<?=filter_html($opt_value, $config['charset'])?>
+															</a>
+												<?php
+														endif;
+													endforeach;
+												?>
+											<?php elseif ($view['fields'][$field]['input_type'] == 'file'): ?>
+													<!-- FIXME: We're using $row['id'] in the URL, but this field may be hidden, thus not available... -->
+													<a id="<?=filter_html_special($field, $config['charset'])?>_<?=$i?>" target="_blank" title="<?=filter_html($value, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>">
+														<?php if ($config['render']['images'] && in_array(end(explode('.', $value)), $config['render']['ext'])): ?>
+															<img alt="<?=filter_html($value, $config['charset'])?>" style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;" src="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>" />
+														<?php else: ?>
+															<?=filter_html($value, $config['charset'])?>
+														<?php endif; ?>
+													</a>
 											<?php else: ?>
-												<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
-													<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
-												<?php endif; ?>
-												<?=truncate_str($value, $config['truncate']['length'], $config['charset'], $config['truncate']['trail'], $config['truncate']['separator'])?>
-												<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
-													<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
+												<?php if ($field == 'id'): ?>
+													<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/view/<?=filter_html($value, $config['charset'])?>" onclick="ndphp.ajax.load_body_view(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=filter_html_js_special($value, $config['charset'])?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($value, $config['charset'])?>" class="list_td_link">
+														#<?=filter_html($value, $config['charset'])?>
+													</a>
+												<?php else: ?>
+													<?php if ($view['fields'][$field]['units']['unit'] && $view['fields'][$field]['units']['left']): ?>
+														<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
+													<?php endif; ?>
+													<?=truncate_str($value, $config['truncate']['length'], $config['charset'], $config['truncate']['trail'], $config['truncate']['separator'])?>
+													<?php if ($view['fields'][$field]['units']['unit'] && !$view['fields'][$field]['units']['left']): ?>
+														<?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?>
+													<?php endif; ?>
 												<?php endif; ?>
 											<?php endif; ?>
-										<?php endif; ?>
-										</td>
-								<?php endforeach; ?>
-									<td class="list_op">
-										<?php foreach ($view['links']['quick'] as $link): ?>
-											<?php
-												/* $link[0] - Description
-												 * $link[1] - Permission (sec_perm)
-												 * $link[2] - Function
-												 * $link[3] - Image Path
-												 * $link[4] - Modal width
-												 */
-												if (!security_perm_check($security['perms'], $link[1], $view['ctrl']))
-													continue;
-											?>
-											<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: <?=filter_html_js_special($link[4], $config['charset'])?>}); return false;">
-												<img height="20" width="20" class="list_op_icon" alt="<?=filter_html($link[0], $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/<?=filter_html($link[3], $config['charset'])?>" />
-											</a>
-										<?php endforeach; ?>
-									</td>	
-								</tr>	
-							<?php $i ++; endforeach; ?>
-							</table>
+											</td>
+									<?php endforeach; ?>
+										<td class="list_op">
+											<?php foreach ($view['links']['quick'] as $link): ?>
+												<?php
+													/* $link[0] - Description
+													 * $link[1] - Permission (sec_perm)
+													 * $link[2] - Function
+													 * $link[3] - Image Path
+													 * $link[4] - Modal width
+													 */
+													if (!security_perm_check($security['perms'], $link[1], $view['ctrl']))
+														continue;
+												?>
+												<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($link[2], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>" title="<?=filter_html($link[0], $config['charset'])?>" onclick="ndphp.modal.show(this.href, '<?=filter_html_js_special($link[0], $config['charset'])?>'); return false;">
+													<img height="20" width="20" class="list_op_icon" alt="<?=filter_html($link[0], $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/<?=filter_html($link[3], $config['charset'])?>" />
+												</a>
+											<?php endforeach; ?>
+										</td>	
+									</tr>	
+								<?php $i ++; endforeach; ?>
+								</table>
+							</div> <!-- end of responsive table -->
 							<div id="listing_footer">
-								<div id="total_items" class="total_items">
+								<div id="total_items" class="well well-sm">
 									<span><?=filter_html(count($result_array), $config['charset'])?> <?=filter_html(NDPHP_LANG_MOD_WORD_ROWS, $config['charset'])?></span>
 								</div>
 							</div>
 						</div> <!-- Group data div -->
-					</div> <!-- End of Group container div -->
+					</ul> <!-- End of Group container div -->
 				<?php endforeach; ?>
 			<?php else: ?>
 				<p class="no_results"><?=filter_html(NDPHP_LANG_MOD_EMPTY_RESULTS, $config['charset'])?></p>
 			<?php endif; ?>
 		</div>
-		<div id="charts">
+		<div class="tab-pane fade" id="charts">
 			<?php if ($config['charts']['total']): ?>
 				<?php include($view['base_dir'] . '/_default/lib/charts.php'); ?>
 			<?php else: ?>

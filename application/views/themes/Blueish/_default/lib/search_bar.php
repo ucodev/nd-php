@@ -54,13 +54,10 @@
  ?>
 
 <!-- Search Bar -->
-<div id="searchbar">
-	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/result/basic" name="searchform" id="searchform" method="post">
+<div id="searchbar" class="searchbar">
+	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/result/basic" name="searchform" id="searchform" method="post" class="form-horizontal">
 		<div id="searchbar_components">
-			<input id="searchbar_input" class="searchbar" type="text" name="search_value" <?=isset($view['search_value']) ? ('value="' . filter_html($view['search_value'], $config['charset']) . '"') : ''?> placeholder="<?=filter_html(NDPHP_LANG_MOD_OP_SEARCH, $config['charset'])?>..." accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH_BASIC, $config['charset'])?>" />
-			<a href="javascript:void(0);" onclick="ndphp.form.search_submitform(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>');">
-				<img width="18" height="18" class="searchbutton" alt="<?=filter_html(NDPHP_LANG_MOD_BUTTON_SEARCH, $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/search_button.png" />
-			</a>
+			<input id="searchbar_input" class="form-control" type="text" name="search_value" <?=isset($view['search_value']) ? ('value="' . filter_html($view['search_value'], $config['charset']) . '"') : ''?> placeholder="<?=filter_html(NDPHP_LANG_MOD_OP_SEARCH, $config['charset'])?>..." accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH_BASIC, $config['charset'])?>" />
 			<input type="submit" value="Search" style="display: none;" />
 		</div>
 		<script type="text/javascript">

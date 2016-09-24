@@ -84,7 +84,7 @@
 
 		/* Switch to last seen tab (from listing / result), if any */
 		if (ndphp.current.tab_index_list_result != null)
-			jQuery('#entry_tabs').tabs('option', 'active', ndphp.current.tab_index_list_result);
+			jQuery('.nav-tabs li:eq(' + ndphp.current.tab_index_list_result + ') a').tab('show');
 
 		/* Reset current CRUD tab index */
 		ndphp.current.tab_index = null;
@@ -102,10 +102,6 @@
 					jQuery("#list").replaceWith(function() {
 						return jQuery(html).nd_animate_show(ndphp.animation.ordering_delay);
 					});
-					/* NOTE: For some reason, some browsers are losing the display
-					 * property after this routine completes. This is the bare fix.
-					 */
-					jQuery('#list').css({"display": "table"});
 				});
 			},
 			error: function(xhr, ajaxOptions, thrownError) {

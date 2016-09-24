@@ -121,7 +121,7 @@
 
 		if (isset($tabs_view) && $config['charts']['enable_view']) {
 			array_push($tabs, array(
-				'href' => 'charts',
+				'href' => 'charts_foreign',
 				'title' => $view['crud_charts_tab_name']
 			));
 		}
@@ -132,26 +132,23 @@
 	required_fields_tab_map = [];
 
 	jQuery(function() {
-		jQuery('div[id^=entry_tabs]').tabs();
-		jQuery('div[id^=entry_tabs]').on('tabsactivate', function(event, ui) {
-			ndphp.current.tab_index = ui.newTab.index();
+		jQuery('.nav-tabs a').on('shown.bs.tab', function(event) {
+			ndphp.current.tab_index = jQuery(jQuery(this).attr('href')).index();
 			<?php if (isset($tabs_result) || isset($tabs_listing)): ?>
 				ndphp.current.tab_index_list_result = ndphp.current.tab_index;
 			<?php endif; ?>
 		});
-		jQuery('div[id^=entry_tabs]').removeClass("ui-widget");
-		jQuery('div[id^=entry_tabs]').css('border-radius', '0px');
-		jQuery('#create, #edit, #remove, #view, #list, #result, #search, #groups').css('padding-top', '0px').css('padding-bottom', '0px');
 	});
 </script>
 
-<div id="entry_tabs">
-	<ul>
-		<?php foreach ($tabs as $tab): ?>
-			<li>
-				<a href="#<?=filter_html_special($tab['href'], $config['charset'])?>">
+<div id="entry_tabs1">
+	<ul class="nav nav-tabs">
+		<?php $count = 0; foreach ($tabs as $tab): ?>
+			<li <?=!$count ? 'class="active"' : 'class=""'?> >
+				<a <?=!$count ? 'aria-expanded="true"' : 'aria-expanded="false"'?> href="#<?=filter_html_special($tab['href'], $config['charset'])?>" data-toggle="tab">
 					<?=filter_html($tab['title'], $config['charset'])?>
 				</a>
 			</li>
-		<?php endforeach; ?>
+		<?php $count ++; endforeach; ?>
 	</ul>
+

@@ -40,7 +40,7 @@ class Home extends ND_Controller {
 	}
 
 	/* Custom functions */
-	public function home_generic() {
+	public function dashboard_generic() {
 		/* If logging is enabled, log access to the dashboard */
 		$this->logging->log(
 			/* op         */ 'VIEW',
@@ -54,11 +54,15 @@ class Home extends ND_Controller {
 			/* log it?    */ $this->config['logging']
 		);
 
-		return $this->get->view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD);
+		$data = $this->get->view_data_generic(NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD, NDPHP_LANG_MOD_COMMON_HOME . ' - ' . NDPHP_LANG_MOD_COMMON_DASHBOARD);
+
+		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('dashboard', NDPHP_LANG_MOD_COMMON_DASHBOARD);
+
+		return $data;
 	}
 
-	public function home() {
-		$data = $this->home_generic();
+	public function dashboard() {
+		$data = $this->dashboard_generic();
 
 		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'header', $data);
 		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_header', $data);
@@ -67,16 +71,20 @@ class Home extends ND_Controller {
 		$this->load->view('themes/' . $this->config['default_theme'] . '/' . 'footer', $data);
 	}
 
-	public function home_body_ajax() {
-		$data = $this->home_generic();
+	public function dashboard_body_ajax() {
+		$data = $this->dashboard_generic();
 
 		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_header', $data);
 		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_data', $data);
 		$this->load->view('themes/' . $this->config['default_theme'] . '/' . $this->config['name'] . '/home_footer', $data);
 	}
 
+	public function index_ajax() {
+		$this->dashboard_body_ajax();
+	}
+
 	public function index() {
-		$this->home();
+		$this->dashboard();
 	}
 
 	public function result_global_generic() {
@@ -159,6 +167,9 @@ class Home extends ND_Controller {
 			/* Destroy the foreign object */
 			$cobj = NULL;
 		}
+
+		/* Set breadcrumb */
+		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('result_global', NDPHP_LANG_MOD_SEARCH_GLOBAL_RESULT);
 
 		/* Set the search_value to be filled in the global search bar */
 		$data['view']['search_value'] = $_POST['search_value'];

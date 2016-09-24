@@ -54,10 +54,12 @@
 ?>
 <div id="groups">
 	<?php $tabs_groups = true; include($view['base_dir'] . '/_default/lib/tabs_header.php'); ?>
-		<div id="groups_list">
+
+	<div class="tab-content" style="padding-top: 20px; padding-bottom: 20px;">
+		<div class="tab-pane fade active in text-center" id="groups_list">
 			<?php if (count($view['groups'])): ?>
 				<?php foreach ($view['groups'] as $group): ?>
-					<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($group['table_field'], $config['charset'])?>" onclick="ndphp.ajax.load_body_group(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($group['table_field'], $config['charset'])?>');" class="group_link">
+					<a class="btn btn-default btn-lg btn-block" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/list_group/<?=filter_html($group['table_field'], $config['charset'])?>" onclick="ndphp.ajax.load_body_group(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', '<?=filter_html_js_str($group['table_field'], $config['charset'])?>');" class="group_link">
 						<?=filter_html($group['name'], $config['charset'])?>
 					</a>
 				<?php endforeach; ?>
@@ -65,5 +67,7 @@
 				<p class="no_groups"><?=filter_html(NDPHP_LANG_MOD_EMPTY_GROUPS, $config['charset'])?></p>
 			<?php endif; ?>
 		</div>
+	</div>
+
 	<?php include($view['base_dir'] . '/_default/lib/tabs_footer.php'); ?>
 </div>

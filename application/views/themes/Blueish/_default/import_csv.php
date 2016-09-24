@@ -53,73 +53,79 @@
 
 ?>
 <div id="import_csv" class="import_csv">
-	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/import/csv" id="importcsvform" name="importcsvform" enctype="multipart/form-data" method="post">
+	<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/import/csv" id="importcsvform" name="importcsvform" enctype="multipart/form-data" method="post">
 		<div class="fields">
-			<div id="fields_basic" class="fields_basic">
-				<fieldset class="fields_basic_fieldset">
-					<legend class="fields_basic_legend">
-						<?=filter_html(ucfirst($view['hname']), $config['charset'])?>
-					</legend>
-
-					<table class="fields">
-						<tr class="fields">
-							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_NAME, $config['charset'])?></th>
-							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_VALUE, $config['charset'])?></th>
-						</tr>
-						<tr class="field_odd">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_FILE, $config['charset'])?></td>
-							<td class="field_value"><input type="file" name="import_csv_file" /></td>
-						</tr>
-						<tr class="field_even">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_TEXT, $config['charset'])?></td>
-							<td class="field_value"><textarea name="import_csv_text" /></textarea></td>
-						</tr>
-						<tr class="field_odd">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_REL_TYPE, $config['charset'])?></td>
-							<td class="field_value">
-								<select name="import_csv_rel_type">
-									<option value="value">Value</option>
-									<option value="id">ID</option>
-								</select>
-							</td>
-						</tr>
-						<tr class="field_even">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_SEP, $config['charset'])?></td>
-							<td class="field_value">
-								<select name="import_csv_sep">
-									<option value=",">,</option>
-									<option value=";">;</option>
-								</select>
-							</td>
-						</tr>
-						<tr class="field_odd">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_DELIM, $config['charset'])?></td>
-							<td class="field_value">
-								<select name="import_csv_delim">
-									<option value="&quot;">&quot;</option>
-									<option value="'">'</option>
-								</select>
-							</td>
-						</tr>
-						<tr class="field_even">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_ESC, $config['charset'])?></td>
-							<td class="field_value">
-								<select name="import_csv_esc">
-									<option value="\">\</option>
-								</select>
-							</td>
-						</tr>
-					</table>
+			<fieldset class="form_fieldset">
+				<div class="form-group">
+					<label for="import_csv_file" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_FILE, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<input class="form-control" id="import_csv_file" type="file" name="import_csv_file" />
+					</div>
 				</div>
-			</div>
+				<div class="form-group">
+					<label for="import_csv_text" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_TEXT, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<textarea class="form-control" id="import_csv_text" name="import_csv_text"></textarea>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="import_csv_rel_type" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_REL_TYPE, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<select class="form-control" id="import_csv_rel_type" name="import_csv_rel_type">
+							<option value="value">Value</option>
+							<option value="id">ID</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="import_csv_sep" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_SEP, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<select class="form-control" id="import_csv_sep" name="import_csv_sep">
+							<option value=",">,</option>
+							<option value=";">;</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="import_csv_delim" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_DELIM, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<select class="form-control" id="import_csv_delim" name="import_csv_delim">
+							<option value="&quot;">&quot;</option>
+							<option value="'">'</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="import_csv_esc" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_IMPORT_CSV_ESC, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<select class="form-control" id="import_csv_esc" name="import_csv_esc">
+							<option value="\">\</option>
+						</select>
+					</div>
+				</div>
+			</fieldset>
 		</div>
-		<div class="import_csv_ops">
-			<a href="javascript:void(0);" onclick="ndphp.form.submit_import_csv(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'importcsvform', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>" class="context_menu_link">
-				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>
-			</a>
-			<a href="javascript:void(0);" onclick="ndphp.form.cancel_import_csv(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
-				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
-			</a>
+		<div class="form-group">
+			<div class="col-sm-6 col-sm-offset-3">
+				<a class="btn btn-primary" href="javascript:void(0);" onclick="ndphp.form.submit_import_csv(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'importcsvform', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>">
+					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>
+				</a>
+				<a class="btn btn-default" href="javascript:void(0);" onclick="ndphp.form.cancel_import_csv(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>">
+					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
+				</a>
+			</div>
 		</div>
 	</form>
 </div>

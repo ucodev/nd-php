@@ -59,6 +59,8 @@
 <script type="text/javascript">
 	/* BEGIN OF jQuery(document). ... */
 	jQuery(document).ready(function() {
+		jQuery(":file").filestyle({buttonName: "btn-primary"});
+
 		/* Enable form validation */
 		jQuery("#editform").validate({
 			errorPlacement: function() {
@@ -76,6 +78,7 @@
 		<?php endif; ?>
 
 		/* Field specific handlers and modifiers */
+		var required_fields_tab_map = [];
 		<?php $tab_index = 0; foreach ($view['fields'] as $field => $meta): ?>
 			<?php if ($meta['type'] == 'separator') { $tab_index ++; continue; }?>
 			<?php if ($meta['type'] == 'rel') continue; ?>
@@ -102,39 +105,46 @@
 						theme_advanced_resizing : true
 					});
 			<?php endif; ?>
-			<?php if ($meta['type'] == 'datetime'): $_datetime = explode(' ', $row[$field]); ?>
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker();
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('option', 'dateFormat', 'yy-mm-dd');
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('setDate', '<?=filter_html_js_str($_datetime[0], $config['charset'])?>');
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>_time").timepicker();
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").addClass('input_date');
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>_time").addClass('input_time');
+			<?php if ($meta['type'] == 'datetime'):?>
+					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datetimepicker({
+						format: 'yyyy/mm/dd',
+						startView: 2,
+						minView: 2,
+						maxView: 4
+					});
+					jQuery("#<?=filter_js_special($field, $config['charset'])?>_time").datetimepicker({
+						format: 'hh:ii:ss',
+						startView: 0,
+						maxView: 1
+					});
 			<?php endif; ?>
 			<?php if ($meta['type'] == 'date'): ?>
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker();
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('option', 'dateFormat', 'yy-mm-dd');
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datepicker('setDate', '<?=filter_html_js_str($row[$field], $config['charset'])?>');
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").addClass('input_date');
+					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datetimepicker({
+						format: 'yyyy/mm/dd',
+						startView: 2,
+						minView: 2,
+						maxView: 4
+					});
 			<?php endif; ?>
 			<?php if ($meta['type'] == 'time'): ?>
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").timepicker();
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").addClass('input_time');
+					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datetimepicker({
+						format: 'hh:ii:ss',
+						startView: 0,
+						maxView: 1
+					});
 			<?php endif; ?>
 			<?php if ($meta['input_type'] == 'timer'): ?>
-					var tval_raw = '00:00:00'.split(':');
-
-					if (jQuery('#<?=filter_html_special($field, $config['charset'])?>').val())
-						tval_raw = String(jQuery('#<?=filter_html_special($field, $config['charset'])?>').val()).split(':');
-
-					jQuery('#<?=filter_js_special($field, $config['charset'])?>').timer({ seconds: parseInt(tval_raw[0]) * 3600 + parseInt(tval_raw[1]) * 60 + parseInt(tval_raw[2]), format: "%H:%M:%S" });
-					jQuery('#<?=filter_js_special($field, $config['charset'])?>').timer('pause');
-					jQuery("#<?=filter_js_special($field, $config['charset'])?>").timepicker();
+					jQuery("#<?=filter_js_special($field, $config['charset'])?>").datetimepicker({
+						format: 'hh:ii:ss',
+						startView: 0,
+						maxView: 1
+					});
 			<?php endif; ?>
 		<?php endforeach; ?>
 
 		/* Switch to last seen tab, if any */
 		if (ndphp.current.tab_index != null) {
-			jQuery('#entry_tabs').tabs('option', 'active', ndphp.current.tab_index);
+			jQuery('.nav-tabs li:eq(' + ndphp.current.tab_index + ') a').tab('show');
 			ndphp.current.tab_index = null;
 		}
 
@@ -161,7 +171,7 @@
 			for (j = 0; j < required_fields_tab_map[i].length; j ++) {
 				if (jQuery('input[name="' + required_fields_tab_map[i][j] + '"]').val() == '') {
 					/* Switch to the field's tab */
-					jQuery('#entry_tabs').tabs('option', 'active', i);
+					jQuery('.nav-tabs li:eq(' + i + ') a').tab('show');
 
 					/* Perform form validation */
 					if (!jQuery("#" + form_id).valid()) {

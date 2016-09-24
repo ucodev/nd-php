@@ -52,7 +52,7 @@
  */
 
  ?>
-<td class="field_name">
+<td style="vertical-align: middle;">
 	#<?=filter_html($view['mixed_id'], $config['charset'])?>
 </td>
 
@@ -89,14 +89,24 @@
 			continue;
 	?>
 
-	<td class="field_value">
+	<td>
 
 	<?php if ($meta['input_type'] == 'checkbox'): ?>
 			<input name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" type="hidden" value="0" />
-			<input alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" type="checkbox" value="1" <?php if (isset($view['values'][$field]) && ($view['values'][$field])) { echo('checked="checked"'); }?> />
+			<input
+				alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>"
+				name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+				type="checkbox"
+				value="1"
+				<?php if (isset($view['values'][$field]) && ($view['values'][$field])) { echo('checked="checked"'); }?>
+			/>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
 	<?php elseif ($meta['input_type'] == 'select'): ?>
-			<select name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" <?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?> >
+			<select
+				class="form-control"
+				name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+				<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
+			>
 				<?php foreach ($meta['options'] as $opt_id => $opt_value): ?>
 					<option value="<?=filter_html($opt_id, $config['charset'])?>_<?=filter_html($opt_value, $config['charset'])?>" <?php if (isset($view['values'][$field]) && ($view['values'][$field] == $opt_value)) { echo('selected="selected"'); } ?> >
 						<?=filter_html($opt_value, $config['charset'])?>
@@ -105,16 +115,40 @@
 			</select>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
 	<?php elseif ($meta['input_type'] == 'timer'): ?>
-			<input id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" type="text" value="<?php if (isset($view['values'][$field])) { echo(filter_html($view['values'][$field], $config['charset'])); } else { echo('00:00:00'); }?>" <?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?> <?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?> />
+			<input
+				class="form-control"
+				id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>"
+				alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>"
+				name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+				type="text"
+				value="<?php if (isset($view['values'][$field])) { echo(filter_html($view['values'][$field], $config['charset'])); } else { echo('00:00:00'); }?>"
+				<?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?>
+				<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
+			/>
 			<script type="text/javascript">
 				jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").timepicker();
 			</script>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
 	<?php elseif ($meta['input_type'] == 'file'): ?>
 			<?php if (isset($view['values'][$field])): ?>
-				<a target="_blank" href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['foreign_table'], $config['charset'])?>/<?=filter_html($view['foreign_id'], $config['charset'])?>/mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>/<?=filter_html($view['values'][$field], $config['charset'])?>"><?=filter_html($view['values'][$field], $config['charset'])?></a><br />
+				<a
+					target="_blank"
+					href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['foreign_table'], $config['charset'])?>/<?=filter_html($view['foreign_id'], $config['charset'])?>/mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>/<?=filter_html($view['values'][$field], $config['charset'])?>"
+				>
+					<?=filter_html($view['values'][$field], $config['charset'])?>
+				</a>
+				<br />
 			<?php endif; ?>
-			<input id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" type="file" <?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?> <?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?> />
+			<input
+				class="filestyle"
+				data-buttonName="btn-primary"
+				id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>"
+				alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>"
+				name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+				type="file"
+				<?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?>
+				<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
+			/>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
 	<?php elseif ($meta['input_type'] == 'textarea'): ?>
 			<?php if (in_array($field, $config['rich_text'])): ?>
@@ -134,7 +168,15 @@
 					});
 				</script>
 			<?php endif; ?>
-			<textarea id="<?=filter_html_special($field, $config['charset'])?>" name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" placeholder="<?=$view['fields'][$field]['placeholder'] ? filter_html($view['fields'][$field]['placeholder'], $config['charset']) : filter_html($view['default'][$field], $config['charset'])?>" <?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?> <?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?> ><?php if (isset($view['values'][$field])) { echo(filter_html($view['values'][$field], $config['charset'])); } ?></textarea>
+			<textarea
+				class="form-control"
+				id="<?=filter_html_special($field, $config['charset'])?>"
+				name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+				alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>"
+				placeholder="<?=$view['fields'][$field]['placeholder'] ? filter_html($view['fields'][$field]['placeholder'], $config['charset']) : filter_html($view['default'][$field], $config['charset'])?>"
+				<?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?>
+				<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
+			><?php if (isset($view['values'][$field])) { echo(filter_html($view['values'][$field], $config['charset'])); } ?></textarea>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
 	<?php else: ?>
 			<?php if ($meta['type'] == 'datetime') {
@@ -145,29 +187,70 @@
 					  }
 				  }
 			?>
-			<input id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" <?php if (isset($view['values'][$field])) { echo('value="' . ($meta['type'] == 'datetime' ? filter_html($dt_date, $config['charset']) : filter_html($view['values'][$field], $config['charset'])) . '"'); } ?> name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>" type="<?=filter_html($meta['input_type'], $config['charset'])?>" <?php if (($meta['type'] == 'datetime') || ($meta['type'] == 'date')) { echo('placeholder="YYYY-MM-DD"'); } else if ($meta['type'] == 'time') { echo('placeholder="HH:MM:SS"'); } else if ($view['fields'][$field]['placeholder']) { echo('placeholder="' . filter_html($view['fields'][$field]['placeholder'], $config['charset']) . '"'); } else { echo('placeholder="' . filter_html($view['default'][$field], $config['charset']) . '"'); } ?> <?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?> <?=$meta['input_pattern'] ? 'pattern="' . filter_html($meta['input_pattern'], $config['charset']) . '"' : ''?> <?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?> />
+			<input
+				class="form-control"
+				id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>"
+				alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>"
+				<?php if (isset($view['values'][$field])) { echo('value="' . ($meta['type'] == 'datetime' ? filter_html($dt_date, $config['charset']) : filter_html($view['values'][$field], $config['charset'])) . '"'); } ?>
+				name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+				type="<?=filter_html($meta['input_type'], $config['charset'])?>"
+				placeholder=
+					<?php if (($meta['type'] == 'datetime') || ($meta['type'] == 'date')): ?>
+						"YYYY-MM-DD"
+					<?php elseif ($meta['type'] == 'time'): ?>
+						"HH:MM:SS"
+					<?php elseif ($view['fields'][$field]['placeholder']): ?>
+						"<?=filter_html($view['fields'][$field]['placeholder'], $config['charset'])?>"
+					<?php else: ?>
+						"<?=filter_html($view['default'][$field], $config['charset'])?>"
+					<?php endif; ?>
+				<?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?>
+				<?=$meta['input_pattern'] ? 'pattern="' . filter_html($meta['input_pattern'], $config['charset']) . '"' : ''?>
+				<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
+			/>
 			<?php if ($meta['type'] == 'datetime'): ?>
-				<input id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_time_<?=filter_html_special($view['mixed_id'], $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>" name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_time_<?=filter_html($view['mixed_id'], $config['charset'])?>" <?php if (isset($view['values'][$field])) { echo('value="' . filter_html($dt_time, $config['charset']) . '"'); }?> type="<?=filter_html($meta['input_type'], $config['charset'])?>" placeholder="HH:MM:SS" <?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?> <?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?> />
+				<input
+					class="form-control"
+					id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_time_<?=filter_html_special($view['mixed_id'], $config['charset'])?>"
+					alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?> <?=in_array($field, $view['required']) ? '(' . filter_html(NDPHP_LANG_MOD_WORD_REQUIRED, $config['charset']) . ')' : ''?>"
+					name="mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_time_<?=filter_html($view['mixed_id'], $config['charset'])?>"
+					<?php if (isset($view['values'][$field])) { echo('value="' . filter_html($dt_time, $config['charset']) . '"'); }?>
+					type="<?=filter_html($meta['input_type'], $config['charset'])?>"
+					placeholder="HH:MM:SS"
+					<?php echo(in_array($field, $view['required']) ? 'required="required"' : NULL); ?>
+					<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
+				/>
 				<script type="text/javascript">
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datepicker();
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datepicker('option', 'dateFormat', 'yy-mm-dd');
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datepicker('setDate', '<?=filter_html_js_str($dt_date, $config['charset'])?>');
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_time_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").timepicker();
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").addClass('input_date');
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_time_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").addClass('input_time');
+					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datetimepicker({
+						format: 'yyyy/mm/dd',
+						startView: 2,
+						minView: 2,
+						maxView: 4
+					});
+					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_time_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datetimepicker({
+						format: 'hh:ii:ss',
+						startView: 0,
+						maxView: 1
+					});
 				</script>
 			<?php endif;?>
 			<?php if ($meta['type'] == 'date'): ?>
 				<script type="text/javascript">
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datepicker();
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datepicker('option', 'dateFormat', 'yy-mm-dd');
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").addClass('input_date');
+					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datetimepicker({
+						format: 'yyyy/mm/dd',
+						startView: 2,
+						minView: 2,
+						maxView: 4
+					});
 				</script>
 			<?php endif; ?>
 			<?php if ($meta['type'] == 'time'): ?>
 				<script type="text/javascript">
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").timepicker();
-					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").addClass('input_time');
+					jQuery("#mixed_<?=filter_js_special($view['ctrl'], $config['charset'])?>_<?=filter_js_special($field, $config['charset'])?>_<?=filter_js_special($view['mixed_id'], $config['charset'])?>").datetimepicker({
+						format: 'hh:ii:ss',
+						startView: 0,
+						maxView: 1
+					});
 				</script>
 			<?php endif; ?>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
@@ -176,7 +259,7 @@
 	</td>
 
 <?php $i ++; endforeach; ?>
-<td class="fields_mixed_ops">
+<td class="mixed_op">
 	<!-- TODO: Remove the following div and set its ID to the <td> tag above -->
 	<div id="mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_ops_<?=filter_html_special($view['mixed_id'], $config['charset'])?>" style="display: inline-block;">
 		

@@ -53,16 +53,18 @@
 
  ?>
 <!DOCTYPE html>
-<html class="login">
+<html>
 <head>
 	<meta charset="<?=filter_html($config['charset'], $config['charset'])?>">
 	<title><?=filter_html($view['title'], $config['charset'])?></title>
 	<meta name="author" content="<?=filter_html($project['author'], $config['charset'])?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="description" content="<?=filter_html($view['description'], $config['charset'])?>" />
+	<link rel="stylesheet" type="text/css" href="<?=filter_html(static_css_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/bootstrap.css" />
 	<link rel="stylesheet" href="<?=filter_html(static_css_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/main.css.php" type="text/css" />
 	<link rel="stylesheet" href="<?=filter_html(static_js_url(), $config['charset'])?>/lib/jquery-ui/1.10.4/css/jquery-ui.css" type="text/css" />
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/jquery/1.12.4/jquery.js"></script>
+	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/bootstrap.min.js"></script>
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/jquery-ui/1.10.4/jquery-ui.js"></script>
 	<script type="text/javascript">jQuery.noConflict();</script>
 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/jquery/blockui/blockui.js"></script>
@@ -78,35 +80,55 @@
 	</script>
 </head>
 <body class="login">
-	<div id="login_logo" class="login_logo">
+	<div id="login_header" class="login_header">
 		<img class="login_logo" src="<?=filter_html(static_images_url(), $config['charset'])?>/logo.png" alt="ND PHP Framework Logo" />
-		<span class="login_logo_project_name"><?=filter_html($project['name'], $config['charset'])?></span>
-		<span class="login_logo_tagline"><?=filter_html($project['tagline'], $config['charset'])?></span>
+		<span class="login_project_name"><?=filter_html($project['name'], $config['charset'])?></span>
+		<span class="login_project_tagline"><?=filter_html($project['tagline'], $config['charset'])?></span>
 	</div>
-	<div id="login" class="loginform">
-		<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/authenticate" name="loginform" id="loginform" method="post">
-			<input name="referer" type="hidden" value="<?=filter_html(strip_tags($view['referer']), $config['charset'])?>" />
-			<span class="login_username"><?=filter_html(NDPHP_LANG_MOD_LOGIN_USERNAME, $config['charset'])?></span><br />
-			<input name="username" alt="<?=filter_html(NDPHP_LANG_MOD_LOGIN_USERNAME, $config['charset'])?>" type="text" required="required" minlength="5" maxlength="32" onkeyup="ndphp.utils.crlf_callback(event, ndphp.form.submit_login);" autofocus accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_AUTOFOCUS, $config['charset'])?>" /><br /><br />
-			<span class="login_password"><?=filter_html(NDPHP_LANG_MOD_LOGIN_PASSWORD, $config['charset'])?></span><br/>
-			<input name="password" alt="<?=filter_html(NDPHP_LANG_MOD_LOGIN_PASSWORD, $config['charset'])?>" type="password" required="required" minlength="5" maxlength="32" onkeyup="ndphp.utils.crlf_callback(event, ndphp.form.submit_login);" /><br />
-			<?php foreach ($view['fields_extra'] as $field): ?>
-				<br />
-				<span class="login_extra_field"><?=filter_html($field['viewname'], $config['charset'])?></span><br/>
-				<input name="<?=filter_html($field['input_name'], $config['charset'])?>" alt="<?=filter_html($field['viewname'], $config['charset'])?>" type="<?=filter_html($field['input_type'], $config['charset'])?>" <?=$field['required'] ? 'required="required"' : ''?> onkeyup="ndphp.utils.crlf_callback(event, ndphp.form.submit_login);" /><br />
-			<?php endforeach; ?>
-			<br /><br />
-			<div class="login_actions">
-				<a href="javascript:void(0);" onclick="ndphp.form.submit_login(event);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_LOGIN, $config['charset'])?>" class="login_button_link">
-					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_LOGIN, $config['charset'])?>
-				</a>
-			</div>
+	<div id="login">
+		<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/authenticate" name="loginform" id="loginform" method="post">
+			<fieldset>
+				<input name="referer" type="hidden" value="<?=filter_html(strip_tags($view['referer']), $config['charset'])?>" />
+				<div class="form-group">
+					<label for="username" class="col-sm-4 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_LOGIN_USERNAME, $config['charset'])?>
+					</label>
+					<div class="col-sm-4">
+						<input class="form-control" id="username" name="username" alt="<?=filter_html(NDPHP_LANG_MOD_LOGIN_USERNAME, $config['charset'])?>" type="text" required="required" minlength="5" maxlength="32" onkeyup="ndphp.utils.crlf_callback(event, ndphp.form.submit_login);" autofocus accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_AUTOFOCUS, $config['charset'])?>" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="password" class="col-sm-4 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_LOGIN_PASSWORD, $config['charset'])?>
+					</label>
+					<div class="col-sm-4">
+						<input class="form-control" id="password" name="password" alt="<?=filter_html(NDPHP_LANG_MOD_LOGIN_PASSWORD, $config['charset'])?>" type="password" required="required" minlength="5" maxlength="32" onkeyup="ndphp.utils.crlf_callback(event, ndphp.form.submit_login);" />
+					</div>
+				</div>
+				<?php foreach ($view['fields_extra'] as $field): ?>
+					<div class="form-group">
+						<label for="password" class="col-sm-4 control-label">
+							<?=filter_html($field['viewname'], $config['charset'])?>
+						</label>
+						<div class="col-sm-4">
+							<input id="password" name="<?=filter_html($field['input_name'], $config['charset'])?>" alt="<?=filter_html($field['viewname'], $config['charset'])?>" type="<?=filter_html($field['input_type'], $config['charset'])?>" <?=$field['required'] ? 'required="required"' : ''?> onkeyup="ndphp.utils.crlf_callback(event, ndphp.form.submit_login);" />
+						</div>
+					</div>
+				<?php endforeach; ?>
+				<br /><br />
+				<div class="form-group">
+					<div style="display: table; margin: 0 auto;">
+						<a class="btn btn-primary" href="javascript:void(0);" onclick="ndphp.form.submit_login(event);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_LOGIN, $config['charset'])?>">
+							<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_LOGIN, $config['charset'])?>
+						</a>
+						<a class="btn btn-default" href="<?=filter_html(base_url(), $config['charset'])?>index.php/register" title="<?=filter_html(NDPHP_LANG_MOD_LOGIN_NEW_USER, $config['charset'])?>">
+							<?=filter_html(NDPHP_LANG_MOD_LOGIN_NEW_USER, $config['charset'])?>
+						</a>
+					</div>
+				</div>
+			</fieldset>
 		</form>
-		<br />
-		<br />
 		<p style="display: table; margin: 0 auto;">
-			[<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/register"><?=filter_html(NDPHP_LANG_MOD_LOGIN_NEW_USER, $config['charset'])?></a>]
-			&nbsp;&nbsp;&nbsp;
 			[<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/register/recover_password_form"><?=filter_html(NDPHP_LANG_MOD_LOGIN_FORGOT_PASSWORD, $config['charset'])?></a>]
 		</p>
 		<script type="text/javascript">

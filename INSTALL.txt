@@ -144,5 +144,5 @@ Basic instructions to install the ND PHP Framework
  You can use Docker to test the ND PHP Framework by using the Dockerfile(s)
  and/or docker-compose.yml located at:
 
-  - https://github.com/ucodev/automation/docker/compose/ndphp
+  - https://github.com/ucodev/automation/tree/master/docker/compose/ndphp
 

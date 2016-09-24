@@ -54,38 +54,24 @@
  ?>
 
 <?php foreach ($view['rel'] as $field => $values): ?>
-	<div id="multiple_<?=filter_html_special($field, $config['charset'])?>_container" style="display: table; margin: 0 auto; padding-top: 34px;">
-		<fieldset class="remove_multiple_fieldset">
-			<legend class="remove_multiple_legend">
-				<?=filter_html(ucfirst($view['fields'][$field]['viewname']), $config['charset'])?>
-			</legend>
-			<table class="fields">
-				<tr class="fields">
-					<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_NAME, $config['charset'])?></th>
-					<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_VALUE, $config['charset'])?></th>
-				</tr>
-				<tr class="field_<?php echo($i % 2 ? 'even' : 'odd'); ?>">
-					<td class="field_name">
-						<?=filter_html(ucfirst($view['fields'][$field]['viewname']), $config['charset'])?>
-					</td>
-					<td class="field_value">
-					<?php
-						foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
-							foreach ($values as $val_id => $val_value):
-								if ($val_id == $opt_id):
-					?>
-									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 600}); return false;" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($opt_value, $config['charset'])?>" class="view_rel_link">
-										<?=filter_html($opt_value, $config['charset'])?>
-									</a>
-									<br />
-					<?php
-								endif;
-							endforeach;
+	<div class="tab-pane fade" id="multiple_<?=filter_html_special($field, $config['charset'])?>_container">
+		<fieldset class="form_fieldset">
+			<div class="well">
+				<?php
+					foreach ($view['fields'][$field]['options'] as $opt_id => $opt_value):
+						foreach ($values as $val_id => $val_value):
+							if ($val_id == $opt_id):
+				?>
+								<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['fields'][$field]['table'], $config['charset'])?>/view_data_modalbox/<?=filter_html($opt_id, $config['charset'])?>" onclick="Modalbox.show(this.href, {title: this.title, width: 600}); return false;" title="<?=filter_html(NDPHP_LANG_MOD_OP_LIST_VIEW_ITEM, $config['charset'])?> <?=filter_html($opt_value, $config['charset'])?>" class="view_rel_link">
+									<?=filter_html($opt_value, $config['charset'])?>
+								</a>
+								<br />
+				<?php
+							endif;
 						endforeach;
-					?>
-					</td>
-				</tr>
-			</table>
+					endforeach;
+				?>
+			</div>
 		</fieldset>
 	</div>
 <?php endforeach; ?>

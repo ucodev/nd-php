@@ -1,6 +1,6 @@
 ## What is the ND PHP Framework?
 
- ND PHP Framework is a secure, fully automated framework capable of delivering full featured web applications in a matter of minutes. It's licensed under [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html).
+ ND PHP Framework is a secure, fully automated framework capable of delivering full featured web applications and respective REST API in a matter of minutes. It's licensed under [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html).
 
 ## How does it work?
 
@@ -8,7 +8,7 @@
 
 ## Do I need to code anything at all?
 
- No, if the base building blocks and features of the framework already fit your needs (at this moment, this is unlikely to happen). If not, then you'll need to extend the features by providing further parameterizations and/or code development.
+ No, if the base building blocks and features of the framework already fit your needs. At this moment, this is unlikely to happen unless you only want to rely on the REST API. If not, then you'll need to extend the features by providing further parameterizations and/or code development.
 
 ## How to install it?
 

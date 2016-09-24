@@ -35,6 +35,7 @@
  	private $_separator = ' > ';
  	private $_charset = 'UTF-8';
  	private $_breadcrumb = '';
+ 	private $_anchors = array();
 
  	public function __construct($separator = ' > ', $charset = 'UTF-8') {
  		$this->set('separator', $separator);
@@ -77,6 +78,16 @@
  		}
 
  		return $this->_breadcrumb;
+ 	}
+
+ 	public function anchors() {
+ 		$this->_anchors = array();
+
+ 		foreach ($this->_levels as $level) {
+ 			array_push($this->_anchors, '<a href="' . filter_html($level['url'], $this->_charset) . '" title="' . filter_html($level['title'], $this->_charset) . '" onclick="' . $level['onclick'] . '" class="' . filter_html_special($level['class'], $this->_charset) . '">' . filter_html($level['name'], $this->_charset) . '</a>');
+ 		}
+
+ 		return $this->_anchors;
  	}
  }
 

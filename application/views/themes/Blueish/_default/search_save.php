@@ -53,39 +53,37 @@
 
 ?>
 <div id="search_save" class="search_save">
-	<form action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/save_search_process" id="searchsaveform" name="searchsaveform" enctype="multipart/form-data" method="post">
+	<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/save_search_process" id="searchsaveform" name="searchsaveform" enctype="multipart/form-data" method="post">
 		<input id="search_result_query" type="hidden" name="search_save_result_query" value="" />
 		<div class="fields">
-			<div id="fields_basic" class="fields_basic">
-				<fieldset class="fields_basic_fieldset">
-					<legend class="fields_basic_legend">
-						<?=filter_html(ucfirst($view['hname']), $config['charset'])?>
-					</legend>
-
-					<table class="fields">
-						<tr class="fields">
-							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_NAME, $config['charset'])?></th>
-							<th class="fields"><?=filter_html(NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_VALUE, $config['charset'])?></th>
-						</tr>
-						<tr class="field_odd">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_SEARCH_NAME, $config['charset'])?></td>
-							<td class="field_value"><input type="text" name="search_save_name" /></td>
-						</tr>
-						<tr class="field_even">
-							<td class="field_name"><?=filter_html(NDPHP_LANG_MOD_COMMON_DESCRIPTION, $config['charset'])?></td>
-							<td class="field_value"><input type="text" name="search_save_description" /></td>
-						</tr>
-					</table>
+			<fieldset class="form_fieldset">
+				<div class="form-group">
+					<label for="search_save_name" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_SEARCH_NAME, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<input class="form-control" id="search_save_name" type="text" name="search_save_name" />
+					</div>
 				</div>
-			</div>
+				<div class="form-group">
+					<label for="search_save_description" class="col-sm-3 control-label">
+						<?=filter_html(NDPHP_LANG_MOD_COMMON_DESCRIPTION, $config['charset'])?>
+					</label>
+					<div class="col-sm-6">
+						<input class="form-control" id="search_save_description" type="text" name="search_save_description" />
+					</div>
+				</div>
+			</fieldset>
 		</div>
-		<div class="search_save_ops">
-			<a href="javascript:void(0);" onclick="ndphp.form.submit_search_save(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'searchsaveform', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>" class="context_menu_link">
-				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>
-			</a>
-			<a href="javascript:void(0);" onclick="ndphp.form.cancel_search_save(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>" class="context_menu_link">
-				<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
-			</a>
+		<div class="form-group">
+			<div class="col-sm-6 col-sm-offset-3">
+				<a class="btn btn-primary" href="javascript:void(0);" onclick="ndphp.form.submit_search_save(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'searchsaveform', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>">
+					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CONFIRM, $config['charset'])?>
+				</a>
+				<a class="btn btn-default" href="javascript:void(0);" onclick="ndphp.form.cancel_search_save(event, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);" title="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>">
+					<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_CANCEL, $config['charset'])?>
+				</a>
+			</div>
 		</div>
 		<script type="text/javascript">
 			jQuery('#search_result_query').val(jQuery('#result_query').val());

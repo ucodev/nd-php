@@ -74,25 +74,23 @@
 				];
 				ndphp.mixed.new_item('<?=filter_js_str(base_url(), $config['charset'])?>', '<?=filter_js_str($view['ctrl'], $config['charset'])?>', autocomplete_items_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, 'mixed_<?=filter_js_str($meta['rel_table'], $config['charset'])?>', mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, '<?=filter_js_str($meta['rel_table'], $config['charset'])?>', '<?=filter_js_str($meta['mixed_first_field'], $config['charset'])?>', '', <?=(($meta['mixed_type'] != 'single') ? 0 : 1)?>);
 			</script>
-			<div id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>_container" style="display: table; margin: 0 auto; padding-top: 34px;">
-				<fieldset class="create_mixed_fieldset">
-					<legend class="create_mixed_legend">
-						<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
-					</legend>
+			<div class="tab-pane fade" id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>_container">
+				<fieldset class="form_fieldset">
+					<div class="table-responsive">
+						<table id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="table table-striped table-hover">
+							<tr class="fields">
+								<?php foreach ($meta['mixed_fields_alias'] as $mixed_field_alias): ?>
+									<th class="fields"><?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?> <?php if ($mixed_field_alias['help_desc'] != null): ?> <a href="<?=filter_html($mixed_field_alias['help_url'], $config['charset'])?>" title="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>"><img width="12" height="12" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png" alt="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>" /></a><?php endif; ?></th>
+								<?php endforeach; ?>
+								<th class="fields">&nbsp;</th>
+							</tr>
+						</table>
+					</div>
 
-					<table id="mixed_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="fields">
-						<tr class="fields">
-							<?php foreach ($meta['mixed_fields_alias'] as $mixed_field_alias): ?>
-								<th class="fields"><?=filter_html(ucfirst($mixed_field_alias['alias']), $config['charset'])?> <?php if ($mixed_field_alias['help_desc'] != null): ?> <a href="<?=filter_html($mixed_field_alias['help_url'], $config['charset'])?>" title="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>"><img width="12" height="12" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/help_small.png" alt="<?=filter_html($mixed_field_alias['help_desc'], $config['charset'])?>" /></a><?php endif; ?></th>
-							<?php endforeach; ?>
-							<th class="fields">&nbsp;</th>
-						</tr>
-					</table>
-
-					<div id="add_row_button_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="more_op">
+					<div id="add_row_button_<?=filter_html_special($meta['rel_table'], $config['charset'])?>" class="text-center">
 						<?php if ($meta['mixed_type'] != 'single'): ?>
-							<a href="javascript:void(0);" class="more_op" onclick="mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?> ++; ndphp.mixed.new_item('<?=filter_html_js_str(base_url(), $config['charset'])?>', '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', autocomplete_items_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, 'mixed_<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, '<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', '<?=filter_html_js_str($meta['mixed_first_field'], $config['charset'])?>', '', 0);">
-								<img class="more_op" alt="<?=filter_html(NDPHP_LANG_MOD_OP_CONTEXT_NEW, $config['charset'])?> <?=filter_html(NDPHP_LANG_MOD_WORD_ROW, $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/more.png" />
+							<a class="btn btn-primary" href="javascript:void(0);" onclick="mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?> ++; ndphp.mixed.new_item('<?=filter_html_js_str(base_url(), $config['charset'])?>', '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', autocomplete_items_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, 'mixed_<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', mixed_item_<?=filter_js_special($meta['rel_table'], $config['charset'])?>, '<?=filter_html_js_str($meta['rel_table'], $config['charset'])?>', '<?=filter_html_js_str($meta['mixed_first_field'], $config['charset'])?>', '', 0);">
+								+
 							</a>
 						<?php endif; ?>
 					</div>

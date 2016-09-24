@@ -84,7 +84,7 @@
 
 		/* Switch to last seen tab (from listing / result), if any */
 		if (ndphp.current.tab_index_list_result != null)
-			jQuery('#entry_tabs').tabs('option', 'active', ndphp.current.tab_index_list_result);
+			jQuery('.nav-tabs li:eq(' + ndphp.current.tab_index_list_result + ') a').tab('show');
 
 		/* Reset current CRUD tab index */
 		ndphp.current.tab_index = null;
@@ -102,11 +102,6 @@
 					jQuery("#result").replaceWith(function() {
 						return jQuery(html).nd_animate_show(ndphp.animation.ordering_delay);
 					});
-					/* NOTE: For some reason, jquery 1.8.3 is loosing the display
-					 * element of the div style. We need to force it while the div
-					 * is loading in order to be correctly rendered.
-					 */
-					jQuery('#result').css({"display":"table"});
 				});
 			},
 			error: function(xhr, ajaxOptions, thrownError) {

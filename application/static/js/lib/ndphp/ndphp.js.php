@@ -140,6 +140,36 @@ ndphp.animation.set_ordering_type = function(type) {
 	}
 }
 
+/* Modal */
+ndphp.modal = {}
+
+ndphp.modal.active = false;
+
+ndphp.modal.show = function(url, title) {
+	jQuery.ajax({
+		type: "GET",
+		url: url,
+		success: function(data) {
+			//alert(title);
+			jQuery('#ndphp_modal_title').html(title);
+			jQuery('#ndphp_modal_body').html(data);
+			jQuery('#ndphp_modal').show();
+			ndphp.modal.active = true;
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			jQuery('#ndphp_modal_title').html(title);
+			jQuery('#ndphp_modal_body').html(xhr.responseText);
+			jQuery('#ndphp_modal').show();
+			ndphp.modal.active = true;
+		}
+	});
+}
+
+ndphp.modal.close = function() {
+	jQuery('#ndphp_modal').hide();
+	ndphp.modal.active = false;
+}
+
 /* Utils */
 ndphp.utils = {};
 
@@ -163,16 +193,17 @@ ndphp.ui.busy = function(msg) {
 	jQuery.blockUI({
 		css: { 
             border: 'none',
-            padding: '2px',
-            backgroundColor: '#000',
+            paddingBottom: '0px',
+            marginBottom: '0px',
+            //backgroundColor: '#000',
             'border-radius': '10px',
             '-webkit-border-radius': '10px',
             '-moz-border-radius': '10px',
-            opacity: .5,
+            //opacity: .5,
             color: '#fff',
-            top: '48px'
+            top: '102px'
         },
-        message: "<center>" + msg + "</center>"
+        message: '<div class="progress progress-striped active" style="padding-bottom: 0px; margin-bottom: 0px;"><div class="progress-bar text-center" style="width: 100%">' + msg + "</div></div>"
 	});
 	jQuery("body").css("cursor", "progress");
 };
@@ -262,13 +293,13 @@ ndphp.form.submit_confirmation = function(e, ctrl, method_with_args, from_modal)
 		url: "<?=filter_js_str(base_url(), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>index.php/" + ctrl + "/" + method_with_args,
 		success: function(data) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			ndphp.ui.ready();
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			jQuery("#ajax_error_dialog").html(xhr.responseText);
 			jQuery("#ajax_error_dialog").dialog({ modal: true, title: "<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_OPERATION, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>" });
@@ -281,7 +312,7 @@ ndphp.form.cancel_confirmation = function(e, from_modal) {
 	e.preventDefault();
 
 	if (from_modal)
-		Modalbox.hide();
+		ndphp.modal.close();
 }
 
 ndphp.form.submit_login = function(e) {
@@ -374,7 +405,7 @@ ndphp.form.cancel_create = function(e, ctrl, from_modal) {
 	e.preventDefault();
 
 	if (from_modal) {
-		Modalbox.hide();
+		ndphp.modal.close();
 		return;
 	}
 
@@ -446,7 +477,7 @@ ndphp.form.submit_create = function(e, ctrl, form_id, from_modal) {
 				var elem_id;
 				var relationship;
 
-				Modalbox.hide();
+				ndphp.modal.close();
 
 				/* Check whether the element id is a single or multiple relationship */
 				if (jQuery("#" + ctrl + "_id").length) {
@@ -496,7 +527,7 @@ ndphp.form.submit_create = function(e, ctrl, form_id, from_modal) {
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_VALIDATE_VALUES, NDPHP_LANG_MOD_DEFAULT_CHARSET)?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>:</span> ' + xhr.responseText);
 			jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
@@ -509,7 +540,7 @@ ndphp.form.cancel_edit = function(e, ctrl, from_modal, id) {
 	e.preventDefault();
 
 	if (from_modal) {
-		Modalbox.hide();
+		ndphp.modal.close();
 		return;
 	}
 
@@ -578,7 +609,7 @@ ndphp.form.submit_edit = function(e, ctrl, form_id, from_modal, id) {
 		processData: false,
 		success: function(data) {
 			if (from_modal) {
-				Modalbox.hide();
+				ndphp.modal.close();
 
 				if ((typeof ndphp.ajax.update_data_list == 'function') && (ndphp.last_listing_op == 'list')) {
 					ndphp.ajax.update_data_list();
@@ -612,7 +643,7 @@ ndphp.form.submit_edit = function(e, ctrl, form_id, from_modal, id) {
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_VALIDATE_VALUES, NDPHP_LANG_MOD_DEFAULT_CHARSET)?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>:</span> ' + xhr.responseText);
 			jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
@@ -625,7 +656,7 @@ ndphp.form.cancel_remove = function(e, ctrl, from_modal, id) {
 	e.preventDefault();
 
 	if (from_modal) {
-		Modalbox.hide();
+		ndphp.modal.close();
 		return;
 	}
 
@@ -662,7 +693,7 @@ ndphp.form.submit_remove = function(e, ctrl, form_id, from_modal, id) {
 		data: jQuery("#" + form_id).serialize(),
 		success: function(data) {
 			if (from_modal) {
-				Modalbox.hide();
+				ndphp.modal.close();
 				
 				if ((typeof ndphp.ajax.update_data_list == 'function') && (ndphp.last_listing_op == 'list')) {
 					ndphp.ajax.update_data_list();
@@ -696,7 +727,7 @@ ndphp.form.submit_remove = function(e, ctrl, form_id, from_modal, id) {
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_TRY_AGAIN, NDPHP_LANG_MOD_DEFAULT_CHARSET)?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>:</span> ' + xhr.responseText);
 			jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
@@ -723,13 +754,13 @@ ndphp.form.submit_import_csv = function(e, ctrl, form_id, from_modal) {
 		processData: false,
 		success: function(data) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			ndphp.ui.ready();
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_VALIDATE_VALUES, NDPHP_LANG_MOD_DEFAULT_CHARSET)?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>:</span> ' + xhr.responseText);
 			jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
@@ -743,7 +774,7 @@ ndphp.form.cancel_import_csv = function(e, ctrl, from_modal) {
 	e.preventDefault();
 
 	if (from_modal)
-		Modalbox.hide();
+		ndphp.modal.close();
 };
 
 ndphp.form.submit_search_save = function(e, ctrl, form_id, from_modal) {
@@ -763,13 +794,13 @@ ndphp.form.submit_search_save = function(e, ctrl, form_id, from_modal) {
 		processData: false,
 		success: function(data) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			ndphp.ui.ready();
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			if (from_modal)
-				Modalbox.hide();
+				ndphp.modal.close();
 
 			jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_UNABLE_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_VALIDATE_VALUES, NDPHP_LANG_MOD_DEFAULT_CHARSET)?><br /><br /><span style="font-weight: bold"><?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REASON), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>:</span> ' + xhr.responseText);
 			jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_CANNOT_SUBMIT_REQUEST, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
@@ -783,7 +814,7 @@ ndphp.form.cancel_search_save = function(e, ctrl, from_modal) {
 	e.preventDefault();
 
 	if (from_modal)
-		Modalbox.hide();
+		ndphp.modal.close();
 };
 
 ndphp.form.remove_search_save = function(e, ctrl, search_saved_id) {
@@ -961,11 +992,7 @@ ndphp.ajax.load_data_ordered_list = function(e, ctrl, field, order, page) {
 						ndphp.ui.ready();
 					});
 				});
-				/* NOTE: For some reason, jquery 1.8.3 is loosing the display
-				 * element of the div style. We need to force it while the div
-				 * is loading in order to be correctly rendered.
-				 */
-				jQuery('#list').css({"display":"table"});
+
 				ndphp.ui.ready();
 			});
 		},
@@ -994,11 +1021,7 @@ ndphp.ajax.load_group_data_ordered_list = function(e, ctrl, grouping_field, fiel
 						ndphp.ui.ready();
 					});
 				});
-				/* NOTE: For some reason, jquery 1.8.3 is loosing the display
-				 * element of the div style. We need to force it while the div
-				 * is loading in order to be correctly rendered.
-				 */
-				jQuery('#list').css({"display":"table"});
+
 				ndphp.ui.ready();
 			});
 		},
@@ -1027,11 +1050,7 @@ ndphp.ajax.load_data_ordered_result = function(e, ctrl, result_query, field, ord
 						ndphp.ui.ready();	
 					});
 				});
-				/* NOTE: For some reason, jquery 1.8.3 is loosing the display
-				 * element of the div style. We need to force it while the div
-				 * is loading in order to be correctly rendered.
-				 */
-				jQuery('#result').css({"display":"table"});
+
 				ndphp.ui.ready();
 			});
 		},
@@ -1060,11 +1079,7 @@ ndphp.ajax.load_group_data_ordered_result = function(e, ctrl, grouping_field, re
 						ndphp.ui.ready();	
 					});
 				});
-				/* NOTE: For some reason, jquery 1.8.3 is loosing the display
-				 * element of the div style. We need to force it while the div
-				 * is loading in order to be correctly rendered.
-				 */
-				jQuery('#result').css({"display":"table"});
+
 				ndphp.ui.ready();
 			});
 		},
@@ -1104,7 +1119,7 @@ ndphp.ajax.load_body_search_saved_result_query_uri = function(e, ctrl, title, re
 ndphp.ajax.load_body_edit_frommodal = function(e, ctrl, id) {
 	e.preventDefault();
 
-	Modalbox.hide();
+	ndphp.modal.close();
 
 	ndphp.ui.busy();
 
@@ -1129,7 +1144,7 @@ ndphp.ajax.load_body_edit_frommodal = function(e, ctrl, id) {
 };
 
 ndphp.ajax.load_body_view_frommodal = function(e, table, id) {
-	Modalbox.hide();
+	ndphp.modal.close();
 	/* the ndphp.ajax.load_body_view_rel() function is called here instead of ndphp.ajax.load_body_view() because we cannot know
 	 * from where this function is actually being called. It may either being called from within the same controller, or from a foreign
 	 * controller (relationship), thus the *_rel() function set will correctly answer to both requests.
@@ -1166,8 +1181,8 @@ ndphp.ajax.load_body_view_rel = function(e, table, id) {
 	e.preventDefault();
 
 	/* Check if there's an active modalbox... we may be invoked by ndphp.ajax.load_body_view_frommodal() */
-	if (typeof Modalbox != "undefined" && Modalbox.Methods.active) /* FIXME: Still bugged */
-		Modalbox.hide();
+	if (typeof Modalbox != "undefined" && ndphp.modal.active) /* FIXME: Still bugged */
+		ndphp.modal.close();
 	
 	ndphp.ui.busy();
 
@@ -1438,7 +1453,7 @@ ndphp.ajax.load_body_home = function(e) {
 
 	jQuery.ajax({
 		type: "POST",
-		url: "<?=filter_js_str(base_url(), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>index.php/home/home_body_ajax",
+		url: "<?=filter_js_str(base_url(), NDPHP_LANG_MOD_DEFAULT_CHARSET)?>index.php/home/dashboard_body_ajax",
 		success: function(data) {
 			var html = jQuery(data);
 			ndphp.nav.back_store('body', jQuery('#body').html());
