@@ -129,6 +129,21 @@
 			<table class="session_info">
 				<tr class="session_info">
 					<td class="session_info">
+						<div id="browsing_actions">
+							<div id="browsing_actions_body">
+								<div id="ba_back" class="browsing_actions_entry">
+									<img alt="<?=filter_html(NDPHP_LANG_MOD_ACTION_BACK, $config['charset'])?> (<?=filter_html(NDPHP_LANG_MOD_STATUS_DISABLED, $config['charset'])?>)" class="browsing_actions_icon" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/back_disabled.png" />
+								</div>
+								<div class="browsing_actions_entry">
+									<a title="<?=filter_html(NDPHP_LANG_MOD_ACTION_REFRESH, $config['charset'])?>" class="browsing_actions_entry" href="javascript:ndphp.nav.refresh_do()">
+										<img alt="<?=filter_html(NDPHP_LANG_MOD_ACTION_REFRESH, $config['charset'])?>" class="browsing_actions_icon" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/refresh.png" />
+									</a>
+								</div>
+								<div id="ba_forward" class="browsing_actions_entry">
+									<img alt="<?=filter_html(NDPHP_LANG_MOD_ACTION_FORWARD, $config['charset'])?> (<?=filter_html(NDPHP_LANG_MOD_STATUS_DISABLED, $config['charset'])?>)" class="browsing_actions_icon" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/forward_disabled.png" />
+								</div>
+							</div>
+						</div>
 					<?php if ($config['features']['user_credit_control'] === true): ?>
 						<td class="session_info">
 							<strong><span id="user_credit">0</span> <?=filter_html(NDPHP_LANG_MOD_DEFAULT_CURRENCY, $config['charset'])?></strong> [<a href="javascript:void(0);" onclick="ndphp.ajax.load_add_funds(event, '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/paypal/payment_form_ajax');"><?=filter_html(NDPHP_LANG_MOD_LINK_ADD_FUNDS, $config['charset'])?></a>]&nbsp;&nbsp;
@@ -190,7 +205,7 @@
 		<div class="container-fluid">
 		    <div class="navbar-header">
 		    	<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
-		    		<span class="sr-only">Toggle navigation</span>
+		    		<span class="sr-only"><?=filter_html(NDPHP_LANG_MOD_COMMON_TOGGLE_NAVIGATION, $config['charset'])?></span>
 		    		<span class="icon-bar"></span>
 		    		<span class="icon-bar"></span>
 		    		<span class="icon-bar"></span>

@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 27/07/2016
+ * Date: 26/09/2016
  * License: GPLv3
  */
 
@@ -402,6 +402,79 @@ class UW_Session extends UW_Base {
 		session_start();
 		session_destroy();
 		session_write_close();
+	}
+}
+
+class UW_Cache extends UW_Base {
+	private $_c = NULL;
+
+	public function __construct() {
+		global $config;
+
+		parent::__construct();
+
+		/* If no cache system is configured, do not try to load it */
+		if (!isset($config['cache']) || !count($config['cache'])) {
+			$config['cache'] = array();
+			$config['cache']['active'] = false;
+			return;
+		}
+
+		/* If it is configured, but disabled, do not proceed */
+		if ($config['cache']['active'] !== true)
+			return;
+
+		/* Currently, only a single instance of memcached is supported */
+		if ($config['cache']['driver'] == 'memcached') {
+			$this->_c = new Memcached();
+			$this->_c->addServer($config['cache']['host'], intval($config['cache']['port']));
+		}
+	}
+
+	public function is_active() {
+		return $config['cache']['active'];
+	}
+
+	public function add($k, $v, $expiration = 0) {
+		if ($this->is_active() !== true)
+			return false;
+
+		return $this->_c->add($k, $v, $expiration);
+	}
+
+	public function set($k, $v, $expiration = 0) {
+		if ($this->is_active() !== true)
+			return false;
+
+		return $this->_c->set($k, $v, $expiration);
+	}
+
+	public function get($k) {
+		if ($this->is_active() !== true)
+			return false;
+
+		return $this->_c->get($k);
+	}
+
+	public function delete($k, $time = 0) {
+		if ($this->is_active() !== true)
+			return false;
+
+		return $this->_c->delete($k, $time);
+	}
+
+	public function flush($delay = 0) {
+		if ($this->is_active() !== true)
+			return false;
+
+		return $this->_c->flush($delay);
+	}
+
+	public function result() {
+		if ($this->is_active() !== true)
+			return false;
+
+		return $this->_c->getResultCode();
 	}
 }
 
@@ -2109,11 +2182,15 @@ class UW_View extends UW_Base {
 }
 
 class UW_Model {
+	public $cache = NULL;
 	public $db = NULL;
 	public $session = NULL;
 	public $encrypt = NULL;
 
 	public function __construct() {
+		/* Initialize system cache controller */
+		$this->cache = new UW_Cache;
+
 		/* Initialize system database controller */
 		$this->db = new UW_Database;
 		
@@ -2157,7 +2234,7 @@ class UW_Model {
 
 /* Alias class for loading methods (Old API compatibility) */
 class UW_Load extends UW_Model {
-	private $_db = NULL;
+	private $_database = NULL;
 	private $_view = NULL;
 	private $_model = NULL;
 	private $_extension = NULL;

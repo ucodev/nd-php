@@ -45,6 +45,14 @@ class Configuration extends ND_Controller {
 
 
 	/** Hooks **/
+	protected function _hook_insert_post(&$id, &$POST, &$fields, $hook_pre_return) {
+		/* If this is an active configuration, perform any required system updates routines that are based on configuration */
+		if ($POST['active']) {
+			/* Update cache configuration */
+			$this->_memcached_config_setup();
+		}
+	}
+
 	protected function _hook_update_pre(&$id, &$POST, &$fields) {
 		$hook_pre_return = NULL;
 		
@@ -64,6 +72,14 @@ class Configuration extends ND_Controller {
 		}
 
 		return $hook_pre_return;
+	}
+
+	protected function _hook_update_post(&$id, &$POST, &$fields, $hook_pre_return) {
+		/* If this is an active configuration, perform any required system updates routines that are based on configuration */
+		if ($POST['active']) {
+			/* Update cache configuration */
+			$this->_memcached_config_setup();
+		}
 	}
 
 	protected function _hook_delete_pre(&$id, &$POST, &$fields) {
@@ -226,6 +242,42 @@ class Configuration extends ND_Controller {
 		}
 	}
 
+	private function _memcached_config_setup() {
+		$cache['driver'] = 'memcached';
+		$cache['host'] = '127.0.0.1';
+		$cache['port'] = '11211';
+		$cache['active'] = false;
+
+		$this->db->select('memcached_server,memcached_port');
+		$this->db->from('configuration');
+		$this->db->join('rel_configuration_features', 'configuration.id = rel_configuration_features.configuration_id', 'inner');
+		$this->db->join('features', 'features.id = rel_configuration_features.features_id', 'inner');
+		$this->db->where('features.feature', 'FEATURE_SYSTEM_MEMCACHED');
+		$q = $this->db->get();
+
+		if ($q->num_rows()) {
+			$row = $q->row_array();
+			$cache['host'] = $row['memcached_server'];
+			$cache['port'] = $row['memcached_port'];
+			$cache['active'] = true;
+		}
+
+		/* Craft user/config/cache.php contents */
+		$cache_config =
+			'<?php if (!defined(\'FROM_BASE\')) { header(\'HTTP/1.1 403 Forbidden\'); die(\'Invalid requested path.\'); }' . "\n" .
+			'' . "\n" .
+			'/* Cache settings */' . "\n" .
+			'$cache[\'driver\'] = \'memcached\';' . "\n" .
+			'$cache[\'host\'] = \'' . $cache['host'] . '\';' . "\n" .
+			'$cache[\'port\'] = \'' . $cache['port'] . '\';' . "\n" .
+			'$cache[\'active\'] = ' . ($cache['active'] === true ? 'true' : 'false') . ';' . "\n" .
+			'' . "\n";
+
+		/* Flush cache configuration to user/config/cache.php */
+		if (file_put_contents(SYSTEM_BASE_DIR . '/user/config/cache.php', $cache_config) === false)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ': ' . SYSTEM_BASE_DIR . '/user/config/cache.php', $this->config['default_charset'], !$this->request->is_ajax());
+	}
+
 	public function maintenance_enter() {
 		$this->db->where('active', true);
 		$this->db->update('configuration', array(
@@ -310,7 +362,11 @@ class Configuration extends ND_Controller {
 	}
 
 	public function cache_clear() {
-		/* TODO: This method will clear all existing cache data (from memcached, database, etc) */
+		/* Clear cache */
+		if ($this->cache->is_active()) {
+			$this->cache->flush();
+		}
+
 		redirect('/');
 	}
 

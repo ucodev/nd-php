@@ -58,7 +58,7 @@
 	<div class="tab-content">
 		<div class="tab-pane fade active in" id="listing">
 			<?php if (count($view['result_array'])): ?>
-				<div class="table-responsive">
+				<div class="table-responsive" style="padding-top: 20px;">
 					<table class="table table-striped table-hover">
 					<tr>
 					<?php $row = array_values($view['result_array'])[0]; ?>

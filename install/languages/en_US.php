@@ -509,6 +509,7 @@ define('NDPHP_LANG_MOD_COMMON_SEEN',				'Seen');
 define('NDPHP_LANG_MOD_COMMON_NOTIFY_ALL',			'Notify All');
 define('NDPHP_LANG_MOD_COMMON_NOTIFY_WHEN',			'Notify When');
 define('NDPHP_LANG_MOD_COMMON_PLACEHOLDER_REPEAT_PASSWORD', '(Repeat password)');
+define('NDPHP_LANG_MOD_COMMON_TOGGLE_NAVIGATION',	'Toggle navigation');
 
 define('NDPHP_LANG_MOD_MENU_BUILDER_NAME',			'Builder');
 define('NDPHP_LANG_MOD_MENU_BUILDER_DESC',			'Builder');

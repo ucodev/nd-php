@@ -60,6 +60,7 @@ class Install extends UW_Controller {
 		'hash',
 		'json',
 		'mcrypt',
+		'memcached',
 		'openssl',
 		'pcre',
 		'PDO',

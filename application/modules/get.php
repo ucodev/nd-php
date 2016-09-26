@@ -54,6 +54,13 @@ class UW_Get extends UW_Module {
 		if (count($this->config['cache_tables']))
 			return $this->config['cache_tables']; /* All good */
 
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_tables')) {
+				return $this->cache->get('d_cache_tables');
+			}
+		}
+
 		/* Fetch the tables from the database */
 		$query = $this->db->query("SHOW TABLES");
 
@@ -66,6 +73,12 @@ class UW_Get extends UW_Module {
 			foreach ($value as $header => $table) {
 				array_push($this->config['cache_tables'], $table);
 			}
+		}
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_tables', true);
+			$this->cache->set('d_cache_tables', $this->config['cache_tables']);
 		}
 
 		/* All good */
@@ -81,8 +94,21 @@ class UW_Get extends UW_Module {
 		if (isset($this->config['cache_table_desc'][$table]))
 			return $this->config['cache_table_desc'][$table];
 
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_table_desc_' . $table)) {
+				return $this->cache->get('d_cache_table_desc_' . $table);
+			}
+		}
+
 		/* Otherwise, fetch it... */
 		$this->config['cache_table_desc'][$table] = $this->db->describe_table($table);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_table_desc_' . $table, true);
+			$this->cache->set('d_cache_table_desc_' . $table, $this->config['cache_table_desc'][$table]);
+		}
 
 		/* All good */
 		return $this->config['cache_table_desc'][$table];
@@ -97,8 +123,21 @@ class UW_Get extends UW_Module {
 		if (isset($this->config['cache_table_fields'][$table]))
 			return $this->config['cache_table_fields'][$table];
 
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_table_fields_' . $table)) {
+				return $this->cache->get('d_cache_table_fields_' . $table);
+			}
+		}
+
 		/* Otherwise, fetch it... */
 		$this->config['cache_table_fields'][$table] = $this->db->list_fields($table);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_table_fields_' . $table, true);
+			$this->cache->set('d_cache_table_fields_' . $table, $this->config['cache_table_fields'][$table]);
+		}
 
 		/* All good */
 		return $this->config['cache_table_fields'][$table];
@@ -112,6 +151,13 @@ class UW_Get extends UW_Module {
 		/* If we already have a populated the help data cache, just return it... */
 		if (isset($this->config['cache_help'][$table]))
 			return $this->config['cache_help'][$table];
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_help_' . $table)) {
+				return $this->cache->get('d_cache_help_' . $table);
+			}
+		}
 
 		/* Fetch help data from the database */
 		$this->db->select('field_name, placeholder,field_units,units_on_left,input_pattern,help_description,help_url');
@@ -139,6 +185,12 @@ class UW_Get extends UW_Module {
 			}
 
 			$this->config['cache_help'][$table][$row['field_name']] = $row;
+		}
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_help_' . $table, true);
+			$this->cache->set('d_cache_help_' . $table, $this->config['cache_help'][$table]);
 		}
 
 		/* All good */

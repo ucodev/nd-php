@@ -82,23 +82,55 @@
 
 			/* Datetime, date and time fields require special handlers/modifiers */
 			<?php if ($meta['type'] == 'datetime'): ?>
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker();
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker('option', 'dateFormat', 'yy-mm-dd');
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from_time").timepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datetimepicker({
+					format: 'yyyy/mm/dd',
+					startView: 2,
+					minView: 2,
+					maxView: 4
+				});
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from_time").datetimepicker({
+					format: 'hh:ii:ss',
+					startView: 0,
+					maxView: 1
+				});
 
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker();
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker('option', 'dateFormat', 'yy-mm-dd');
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to_time").timepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datetimepicker({
+					format: 'yyyy/mm/dd',
+					startView: 2,
+					minView: 2,
+					maxView: 4
+				});
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to_time").datetimepicker({
+					format: 'hh:ii:ss',
+					startView: 0,
+					maxView: 1
+				});
 			<?php elseif ($meta['type'] == 'date'): ?>
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker();
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datepicker('option', 'dateFormat', 'yy-mm-dd');
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datetimepicker({
+					format: 'yyyy/mm/dd',
+					startView: 2,
+					minView: 2,
+					maxView: 4
+				});
 
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker();
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datepicker('option', 'dateFormat', 'yy-mm-dd');
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datetimepicker({
+					format: 'yyyy/mm/dd',
+					startView: 2,
+					minView: 2,
+					maxView: 4
+				});
 			<?php elseif ($meta['type'] == 'time'): ?>
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").timepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_from").datetimepicker({
+					format: 'hh:ii:ss',
+					startView: 0,
+					maxView: 1
+				});
 
-				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").timepicker();
+				jQuery("#<?=filter_js_special($field, $config['charset'])?>_to").datetimepicker({
+					format: 'hh:ii:ss',
+					startView: 0,
+					maxView: 1
+				});
 			<?php endif; ?>
 
 			/* Search fields are hidden by default */

@@ -167,6 +167,8 @@
 			"install/perm_setup_strict.sh.inc",
 			"logs/.htaccess",
 			"system/index.php",
+			"system/config/cache.php",
+			"system/config/index.php",
 			"system/core/index.php",
 			"system/core/uweb.php",
 			"system/extensions/pagination.php",
@@ -174,6 +176,8 @@
 			"system/utils/base.php",
 			"system/utils/core.php",
 			"tmp/.htaccess",
+			"user/config/cache.php",
+			"user/config/index.php",
 			"user/core/ND_Controller.php",
 			"user/extensions/breadcrumb.php",
 			"user/modules/dummy.php",
@@ -197,7 +201,10 @@
 		"data_model_queries": [
 			"ALTER TABLE builder CHANGE COLUMN model model mediumtext NULL",
 			"ALTER TABLE configuration CHANGE COLUMN model model mediumtext NULL",
-			"ALTER TABLE sessions CHANGE COLUMN user_agent user_agent varchar(1024) NULL"
+			"ALTER TABLE sessions CHANGE COLUMN user_agent user_agent varchar(1024) NULL",
+			"ALTER TABLE configuration CHANGE COLUMN memcached_server memcached_server varchar(255) NOT NULL DEFAULT '127.0.0.1'",
+			"ALTER TABLE configuration CHANGE COLUMN memcached_port memcached_port int(11) NOT NULL DEFAULT '11211'",
+			"UPDATE configuration SET memcached_server = '127.0.0.1', memcached_port = '11211' WHERE memcached_server IS NULL"
 		],
 		"replace": [
 			[ "user/config/autoload.php", "install/autoload.php" ]

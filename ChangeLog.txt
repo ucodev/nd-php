@@ -1,3 +1,14 @@
+v0.03c (2016-09-26):
+
+ - Upgraded uWeb.
+ - Added full support for external caching mechanism (memcached based).
+ - Added partial external caching support for 'get' module.
+ - Minor design improvements on listing and result views.
+ - Updated tracker.
+ - Fixed datetimepicker issues on advanced search view.
+ - Added support for browsing actions (missing from bootstrap migration).
+
+
 v0.03b (2016-09-24):
 
  - Fixed multiple relationship modal links.

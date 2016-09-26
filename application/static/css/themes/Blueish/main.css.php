@@ -118,6 +118,22 @@
 	height: 32px;
 }
 
+#browsing_actions {
+	top: 0;
+	right: 0;
+	margin-right: 18px;
+	padding: 0;
+}
+
+img.browsing_actions_icon {
+	width: 16px;
+	height: 16px;
+}
+
+div.browsing_actions_entry {
+	display: inline-block;
+}
+
 #body {
 	margin-left: 10px;
 	margin-right: 10px;

@@ -72,7 +72,7 @@
 							</li>
 						</a>
 						<div id="group_data_<?=filter_html_special($view['grouping_hashes'][$group], $config['charset'])?>" style="display: none;">
-							<div class="table-responsive">
+							<div class="table-responsive" style="padding-top: 20px;">
 								<table class="table table-striped table-hover">
 								<tr>
 								<?php $row = array_values($result_array)[0]; ?>

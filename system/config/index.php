@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 26/04/2016
+ * Date: 26/09/2016
  * License: GPLv3
  */
 
@@ -38,6 +38,10 @@ $config['autoload'] = $autoload;
 /* Base settings */
 include('system/config/base.php');
 $config['base'] = $base;
+
+/* Cache settings */
+include('system/config/cache.php');
+$config['cache'] = $cache;
 
 /* Database settings */
 include('system/config/database.php');
