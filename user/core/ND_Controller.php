@@ -41,6 +41,8 @@
  *
  * TODO:
  *
+ * * Basic search shall include advanced search features (for instance, search by { @field: ~="^value.+", @another_field: >=101, @yet_another: ="exact match", ... } )
+ * * Single and multiple relationship [select] fields shall change behaviour when the number of entries are greater than 500 (use a search based autocomplete listing).
  * * Default action for item selection (currently hardcoded as View, but one should be able to change it to Edit).
  * * Multi Dropdown filters, allowing a selection of an item from a dropdown to filter the contents of another dropdown (or more)
  * * Mixed relationship autocomplete feature shall support user-defined filters.
@@ -83,9 +85,14 @@
  *
  * FIXME:
  *
+ * + (bootstrap rev) Main menu current selection shall have the boostrap class "active".
+ * + (bootstrap rev) Remove link frame decoration after being clicked.
+ * + (bootstrap rev) On input error, input boxes shall receive the bootstrap class "has-error".
+ * + (bootstrap rev) Field units shall be rendered with bootstrap input addons.
+ * + (bootstrap rev) Tags should be used on multiple relationship fields.
+ * + (bootstrap rev) jquery-ui tooltips still being used instead of native bootstrap tooltips.
  * + (bootstrap rev) Input patterns not working with the new bootstap theme.
- * + (bootstrap rev) PDF export has not CSS associated (either for listing and item view).
- * + (bootstrap rev) No browsing history support.
+ * + (bootstrap rev) PDF export has no CSS associated (either for listing and item view).
  * + Export CSV is exporing separators as fields. This should be disabled by default.
  * + Mixed relationships auto add feature is not assigning single relationships to the foreign table when entry is created.
  * + Do not allow 0000-00-00 date (or date component of datetime) values.
@@ -117,7 +124,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03d';
+	protected $_ndphp_version = '0.03d1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -879,6 +886,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['cache_table_desc']						= $This->_cache_table_desc;
 		$this->config['cache_table_fields']						= $this->_cache_table_fields;
 		$this->config['cache_help']								= $this->_cache_help;
+		/* TODO: FIXME: Missing some explicit cache_ key declarations here that are used around the code */
 
 		$this->config['scheduler']								= $this->_scheduler;
 

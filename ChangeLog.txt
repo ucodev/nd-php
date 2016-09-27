@@ -1,3 +1,10 @@
+v0.03d1 (2016-09-27):
+
+ - Added partial support for memcached key_prefix under the Configuration menu.
+ - Updated TODO and FIXME lists.
+ - Header logo image is now also a link (refering to the base URL).
+
+
 v0.03d (2016-09-27):
 
  - Fixed is_active() method from uWeb cache class.

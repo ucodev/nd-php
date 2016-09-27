@@ -259,6 +259,7 @@ class Configuration extends ND_Controller {
 		$cache['driver'] = 'memcached';
 		$cache['host'] = '127.0.0.1';
 		$cache['port'] = '11211';
+		$cache['key_prefix'] = 'nd_'; /* TODO: FIXME: Missing data model support for memcached key_prefix */
 		$cache['active'] = false;
 
 		$this->db->select('memcached_server,memcached_port');
@@ -275,6 +276,8 @@ class Configuration extends ND_Controller {
 			$cache['active'] = true;
 		}
 
+		/* TODO: FIXME: Before writing the changes, grant that the settings are correct by connecting to the memcached */
+
 		/* Craft user/config/cache.php contents */
 		$cache_config =
 			'<?php if (!defined(\'FROM_BASE\')) { header(\'HTTP/1.1 403 Forbidden\'); die(\'Invalid requested path.\'); }' . "\n" .
@@ -283,6 +286,7 @@ class Configuration extends ND_Controller {
 			'$cache[\'driver\'] = \'memcached\';' . "\n" .
 			'$cache[\'host\'] = \'' . $cache['host'] . '\';' . "\n" .
 			'$cache[\'port\'] = \'' . $cache['port'] . '\';' . "\n" .
+			'$cache[\'key_prefix\'] = \'' . $cache['key_prefix'] . '\';' . "\n" .
 			'$cache[\'active\'] = ' . ($cache['active'] === true ? 'true' : 'false') . ';' . "\n" .
 			'' . "\n";
 

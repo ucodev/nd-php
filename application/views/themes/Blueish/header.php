@@ -121,7 +121,9 @@
 <div id="container"> <!-- Begin of container -->
 	<div id="header">
 		<!-- Logo -->
-		<img class="logo" src="<?=filter_html(static_images_url(), $config['charset'])?>/logo.png" alt="ND PHP Framework Logo" />
+		<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/" onclick="ndphp.ajax.load_body_home(event);" title="<?=filter_html(NDPHP_LANG_MOD_LINK_HOME, $config['charset'])?>">
+			<img class="logo" src="<?=filter_html(static_images_url(), $config['charset'])?>/logo.png" alt="<?=filter_html($project['name'], $config['charset'])?> Logo" />
+		</a>
 		<span class="project_name"><?=filter_html($project['name'], $config['charset'])?></span>
 		<span class="project_tagline"><?=filter_html($project['tagline'], $config['charset'])?></span>
 		<!-- Session info -->
