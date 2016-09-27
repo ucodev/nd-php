@@ -4,5 +4,6 @@
 $cache['driver'] = 'memcached';
 $cache['host'] = '127.0.0.1';
 $cache['port'] = '11211';
+$cache['key_prefix'] = 'nd_';
 $cache['active'] = false;
 

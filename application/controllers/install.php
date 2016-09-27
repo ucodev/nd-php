@@ -825,6 +825,14 @@ class Install extends UW_Controller {
 
 		$this->db->insert('_help_tfhd', array(
 			'table_name'  => 'configuration',
+			'field_name'  => 'support_email',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CONFIGURATION_SUPPORT_EMAIL,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'configuration',
 			'field_name'  => 'page_rows',
 			'field_units' => NULL,
 			'help_description' => NDPHP_LANG_MOD_HELP_CONFIGURATION_PAGE_ROWS,

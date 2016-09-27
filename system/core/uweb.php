@@ -407,6 +407,7 @@ class UW_Session extends UW_Base {
 
 class UW_Cache extends UW_Base {
 	private $_c = NULL;
+	private $_kp = '';
 
 	public function __construct() {
 		global $config;
@@ -429,9 +430,13 @@ class UW_Cache extends UW_Base {
 			$this->_c = new Memcached();
 			$this->_c->addServer($config['cache']['host'], intval($config['cache']['port']));
 		}
+
+		$this->_kp = $config['cache']['key_prefix'];
 	}
 
 	public function is_active() {
+		global $config;
+
 		return $config['cache']['active'];
 	}
 
@@ -439,28 +444,28 @@ class UW_Cache extends UW_Base {
 		if ($this->is_active() !== true)
 			return false;
 
-		return $this->_c->add($k, $v, $expiration);
+		return $this->_c->add($this->_kp . $k, $v, $expiration);
 	}
 
 	public function set($k, $v, $expiration = 0) {
 		if ($this->is_active() !== true)
 			return false;
 
-		return $this->_c->set($k, $v, $expiration);
+		return $this->_c->set($this->_kp . $k, $v, $expiration);
 	}
 
 	public function get($k) {
 		if ($this->is_active() !== true)
 			return false;
 
-		return $this->_c->get($k);
+		return $this->_c->get($this->_kp . $k);
 	}
 
 	public function delete($k, $time = 0) {
 		if ($this->is_active() !== true)
 			return false;
 
-		return $this->_c->delete($k, $time);
+		return $this->_c->delete($this->_kp . $k, $time);
 	}
 
 	public function flush($delay = 0) {

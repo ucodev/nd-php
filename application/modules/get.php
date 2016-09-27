@@ -198,6 +198,17 @@ class UW_Get extends UW_Module {
 	}
 
 	public function build() {
+		/* If we already have a populated the build data cache, just return it... */
+		if (isset($this->config['cache_build']))
+			return $this->config['cache_build'];
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_build')) {
+				return $this->cache->get('d_cache_build');
+			}
+		}
+
 		/* Fetch build information */
 		$this->db->select('build,created');
 		$this->db->from('builder');
@@ -217,10 +228,30 @@ class UW_Get extends UW_Module {
 			$build['date'] = $row['created'];
 		}
 
+		/* Initialize cache entry for build data */
+		$this->config['cache_build'] = $build;
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_build', true);
+			$this->cache->set('d_cache_build', $this->config['cache_build']);
+		}
+
 		return $build;
 	}
 
 	public function theme() {
+		/* If we already have a populated the theme data cache, just return it... */
+		if (isset($this->config['cache_theme']))
+			return $this->config['cache_theme'];
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_theme')) {
+				return $this->cache->get('d_cache_theme');
+			}
+		}
+
 		$this->db->select(
 			'themes.theme AS name,'.
 			'themes.animation_default_delay AS animation_default_delay,themes.animation_ordering_delay AS animation_ordering_delay,'.
@@ -232,11 +263,40 @@ class UW_Get extends UW_Module {
 		$this->db->where('theme', $this->config['default_theme']);
 		$q = $this->db->get();
 
-		return $q->row_array();
+		/* Initialize cache entry for theme data */
+		$this->config['cache_theme'] = $q->row_array();
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_theme', true);
+			$this->cache->set('d_cache_theme', $this->config['cache_theme']);
+		}
+
+		return $this->config['cache_theme'];
 	}
 
 	public function features() {
-		return $this->features->get_features();
+		/* If we already have a populated the features data cache, just return it... */
+		if (isset($this->config['cache_features']))
+			return $this->config['cache_features'];
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_features')) {
+				return $this->cache->get('d_cache_features');
+			}
+		}
+
+		/* Fetch features and initialize cache entry for features data */
+		$this->config['cache_features'] = $this->features->get_features();
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_features', true);
+			$this->cache->set('d_cache_features', $this->config['cache_features']);
+		}
+
+		return $this->config['cache_features'];
 	}
 
 	public function view_breadcrumb($method, $second_level = NULL, $id = NULL, $third_level = NULL) {
@@ -1061,6 +1121,7 @@ class UW_Get extends UW_Module {
 		$data['project']['description'] = $this->config['project_description'];
 		$data['project']['build'] = $this->build();
 		$data['project']['ndphp_version'] = $this->config['ndphp_version'];
+		$data['project']['support_email'] = $this->config['support_email'];
 
 		/* Session Data - Control data. May be used for 'printing' and for control. */
 		$data['session'] = $this->config['session_data'];

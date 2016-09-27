@@ -40,6 +40,13 @@ class UW_Application extends UW_Model {
 	public function __construct() {
 		parent::__construct();
 
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_default_theme')) {
+				return $this->cache->get('d_cache_default_theme');
+			}
+		}
+
 		/* Fetch theme name from the currently active configuration */
 		$this->db->select('themes.theme AS name');
 		$this->db->from('configuration');
@@ -53,6 +60,12 @@ class UW_Application extends UW_Model {
 		}
 
 		$row = $q->row_array();
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_default_theme', true);
+			$this->cache->set('d_cache_default_theme', $row['name']);
+		}
 
 		$this->_default_theme = $row['name'];
 	}

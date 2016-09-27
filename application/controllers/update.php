@@ -176,7 +176,9 @@ class Update extends ND_Controller {
 
 				if ($this->db->trans_status() === false) {
 					$this->db->trans_rollback();
-					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->config['default_charset'], !$this->request->is_ajax());
+					error_log(NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY . ': ' . $query);
+					//$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_EXEC_QUERY, $this->config['default_charset'], !$this->request->is_ajax());
+					continue;
 				}
 
 				$this->db->trans_commit();

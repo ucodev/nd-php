@@ -117,7 +117,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03c';
+	protected $_ndphp_version = '0.03d';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -151,6 +151,9 @@ class ND_Controller extends UW_Controller {
 
 	/* Base URL for this application */
 	protected $_base_url = 'http://localhost/ndphp/';
+
+	/* The main support email address */
+	protected $_support_email = 'no-support@nd-php.org';
 
 	/* Temporary directory */
 	protected $_temp_dir = SYSTEM_BASE_DIR . '/tmp/';
@@ -749,6 +752,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['accounting']								= $this->_accounting;
 
 		$this->config['base_url']								= $this->_base_url;
+		$this->config['support_email']							= $this->_support_email;
 		$this->config['temp_dir']								= $this->_temp_dir;
 
 		$this->config['default_charset']						= $this->_default_charset;
@@ -777,7 +781,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['hide_fields_result']						= $this->_hide_fields_result;
 		$this->config['hide_fields_search']						= $this->_hide_fields_search;
 		$this->config['hide_fields_export']						= $this->_hide_fields_export;
-		$this->conifg['hide_fields_groups']						= $this->_hide_fields_groups;
+		$this->config['hide_fields_groups']						= $this->_hide_fields_groups;
 		$this->config['hide_global_search_controllers']			= $this->_hide_global_search_controllers;
 		$this->config['hide_groups']							= $this->_hide_groups;
 		$this->config['hide_menu_entries']						= $this->_hide_menu_entries;
@@ -1120,6 +1124,7 @@ class ND_Controller extends UW_Controller {
 		$config = $this->configuration->get();
 
 		$this->_base_url = $config['base_url'];
+		$this->_support_email = $config['support_email'];
 		$this->_project_author = $config['author'];
 		$this->_project_name = $config['project_name'];
 		$this->_project_tagline = $config['tagline'];

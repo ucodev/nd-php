@@ -361,6 +361,7 @@ define('NDPHP_LANG_MOD_CONJ_AND',					'and');
 define('NDPHP_LANG_MOD_CONJ_OR',					'or');
 
 define('NDPHP_LANG_MOD_COMMON_BASE_URL',			'Base URL');
+define('NDPHP_LANG_MOD_COMMON_SUPPORT_EMAIL',		'Support Email');
 define('NDPHP_LANG_MOD_COMMON_RPP',					'Rows per Page');
 define('NDPHP_LANG_MOD_COMMON_TEMP_DIR',			'Temporary Directory');
 define('NDPHP_LANG_MOD_COMMON_SMTP_HOST',			'SMTP Host');
@@ -823,6 +824,7 @@ define('NDPHP_LANG_MOD_HELP_CHARTS_TYPES_DESCRIPTION',			'The chart type descrip
 
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_CONFIGURATION', 		'The configuration name.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_BASE_URL',			'The base url of the application.');
+define('NDPHP_LANG_MOD_HELP_CONFIGURATION_SUPPORT_EMAIL',		'The email address that will be assigned to the Support menu button.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_PAGE_ROWS',			'The total number of rows that will be displayed per page on listing and result views.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_TEMPORARY_DIRECTORY',	'A temporary directory in the file system that will be used to store temporary files. Must have write permissions for the web server user.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_THEMES_ID',			'The theme that will be used when rendering application views.');

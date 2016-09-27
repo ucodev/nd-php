@@ -254,7 +254,7 @@
 						</li>
 					<?php endif; ?>
 					<li>
-						<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_SUPPORT_DESC, $config['charset'])?>" href="mailto:no-support@nd-php.com">
+						<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_SUPPORT_DESC, $config['charset'])?>" href="mailto:<?=filter_html($project['support_email'], $config['charset'])?>">
 							<?=filter_html(NDPHP_LANG_MOD_MENU_SUPPORT_NAME, $config['charset'])?>
 						</a>
 					</li>

@@ -109,6 +109,10 @@ class UW_Security extends UW_Model {
 		/* Commit transaction */
 		$this->db->trans_commit();
 
+		/* Unset perms cache for this user */
+		if ($this->cache->is_active())
+			$this->cache->delete('s_cache_perms_user_' . $user_id);
+
 		/* All good */
 		return true;
 	}
@@ -149,11 +153,22 @@ class UW_Security extends UW_Model {
 		/* Commit transaction */
 		$this->db->trans_commit();
 
+		/* Unset perms cache for this user */
+		if ($this->cache->is_active())
+			$this->cache->delete('s_cache_perms_user_' . $user_id);
+
 		/* All good */
 		return true;
 	}
 
 	public function perm_get($user_id) {
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_perms_user_' . $user_id)) {
+				return $this->cache->get('d_cache_perms_user_' . $user_id);
+			}
+		}
+
 		/* Get table permissions */
 		$this->db->select('_acl_rtp._table AS perm_table,GROUP_CONCAT(DISTINCT _acl_rtp.permissions SEPARATOR \'\') AS perms', false);
 		$this->db->from('_acl_rtp');
@@ -182,6 +197,12 @@ class UW_Security extends UW_Model {
 
 		$perms['table'] = $table_perms;
 		$perms['column'] = $table_col_perms;
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_perms_user_' . $user_id, true);
+			$this->cache->set('d_cache_perms_user_' . $user_id, $perms);
+		}
 
 		return $perms;
 	}

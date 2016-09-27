@@ -50,7 +50,7 @@ class UW_Features extends UW_Model {
 		'FEATURE_SYSTEM_SHARDING' => 'system_sharding'
 	);
 
-	function get_features() {
+	public function get_features() {
 		$features = array();
 
 		/* Assume all features disabled by default */

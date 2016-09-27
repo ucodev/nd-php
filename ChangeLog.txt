@@ -1,3 +1,16 @@
+v0.03d (2016-09-27):
+
+ - Fixed is_active() method from uWeb cache class.
+ - Added support for cache key prefix (uWeb).
+ - Extended caching on 'get' module.
+ - Added caching support on application, configuration, features, and security models.
+ - Fixed variable typo on config_populate() which was affecting group filters.
+ - Support email is now configurable through configuration menu.
+ - Update controller can now tolerate failed queries requested by tracker (and log them).
+ - Updated language files.
+ - Updated tracker.
+
+
 v0.03c (2016-09-26):
 
  - Upgraded uWeb.

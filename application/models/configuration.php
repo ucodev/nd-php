@@ -32,8 +32,15 @@
 
 class UW_Configuration extends UW_Model {
 	public function get() {
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_configuration')) {
+				return $this->cache->get('d_cache_configuration');
+			}
+		}
+
 		/* Fetch the current configuration from database */
-		$this->db->select('base_url,themes.theme AS theme,' .
+		$this->db->select('base_url,support_email,themes.theme AS theme,' .
 			'project_name,tagline,configuration.description,author,' .
 			'timezones.timezone AS timezone,page_rows,' .
 			'temporary_directory,smtp_username,smtp_password,' .
@@ -52,8 +59,17 @@ class UW_Configuration extends UW_Model {
 			die('UW_Configuration::get(): ' . NDPHP_LANG_MOD_CANNOT_FIND_ACTIVE_CONFIG);
 		}
 
+		/* Fetch configuration row */
+		$configuration = $query->row_array();
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_configuration', true);
+			$this->cache->set('d_cache_configuration', $configuration);
+		}
+
 		/* All good */
-		return $query->row_array();
+		return $configuration;
 	}
 
 	public function core_context_set($context) {

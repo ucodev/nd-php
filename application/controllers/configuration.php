@@ -50,6 +50,11 @@ class Configuration extends ND_Controller {
 		if ($POST['active']) {
 			/* Update cache configuration */
 			$this->_memcached_config_setup();
+
+			/* Clear cache */
+			if ($this->cache->is_active()) {
+				$this->cache->flush();
+			}
 		}
 	}
 
@@ -79,6 +84,11 @@ class Configuration extends ND_Controller {
 		if ($POST['active']) {
 			/* Update cache configuration */
 			$this->_memcached_config_setup();
+
+			/* Clear cache */
+			if ($this->cache->is_active()) {
+				$this->cache->flush();
+			}
 		}
 	}
 
@@ -142,6 +152,8 @@ class Configuration extends ND_Controller {
 
 	/** Other overloads **/
 
+	protected $_upload_file_encryption = false;
+
 	protected $_links_submenu_body_list = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
 		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
@@ -191,6 +203,7 @@ class Configuration extends ND_Controller {
 	protected $_table_field_aliases = array(
 		'configuration' => NDPHP_LANG_MOD_COMMON_CONFIGURATION,
 		'base_url' => NDPHP_LANG_MOD_COMMON_BASE_URL,
+		'support_email' => NDPHP_LANG_MOD_COMMON_SUPPORT_EMAIL,
 		'page_rows' => NDPHP_LANG_MOD_COMMON_RPP,
 		'temporary_directory' => NDPHP_LANG_MOD_COMMON_TEMP_DIR,
 		'maintenance' => NDPHP_LANG_MOD_COMMON_MAINTENANCE,
