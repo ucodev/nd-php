@@ -692,14 +692,19 @@ class UW_Get extends UW_Module {
 				$this->db->select('id,' . $rel_fields);
 				$this->db->from($table);
 
-				if (isset($this->config['rel_table_fields_config'][$table]) && ($this->config['rel_table_fields_config'][$table][3] != NULL)) {
-					$this->db->order_by($this->config['rel_table_fields_config'][$table][3][0], $this->config['rel_table_fields_config'][$table][3][1]);
+				/* Order and limit results */
+				if (isset($this->config['rel_table_fields_config'][$table])) {
+					if ($this->config['rel_table_fields_config'][$table][3] !== NULL)
+						$this->db->order_by($this->config['rel_table_fields_config'][$table][3][0], $this->config['rel_table_fields_config'][$table][3][1]);
+
+					if (isset($this->config['rel_table_fields_config'][$table][4]) && $this->config['rel_table_fields_config'][$table][4] !== NULL)
+						$this->db->limit($this->config['rel_table_fields_config'][$table][4]);
 				}
 
 				/* Apply any applicable filters */
 				$this->filter->table_row_apply($table);
 
-				/* We need to use _field_value_mangle() here to grant that options values are mangled
+				/* We need to use the value_mangle() method here to grant that options values are mangled
 				 *
 				 * We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
 				 * recursion to the fields() method was applied here.
@@ -810,38 +815,32 @@ class UW_Get extends UW_Module {
 					$rel_fields = $table_fields[1];
 				}
 
+				/* TODO: FIXME: Cache the field options. Note that this cache should be invalidated when the corresponding
+				 * foreign table data is modified.
+				 */
+
 				/* Get foreign table contents */
 				$this->db->select('id,' . $rel_fields);
 				$this->db->from($rel);
 
-				if (isset($this->config['rel_table_fields_config'][$rel]) && ($this->config['rel_table_fields_config'][$rel][3] != NULL)) {
-					$this->db->order_by($this->config['rel_table_fields_config'][$rel][3][0], $this->config['rel_table_fields_config'][$rel][3][1]);
+				/* Order and limit results */
+				if (isset($this->config['rel_table_fields_config'][$rel])) {
+					if ($this->config['rel_table_fields_config'][$rel][3] !== NULL)
+						$this->db->order_by($this->config['rel_table_fields_config'][$rel][3][0], $this->config['rel_table_fields_config'][$rel][3][1]);
+
+					if (isset($this->config['rel_table_fields_config'][$rel][4]) && $this->config['rel_table_fields_config'][$rel][4] !== NULL)
+						$this->db->limit($this->config['rel_table_fields_config'][$rel][4]);
 				}
 
+				/* Apply any applicable filters */
 				$this->filter->table_row_apply($rel);
 
-
-				/* We need to use _field_value_mangle() here to grant that relationship values are mangled
+				/* We need to use the value_mangle() method here to grant that options values are mangled
 				 *
-				 * We also use the _get_fields_basic_types() to reduce the overhead that would be caused if
-				 * we used recursion here with _get_fields()
+				 * We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
+				 * recursion to the fields() method was applied here.
 				 */
 				$result_array = $this->field->value_mangle($this->fields_basic_types($rel), $this->db->get());
-
-				/* Set the altname */
-				if (isset($this->config['rel_table_fields_config'][$rel])) {
-					$fields[$table]['altname'] = $table_fields[$this->config['rel_table_fields_config'][$rel][2][0]];
-					$fields[$table]['viewname'] = $this->config['rel_table_fields_config'][$rel][0];
-				} else {
-					$fields[$table]['altname'] = $table_fields[1];
-					$fields[$table]['viewname'] = $table_fields[1];
-				}
-
-				/* Get field help, if exists */
-				$help_data = $this->field_help_desc($target, $table);
-				$fields[$table]['units'] = $help_data['field_units'];
-				$fields[$table]['help_desc'] = $help_data['help_description'];
-				$fields[$table]['help_url'] = $help_data['help_url'];
 
 				/* Craft options values based on concatenations' configuration (if any).
 				 * If no configuration is set for this particular relationship, the default
@@ -865,6 +864,21 @@ class UW_Get extends UW_Module {
 						$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
 					}
 				}
+
+				/* Set the altname */
+				if (isset($this->config['rel_table_fields_config'][$rel])) {
+					$fields[$table]['altname'] = $table_fields[$this->config['rel_table_fields_config'][$rel][2][0]];
+					$fields[$table]['viewname'] = $this->config['rel_table_fields_config'][$rel][0];
+				} else {
+					$fields[$table]['altname'] = $table_fields[1];
+					$fields[$table]['viewname'] = $table_fields[1];
+				}
+
+				/* Get field help, if exists */
+				$help_data = $this->field_help_desc($target, $table);
+				$fields[$table]['units'] = $help_data['field_units'];
+				$fields[$table]['help_desc'] = $help_data['help_description'];
+				$fields[$table]['help_url'] = $help_data['help_url'];
 			}
 		}
 

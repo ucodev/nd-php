@@ -88,9 +88,9 @@ class Payments extends ND_Controller {
 	);
 	
 	protected $_rel_table_fields_config = array(
-		'payment_types' => array(NDPHP_LANG_MOD_PAYMENT_TYPE, NULL, array(1), array('id', 'asc')),
-		'payment_status' => array(NDPHP_LANG_MOD_PAYMENT_STATUS, NULL, array(1), array('id', 'asc')),
-		'payment_actions' => array(NDPHP_LANG_MOD_PAYMENT_ACTION, NULL, array(1), array('id', 'asc'))
+		'payment_types' => array(NDPHP_LANG_MOD_PAYMENT_TYPE, NULL, array(1), array('id', 'asc'), NULL),
+		'payment_status' => array(NDPHP_LANG_MOD_PAYMENT_STATUS, NULL, array(1), array('id', 'asc'), NULL),
+		'payment_actions' => array(NDPHP_LANG_MOD_PAYMENT_ACTION, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 	/** Custom functions **/

@@ -51,8 +51,8 @@ class Themes extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'themes_animations_default' => array(NDPHP_LANG_MOD_COMMON_DEFAULT_ANIMATION, NULL, array(1), array('id', 'asc')),
-		'themes_animations_ordering' => array(NDPHP_LANG_MOD_COMMON_ORDERING_ANIMATION, NULL, array(1), array('id', 'asc'))
+		'themes_animations_default' => array(NDPHP_LANG_MOD_COMMON_DEFAULT_ANIMATION, NULL, array(1), array('id', 'asc'), NULL),
+		'themes_animations_ordering' => array(NDPHP_LANG_MOD_COMMON_ORDERING_ANIMATION, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 	/** Custom functions **/

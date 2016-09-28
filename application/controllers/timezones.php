@@ -52,7 +52,7 @@ class Timezones extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc'))
+		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 	/** Custom functions **/

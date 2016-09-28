@@ -121,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03e';
+	protected $_ndphp_version = '0.03e1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -262,7 +262,7 @@ class ND_Controller extends UW_Controller {
 
 	/* The fields to be concatenated as the options of the relationship table. Also the place to set relational field name aliases. */
 	protected $_rel_table_fields_config = array(
-		/* 'table' => array('ViewName', 'separator', array(field_nr_1, field_nr_2, ...), array('order_by field', 'asc or desc')), */
+		/* 'table' => array('ViewName', 'separator', array(field_nr_1, field_nr_2, ...), array('order_by field', 'asc or desc'), $limit), */
 	); /* TODO: If the selected field is of type _id (relationship), it won't be
 	 	* resolved from the id number to the related table field. This is a very complex
 	 	* feature to be implemented as it requires a cross controller process, capable
@@ -304,34 +304,24 @@ class ND_Controller extends UW_Controller {
     );
 
 	/* Set a custom class for table row based on single relationship field values.
-	 * Any class specified here must exist in a loaded CSS, with the following prefixes:
-	 *
-	 *   list_<class_suffix_name>
-	 *   result_<class_suffix_name>
-	 *   export_<class_suffix_name>
+	 * Any class specified here must exist in a loaded CSS.
 	 *
 	 * Example:
 	 *
-	 *   tr.list_even,   tr.result_even,   tr.export_even   { ... }
-	 *   tr.list_odd,    tr.result_odd,    tr.export_odd    { ... }
-	 *   tr.list_red,    tr.result_red,    tr.export_red    { ... }
-	 *   tr.list_yellow, tr.result_yellow, tr.export_yellow { ... }
-	 *   tr.list_green,  tr.result_green,  tr.export_green  { ... }
+	 *   .purple   { ... }
+	 *   .brown    { ... }
+	 *   .orange   { ... }
 	 *
-	 * NOTE: The :hover modifier should also be set for list_ and result_ classes.
-	 *
-	 * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black
+	 * There are already some predefined classes: 'danger', 'warning', 'success' and 'info'.
 	 *
 	 */
 	protected $_rel_choice_table_row_class = array(
 		/*
 		'rel_field' => 'field_id',
-		'class_even' => 'even',
-		'class_odd' => 'odd',
 		'values' => array(
-			'CRITICAL' => 'red',
-			'WARNING' => 'yellow',
-			'OK' => 'green'
+			'CRITICAL' => 'danger',
+			'WARNING' => 'warning',
+			'OK' => 'success'
 		)
 		*/
 	);
@@ -441,9 +431,9 @@ class ND_Controller extends UW_Controller {
 
 	protected $_links_quick_modal_result = array(
 		/* array('Description', $sec_perm, method, 'image/path/img.png', $modal_width) */
-		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',   600),
-		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',   900),
-		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png', 600)
+		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png')
 	);
 
 	/* Header Submenu Operations Links (Create, Edit, List, Remove, Result, Search and View) */

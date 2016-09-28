@@ -77,24 +77,24 @@ class Logging extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'sessions' => array(NDPHP_LANG_MOD_COMMON_SESSION, NULL, array(1), array('id', 'asc')),
+		'sessions' => array(NDPHP_LANG_MOD_COMMON_SESSION, NULL, array(1), array('id', 'asc'), NULL),
 	);
 
 	/* Quick Operations Links (Listing and Result views) */
 	protected $_links_quick_modal_list = array(
 		/* array('Description', $sec_perm, $full_url_prefix, 'image/path/img.png', $modal_width) */
-		array(NDPHP_LANG_MOD_COMMON_ROLLBACK,	'R', 'rollback_modalbox',    'icons/quick_rollback.png', 600),
-		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',     600),
-		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',     800),
-		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png',   600)
+		array(NDPHP_LANG_MOD_COMMON_ROLLBACK,	'R', 'rollback_modalbox',    'icons/quick_rollback.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png')
 	);
 
 	protected $_links_quick_modal_result = array(
 		/* array('Description', $sec_perm, $function, 'image/path/img.png') */
-		array(NDPHP_LANG_MOD_COMMON_ROLLBACK,	'R', 'rollback_modalbox',    'icons/quick_rollback.png', 600),
-		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png',     600),
-		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png',     800),
-		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png',   600)
+		array(NDPHP_LANG_MOD_COMMON_ROLLBACK,	'R', 'rollback_modalbox',    'icons/quick_rollback.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_VIEW,		'R', 'view_data_modalbox',   'icons/quick_view.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_EDIT,		'U', 'edit_data_modalbox',   'icons/quick_edit.png'),
+		array(NDPHP_LANG_MOD_OP_QUICK_REMOVE,	'D', 'remove_data_modalbox', 'icons/quick_remove.png')
 	);
 
 	protected $_links_submenu_body_list = array(

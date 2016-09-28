@@ -57,7 +57,7 @@ class Transaction_history extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'transaction_types' => array(NDPHP_LANG_MOD_COMMON_TRANSACTION_TYPE, NULL, array(1), array('id', 'asc'))
+		'transaction_types' => array(NDPHP_LANG_MOD_COMMON_TRANSACTION_TYPE, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 	/** Custom functions **/

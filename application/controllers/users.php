@@ -364,11 +364,11 @@ class Users extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'timezones' => array(NDPHP_LANG_MOD_COMMON_TIMEZONE, NULL, array(1), array('id', 'asc')),
-		'subscription_types' => array(NDPHP_LANG_MOD_COMMON_SUBSCRIPTION, NULL, array(1), array('id', 'asc')),
-		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc')),
-		'dbms' => array(NDPHP_LANG_MOD_COMMON_DATABASE_ALIAS, NULL, array(1), array('id', 'asc')),
-		'roles' => array(NDPHP_LANG_MOD_SEP_USER_ROLES, NULL, array(1), array('id', 'asc'))
+		'timezones' => array(NDPHP_LANG_MOD_COMMON_TIMEZONE, NULL, array(1), array('id', 'asc'), NULL),
+		'subscription_types' => array(NDPHP_LANG_MOD_COMMON_SUBSCRIPTION, NULL, array(1), array('id', 'asc'), NULL),
+		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc'), NULL),
+		'dbms' => array(NDPHP_LANG_MOD_COMMON_DATABASE_ALIAS, NULL, array(1), array('id', 'asc'), NULL),
+		'roles' => array(NDPHP_LANG_MOD_SEP_USER_ROLES, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 	/** Custom functions **/

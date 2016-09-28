@@ -81,8 +81,8 @@ class Charts_config extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'charts_types' => array(NDPHP_LANG_MOD_COMMON_CHART_TYPE, NULL, array(1), array('id', 'asc')),
-		'charts_geometry' => array(NDPHP_LANG_MOD_COMMON_CHART_GEOMETRY, NULL, array(1), array('id', 'asc'))
+		'charts_types' => array(NDPHP_LANG_MOD_COMMON_CHART_TYPE, NULL, array(1), array('id', 'asc'), NULL),
+		'charts_geometry' => array(NDPHP_LANG_MOD_COMMON_CHART_GEOMETRY, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 	/* Table relational choices (conditional drop-down) */

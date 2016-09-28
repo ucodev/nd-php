@@ -95,7 +95,7 @@
 						<?php $field_first = 0; ?>
 						<?php foreach ($view['data_fields'] as $field => $meta): ?>
 							<?php if (!security_perm_check($security['perms'], 'C', $view['ctrl'], $field)) continue; ?>
-							<?php if ($field == 'id') continue; ?>
+							<?php if ($field == 'id' || ($meta['type'] == 'separator')) continue; ?>
 							<?php if ($field_first != 0): ?>,<br /><?php else: $field_first = 1; endif; ?>
 							&nbsp;&nbsp;&nbsp;&nbsp;"<?=filter_html($field, $config['charset'])?>": "<i><?=filter_html($meta['type'], $config['charset'])?></i>"
 						<?php endforeach; ?>
@@ -119,7 +119,7 @@
 						<?php $field_first = 0; ?>
 						<?php foreach ($view['data_fields'] as $field => $meta): ?>
 							<?php if (!security_perm_check($security['perms'], 'U', $view['ctrl'], $field)) continue; ?>
-							<?php if ($field == 'id') continue; ?>
+							<?php if ($field == 'id' || ($meta['type'] == 'separator')) continue; ?>
 							<?php if ($field_first != 0): ?>,<br /><?php else: $field_first = 1; endif; ?>
 							&nbsp;&nbsp;&nbsp;&nbsp;"<?=filter_html($field, $config['charset'])?>": "<i><?=filter_html($meta['type'], $config['charset'])?></i>"
 						<?php endforeach; ?>

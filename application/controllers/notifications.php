@@ -81,7 +81,7 @@ class Notifications extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'users' => array(NDPHP_LANG_MOD_COMMON_USERNAME, NULL, array(1), array('id', 'asc'))
+		'users' => array(NDPHP_LANG_MOD_COMMON_USERNAME, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 

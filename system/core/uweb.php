@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 26/09/2016
+ * Date: 28/09/2016
  * License: GPLv3
  */
 
@@ -457,8 +457,14 @@ class UW_Cache extends UW_Base {
 
 		/* Currently, only a single instance of memcached is supported */
 		if ($config['cache']['driver'] == 'memcached') {
-			$this->_c = new Memcached();
-			$this->_c->addServer($config['cache']['host'], intval($config['cache']['port']));
+			$this->_c = new Memcached($config['cache']['key_prefix']);
+			$this->_c->setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE, true);
+
+			/* Only add servers if the list is empty.
+			 * TODO: FIXME: Instead of counting, check for differences and change the server list accordingly.
+			 */
+			if (!count($this->_c->getServerList()))
+				$this->_c->addServer($config['cache']['host'], intval($config['cache']['port']));
 		}
 
 		$this->_kp = $config['cache']['key_prefix'];

@@ -1,3 +1,11 @@
+v0.03e1 (2016-09-28):
+
+ - Fixed the high ammount of memcached connections from uWeb memcached driver support.
+ - Relational fields configuration now supports result limits (options).
+ - Updated auto-generated RESTful API documentation.
+ - Updated overloads documentation.
+
+
 v0.03e (2016-09-28):
 
  - Main menu current selection now have the boostrap class "active".

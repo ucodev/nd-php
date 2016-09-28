@@ -232,10 +232,10 @@ class Configuration extends ND_Controller {
 	);
 
 	protected $_rel_table_fields_config = array(
-		'themes' => array(NDPHP_LANG_MOD_COMMON_THEME, NULL, array(1), array('id', 'asc')),
-		'timezones' => array(NDPHP_LANG_MOD_COMMON_TIMEZONE, NULL, array(1), array('id', 'asc')),
-		'roles' => array(NDPHP_LANG_MOD_COMMON_REGULAR_USER_ROLE, NULL, array(1), array('id', 'asc')),
-		'features' => array(NDPHP_LANG_MOD_SEP_CONFIGURATION_FEATURES, NULL, array(1), array('id', 'asc'))
+		'themes' => array(NDPHP_LANG_MOD_COMMON_THEME, NULL, array(1), array('id', 'asc'), NULL),
+		'timezones' => array(NDPHP_LANG_MOD_COMMON_TIMEZONE, NULL, array(1), array('id', 'asc'), NULL),
+		'roles' => array(NDPHP_LANG_MOD_COMMON_REGULAR_USER_ROLE, NULL, array(1), array('id', 'asc'), NULL),
+		'features' => array(NDPHP_LANG_MOD_SEP_CONFIGURATION_FEATURES, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
 

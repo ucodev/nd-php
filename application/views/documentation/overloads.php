@@ -159,34 +159,24 @@
 		<fieldset>
 			<legend>CONDITIONAL STYLE DROP-DOWN FIELDS</legend>
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/* Set a custom class for table row based on single relationship field values (Drop-Down).</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * Any class specified here must exist in a loaded CSS, with the following prefixes:</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;list_&lt;class_suffix_name&gt;</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;result_&lt;class_suffix_name&gt;</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;export_&lt;class_suffix_name&gt;</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * Any class specified here must exist in a loaded CSS.</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * Example:</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;tr.list_even,&nbsp;&nbsp;&nbsp;tr.result_even,&nbsp;&nbsp;&nbsp;tr.export_even&nbsp;&nbsp;&nbsp;{ ... }</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;tr.list_odd,&nbsp;&nbsp;&nbsp;tr.result_odd,&nbsp;&nbsp;&nbsp;tr.export_odd&nbsp;&nbsp;&nbsp;{ ... }</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;tr.list_red,&nbsp;&nbsp;&nbsp;tr.result_red,&nbsp;&nbsp;&nbsp;tr.export_red&nbsp;&nbsp;&nbsp;{ ... }</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;tr.list_yellow,&nbsp;&nbsp;&nbsp;tr.result_yellow,&nbsp;&nbsp;&nbsp;tr.export_yellow&nbsp;&nbsp;&nbsp;{ ... }</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;tr.list_green,&nbsp;&nbsp;&nbsp;tr.result_green,&nbsp;&nbsp;&nbsp;tr.export_green&nbsp;&nbsp;&nbsp;{ ... }</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;.purple&nbsp;&nbsp;&nbsp;{ ... }</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;.brown&nbsp;&nbsp;&nbsp;&nbsp;{ ... }</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *&nbsp;&nbsp;&nbsp;.orange&nbsp;&nbsp;&nbsp;{ ... }</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * NOTE: The :hover modifier should also be set for list_ and result_ classes.</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * There are already some predefined classes in main.css: odd, even, green, red, yellow, blue, orange and black.</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> * There are already some predefined classes: 'danger', 'warning', 'success' and 'info'.</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> *</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"> */</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="visibility">protected</span> $<span class="overload">_rel_choice_table_row_class</span> = <span class="type">array</span>(<br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">/*</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'rel_field' =&gt; 'field_id',</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'class_even' =&gt; 'even',</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'class_odd' =&gt; 'odd',</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'values' =&gt; array(</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'CRITICAL' =&gt; 'red',</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'WARNING' =&gt; 'yellow',</span><br />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'OK' =&gt; 'green'</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'CRITICAL' =&gt; 'danger',</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'WARNING' =&gt; 'warning',</span><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">'OK' =&gt; 'success'</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">)</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">*/</span><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;);<br />
