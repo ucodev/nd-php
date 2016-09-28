@@ -240,17 +240,6 @@ ndphp.nav.back_do = function() {
 
 	if (!ndphp.nav._back_element_id.length)
 		jQuery('#ba_back').html('<img alt="<?=filter_html_js_str(NDPHP_LANG_MOD_ACTION_BACK, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> (<?=filter_html_js_str(NDPHP_LANG_MOD_STATUS_DISABLED, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>)" class="browsing_actions_icon" src="<?=static_images_url()?>/themes/' + ndphp.theme.name + '/icons/back_disabled.png" />');
-
-	/* Update tabs, if any */
-	jQuery(function() {
-		jQuery('div[id^=entry_tabs]').tabs();
-		jQuery('div[id^=entry_tabs]').on('tabsactivate', function(event, ui) {
-			ndphp.current.tab_index = ui.newTab.index();
-		});
-		jQuery('div[id^=entry_tabs]').removeClass("ui-widget");
-		jQuery('div[id^=entry_tabs]').css('border-radius', '0px');
-		jQuery('#create, #edit, #remove, #view, #list, #result, #search, #groups').css('padding-top', '0px').css('padding-bottom', '0px');
-	});
 };
 
 ndphp.nav.forward_do = function() {
@@ -263,17 +252,6 @@ ndphp.nav.forward_do = function() {
 
 	if (!ndphp.nav._forward_element_id.length)
 		jQuery('#ba_forward').html('<img alt="<?=filter_html_js_str(NDPHP_LANG_MOD_ACTION_FORWARD, NDPHP_LANG_MOD_DEFAULT_CHARSET)?> (<?=filter_html_js_str(NDPHP_LANG_MOD_STATUS_DISABLED, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>)" class="browsing_actions_icon" src="<?=static_images_url()?>/themes/' + ndphp.theme.name + '/icons/forward_disabled.png" />');
-
-	/* Update tabs, if any */
-	jQuery(function() {
-		jQuery('div[id^=entry_tabs]').tabs();
-		jQuery('div[id^=entry_tabs]').on('tabsactivate', function(event, ui) {
-			ndphp.current.tab_index = ui.newTab.index();
-		});
-		jQuery('div[id^=entry_tabs]').removeClass("ui-widget");
-		jQuery('div[id^=entry_tabs]').css('border-radius', '0px');
-		jQuery('#create, #edit, #remove, #view, #list, #result, #search, #groups').css('padding-top', '0px').css('padding-bottom', '0px');
-	});
 };
 
 ndphp.nav.refresh_do = function() {

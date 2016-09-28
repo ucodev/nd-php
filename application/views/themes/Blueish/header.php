@@ -220,7 +220,7 @@
 		    <div id="navbar" class="navbar-collapse collapse">
 		    	<ul class="nav navbar-nav">
 					<?php $access_key = 1; foreach ($view['mainmenu'] as $entry): ?>
-						<li>
+						<li id="menu_entry_<?=$entry[0]?>" class="<?=$view['ctrl'] == $entry[0] ? 'active' : ''?>">
 							<a title="<?=$entry[2] ? filter_html($entry[2], $config['charset']) : filter_html(ucfirst($entry[1]), $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($entry[0], $config['charset'])?>" onclick="ndphp.ajax.load_body_menu(event, '<?=filter_html_js_str($entry[0], $config['charset'])?>', '<?=filter_html_js_str($entry[1], $config['charset'])?>');" accesskey="<?=$access_key?>">
 								<?=filter_html(ucfirst($entry[1]), $config['charset'])?>
 							</a>
@@ -229,22 +229,22 @@
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<?php if ($security['im_admin']): ?>
-						<li>
+						<li id="menu_entry_users" class="<?=$view['ctrl'] == 'users' ? 'active' : ''?>">
 							<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_USERS_DESC, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/users" onclick="ndphp.ajax.load_body_menu(event, 'users', 'users');">
 								<?=filter_html(NDPHP_LANG_MOD_MENU_USERS_NAME, $config['charset'])?>
 							</a>
 						</li>
-						<li>
+						<li id="menu_entry_sessions" class="<?=$view['ctrl'] == 'sessions' ? 'active' : ''?>">
 							<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_SESSIONS_DESC, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/sessions" onclick="ndphp.ajax.load_body_menu(event, 'sessions', 'sessions');">
 								<?=filter_html(NDPHP_LANG_MOD_MENU_SESSIONS_NAME, $config['charset'])?>
 							</a>
 						</li>
-						<li>
+						<li id="menu_entry_logging" class="<?=$view['ctrl'] == 'logging' ? 'active' : ''?>">
 							<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_LOGGING_DESC, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/logging" onclick="ndphp.ajax.load_body_menu(event, 'logging', 'logging');">
 								<?=filter_html(NDPHP_LANG_MOD_MENU_LOGGING_NAME, $config['charset'])?>
 							</a>
 						</li>
-						<li>
+						<li id="menu_entry_configuration" class="<?=$view['ctrl'] == 'configuration' ? 'active' : ''?>">
 							<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_CONFIGURATION_DESC, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration" onclick="ndphp.ajax.load_body_menu(event, 'configuration', 'configuration');">
 								<?=filter_html(NDPHP_LANG_MOD_MENU_CONFIGURATION_NAME, $config['charset'])?>
 							</a>

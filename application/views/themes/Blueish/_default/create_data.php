@@ -259,6 +259,12 @@
 										<?php endif; ?>
 									</label>
 									<div class="col-sm-6">
+										<?php if ($view['fields'][$field]['units']['unit']): ?>
+											<div class="input-group">
+											<?php if ($view['fields'][$field]['units']['left']): ?>
+												<span class="input-group-addon"><?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?></span>
+											<?php endif; ?>
+										<?php endif; ?>
 										<input
 											class="form-control"
 											id="<?=filter_html($field, $config['charset'])?>"
@@ -281,6 +287,12 @@
 											<?=isset($view['autocomplete'][$field]) ? ('value="' . filter_html($view['autocomplete'][$field], $config['charset']) . '"') : ''?>
 											<?=$i ? '' : 'autofocus accesskey="' . filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_AUTOFOCUS, $config['charset']) . '"'?>
 										/>
+										<?php if ($view['fields'][$field]['units']['unit']): ?>
+											<?php if(!$view['fields'][$field]['units']['left']): ?>
+												<span class="input-group-addon"><?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?></span>
+											<?php endif; ?>
+											</div>
+										<?php endif; ?>
 										<?php if ($meta['type'] == 'datetime'): ?>
 											<input
 												class="form-control"

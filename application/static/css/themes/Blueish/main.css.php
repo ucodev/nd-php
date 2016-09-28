@@ -31,6 +31,15 @@
  */
 
 /**
+ * Generics / Overrides
+ *
+ */
+
+a, .btn {
+	outline: none;
+}
+
+/**
  * BEGIN OF:
  *
  *  - Login

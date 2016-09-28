@@ -316,6 +316,12 @@
 										</label>
 										<div class="col-sm-6">
 											<?php if ($view['fields'][$field]['type'] == 'datetime') $_datetime = explode(' ', $value);?>
+											<?php if ($view['fields'][$field]['units']['unit']): ?>
+												<div class="input-group">
+												<?php if ($view['fields'][$field]['units']['left']): ?>
+													<span class="input-group-addon"><?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?></span>
+												<?php endif; ?>
+											<?php endif; ?>
 											<input
 												class="form-control"
 												id="<?=filter_html_special($field, $config['charset'])?>"
@@ -339,6 +345,12 @@
 												<?=$view['fields'][$field]['input_pattern'] ? 'pattern="' . filter_html($view['fields'][$field]['input_pattern'], $config['charset']) . '"' : ''?>
 												<?=$i ? '' : 'autofocus accesskey="' . filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_AUTOFOCUS, $config['charset']) . '"'?>
 											/>
+											<?php if ($view['fields'][$field]['units']['unit']): ?>
+												<?php if(!$view['fields'][$field]['units']['left']): ?>
+													<span class="input-group-addon"><?=filter_html($view['fields'][$field]['units']['unit'], $config['charset'])?></span>
+												<?php endif; ?>
+												</div>
+											<?php endif; ?>
 											<?php if (strstr($field, 'password')): ?>
 												<input
 													class="form-control"

@@ -196,6 +196,10 @@ class Builder extends ND_Controller {
 			'model' => $json_raw
 		));
 
+		/* Clear cache if it is active */
+		if ($this->cache->is_active())
+			$this->cache->flush();
+
 		/* XXX: Debug */
 		$this->response->output(ucfirst(NDPHP_LANG_MOD_WORD_BUILD) . ' ' . $build_current . ' ' . NDPHP_LANG_MOD_SUCCESS_DEPLOY_ON . ' ' . date('Y-m-d H:i:s') . '.');
 	}
@@ -268,6 +272,10 @@ class Builder extends ND_Controller {
 			$this->db->where('active', true);
 			$this->db->update('configuration', array('model' => ''));
 		}
+
+		/* Clear cache if it is active */
+		if ($this->cache->is_active())
+			$this->cache->flush();
 
 		/* Redirect to the IDE Builder */
 		redirect('/builder/ide');

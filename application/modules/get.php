@@ -684,7 +684,11 @@ class UW_Get extends UW_Module {
 					$rel_fields = $table_fields[1];
 				}
 
-				//$this->db->select('id,' . $table_fields[1]);
+				/* TODO: FIXME: Cache the field options. Note that this cache should be invalidated when the corresponding
+				 * foreign table data is modified.
+				 */
+
+				/* Fetch foreign table entries */
 				$this->db->select('id,' . $rel_fields);
 				$this->db->from($table);
 
@@ -692,29 +696,15 @@ class UW_Get extends UW_Module {
 					$this->db->order_by($this->config['rel_table_fields_config'][$table][3][0], $this->config['rel_table_fields_config'][$table][3][1]);
 				}
 
+				/* Apply any applicable filters */
 				$this->filter->table_row_apply($table);
 
 				/* We need to use _field_value_mangle() here to grant that options values are mangled
 				 *
-				 * We also use the _get_fields_basic_types() to reduce the overhead that would be caused if
-				 * we used recursion here with _get_fields()
+				 * We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
+				 * recursion to the fields() method was applied here.
 				 */
 				$result_array = $this->field->value_mangle($this->fields_basic_types($table), $this->db->get());
-
-				/* Set the altname and viewname */
-				if (isset($this->config['rel_table_fields_config'][$table]) && ($this->config['rel_table_fields_config'][$table][2] != NULL)) {
-					$fields[$field['name']]['altname'] = $table_fields[$this->config['rel_table_fields_config'][$table][2][0]];
-					$fields[$field['name']]['viewname'] = $this->config['rel_table_fields_config'][$table][0];
-				} else {
-					$fields[$field['name']]['altname'] = $table_fields[1];
-					$fields[$field['name']]['viewname'] = $table_fields[1];
-				}
-
-				/* Get field help, if exists */
-				$help_data = $this->field_help_desc($target, $field['name']);
-				$fields[$field['name']]['units'] = $help_data['field_units'];
-				$fields[$field['name']]['help_desc'] = $help_data['help_description'];
-				$fields[$field['name']]['help_url'] = $help_data['help_url'];
 
 				/* Craft options values based on concatenations' configuration (if any).
 				 * If no configuration is set for this particular relationship, the default
@@ -738,7 +728,23 @@ class UW_Get extends UW_Module {
 						$fields[$field['name']]['options'][$row['id']] = $row[$table_fields[1]];
 					}
 				}
-				
+
+				/* Set the altname and viewname */
+				if (isset($this->config['rel_table_fields_config'][$table]) && ($this->config['rel_table_fields_config'][$table][2] != NULL)) {
+					$fields[$field['name']]['altname'] = $table_fields[$this->config['rel_table_fields_config'][$table][2][0]];
+					$fields[$field['name']]['viewname'] = $this->config['rel_table_fields_config'][$table][0];
+				} else {
+					$fields[$field['name']]['altname'] = $table_fields[1];
+					$fields[$field['name']]['viewname'] = $table_fields[1];
+				}
+
+				/* Get field help, if exists */
+				$help_data = $this->field_help_desc($target, $field['name']);
+				$fields[$field['name']]['units'] = $help_data['field_units'];
+				$fields[$field['name']]['help_desc'] = $help_data['help_description'];
+				$fields[$field['name']]['help_url'] = $help_data['help_url'];
+
+				/* Set field input type */
 				$fields[$field['name']]['input_type'] = 'select';
 			} else if ($field['type'] == 'varchar') {
 				$fields[$field['name']]['input_type'] = 'text';

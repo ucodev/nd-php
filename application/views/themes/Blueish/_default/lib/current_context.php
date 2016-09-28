@@ -57,6 +57,12 @@
 	/* Update current context */
 	ndphp.current.controller = '<?=filter_js_str($view['ctrl'], $config['charset'])?>';
 	ndphp.current.charset = '<?=filter_js_str($config['charset'], $config['charset'])?>';
+
+	/* Mark all menu entries as inactive */
+	jQuery("li[id^='menu_entry_']").removeClass('active');
+
+	/* Set the current menu entry as active */
+	jQuery('#menu_entry_<?=$view['ctrl']?>').addClass('active');
 </script>
 
 <a id="doc_rest_json" target="_blank" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/json_doc" style="display: none;" accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_JSON, $config['charset'])?>">REST JSON API</a>

@@ -1,3 +1,14 @@
+v0.03e (2016-09-28):
+
+ - Main menu current selection now have the boostrap class "active".
+ - Menu entries focus outline was removed.
+ - Field units are now rendered with bootstrap input addons.
+ - Cache is now cleared when a new application model is deployed.
+ - Fixed tabs issue when using back/forward navigation buttons.
+ - uWeb Session data now supports external caching mechanisms.
+ - Extended cache support on core controllers.
+
+
 v0.03d1 (2016-09-27):
 
  - Added partial support for memcached key_prefix under the Configuration menu.

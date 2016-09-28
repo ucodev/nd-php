@@ -83,9 +83,11 @@ class UW_Encrypt extends UW_Base {
 
 class UW_SessionHandlerDb implements SessionHandlerInterface {
 	private $db = NULL;
+	private $cache = NULL;
 
-	public function __construct($db = NULL) {
+	public function __construct($db = NULL, $cache = NULL) {
 		$this->db = $db;
+		$this->cache = $cache;
 	}
 
 	public function open($save_path, $name) {
@@ -103,6 +105,14 @@ class UW_SessionHandlerDb implements SessionHandlerInterface {
 	public function read($session_id) {
 		global $config;
 
+		/* Check if session data is cached */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_session_' . $session_id)) {
+				return $this->cache->get('d_session_' . $session_id);
+			}
+		}
+
+		/* Otherwise, fetch session data from database */
 		$this->db->select($config['session']['sssh_db_field_session_data'] . ' AS session_data');
 
 		$this->db->from($config['session']['sssh_db_table']);
@@ -116,11 +126,21 @@ class UW_SessionHandlerDb implements SessionHandlerInterface {
 
 		$row = $q->row_array();
 
+		/* Refresh cache */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_session_' . $session_id, true);
+			$this->cache->set('d_session_' . $session_id, $row['session_data']);
+		}
+
 		return $row['session_data'];
 	}
 
 	public function write($session_id, $session_data) {
 		global $config;
+
+		/* Invalidate cache entry, if any */
+		if ($this->cache->is_active())
+			$this->cache->delete('s_session_' . $session_id);
 
 		$this->db->trans_begin();
 
@@ -171,11 +191,21 @@ class UW_SessionHandlerDb implements SessionHandlerInterface {
 
 		$this->db->trans_commit();
 
+		/* Refresh cache */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_session_' . $session_id, true);
+			$this->cache->set('d_session_' . $session_id, $session_data);
+		}
+
 		return true;
 	}
 
 	public function destroy($session_id) {
 		global $config;
+
+		/* Invalidate cache entry, if any */
+		if ($this->cache->is_active())
+			$this->cache->delete('s_session_' . $session_id);
 
 		$this->db->trans_begin();
 
@@ -289,7 +319,7 @@ class UW_Session extends UW_Base {
 			$this->_session_close();
 	}
 
-	public function __construct($db = NULL) {
+	public function __construct($db = NULL, $cache = NULL) {
 		global $config;
 
 		/* Call the parent constructor */
@@ -307,7 +337,7 @@ class UW_Session extends UW_Base {
 
 		/* Change session handlers if database session data is enabled */
 		if ($config['session']['sssh_db_enabled']) {
-			$sssh = new UW_SessionHandlerDb($db);
+			$sssh = new UW_SessionHandlerDb($db, $cache);
 
 			if (session_set_save_handler($sssh, true) === false) {
 				header('HTTP/1.1 500 Internal Server Error');
@@ -2200,7 +2230,7 @@ class UW_Model {
 		$this->db = new UW_Database;
 		
 		/* Initialize system session controller */
-		$this->session = new UW_Session($this->db);
+		$this->session = new UW_Session($this->db, $this->cache);
 
 		/* Initialize system encryption controller */
 		$this->encrypt = new UW_Encrypt;

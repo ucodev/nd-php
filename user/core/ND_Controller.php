@@ -85,10 +85,7 @@
  *
  * FIXME:
  *
- * + (bootstrap rev) Main menu current selection shall have the boostrap class "active".
- * + (bootstrap rev) Remove link frame decoration after being clicked.
  * + (bootstrap rev) On input error, input boxes shall receive the bootstrap class "has-error".
- * + (bootstrap rev) Field units shall be rendered with bootstrap input addons.
  * + (bootstrap rev) Tags should be used on multiple relationship fields.
  * + (bootstrap rev) jquery-ui tooltips still being used instead of native bootstrap tooltips.
  * + (bootstrap rev) Input patterns not working with the new bootstap theme.
@@ -124,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03d1';
+	protected $_ndphp_version = '0.03e';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -3222,42 +3219,58 @@ class ND_Controller extends UW_Controller {
 			$data['view']['autocomplete'] = json_decode($this->ndphp->safe_b64decode($autocomplete), true);
 		}
 
-		/* Required fields are extracted from information schema
-		 *
-		 * NOTE: This requires DBMS to operate in 'strict' mode.
-		 * Make sure that 'strict' config parameter is set to true in user/config/database.php
-		 *  
-		 */
-		$schema = $this->load->database($this->config['default_database'] . '_schema', true);
+		/* Check if we've the required fields and default values cached */
+		if ($this->cache->is_active()
+				&& $this->cache->get('s_create_required_' . $this->config['name'])
+				&& $this->cache->get('s_create_defaults_' . $this->config['name'])) {
+			$data['view']['required'] = $this->cache->get('d_create_required_' . $this->config['name']);
+			$data['view']['default'] = $this->cache->get('d_create_defaults_' . $this->config['name']);
+		} else {
+			/* Required fields are extracted from information schema
+			 *
+			 * NOTE: This requires DBMS to operate in 'strict' mode.
+			 * Make sure that 'strict' config parameter is set to true in user/config/database.php
+			 *  
+			 */
+			$schema = $this->load->database($this->config['default_database'] . '_schema', true);
 
-		$schema->select('COLUMN_NAME');
-		$schema->from('COLUMNS');
-		$schema->where('TABLE_SCHEMA', $this->db->database);
-		$schema->where('TABLE_NAME', $this->config['name']);
-		$schema->where('IS_NULLABLE', 'NO');
-		$query_required = $schema->get();
+			$schema->select('COLUMN_NAME');
+			$schema->from('COLUMNS');
+			$schema->where('TABLE_SCHEMA', $this->db->database);
+			$schema->where('TABLE_NAME', $this->config['name']);
+			$schema->where('IS_NULLABLE', 'NO');
+			$query_required = $schema->get();
 
-		$schema->select('COLUMN_NAME,COLUMN_DEFAULT');
-		$schema->from('COLUMNS');
-		$schema->where('TABLE_SCHEMA', $this->db->database);
-		$schema->where('TABLE_NAME', $this->config['name']);
-		$query_default = $schema->get();
+			$schema->select('COLUMN_NAME,COLUMN_DEFAULT');
+			$schema->from('COLUMNS');
+			$schema->where('TABLE_SCHEMA', $this->db->database);
+			$schema->where('TABLE_NAME', $this->config['name']);
+			$query_default = $schema->get();
 
-		$schema->close();
+			$schema->close();
 
-		/* Select the default database */
-		$this->load->database($this->config['default_database']);
+			/* Select the default database */
+			$this->load->database($this->config['default_database']);
 
-		/* Set required fields array */
-		$data['view']['required'] = array();
-		foreach ($query_required->result_array() as $row) {
-			array_push($data['view']['required'], $row['COLUMN_NAME']);
-		}
+			/* Set required fields array */
+			$data['view']['required'] = array();
+			foreach ($query_required->result_array() as $row) {
+				array_push($data['view']['required'], $row['COLUMN_NAME']);
+			}
 
-		/* Set default values array */
-		$data['view']['default'] = array();
-		foreach ($query_default->result_array() as $row) {
-			$data['view']['default'][$row['COLUMN_NAME']] = $row['COLUMN_DEFAULT'];
+			/* Set default values array */
+			$data['view']['default'] = array();
+			foreach ($query_default->result_array() as $row) {
+				$data['view']['default'][$row['COLUMN_NAME']] = $row['COLUMN_DEFAULT'];
+			}
+
+			/* If cache is enabled, cache required fields and default values data */
+			if ($this->cache->is_active()) {
+				$this->cache->set('s_create_required_' . $this->config['name'], true);
+				$this->cache->set('d_create_required_' . $this->config['name'], $data['view']['required']);
+				$this->cache->set('s_create_defaults_' . $this->config['name'], true);
+				$this->cache->set('d_create_defaults_' . $this->config['name'], $data['view']['default']);
+			}
 		}
 
 		/* Hidden fields */
@@ -3695,25 +3708,37 @@ class ND_Controller extends UW_Controller {
 			}
 		}
 
-		/* Required fields are extracted from information schema
-		 *
-		 * NOTE: This requires DBMS to operate in 'strict' mode.
-		 * Make sure that 'strict' config parameter is set to TRUE in user/config/database.php
-		 *  
-		 */
-		$schema = $this->load->database($this->config['default_database'] . '_schema', true);
+		/* Check if we've the required fields and default values cached */
+		if ($this->cache->is_active()
+				&& $this->cache->get('s_create_required_' . $this->config['name'])) {
+			$data['view']['required'] = $this->cache->get('d_create_required_' . $this->config['name']);
+		} else {
+			/* Required fields are extracted from information schema
+			 *
+			 * NOTE: This requires DBMS to operate in 'strict' mode.
+			 * Make sure that 'strict' config parameter is set to TRUE in user/config/database.php
+			 *  
+			 */
+			$schema = $this->load->database($this->config['default_database'] . '_schema', true);
 
-		$schema->select('COLUMN_NAME');
-		$schema->from('COLUMNS');
-		$schema->where('TABLE_SCHEMA', $this->db->database);
-		$schema->where('TABLE_NAME', $this->config['name']);
-		$schema->where('IS_NULLABLE', 'NO');
-		$query = $schema->get();
-		$schema->close();
-		
-		$data['view']['required'] = array();
-		foreach ($query->result_array() as $row) {
-			array_push($data['view']['required'], $row['COLUMN_NAME']);
+			$schema->select('COLUMN_NAME');
+			$schema->from('COLUMNS');
+			$schema->where('TABLE_SCHEMA', $this->db->database);
+			$schema->where('TABLE_NAME', $this->config['name']);
+			$schema->where('IS_NULLABLE', 'NO');
+			$query = $schema->get();
+			$schema->close();
+			
+			$data['view']['required'] = array();
+			foreach ($query->result_array() as $row) {
+				array_push($data['view']['required'], $row['COLUMN_NAME']);
+			}
+
+			/* If cache is enabled, cache required fields and default values data */
+			if ($this->cache->is_active()) {
+				$this->cache->set('s_create_required_' . $this->config['name'], true);
+				$this->cache->set('d_create_required_' . $this->config['name'], $data['view']['required']);
+			}
 		}
 
 		/* Hidden fields */
