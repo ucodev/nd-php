@@ -85,7 +85,6 @@
  *
  * FIXME:
  *
- * + There's a bug in search/result with all comparators (=, !=, >, <) when the value is 0.
  * + (bootstrap rev) On input error, input boxes shall receive the bootstrap class "has-error".
  * + (bootstrap rev) Tags should be used on multiple relationship fields.
  * + (bootstrap rev) jquery-ui tooltips still being used instead of native bootstrap tooltips.
@@ -122,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03f';
+	protected $_ndphp_version = '0.03g';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1519,10 +1518,32 @@ class ND_Controller extends UW_Controller {
 
 		$data['config']['choices_class'] = $this->config['rel_choice_table_row_class'];
 
-		$data['view']['fields'] = $this->get->fields(NULL, $this->config['hide_fields_list']); /* _get_fields() uses a perm_read filter by default */
+		/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
+		if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
+			/* Fetch all fields */
+			$data['view']['fields'] = $this->get->fields(NULL); /* TODO: Myabe we can filter out unused fields here, based on the '_show' array? */
 
-		/* Resolve fields */
-		$this->field->resolve($data['view']['fields']);
+			/* Set the selected fields */
+			$selected = $this->request->post('_show');
+
+			/* 'id' must always be present */
+			if (!in_array($selected, 'id'))
+				array_push($selected, 'id');
+
+			/* Resolve fields */
+			$this->field->resolve($data['view']['fields'], $selected);
+
+			/* Hidden fields */
+			$data['config']['hidden_fields'] = array();
+		} else {
+			$data['view']['fields'] = $this->get->fields(NULL, $this->config['hide_fields_list']); /* $this->get->fields() uses a perm_read filter by default */
+
+			/* Resolve fields */
+			$this->field->resolve($data['view']['fields']);
+
+			/* Hidden fields */
+			$data['config']['hidden_fields'] = $this->config['hide_fields_list'];
+		}
 
 		/* Switch order on each call */
 		if ($order == "asc")
@@ -1585,9 +1606,6 @@ class ND_Controller extends UW_Controller {
 			$data['view']['links']['pagination'] = $this->pagination->create_links();
 			$data['view']['page'] = $page;
 		}
-
-		/* Hidden fields */
-		$data['config']['hidden_fields'] = $this->config['hide_fields_list'];
 
 		/* Hook handler (leave) */
 		$this->_hook_list_generic_leave($data, $field, $order, $page, $hook_enter_return);
@@ -2309,6 +2327,13 @@ class ND_Controller extends UW_Controller {
 
 			/* Hidden fields */
 			$data['config']['hidden_fields'] = array();
+		} else if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
+			/* FIXME: Avoid using 2 calls to $this->get->fields() ... Use an unfiltered $this->get->fields() and generate two filtered lists from it */
+			$ftypes = $this->get->fields(NULL);
+			$ftypes_result = $this->get->fields(NULL);
+
+			/* Hidden fields */
+			$data['config']['hidden_fields'] = array();
 		} else {
 			/* FIXME: Avoid using 2 calls to $this->get->fields() ... Use an unfiltered $this->get->fields() and generate two filtered lists from it */
 			$ftypes = $this->get->fields(NULL, $this->config['hide_fields_search']); /* $this->get->fields() uses a perm_read filter by default */
@@ -2494,7 +2519,7 @@ class ND_Controller extends UW_Controller {
 			/* Create criteria by processing each field type and respective selected options */
 			foreach ($_POST['fields_criteria'] as $field) {
 				/* Check if there are missing fields */
-				if (!isset($_POST[$field]) || !$_POST[$field])
+				if (!isset($_POST[$field]))
 					$_POST[$field] = NULL; /* In case it is not set, set is as NULL */
 
 				/* Check permissions */
@@ -2502,10 +2527,10 @@ class ND_Controller extends UW_Controller {
 					continue;
 
 				/* Check for NULL comparisions... but don't compare NULL datetime fields that contain a custom interval set (in this case only the custom interval field will be processed) */
-				if ((($_POST[$field] === NULL || $_POST[$field] == '') && $ftypes[$field]['type'] != 'datetime' && $ftypes[$field]['type'] != 'date' && $ftypes[$field]['type'] != 'time') ||
-							(($_POST[$field] === NULL || $_POST[$field] == '') && $ftypes[$field]['type'] == 'datetime' && !$_POST[$field . '_custom']) ||
-							(($_POST[$field] === NULL || $_POST[$field] == '') && $ftypes[$field]['type'] == 'date' && !$_POST[$field . '_custom']) ||
-							(($_POST[$field] === NULL || $_POST[$field] == '') && $ftypes[$field]['type'] == 'time' && !$_POST[$field . '_custom']))
+				if ((($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] != 'datetime' && $ftypes[$field]['type'] != 'date' && $ftypes[$field]['type'] != 'time') ||
+							(($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] == 'datetime' && !$_POST[$field . '_custom']) ||
+							(($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] == 'date' && !$_POST[$field . '_custom']) ||
+							(($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] == 'time' && !$_POST[$field . '_custom']))
 				{
 					$negate = false;
 					
@@ -2847,8 +2872,24 @@ class ND_Controller extends UW_Controller {
 			/* Filter table rows, if applicable */
 			$this->filter->table_row_apply();
 
-			/* Resolve and select the fields to be displayed in the result */		
-			$this->field->resolve($ftypes, $_POST['fields_result']);
+			/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
+			if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
+				/* TODO: FIXME: This needs to be extensively tested */
+
+				/* Set the selected fields */
+				$selected = $this->request->post('_show');
+
+				/* 'id' must always be present */
+				if (!in_array($selected, 'id'))
+					array_push($selected, 'id');
+
+				/* Resolve fields */
+				$this->field->resolve($ftypes, $selected, $_POST['fields_criteria']);
+			} else {
+				/* Resolve and select the fields to be displayed in the result */		
+				$this->field->resolve($ftypes, $_POST['fields_result'], $_POST['fields_criteria']);
+			}
+
 			$this->db->from($this->config['name']); // from() method is needed here for get_compiled_select_str() call
 
 			/* Apply result filter hook */
@@ -2919,7 +2960,7 @@ class ND_Controller extends UW_Controller {
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_leave.php') as $plugin)
 			include($plugin);
 
-		/* Setup pagination, if required */
+		/* Setup total items information, if required */
 		if ($page >= 0) {
 			$total_items_from = ($pagcfg['per_page'] * ($page / $pagcfg['per_page']));
 			$total_items_from += $pagcfg['total_rows'] ? 1 : 0;

@@ -1,3 +1,13 @@
+v0.03g (2016-10-03):
+
+ - Fixed issues with searches targeting boolean types.
+ - Fixed issues with search model.
+ - Fixed issues with searches comparisions against zero values.
+ - Fixed advanced search relationship issues regarding criteria / result field selection.
+ - Minor improvements on field handling module.
+ - Added support for '_show' modifier for REST API LIST / RESULT requests.
+
+
 v0.03f (2016-10-03):
 
  - View data now contains a general purpose unique id value.

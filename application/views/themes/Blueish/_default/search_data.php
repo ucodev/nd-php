@@ -117,6 +117,7 @@
 											<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
 										</div>
 										<div class="panel-body text-center">
+											<input style="display: none;" name="<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" type="checkbox" value="0" />
 											<input name="<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" type="checkbox" value="1" />
 										</div>
 									</div>

@@ -61,6 +61,8 @@ class UW_Search extends UW_Model {
 			return "integer";
 		} else if (gettype($value) == "double") {
 			return "double";
+		} else if (gettype($value) == "boolean") {
+			return "boolean";
 		} else {
 			return "string";
 		}
@@ -95,11 +97,11 @@ class UW_Search extends UW_Model {
 			$nadv['__result_' . $result_field] = true;
 
 		/* Check if the 'id' field is part of the result list. If not, set it, as it is mandatory for any result */
-		if (!isset($nadv, '__result_id'))
+		if (!isset($nadv['__result_id']))
 			$nadv['__result_id'] = true;
 
 		/* Unset any unrequired values from now on */
-		unset($ndsl['_show']);
+		unset($ndsl['_show']); /* NOTE: This MUST not be set in $nadv... otherwise it will conflict with any '_show' modifier that might be set with a REST RESULT call */
 
 		/* Start processing fields and criteria */
 		foreach ($ndsl as $field => $criteria) {
@@ -183,7 +185,7 @@ class UW_Search extends UW_Model {
 						$vtype = $this->_get_type($value);
 
 						/* 'gt' condition does not accept strings nor arrays */
-						if ($vtype == 'string' || $vtype == 'array') {
+						if ($vtype == 'string' || $vtype == 'array' || $vtype == 'boolean') {
 							$this->_set_result_error("Unexpected type '" . $vtype . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Integer, Double, Relative, Datetime, Date or Time.");
 							return false;
 						}
@@ -232,13 +234,13 @@ class UW_Search extends UW_Model {
 						}
 
 						/* 'is' condition only accepts numeric */
-						if ($this->_get_type($value) != 'integer') {
-							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Integer.");
+						if ($this->_get_type($value) != 'boolean') {
+							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Boolean.");
 							return false;
 						}
 
 						/* Set the criteria value */
-						$nadv[$field] = $value;
+						$nadv[$field] = ($value === true) ? '1' : '0';
 
 						/* Set current context */
 						$this->_context = $cond;

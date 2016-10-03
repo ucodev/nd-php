@@ -74,7 +74,7 @@ class UW_Field extends UW_Module {
 		return $result_mangled;
 	}
 
-	public function resolve($fields, $selected = NULL) {
+	public function resolve($fields, $selected = array(), $criteria_req = array()) {
 		$this->load->module('get');
 
 		$select = array();
@@ -87,9 +87,9 @@ class UW_Field extends UW_Module {
 			/* Check if we already have a set of previously selected fields */
 			if ($selected) {
 				/* If we already have a set of selected fields, do not resolve fields that
-				 * do not belong to this set.
+				 * do not belong to this set and are not required to be resolved (not in $criteria_req).
 				 */
-				if (!in_array($field, $selected))
+				if (!in_array($field, $selected) && !in_array($field, $criteria_req))
 					continue;
 			}
 
@@ -131,7 +131,11 @@ class UW_Field extends UW_Module {
 					$cc_fields = '`' . $table . '`.`' . $table_fields[$rel_field] . '`'; 
 				}
 
-				array_push($select, $cc_fields . ' AS `' . $field . '`');
+				/* Only push this field into the $select set if it is marked for selection (empty $selected, or present in $selected)...
+				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
+				 */
+				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
+					array_push($select, $cc_fields . ' AS `' . $field . '`');
 			} else if ($meta['type'] == 'rel') {
 				/* If this is a multiple relationship field */
 				$table_fields = $this->get->table_fields($meta['table']);
@@ -161,10 +165,19 @@ class UW_Field extends UW_Module {
 					$cc_fields = '`' . $meta['table'] . '`.`' . $meta['rel_field'] . '`';
 				}
 
-				array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ' SEPARATOR \'' . $this->config['rel_group_concat_sep'] . '\') AS `' . $field . '`');
+				/* Only push this field into the $select set if it is marked for selection (empty $selected, or present in $selected)...
+				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
+				 */
+				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
+					array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ' SEPARATOR \'' . $this->config['rel_group_concat_sep'] . '\') AS `' . $field . '`');
 			} else {
 				/* Otherwise, just select the current table field */
-				array_push($select, '`' . $this->config['name'] . '`.`' . $field . '`');
+
+				/* Only push this field into the $select set if it is marked for selection (empty $selected, or present in $selected)...
+				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
+				 */
+				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
+					array_push($select, '`' . $this->config['name'] . '`.`' . $field . '`');
 			}
 		}
 		
