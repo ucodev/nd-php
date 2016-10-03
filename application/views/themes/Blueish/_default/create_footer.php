@@ -61,7 +61,7 @@
 		jQuery(":file").filestyle({buttonName: "btn-primary"});
 
 		/* Enable form validation */
-		jQuery("#createform").validate({
+		jQuery("#createform-<?=filter_js_special($view['unique_id'], $config['charset'])?>").validate({
 			errorPlacement: function() {
 				return false;
 			}
@@ -140,8 +140,8 @@
 		ndphp.current.tab_index = null;
 
 		/* On submit ... */
-		jQuery('#createform').submit(function(e) {
-			ndphp.form.submit_create_wrapper(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'createform', <?=isset($config['modalbox']) ? 1 : 0?>);
+		jQuery('#createform-<?=filter_js_special($view['unique_id'], $config['charset'])?>').submit(function(e) {
+			ndphp.form.submit_create_wrapper(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'createform-<?=filter_js_special($view['unique_id'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>);
 		});
 
 	}); /* END OF jQuery(document). ... */

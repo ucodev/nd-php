@@ -1132,6 +1132,7 @@ class UW_Get extends UW_Module {
 		$data['view']['crud_main_tab_name'] = $this->config['view_crud_main_tab_name'];
 		$data['view']['crud_charts_tab_name'] = $this->config['view_crud_charts_tab_name'];
 		$data['view']['base_dir'] = $this->views_base_dir($data['config']['theme']['name']);
+		$data['view']['unique_id'] = mt_rand(10000, 99999); /* TODO: FIXME: Something better than a random value shall be used here... */
 
 		/* Project data - Aditional project information. May be used as 'printable' data */
 		$data['project'] = array();

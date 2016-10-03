@@ -221,6 +221,11 @@ p.no_results, p.no_charts, p.no_searches, p.no_groups, p.no_mainmenu {
   color:red;
 }
 
+.search_criteria_fields, .search_fields, .search_result_fields {
+	display: table;
+	margin: 0 auto;
+}
+
 #footer {
 
 }

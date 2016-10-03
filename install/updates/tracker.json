@@ -69,6 +69,7 @@
 			"application/models/features.php",
 			"application/models/logging.php",
 			"application/models/ndphp.php",
+			"application/models/search.php",
 			"application/models/security.php",
 			"application/modules/charts.php",
 			"application/modules/field.php",

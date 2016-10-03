@@ -62,7 +62,7 @@
 		jQuery(":file").filestyle({buttonName: "btn-primary"});
 
 		/* Enable form validation */
-		jQuery("#editform").validate({
+		jQuery("#editform-<?=filter_js_special($view['unique_id'], $config['charset'])?>").validate({
 			errorPlacement: function() {
 				return false;
 			}
@@ -144,8 +144,8 @@
 		}
 
 		/* On submit ... */
-		jQuery('#editform').submit(function(e) {
-			ndphp.form.submit_edit_wrapper(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'editform', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');
+		jQuery('#editform-<?=filter_js_special($view['unique_id'], $config['charset'])?>').submit(function(e) {
+			ndphp.form.submit_edit_wrapper(e, '<?=filter_html_js_str($view['ctrl'], $config['charset'])?>', 'editform-<?=filter_js_special($view['unique_id'], $config['charset'])?>', <?=isset($config['modalbox']) ? 1 : 0?>, '<?=filter_html_js_str($view['id'], $config['charset'])?>');
 		});
 
 	}); /* END OF jQuery(document). ... */

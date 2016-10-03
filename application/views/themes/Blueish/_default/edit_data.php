@@ -88,7 +88,7 @@
 
 		<?php $choices_edit = true; include($view['base_dir'] . '/_default/lib/choices.php'); ?>
 
-		<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/update" id="editform" name="editform" enctype="multipart/form-data" method="post">
+		<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/update" id="editform-<?=filter_html($view['unique_id'], $config['charset'])?>" name="editform-<?=filter_html($view['unique_id'], $config['charset'])?>" enctype="multipart/form-data" method="post">
 
 			<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_header.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/edit_data_custom_header.php'); } ?>
 

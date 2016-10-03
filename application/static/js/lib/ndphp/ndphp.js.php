@@ -415,7 +415,7 @@ ndphp.form.submit_create = function(e, ctrl, form_id, from_modal) {
 	/* Perform form validation */
 	if (!jQuery("#" + form_id).valid()) {
 		jQuery("#ajax_error_dialog").html('<?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_SUBMIT_REQUIRED_FIELDS, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>');
-		jQuery("#ajax_error_dialog").dialog({ modal:true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_MISSING_REQUIRED_FIELDS, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
+		jQuery("#ajax_error_dialog").dialog({ modal: true, title: '<?=filter_html_js_str(NDPHP_LANG_MOD_MISSING_REQUIRED_FIELDS, NDPHP_LANG_MOD_DEFAULT_CHARSET)?>' });
 		return;
 	}
 

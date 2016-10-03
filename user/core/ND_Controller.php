@@ -41,8 +41,8 @@
  *
  * TODO:
  *
- * * Basic search shall include advanced search features (for instance, search by { @field: ~="^value.+", @another_field: >=101, @yet_another: ="exact match", ... } )
- * * Single and multiple relationship [select] fields shall change behaviour when the number of entries are greater than 500 (use a search based autocomplete listing).
+ * + Upload file support for JSON RESTful API.
+ * * Single and multiple relationship [select] fields shall change behaviour when the number of entries are greater than 500 or so (use a search based autocomplete listing).
  * * Default action for item selection (currently hardcoded as View, but one should be able to change it to Edit).
  * * Multi Dropdown filters, allowing a selection of an item from a dropdown to filter the contents of another dropdown (or more)
  * * Mixed relationship autocomplete feature shall support user-defined filters.
@@ -85,6 +85,7 @@
  *
  * FIXME:
  *
+ * + There's a bug in search/result with all comparators (=, !=, >, <) when the value is 0.
  * + (bootstrap rev) On input error, input boxes shall receive the bootstrap class "has-error".
  * + (bootstrap rev) Tags should be used on multiple relationship fields.
  * + (bootstrap rev) jquery-ui tooltips still being used instead of native bootstrap tooltips.
@@ -121,7 +122,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03e1';
+	protected $_ndphp_version = '0.03f';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -525,6 +526,9 @@ class ND_Controller extends UW_Controller {
 	/* If enabled, instead of loading views, the reply will be in JSON */
 	protected $_json_replies = false;
 
+	/* JSON REST API listing / result hard limits */
+	protected $_json_result_hard_limit = 500;
+
 	/* Scheduler settings */
 	protected $_scheduler = array(
 		'type' => 'request', /* By default, scheduled entries will be evaluated and processed on every request.
@@ -865,7 +869,9 @@ class ND_Controller extends UW_Controller {
 		$this->config['charts_foreign']							= $this->_charts_foreign;
 
 		$this->config['session_data']							= $this->_session_data;
+
 		$this->config['json_replies']							= $this->_json_replies;
+		$this->config['json_result_hard_limit']					= $this->_json_result_hard_limit;
 
 		$this->config['scheduler']								= $this->_scheduler;
 
@@ -939,10 +945,6 @@ class ND_Controller extends UW_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct();
 
-		/* If JSON replies are enabled, load rest module */
-		if ($json_replies)
-			$this->_load_module('rest', true);
-
 		/* Grant that the configured cookie domain matches the server name */
 		if (current_config()['session']['cookie_domain'] != $_SERVER['SERVER_NAME'])
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
@@ -965,8 +967,10 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Check if JSON replies should be enabled */
-		if ($json_replies)
+		if ($json_replies) {
 			$this->_json_replies = true;
+			$this->_load_module('rest', true);
+		}
 
 		/* If we need to instantiate this controller to fetch controller specific configurtions, we should do so
 		 * by skipping session validation.
@@ -992,6 +996,9 @@ class ND_Controller extends UW_Controller {
 			if ($this->request->is_json() && isset($json_req['_apikey']) && isset($json_req['_userid'])) {
 				/* Enable JSON replies. This is the default for REST API */
 				$this->_json_replies = true;
+
+				/* If JSON replies are enabled, load rest module */
+				$this->_load_module('rest', true);
 
 				/* Set the json data as $_POST */
 				$_POST = $json_req['data'];
@@ -1437,6 +1444,10 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function list_generic($field = NULL, $order = NULL, $page = 0) {
+		/* Sanity checks */
+		if ($page < 0)
+			$page = 0; /* TODO: FIXME: Shall we send an error response instead of silentely change $page value? */
+
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
@@ -1545,8 +1556,11 @@ class ND_Controller extends UW_Controller {
 		 */
 		$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
 
-		/* If this is a REST call, do not limit the results (as in, display all) */
-		if ($this->config['json_replies'] !== true && $page >= 0) {
+		/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
+		if ($this->config['json_replies'] === true) {
+			if ($this->request->post('_limit'))
+				$this->db->limit($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'), $this->request->post('_offset') ? $this->request->post('_offset') : 0);
+		} else if ($page >= 0) {
 			/* Limit results to the number of rows per page (pagination) */
 			$this->db->limit($this->config['table_pagination_rpp_list'], $page);
 		}
@@ -2194,6 +2208,10 @@ class ND_Controller extends UW_Controller {
 
 	protected function result_generic($type = 'advanced', $result_query = NULL,
 							$order_field = NULL, $order_type = NULL, $page = 0) {
+		/* Sanity checks */
+		if ($page < 0)
+			$page = 0; /* TODO: FIXME: Shall we send an error response instead of silentely change $page value? */
+
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
@@ -2262,9 +2280,43 @@ class ND_Controller extends UW_Controller {
 
 		$data['config']['choices_class'] = $this->config['rel_choice_table_row_class'];
 
-		/* FIXME: Avoid using 2 calls to _get_fields() ... Use an unfiltered _get_fields() and generate two filtered lists from it */
-		$ftypes = $this->get->fields(NULL, $this->config['hide_fields_search']); /* _get_fields() uses a perm_read filter by default */
-		$ftypes_result = $this->get->fields(NULL, $this->config['hide_fields_result']);
+		/* Check if the search value is a NDSL query and convert the result parameters accordingly */
+		if (isset($_POST['search_value']) && $this->search->is_ndsl($_POST['search_value'])) {
+			/* Convert the NDSL query to an advanced search context */
+			$nadv = $this->search->ndsl_to_advsearch($_POST['search_value']);
+
+			/* Check if conversion was successful by checking if $nadv !== false. If it failed, throw some error */
+			if ($nadv === false)
+				$this->response->code('500', $this->search->get_result_error(), $this->config['default_charset'], !$this->request->is_ajax());
+
+			/* Updadte the view search_value context */
+			$data['view']['search_value'] = $_POST['search_value'];
+
+			/* Unset POST data */
+			unset($_POST['search_value']);
+
+			/* Set the new POST data with the $nadv context */
+			$_POST = $nadv;
+
+			/* Change search type to advanced */
+			$type = 'advanced';
+
+			/** NOTE: When using NDSL, hidden fields shall not be enforced and should be controlled by the request **/
+
+			/* FIXME: Avoid using 2 calls to $this->get->fields() ... Use an unfiltered $this->get->fields() and generate two filtered lists from it */
+			$ftypes = $this->get->fields(NULL);
+			$ftypes_result = $this->get->fields(NULL);
+
+			/* Hidden fields */
+			$data['config']['hidden_fields'] = array();
+		} else {
+			/* FIXME: Avoid using 2 calls to $this->get->fields() ... Use an unfiltered $this->get->fields() and generate two filtered lists from it */
+			$ftypes = $this->get->fields(NULL, $this->config['hide_fields_search']); /* $this->get->fields() uses a perm_read filter by default */
+			$ftypes_result = $this->get->fields(NULL, $this->config['hide_fields_result']);
+
+			/* Hidden fields */
+			$data['config']['hidden_fields'] = $this->config['hide_fields_result'];
+		}
 
 		/* Validate search type */
 		if ($type == 'basic') {
@@ -2400,19 +2452,19 @@ class ND_Controller extends UW_Controller {
 			$_POST['fields_criteria'] = NULL;
 
 			foreach ($_POST as $post_field => $post_value) {
-				if (substr($post_field, 0, 9) == 'criteria_') {
+				if (substr($post_field, 0, 11) == '__criteria_') {
 					/* POST variable matches the criteria_<field name> format */
 					if ($_POST['fields_criteria'] == NULL)
 						$_POST['fields_criteria'] = array();
 					
-					array_push($_POST['fields_criteria'], substr($post_field, 9));
+					array_push($_POST['fields_criteria'], substr($post_field, 11));
 					unset($_POST[$post_field]);
-				} else if (substr($post_field, 0, 7) == 'result_') {
+				} else if (substr($post_field, 0, 9) == '__result_') {
 					/* POST variable matches the result_<field name> format */
 					if ($_POST['fields_result'] == NULL)
 						$_POST['fields_result'] = array();
 
-					array_push($_POST['fields_result'], substr($post_field, 7));
+					array_push($_POST['fields_result'], substr($post_field, 9));
 					unset($_POST[$post_field]);
 				}
 			}
@@ -2709,9 +2761,17 @@ class ND_Controller extends UW_Controller {
 						$this->db->where($this->field->unambig($field, $ftypes), $_POST[$field], $where_clause_enforce);
 					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] != 'rel')) {
-					$this->db->where_in($this->config['name'] . '.' . $field, $_POST[$field]);
+					if (is_array($_POST[$field])) {
+						$this->db->where_in($this->config['name'] . '.' . $field, $_POST[$field]);
+					} else {
+						$this->db->where($this->config['name'] . '.' . $field, $_POST[$field]);
+					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel')) {
-					$this->db->where_in($ftypes[$field]['table'] . '.id', $_POST[$field]);
+					if (is_array($_POST[$field])) {
+						$this->db->where_in($ftypes[$field]['table'] . '.id', $_POST[$field]);
+					} else {
+						$this->db->where($ftypes[$field]['table'] . '.id', $_POST[$field]);
+					}
 				} else {
 					/* FIXME: TODO: Choose between like() or where(), not both. */
 					/* FIXME: TODO: What exactly falls here ? */
@@ -2764,9 +2824,15 @@ class ND_Controller extends UW_Controller {
 			$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($result_query, 9))));
 
 			/* Pagination */
-			if ($page >= 0)
+			/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
+			if ($this->config['json_replies'] === true) {
+				if ($this->request->post('_limit'))
+					$result_query = $result_query . ' LIMIT ' . ($this->request->post('_offset') ? $this->request->post('_offset') : '0') . ', ' . ($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'));
+			} else if ($page >= 0) {
+				/* Limit results to the number of rows per page (pagination) */
 				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->config['table_pagination_rpp_result'];
-			
+			}
+
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
 			$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
 			
@@ -2808,10 +2874,13 @@ class ND_Controller extends UW_Controller {
 			$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
 
 
-			/* If this is a REST call, do not limit the results (as in, display all) */
-			if ($this->config['json_replies'] !== true && $page >= 0) {
+			/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
+			if ($this->config['json_replies'] === true) {
+				if ($this->request->post('_limit'))
+					$this->db->limit($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'), $this->request->post('_offset') ? $this->request->post('_offset') : 0);
+			} else if ($page >= 0) {
 				/* Limit results to the number of rows per page (pagination) */
-				$this->db->limit($this->config['table_pagination_rpp_result'], $page);
+				$this->db->limit($this->config['table_pagination_rpp_list'], $page);
 			}
 			
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
@@ -2839,9 +2908,6 @@ class ND_Controller extends UW_Controller {
 			$data['view']['links']['pagination'] = $this->pagination->create_links();
 			$data['view']['page'] = $page;
 		}
-
-		/* Hidden fields */
-		$data['config']['hidden_fields'] = $this->config['hide_fields_result'];
 
 		/* Setup breadcrumb */
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('search', NDPHP_LANG_MOD_OP_SEARCH, array('result', 'query', $data['view']['result_query']), NDPHP_LANG_MOD_OP_RESULT);

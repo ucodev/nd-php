@@ -83,7 +83,7 @@
 										<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
 									</div>
 									<div class="panel-body text-center">
-										<input id="search_criteria_checkbox_<?=filter_html_special($field, $config['charset'])?>" name="criteria_<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" type="checkbox" value="1">
+										<input id="search_criteria_checkbox_<?=filter_html_special($field, $config['charset'])?>" name="__criteria_<?=filter_html($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" type="checkbox" value="1">
 									</div>
 								</div>
 							</div>
@@ -263,7 +263,7 @@
 										<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>
 									</div>
 									<div class="panel-body text-center">
-										<input id="search_result_checkbox_<?=filter_html_special($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" name="result_<?=filter_html($field, $config['charset'])?>" type="checkbox" value="1" checked="checked">
+										<input id="search_result_checkbox_<?=filter_html_special($field, $config['charset'])?>" alt="<?=filter_html(ucfirst($meta['viewname']), $config['charset'])?>" name="__result_<?=filter_html($field, $config['charset'])?>" type="checkbox" value="1" checked="checked">
 									</div>
 								</div>
 							</div>

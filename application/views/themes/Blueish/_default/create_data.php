@@ -59,7 +59,7 @@
 
 	<?php $rel = array(); /* FIXME: We're populating the $rel in this view. This should be done by the controller. */ ?>
 
-	<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/insert" id="createform" name="createform" enctype="multipart/form-data" method="post">
+	<form class="form-horizontal" action="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/insert" id="createform-<?=filter_html($view['unique_id'], $config['charset'])?>" name="createform" enctype="multipart/form-data" method="post">
 
 		<?php if (file_exists($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_header.php')) { include($view['base_dir'] . '/' . $view['ctrl'] . '/create_data_custom_header.php'); } ?>
 

@@ -1,3 +1,13 @@
+v0.03f (2016-10-03):
+
+ - View data now contains a general purpose unique id value.
+ - Fixed issues with quick create under create / edit views.
+ - Fixed loading issues with REST API module.
+ - Added support for JSON REST API listing / result hard limit configuration (defaults to 500 entries).
+ - Added support for NDSL queries for both REST API and Web Interface Search Bar.
+ - Updated tracker.
+
+
 v0.03e1 (2016-09-28):
 
  - Fixed the high ammount of memcached connections from uWeb memcached driver support.
