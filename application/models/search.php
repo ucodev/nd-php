@@ -32,26 +32,37 @@
 
 /*
  *
- * The acronym 'ndsl' stands for ND Search Language (a DSL for searching ND PHP Framekwork data records)
+ * The acronym 'ndsl' stands for ND Search Language (a DSL for searching ND PHP Framekwork data records).
+ *
+ *
+ * TODO:
+ *
+ *  * Missing language support for result errors.
+ *  * Missing support for checkbox (booleans).
  *
  */
 
 class UW_Search extends UW_Model {
 	private $_result_error = 'None';
+	private $_context = NULL;
 
 	private function _get_type($value) {
 		if (is_array($value)) {
 			return "array";
 		} else if ($value[0] == '+' || $value[0] == '-') {
-			return "interval";
+			return "relative";
 		} else if (strptime($value, '%Y-%m-%d %H:%M:%S') !== false) {
 			return "datetime";
 		} else if (strptime($value, '%Y-%m-%d') !== false) {
 			return "date";
 		} else if (strptime($value, '%H:%M:%S') !== false) {
 			return "time";
-		} else if (gettype($value) == "integer" || gettype($value) == "double") {
-			return "numeric";
+		} else if (gettype($value) == "integer") {
+			return "integer";
+		} else if (gettype($value) == "double") {
+			return "double";
+		} else if (gettype($value) == "boolean") {
+			return "boolean";
 		} else {
 			return "string";
 		}
@@ -75,79 +86,172 @@ class UW_Search extends UW_Model {
 	}
 
 	public function ndsl_to_advsearch($query) {
+		/* Decode the NDSL query */
 		$ndsl = json_decode($query, true);
+
+		/* Initialize the advanced search context array */
 		$nadv = array();
 
-		$nadv['fields_criteria'] = array();
-		$nadv['fields_result'] = isset($ndsl['_show']) ? $ndsl['_show'] : array();
+		/* Set the result fields */
+		if (isset($ndsl['_show'])) {
+			foreach ($ndsl['_show'] as $result_field)
+				$nadv['__result_' . $result_field] = true;
+		}
 
+		/* Check if the 'id' field is part of the result list. If not, set it, as it is mandatory for any result */
+		if (!isset($nadv['__result_id']))
+			$nadv['__result_id'] = true;
+
+		/* Unset any unrequired values from now on */
+		unset($ndsl['_show']); /* NOTE: This MUST not be set in $nadv... otherwise it will conflict with any '_show' modifier that might be set with a REST RESULT call */
+
+		/* Start processing fields and criteria */
 		foreach ($ndsl as $field => $criteria) {
-			array_push($nadv['fields_criteria'], $field);
+			$this->_context = NULL; /* Reset context */
 
+			/* Set the criteria fields */
+			$nadv['__criteria_' . $field] = true;
+
+			/* Process criteria */
 			foreach ($criteria as $cond => $value) {
-				switch ($this->_value_type($value)) {
-					case "string": {
-						if ($cond != "contains")
+				/* Evaluate conditions */
+				switch ($cond) {
+					case 'contains': {
+						/* 'contains' condition expects no previous context */
+						if ($this->_context !== NULL) {
+							$this->_set_result_error("Unexpected context '" . $this->_context . "' found on field '" . $field . "' under condition '" . $cond . "'.");
+							return false;
+						}
+
+						/* 'contains' condition accepts only strings */
+						if ($this->_get_type($value) != 'string') {
+							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: String.");
+							return false;
+						}
+
+						/* Set the criteria value */
+						$nadv[$field] = $value;
+
+						/* Set the current context */
+						$this->_context = $cond;
+					} break;
+
+					case 'exact': {
+						/* 'exact' condition expects the context to be 'contains' */
+						if ($this->_context != 'contains') {
+							$this->_set_result_error("Unexpected condition '" . $cond . "' on field '" . $field . "'.");
+							return false;
+						}
+
+						$nadv[$field . '_exact'] = $value;
+					} break;
+
+					case 'diff': {
+						/* 'diff' condition expects the context to be 'contains' */
+						if ($this->_context != 'contains') {
+							$this->_set_result_error("Unexpected condition '" . $cond . "' on field '" . $field . "'.");
+							return false;
+						}
+
+						$nadv[$field . '_diff'] = $value;
+					} break;
+
+					/* TODO: Can't decide if this approach is ugly or not... for now it'll be kept as is */
+					case 'to':
+					case 'lt': if (!isset($nadv[$field . '_cond'])) $nadv[$field . '_cond'] = '<';
+					case 'eq': if (!isset($nadv[$field . '_cond'])) $nadv[$field . '_cond'] = '=';
+					case 'ne': if (!isset($nadv[$field . '_cond'])) $nadv[$field . '_cond'] = '!=';
+					case 'from':
+					case 'gt': if (!isset($nadv[$field . '_cond'])) $nadv[$field . '_cond'] = '>';
+					{
+						$suffix = ''; /* will only be set if this is a between condition (a 'from' and 'to' criteria must be set withint the same field) */
+
+						if ($cond == 'to') {
+							/* If we're under a 'from' context, this is a between condition... */
+							if ($this->_context == 'from') {
+								$nadv[$field . '_cond'] = '><'; /* between */
+								$suffix = '_to'; /* Set the suffix to '_to', enabling the second component of the search interval criteria */
+							} else if ($this->_context !== NULL) {
+								$this->_set_result_error("Unexpected context '" . $this->_context . "' found on field '" . $field . "' under condition '" . $cond . "'.");
+								return false;
+							}
+						} else {
+							/* 'lt', 'eq', 'ne' and 'gt' conditions expects no previous context */
+							if ($this->_context !== NULL) {
+								$this->_set_result_error("Unexpected context '" . $this->_context . "' found on field '" . $field . "' under condition '" . $cond . "'.");
+								return false;
+							}
+						}
+
+						/* Get value type */
+						$vtype = $this->_get_type($value);
+
+						/* 'gt' condition does not accept strings nor arrays */
+						if ($vtype == 'string' || $vtype == 'array' || $vtype == 'boolean') {
+							$this->_set_result_error("Unexpected type '" . $vtype . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Integer, Double, Relative, Datetime, Date or Time.");
+							return false;
+						}
+
+						/* datetime type needs special treatment ... */
+						if ($vtype == 'datetime') {
+							$datetime = explode(' ', $value); /* split segments */
+
+							$nadv[$field . $suffix] = $datetime[0]; /* date segment */
+							$nadv[$field . $suffix . '_time'] = $datetime[1]; /* time segment */
+						} else if ($vtype == 'relative') {
+							$nadv[$field . $suffix . '_custom'] = $value;
+						} else {
+							$nadv[$field . $suffix] = $value;
+						}
+
+						/* Set current context */
+						$this->_context = $cond;
+					} break;
+
+					case 'in': {
+						/* 'in' condition expects no previous context */
+						if ($this->_context !== NULL) {
+							$this->_set_result_error("Unexpected context '" . $this->_context . "' found on field '" . $field . "' under condition '" . $cond . "'.");
+							return false;
+						}
+
+						/* 'in' condition only accepts arrays */
+						if ($this->_get_type($value) != 'array') {
+							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Array.");
+							return false;
+						}
+
+						/* Set the criteria value */
+						$nadv[$field] = $value;
+
+						/* Set current context */
+						$this->_context = $cond;
+					} break;
+
+					case 'is': {
+						/* 'is' condition expects no previous context */
+						if ($this->_context !== NULL) {
+							$this->_set_result_error("Unexpected context '" . $this->_context . "' found on field '" . $field . "' under condition '" . $cond . "'.");
+							return false;
+						}
+
+						/* 'is' condition only accepts numeric */
+						if ($this->_get_type($value) != 'boolean') {
+							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Boolean.");
+							return false;
+						}
+
+						/* Set the criteria value */
+						$nadv[$field] = ($value === true) ? '1' : '0';
+
+						/* Set current context */
+						$this->_context = $cond;
 					} break;
 				}
-				/** Pre-process values **/
-
-				if (!isset($ast[$field]['value']))
-					$ast[$field]['value'] = $value;
-
-
-				$ast[$field]['type'] = $this->_value_type($value);
-				$ast[$field]['condition'] = $cond;
 			}
 		}
 
-		return $ast;
-	}
-
-				if (is_array($value)) {
-
-				} else {
-					
-					if ($value[0] == '+' || $value[0] == '-') {
-						/* Custom field values must start with a '+' or a '-' */
-						$ndadv[$field . '_custom'] = $value;
-					} else if (strptime($value, '%Y-%m-%d %H:%M:%S') !== false) {
-						/* Datetime fields must have two components (a date and a time) separated by space ' ' */
-						$datetime = explode(' ', $value);
-						$ndadv[$field . '_from'] = $datetime[0];
-						$ndadv[$field . '_from_time'] = $datetime[1];
-					} else if ((strptime($value, '%Y-%m-%d') !== false) || (strptime($value, '%H:%M:%S') !== false)) {
-						/* This is either a date or a time value... */
-						$ndadv[$field . '_from'] = $value;
-					} else if (gettype($value) == "integer" || gettype($value) == "double") {
-						/* Integers and doubles */
-						$ndadv[$field . '_from'] = $value;
-					} else {
-						/* TODO: FIXME: Set error type / string before returning false, so it can be retrieved by the upper layers */
-						return false;
-					}
-				}
-
-				/* Process conditions */
-				switch ($cond) {
-					/* Basic conditions */
-					case 'lt': $ndadv[$field] = $value; $ndadv[$field . '_cond'] = '<'; break;
-					case "eq": $ndadv[$field] = $value; $ndadv[$field . '_cond'] = '='; break;
-					case "ne": $ndadv[$field] = $value; $ndadv[$field . '_cond'] = '!='; break;
-					case "gt": $ndadv[$field] = $value; $nvadv[$field . '_cond'] = '>'; break;
-
-					/* Text conditions */
-					case "contains": $ndadv[$field] = $value; break;
-					case "exact": $ndadv[$field . '_exact'] = '1'; break;
-					case "diff": $ndadv[$field . '_diff'] = '1'; break;
-
-					/* Relational field conditions */
-					case "in": $ndadv[$field] = $value; break; /* TODO: Check if $value is array */
-					case "is": $ndadv[$field] = $value; break; /* TODO: Check if $value is NOT array */
-
-					case "between"
-				}
-			}
-		}
+		/* Return the advanced search translation */
+		return $nadv;
 	}
 }

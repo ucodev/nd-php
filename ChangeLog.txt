@@ -1,3 +1,8 @@
+v0.03h1 (2016-10-05):
+
+ - Replaced search model with the correct file.
+
+
 v0.03h (2016-10-05):
 
  - Fixed issues with group views.
