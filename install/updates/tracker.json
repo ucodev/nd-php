@@ -101,6 +101,7 @@
 			"application/views/documentation/overloads.php",
 			"application/views/themes/Blueish/_default/lib/charts.php",
 			"application/views/themes/Blueish/_default/lib/charts_foreign.php",
+			"application/views/themes/Blueish/_default/lib/current_context.php",
 			"application/views/themes/Blueish/_default/lib/mixed_create.php",
 			"application/views/themes/Blueish/_default/lib/mixed_edit.php",
 			"application/views/themes/Blueish/_default/lib/mixed_remove.php",

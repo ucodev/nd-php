@@ -43,11 +43,43 @@ class UW_Request extends UW_Module {
 		return $_GET;
 	}
 
+	public function get_unset($key) {
+		unset($_GET[$key]);
+	}
+
+	public function get_set($key, $value) {
+		$_GET[$key] = $value;
+	}
+
+	public function get_set_all($data) {
+		$_GET = $data;
+	}
+
+	public function get_isset($key) {
+		return isset($_GET[$key]);
+	}
+
 	public function post($key = NULL) {
 		if ($key !== NULL)
 			return $_POST[$key];
 
 		return $_POST;
+	}
+
+	public function post_unset($key) {
+		unset($_POST[$key]);
+	}
+
+	public function post_set($key, $value) {
+		$_POST[$key] = $value;
+	}
+
+	public function post_set_all($data) {
+		$_POST = $data;
+	}
+
+	public function post_isset($key) {
+		return isset($_POST[$key]);
 	}
 
 	public function input($key = NULL) {

@@ -244,15 +244,49 @@
 								<?=filter_html(NDPHP_LANG_MOD_MENU_LOGGING_NAME, $config['charset'])?>
 							</a>
 						</li>
-						<li id="menu_entry_configuration" class="<?=$view['ctrl'] == 'configuration' ? 'active' : ''?>">
-							<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_CONFIGURATION_DESC, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration" onclick="ndphp.ajax.load_body_menu(event, 'configuration', 'configuration');">
-								<?=filter_html(NDPHP_LANG_MOD_MENU_CONFIGURATION_NAME, $config['charset'])?>
+						<li id="menu_entry_system" class="dropdown">
+							<a href="#" class="dropdown-toggle <?=$view['ctrl'] == 'configuration' ? 'active' : ''?>" data-toggle="dropdown" role="button" aria-expanded="false">
+								<?=filter_html(NDPHP_LANG_MOD_MENU_SYSTEM_NAME, $config['charset'])?> <span class="caret"></span>
 							</a>
-						</li>
-						<li>
-							<a title="<?=filter_html(NDPHP_LANG_MOD_MENU_IDE_DESC, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/builder/ide" target="_blank">
-								<?=filter_html(NDPHP_LANG_MOD_MENU_IDE_NAME, $config['charset'])?>
-							</a>
+							<ul class="dropdown-menu" role="menu">
+								<li id="menu_entry_configuration">
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration" onclick="ndphp.ajax.load_body_menu(event, 'configuration', 'configuration');">
+										<?=filter_html(NDPHP_LANG_MOD_MENU_CONFIGURATION_NAME, $config['charset'])?>
+									</a>
+								</li>
+								<li id="menu_entry_charts_config">
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/charts_config" onclick="ndphp.ajax.load_body_menu(event, 'charts_config', 'charts_config');">
+										<?=filter_html(NDPHP_LANG_MOD_OP_CHARTS, $config['charset'])?>
+									</a>
+								</li>
+								<li id="menu_entry_scheduler">
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/scheduler" onclick="ndphp.ajax.load_body_menu(event, 'scheduler', 'scheduler');">
+										<?=filter_html(NDPHP_LANG_MOD_MENU_SCHEDULER_NAME, $config['charset'])?>
+									</a>
+								</li>
+								<li class="divider"></li>
+								<li>
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration/backup">
+										<?=filter_html(NDPHP_LANG_MOD_OP_BACKUP, $config['charset'])?>
+									</a>
+								</li>
+								<li>
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration/cache_clear">
+										<?=filter_html(NDPHP_LANG_MOD_OP_CACHE_CLEAR, $config['charset'])?>
+									</a>
+								</li>
+								<li class="divider"></li>
+								<li>
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/builder/ide" target="_blank">
+										<?=filter_html(NDPHP_LANG_MOD_MENU_IDE_NAME, $config['charset'])?>
+									</a>
+								</li>
+								<li>
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration/update">
+										<?=filter_html(NDPHP_LANG_MOD_OP_UPDATE, $config['charset'])?>
+									</a>
+								</li>
+							</ul>
 						</li>
 					<?php endif; ?>
 					<li>

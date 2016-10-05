@@ -554,6 +554,8 @@ define('NDPHP_LANG_MOD_MENU_SESSIONS_NAME',			'Sessions');
 define('NDPHP_LANG_MOD_MENU_SESSIONS_DESC',			'Sessions');
 define('NDPHP_LANG_MOD_MENU_SUBSCRIPTION_TYPES_NAME','Subscription Types');
 define('NDPHP_LANG_MOD_MENU_SUBSCRIPTION_TYPES_DESC','Subscription Types');
+define('NDPHP_LANG_MOD_MENU_SYSTEM_NAME',			'System');
+define('NDPHP_LANG_MOD_MENU_SYSTEM_DESC',			'System');
 define('NDPHP_LANG_MOD_MENU_THEMES_NAME',			'Themes');
 define('NDPHP_LANG_MOD_MENU_THEMES_DESC',			'Themes');
 define('NDPHP_LANG_MOD_MENU_THEMES_ANIM_DEFAULT_NAME','Default Animations');
@@ -572,7 +574,7 @@ define('NDPHP_LANG_MOD_MENU_WEEKDAYS_NAME',			'Weekdays');
 define('NDPHP_LANG_MOD_MENU_WEEKDAYS_DESC',			'Weekdays');
 define('NDPHP_LANG_MOD_MENU_SUPPORT_NAME',			'Support');
 define('NDPHP_LANG_MOD_MENU_SUPPORT_DESC',			'Email Support');
-define('NDPHP_LANG_MOD_MENU_IDE_NAME',				'IDE');
+define('NDPHP_LANG_MOD_MENU_IDE_NAME',				'IDE Builder');
 define('NDPHP_LANG_MOD_MENU_IDE_DESC',				'IDE Builder');
 
 define('NDPHP_LANG_MOD_LOGIN_LOGIN',				'Login');

@@ -121,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03g';
+	protected $_ndphp_version = '0.03h';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -953,15 +953,15 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* POST data handlers */
-		if (count($_POST)) {
+		if (count($this->request->post())) {
 			/* Set all $_POST keys to lowercase */
-			foreach ($_POST as $key => $value) {
-				unset($_POST[$key]);
-				$_POST[strtolower($key)] = $value;
+			foreach ($this->request->post() as $key => $value) {
+				$this->request->post_unset($key);
+				$this->request->post_set(strtolower($key), $value);
 			}
 
 			/* Grant that $_POST keys are safe, if any */
-			if (!$this->request->is_json() && count($_POST) && !$this->security->safe_keys($_POST, $this->_security_safe_chars))
+			if (!$this->request->is_json() && count($this->request->post()) && !$this->security->safe_keys($this->request->post(), $this->_security_safe_chars))
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 		}
 
@@ -1000,7 +1000,7 @@ class ND_Controller extends UW_Controller {
 				$this->_load_module('rest', true);
 
 				/* Set the json data as $_POST */
-				$_POST = $json_req['data'];
+				$this->request->post_set_all($json_req['data']);
 
 				/* TODO: FIXME: Pre-validate _apikey and _userid format before querying the database */
 
@@ -1444,8 +1444,11 @@ class ND_Controller extends UW_Controller {
 
 	protected function list_generic($field = NULL, $order = NULL, $page = 0) {
 		/* Sanity checks */
-		if ($page < 0)
-			$page = 0; /* TODO: FIXME: Shall we send an error response instead of silentely change $page value? */
+		/* TODO: FIXME: NOTE: Negative $page values are being used by groups to fetch the full list of records...
+		 * Before we grant that $page is equal or greater than 0, we need to redesigned the group handlers.
+		 */
+		//if ($page < 0)
+		//	$page = 0; /* TODO: FIXME: Shall we send an error response instead of silentely change $page value? */
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
@@ -1783,16 +1786,16 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_REQUEST, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Some sanity checks first */
-		if (!in_array($_POST['import_csv_sep'], array(',', ';')))
+		if (!in_array($this->request->post('import_csv_sep'), array(',', ';')))
 			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!in_array($_POST['import_csv_delim'], array('"', '\'')))
+		if (!in_array($this->request->post('import_csv_delim'), array('"', '\'')))
 			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!in_array($_POST['import_csv_esc'], array('\\')))
+		if (!in_array($this->request->post('import_csv_esc'), array('\\')))
 			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!in_array($_POST['import_csv_rel_type'], array('value', 'id')))
+		if (!in_array($this->request->post('import_csv_rel_type'), array('value', 'id')))
 			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Craft CSV file destination path */
@@ -1826,7 +1829,7 @@ class ND_Controller extends UW_Controller {
 			/* Open CSV file */
 			if (($fp_csv = fopen($dest_path . '/' . $file_hash, 'r')) === false)
 				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_READ . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
-		} else if ($_POST['import_csv_text']) {
+		} else if ($this->request->post('import_csv_text')) {
 			/* Create a temporary file hash */
 			$file_hash = openssl_digest($dest_path . mt_rand(1000000, 9999999), 'sha256');
 
@@ -1835,7 +1838,7 @@ class ND_Controller extends UW_Controller {
 				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Write CSV contents to file */
-			if (fwrite($fp_csv, $_POST['import_csv_text']) === false)
+			if (fwrite($fp_csv, $this->request->post('import_csv_text')) === false)
 				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Close the CSV file so we can re-open it as read-only */
@@ -1852,7 +1855,7 @@ class ND_Controller extends UW_Controller {
 		/** Process the CSV stream **/
 
 		/* Fetch the CSV header */
-		$header = fgetcsv($fp_csv, 0, $_POST['import_csv_sep'], $_POST['import_csv_delim'], $_POST['import_csv_esc']);
+		$header = fgetcsv($fp_csv, 0, $this->request->post('import_csv_sep'), $this->request->post('import_csv_delim'), $this->request->post('import_csv_esc'));
 
 		/* Set the current line of file */
 		$line = 1;
@@ -1895,7 +1898,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Fetch CSV rows */
 		while (true) {
-			$row = fgetcsv($fp_csv, 0, $_POST['import_csv_sep'], $_POST['import_csv_delim'], $_POST['import_csv_esc']);
+			$row = fgetcsv($fp_csv, 0, $this->request->post('import_csv_sep'), $this->request->post('import_csv_delim'), $this->request->post('import_csv_esc'));
 
 			/* Increment the current line number */
 			$line ++;
@@ -1984,7 +1987,7 @@ class ND_Controller extends UW_Controller {
 
 					/* Multiple relationships aren't regular fields, so they won't be placed on $entry array */
 					continue;
-				} else if (substr($header[$i], -3) == '_id' && $_POST['import_csv_rel_type'] == 'value') {
+				} else if (substr($header[$i], -3) == '_id' && $this->request->post('import_csv_rel_type') == 'value') {
 					/* Resolve $row[$i] value to integer id by fetching it from foreign table */
 
 					/* Get foreign table name */
@@ -2096,10 +2099,10 @@ class ND_Controller extends UW_Controller {
 		$this->db->trans_begin();
 
 		$this->db->insert('_saved_searches', array(
-			'search_name'	=> $_POST['search_save_name'],
-			'description'	=> $_POST['search_save_description'],
+			'search_name'	=> $this->request->post('search_save_name'),
+			'description'	=> $this->request->post('search_save_description'),
 			'controller'	=> $this->config['name'],
-			'result_query'	=> $_POST['search_save_result_query'],
+			'result_query'	=> $this->request->post('search_save_result_query'),
 			'users_id'		=> $this->config['session_data']['user_id']
 		));
 
@@ -2227,8 +2230,11 @@ class ND_Controller extends UW_Controller {
 	protected function result_generic($type = 'advanced', $result_query = NULL,
 							$order_field = NULL, $order_type = NULL, $page = 0) {
 		/* Sanity checks */
-		if ($page < 0)
-			$page = 0; /* TODO: FIXME: Shall we send an error response instead of silentely change $page value? */
+		/* TODO: FIXME: NOTE: Negative $page values are being used by groups to fetch the full list of records...
+		 * Before we grant that $page is equal or greater than 0, we need to redesigned the group handlers.
+		 */
+		//if ($page < 0)
+		//	$page = 0; /* TODO: FIXME: Shall we send an error response instead of silentely change $page value? */
 
 		/* Security Permissions Check */
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
@@ -2259,7 +2265,7 @@ class ND_Controller extends UW_Controller {
 			/* table      */ $this->config['name'],
 			/* field      */ 'PAGE / FIELD / ORDER',
 			/* entry_id   */ ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_result']) + 1) . ' / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])) : ('0 / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])),
-			/* value_new  */ (($type == "basic") ? $_POST['search_value'] : (($type == "query") ? $result_query : json_encode($_POST, JSON_PRETTY_PRINT))),
+			/* value_new  */ (($type == "basic") ? $this->request->post('search_value') : (($type == "query") ? $result_query : json_encode($this->request->post(), JSON_PRETTY_PRINT))),
 			/* value_old  */ NULL,
 			/* session_id */ $this->config['session_data']['sessions_id'],
 			/* user_id    */ $this->config['session_data']['user_id'],
@@ -2299,22 +2305,22 @@ class ND_Controller extends UW_Controller {
 		$data['config']['choices_class'] = $this->config['rel_choice_table_row_class'];
 
 		/* Check if the search value is a NDSL query and convert the result parameters accordingly */
-		if (isset($_POST['search_value']) && $this->search->is_ndsl($_POST['search_value'])) {
+		if ($this->request->post_isset('search_value') && $this->search->is_ndsl($this->request->post('search_value'))) {
 			/* Convert the NDSL query to an advanced search context */
-			$nadv = $this->search->ndsl_to_advsearch($_POST['search_value']);
+			$nadv = $this->search->ndsl_to_advsearch($this->request->post('search_value'));
 
 			/* Check if conversion was successful by checking if $nadv !== false. If it failed, throw some error */
 			if ($nadv === false)
 				$this->response->code('500', $this->search->get_result_error(), $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Updadte the view search_value context */
-			$data['view']['search_value'] = $_POST['search_value'];
+			$data['view']['search_value'] = $this->request->post('search_value');
 
 			/* Unset POST data */
-			unset($_POST['search_value']);
+			$this->request->post_unset('search_value');
 
 			/* Set the new POST data with the $nadv context */
-			$_POST = $nadv;
+			$this->request->post_set_all($nadv);
 
 			/* Change search type to advanced */
 			$type = 'advanced';
@@ -2328,6 +2334,8 @@ class ND_Controller extends UW_Controller {
 			/* Hidden fields */
 			$data['config']['hidden_fields'] = array();
 		} else if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
+			/* REST calls with '_show' modifier set are allowed to set the fields to be shown in the result */
+
 			/* FIXME: Avoid using 2 calls to $this->get->fields() ... Use an unfiltered $this->get->fields() and generate two filtered lists from it */
 			$ftypes = $this->get->fields(NULL);
 			$ftypes_result = $this->get->fields(NULL);
@@ -2389,7 +2397,7 @@ class ND_Controller extends UW_Controller {
 							continue;
 
 						/* FIXME: Currently we only support string matching (partial date and datetime values are not yet implemented) */
-						$this->db->or_like($field . '.' . $mixed_field, '%' . $_POST['search_value'] . '%');
+						$this->db->or_like($field . '.' . $mixed_field, '%' . $this->request->post('search_value') . '%');
 					}
 				} else if (($ftype['input_type'] == 'text') || ($ftype['input_type'] == 'textarea') || 
 						($ftype['input_type'] == 'timer') || ($ftype['input_type'] == 'file')) {
@@ -2398,50 +2406,50 @@ class ND_Controller extends UW_Controller {
 						 * Also use YEAR(), MONTH() and DAY() functions to search for each
 						 * date field independently.
 						 */
-						if (is_numeric($_POST['search_value'])) {
-							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $_POST['search_value'] . '%');
-							$this->db->or_where('YEAR(' . $this->field->unambig($field, $ftypes) . ')', $_POST['search_value'], false);
-							$this->db->or_where('MONTH(' . $this->field->unambig($field, $ftypes) . ')', $_POST['search_value'], false);
-							$this->db->or_where('DAY(' . $this->field->unambig($field, $ftypes) . ')', $_POST['search_value'], false);
+						if (is_numeric($this->request->post('search_value'))) {
+							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $this->request->post('search_value') . '%');
+							$this->db->or_where('YEAR(' . $this->field->unambig($field, $ftypes) . ')', $this->request->post('search_value'), false);
+							$this->db->or_where('MONTH(' . $this->field->unambig($field, $ftypes) . ')', $this->request->post('search_value'), false);
+							$this->db->or_where('DAY(' . $this->field->unambig($field, $ftypes) . ')', $this->request->post('search_value'), false);
 						} else {
-							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $_POST['search_value'] . '%');
-							$this->db->or_where($this->field->unambig($field, $ftypes), $_POST['search_value']);
+							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $this->request->post('search_value') . '%');
+							$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post('search_value'));
 						}
 					} else if ($ftype['type'] == 'time') {
-						if (is_numeric($_POST['search_value'])) {
-							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $_POST['search_value'] . '%');
-							$this->db->or_where('HOUR(' . $this->field->unambig($field, $ftypes) . ')', $_POST['search_value'], false);
-							$this->db->or_where('MINUTE(' . $this->field->unambig($field, $ftypes) . ')', $_POST['search_value'], false);
-							$this->db->or_where('SECOND(' . $this->field->unambig($field, $ftypes) . ')', $_POST['search_value'], false);
+						if (is_numeric($this->request->post('search_value'))) {
+							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $this->request->post('search_value') . '%');
+							$this->db->or_where('HOUR(' . $this->field->unambig($field, $ftypes) . ')', $this->request->post('search_value'), false);
+							$this->db->or_where('MINUTE(' . $this->field->unambig($field, $ftypes) . ')', $this->request->post('search_value'), false);
+							$this->db->or_where('SECOND(' . $this->field->unambig($field, $ftypes) . ')', $this->request->post('search_value'), false);
 						} else {
-							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $_POST['search_value'] . '%');
-							$this->db->or_where($this->field->unambig($field, $ftypes), $_POST['search_value']);
+							$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $this->request->post('search_value') . '%');
+							$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post('search_value'));
 						}
 					} else if ($ftype['type'] == 'datetime') {
 						/* Use CONVERT_TZ() SQL function on WHERE clause to correctly setup the user timezone */
-						if (is_numeric($_POST['search_value'])) {
-							$this->db->or_like('CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\')', '%' . $_POST['search_value'] . '%', false);
-							$this->db->or_where('HOUR(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
-							$this->db->or_where('MINUTE(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
-							$this->db->or_where('SECOND(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
-							$this->db->or_where('YEAR(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
-							$this->db->or_where('MONTH(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
-							$this->db->or_where('DAY(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
+						if (is_numeric($this->request->post('search_value'))) {
+							$this->db->or_like('CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\')', '%' . $this->request->post('search_value') . '%', false);
+							$this->db->or_where('HOUR(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
+							$this->db->or_where('MINUTE(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
+							$this->db->or_where('SECOND(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
+							$this->db->or_where('YEAR(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
+							$this->db->or_where('MONTH(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
+							$this->db->or_where('DAY(CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
 						} else {
-							$this->db->or_like('CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\')', '%' . $_POST['search_value'] . '%', false);
-							$this->db->or_where('DATE(CONVERT_TZ('. $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
-							$this->db->or_where('TIME(CONVERT_TZ('. $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $_POST['search_value'], false);
+							$this->db->or_like('CONVERT_TZ(' . $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\')', '%' . $this->request->post('search_value') . '%', false);
+							$this->db->or_where('DATE(CONVERT_TZ('. $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
+							$this->db->or_where('TIME(CONVERT_TZ('. $this->field->unambig($field, $ftypes) . ', \'' . $this->config['default_timezone'] . '\', \'' . $this->config['session_data']['timezone'] . '\'))', $this->request->post('search_value'), false);
 						}
 					} else {
 						/* If anything else matched, treat this as a regular string */
-						$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $_POST['search_value'] . '%');
+						$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $this->request->post('search_value') . '%');
 					}
 				} else if ($ftype['input_type'] == 'checkbox') {
 					/* Override 'true' / 'false' searches to match boolean values on DB */
-					if (strtolower($_POST['search_value']) == $this->config['word_true']) {
+					if (strtolower($this->request->post('search_value')) == $this->config['word_true']) {
 						/* Only fields with value 1 are considered True */
 						$this->db->or_where($this->field->unambig($field, $ftypes), 1);
-					} else if (strtolower($_POST['search_value']) == $this->config['word_false']) {
+					} else if (strtolower($this->request->post('search_value')) == $this->config['word_false']) {
 						/* If the value is NULL or 0, it is considered False */
 						$this->db->or_is_null($this->field->unambig($field, $ftypes));
 						$this->db->or_where($this->field->unambig($field, $ftypes), 0);
@@ -2456,51 +2464,54 @@ class ND_Controller extends UW_Controller {
 						$table_fields = $this->get->table_fields($ftype['table']);
 							
 						foreach ($this->config['rel_table_fields_config'][$ftype['table']][2] as $rel_field) {
-							$this->db->or_like($this->field->unambig($table_fields[$rel_field], $ftype), '%' . $_POST['search_value'] . '%');
+							$this->db->or_like($this->field->unambig($table_fields[$rel_field], $ftype), '%' . $this->request->post('search_value') . '%');
 						}
 					} else {
 						/* Default altname for single relationships is always the first field name of the foreign table */
-						$this->db->or_like('`' . $ftype['table'] . '`.`' . $ftype['altname'] . '`', '%' . $_POST['search_value'] . '%');
+						$this->db->or_like('`' . $ftype['table'] . '`.`' . $ftype['altname'] . '`', '%' . $this->request->post('search_value') . '%');
 					}
 				} else {
-					if (is_numeric($_POST['search_value']))
-						$this->db->or_where($this->field->unambig($field, $ftypes), $_POST['search_value']);
+					if (is_numeric($this->request->post('search_value')))
+						$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post('search_value'));
 				}
 			}
 
-			$data['view']['search_value'] = $_POST['search_value'];
+			$data['view']['search_value'] = $this->request->post('search_value');
 		} else if ($type == 'advanced') {
 			/* We're comming from an advanced search */
 
 			/* Convert checkbox input names to field arrays */
-			$_POST['fields_result'] = NULL;
-			$_POST['fields_criteria'] = NULL;
 
-			foreach ($_POST as $post_field => $post_value) {
+			$fields_criteria = array();
+			$fields_result = array();
+
+			foreach ($this->request->post() as $post_field => $post_value) {
 				if (substr($post_field, 0, 11) == '__criteria_') {
-					/* POST variable matches the criteria_<field name> format */
-					if ($_POST['fields_criteria'] == NULL)
-						$_POST['fields_criteria'] = array();
-					
-					array_push($_POST['fields_criteria'], substr($post_field, 11));
-					unset($_POST[$post_field]);
+					array_push($fields_criteria, substr($post_field, 11));
+					$this->request->post_unset($post_field);
 				} else if (substr($post_field, 0, 9) == '__result_') {
-					/* POST variable matches the result_<field name> format */
-					if ($_POST['fields_result'] == NULL)
-						$_POST['fields_result'] = array();
-
-					array_push($_POST['fields_result'], substr($post_field, 9));
-					unset($_POST[$post_field]);
+					array_push($fields_result, substr($post_field, 9));
+					$this->request->post_unset($post_field);
 				}
 			}
 
+			$this->request->post_set('fields_criteria', $fields_criteria);
+			$this->request->post_set('fields_result', $fields_result);
+
 			/* Grant that Id field is selected on result fields */
-			if (!in_array('id', $_POST['fields_result']))
+			if (!in_array('id', $this->request->post('fields_result')))
 				$this->response->code('403', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Grant that at least one search criteria field is selected */
-			if (!count($_POST['fields_criteria']))
+			if (!count($this->request->post('fields_criteria')))
 				$this->response->code('403', NDPHP_LANG_MOD_MISSING_SEARCH_CRITERIA, $this->config['default_charset'], !$this->request->is_ajax());
+
+
+			/* Check if result and criteria contain at least one field */
+			if (!$this->request->post('fields_result') || !$this->request->post('fields_criteria')) {
+				/* FIXME: TODO: a redirect() isn't a good approach here ... better to raise some error */
+				redirect($this->config['name'] . '/search');
+			}
 
 			/* TODO:
 			 * 
@@ -2513,30 +2524,28 @@ class ND_Controller extends UW_Controller {
 			 * datetime fields.
 			 * 
 			 */
-			if (($_POST['fields_result'] == NULL) || ($_POST['fields_criteria'] == NULL))
-				redirect($this->config['name'] . '/search');
 
 			/* Create criteria by processing each field type and respective selected options */
-			foreach ($_POST['fields_criteria'] as $field) {
+			foreach ($this->request->post('fields_criteria') as $field) {
 				/* Check if there are missing fields */
-				if (!isset($_POST[$field]))
-					$_POST[$field] = NULL; /* In case it is not set, set is as NULL */
+				if (!$this->request->post_isset($field))
+					$this->request->post_set($field, NULL); /* In case it is not set, set is as NULL */
 
 				/* Check permissions */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_search, $this->config['name'], $field))
 					continue;
 
 				/* Check for NULL comparisions... but don't compare NULL datetime fields that contain a custom interval set (in this case only the custom interval field will be processed) */
-				if ((($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] != 'datetime' && $ftypes[$field]['type'] != 'date' && $ftypes[$field]['type'] != 'time') ||
-							(($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] == 'datetime' && !$_POST[$field . '_custom']) ||
-							(($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] == 'date' && !$_POST[$field . '_custom']) ||
-							(($_POST[$field] === NULL || $_POST[$field] === '') && $ftypes[$field]['type'] == 'time' && !$_POST[$field . '_custom']))
+				if ((($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] != 'datetime' && $ftypes[$field]['type'] != 'date' && $ftypes[$field]['type'] != 'time') ||
+							(($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] == 'datetime' && !$this->request->post($field . '_custom')) ||
+							(($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] == 'date' && !$this->request->post($field . '_custom')) ||
+							(($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] == 'time' && !$this->request->post($field . '_custom')))
 				{
 					$negate = false;
 					
-					if (isset($_POST[$field . '_cond']) && ($_POST[$field . '_cond'] == '!=')) {
+					if ($this->request->post_isset($field . '_cond') && ($this->request->post($field . '_cond') == '!=')) {
 						$negate = true;
-					} else if (isset($_POST[$field . '_diff']) && ($_POST[$field . '_diff'])) {
+					} else if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
 						$negate = true;
 					}
 
@@ -2594,17 +2603,17 @@ class ND_Controller extends UW_Controller {
 							continue;
 
 						/* Determine if this is 'pattern', 'exact' or 'different than' match */
-						if (isset($_POST[$field . '_exact']) && $_POST[$field . '_exact']) {
-							if (isset($_POST[$field . '_diff']) && ($_POST[$field . '_diff'])) {
-								$this->db->where($field . '.' . $mixed_field . ' !=', $_POST[$field]);
+						if ($this->request->post_isset($field . '_exact') && $this->request->post($field . '_exact')) {
+							if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
+								$this->db->where($field . '.' . $mixed_field . ' !=', $this->request->post($field));
 							} else {
-								$this->db->or_where($field . '.' . $mixed_field, $_POST[$field]);
+								$this->db->or_where($field . '.' . $mixed_field, $this->request->post($field));
 							}
 						} else {
-							if (isset($_POST[$field . '_diff']) && ($_POST[$field . '_diff'])) {
-								$this->db->not_like($field . '.' . $mixed_field, '%' . $_POST[$field] . '%');
+							if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
+								$this->db->not_like($field . '.' . $mixed_field, '%' . $this->request->post($field) . '%');
 							} else {
-								$this->db->or_like($field . '.' . $mixed_field, '%' . $_POST[$field] . '%');
+								$this->db->or_like($field . '.' . $mixed_field, '%' . $this->request->post($field) . '%');
 							}
 						}
 					}
@@ -2618,23 +2627,23 @@ class ND_Controller extends UW_Controller {
 							($ftypes[$field]['type'] != 'time') &&
 							($ftypes[$field]['type'] != 'timer') &&
 							($ftypes[$field]['type'] != 'datetime')) {
-					if (isset($_POST[$field . '_exact']) && $_POST[$field . '_exact']) {
+					if ($this->request->post_isset($field . '_exact') && $this->request->post($field . '_exact')) {
 						/* Exact match */
-						if (isset($_POST[$field . '_diff']) && ($_POST[$field . '_diff'])) {
+						if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
 							/* Different than */
-							$this->db->where($this->field->unambig($field, $ftypes) . ' !=', $_POST[$field]);
+							$this->db->where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
 						} else {
 							/* Equal to */
-							$this->db->where($this->field->unambig($field, $ftypes), $_POST[$field]);
+							$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
 						}
 					} else {
 						/* Pattern matching */
-						if (isset($_POST[$field . '_diff']) && ($_POST[$field . '_diff'])) {
+						if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
 							/* Not like */
-							$this->db->not_like($this->field->unambig($field, $ftypes), '%' . $_POST[$field] . '%');
+							$this->db->not_like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
 						} else {
 							/* Like */
-							$this->db->like($this->field->unambig($field, $ftypes), '%' . $_POST[$field] . '%');
+							$this->db->like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
 						}
 					}
 				} else if (($ftypes[$field]['input_type'] == 'number') ||
@@ -2648,160 +2657,160 @@ class ND_Controller extends UW_Controller {
 					$where_clause_enforce = true;
 
 					if ($ftypes[$field]['type'] == 'time') {
-						if (isset($_POST[$field . '_custom']) && $_POST[$field . '_custom']) {
+						if ($this->request->post_isset($field . '_custom') && $this->request->post($field . '_custom')) {
 							/* Compute the SQL interval string parameters based on the supplied interval value */
-							$interval_fields = $this->get->interval_fields($_POST[$field . '_custom']);
+							$interval_fields = $this->get->interval_fields($this->request->post($field . '_custom'));
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
 								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
-							$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
+							$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 
 							/* Do not enforce value component of the where clause... we need it raw */
 							$where_clause_enforce = 'name_only';
 						}
 
-						unset($_POST[$field . '_custom']);
+						$this->request->post_unset($field . '_custom');
 					} else if ($ftypes[$field]['type'] == 'date') {
-						if (isset($_POST[$field . '_custom']) && $_POST[$field . '_custom']) {
+						if ($this->request->post_isset($field . '_custom') && $this->request->post($field . '_custom')) {
 							/* Compute the SQL interval string parameters based on the supplied interval value */
-							$interval_fields = $this->get->interval_fields($_POST[$field . '_custom']);
+							$interval_fields = $this->get->interval_fields($this->request->post($field . '_custom'));
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
 								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
-							$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
+							$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 
 							/* Do not enforce value component of the where clause... we need it raw */
 							$where_clause_enforce = 'name_only';
 						}
 
-						unset($_POST[$field . '_custom']);
+						$this->request->post_unset($field . '_custom');
 					} else if ($ftypes[$field]['type'] == 'datetime') {
 						/* Check if custom interval was set */
-						if (isset($_POST[$field . '_custom']) && $_POST[$field . '_custom']) {
+						if ($this->request->post_isset($field . '_custom') && $this->request->post($field . '_custom')) {
 							/* Compute the SQL interval string parameters based on the supplied interval value */
-							$interval_fields = $this->get->interval_fields($_POST[$field . '_custom']);
+							$interval_fields = $this->get->interval_fields($this->request->post($field . '_custom'));
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
 								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
-							$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
+							$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 
 							/* Do not enforce value component of the where clause... we need it raw */
 							$where_clause_enforce = 'name_only';
 						} else {
 							/* If the time field is empty, assume 00:00:00 */
-							if (!$_POST[$field . '_time'])
-								$_POST[$field . '_time'] = '00:00:00';
+							if (!$this->request->post($field . '_time'))
+								$this->request->post_set($field . '_time', '00:00:00');
 
 							/* Otherwise just merge date and time fields */
-							$_POST[$field] = $this->timezone->convert($_POST[$field] . ' ' . $_POST[$field . '_time'], $this->config['session_data']['timezone'], $this->config['default_timezone']);
+							$this->request->post_set($field, $this->timezone->convert($this->request->post($field) . ' ' . $this->request->post($field . '_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
 						}
 
-						unset($_POST[$field . '_time']);
-						unset($_POST[$field . '_custom']);
+						$this->request->post_unset($field . '_time');
+						$this->request->post_unset($field . '_custom');
 					}
 
 					/* Numbers, Times and Dates are processed with the same comparators */
-					if (($_POST[$field . '_cond'] != '><') && ($_POST[$field . '_cond'] != '=')) {
+					if (($this->request->post($field . '_cond') != '><') && ($this->request->post($field . '_cond') != '=')) {
 						/* Lesser, Greater, Different */
-						$this->db->where($this->field->unambig($field, $ftypes) . ' ' . $_POST[$field . '_cond'], $_POST[$field], $where_clause_enforce);
-					} else if ($_POST[$field . '_cond'] == '><') {
+						$this->db->where($this->field->unambig($field, $ftypes) . ' ' . $this->request->post($field . '_cond'), $this->request->post($field), $where_clause_enforce);
+					} else if ($this->request->post($field . '_cond') == '><') {
 						/* Between */
 						/* FIXME: TODO: Use between() function here */
-						$this->db->where($this->field->unambig($field, $ftypes) . ' >=', $_POST[$field], $where_clause_enforce);
+						$this->db->where($this->field->unambig($field, $ftypes) . ' >=', $this->request->post($field), $where_clause_enforce);
 						
 						/* Field _to requires special processing */
 						if ($ftypes[$field]['type'] == 'time') {
-							if (isset($_POST[$field . '_to_custom']) && $_POST[$field . '_to_custom']) {
+							if ($this->request->post_isset($field . '_to_custom') && $this->request->post($field . '_to_custom')) {
 								/* Compute the SQL interval string parameters based on the supplied interval value */
-								$interval_fields = $this->get->interval_fields($_POST[$field . '_to_custom']);
+								$interval_fields = $this->get->interval_fields($this->request->post($field . '_to_custom'));
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
 									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
-								$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
+								$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 
 								/* Do not enforce value component of the where clause... we need it raw */
 								$where_clause_enforce = 'name_only';
 							}
 
-							unset($_POST[$field . '_to_custom']);
+							$this->request->post_unset($field . '_to_custom');
 						} else if ($ftypes[$field]['type'] == 'date') {
-							if (isset($_POST[$field . '_to_custom']) && $_POST[$field . '_to_custom']) {
+							if ($this->request->post_isset($field . '_to_custom') && $this->request->post($field . '_to_custom')) {
 								/* Compute the SQL interval string parameters based on the supplied interval value */
-								$interval_fields = $this->get->interval_fields($_POST[$field . '_to_custom']);
+								$interval_fields = $this->get->interval_fields($this->request->post($field . '_to_custom'));
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
 									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
-								$_POST[$field] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
+								$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 
 								/* Do not enforce value component of the where clause... we need it raw */
 								$where_clause_enforce = 'name_only';
 							}
 
-							unset($_POST[$field . '_to_custom']);
+							$this->request->post_unset($field . '_to_custom');
 						} else if ($ftypes[$field]['type'] == 'datetime') {
 							/* Check if custom interval was set */
-							if (isset($_POST[$field . '_to_custom']) && $_POST[$field . '_to_custom']) {
+							if ($this->request->post_isset($field . '_to_custom') && $this->request->post($field . '_to_custom')) {
 								/* Compute the SQL interval string parameters based on the supplied interval value */
-								$interval_fields = $this->get->interval_fields($_POST[$field . '_to_custom']);
+								$interval_fields = $this->get->interval_fields($this->request->post($field . '_to_custom'));
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
 									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
-								$_POST[$field . '_to'] = 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2];
+								$this->request->post_set($field . '_to', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
 
 								/* Do not enforce value component of the where clause... we need it raw */
 								$where_clause_enforce = 'name_only';
 							} else {
 								/* If the time field is empty, assume 00:00:00 */
-								if (!$_POST[$field . '_to_time'])
-									$_POST[$field . '_to_time'] = '00:00:00';
+								if (!$this->request->post($field . '_to_time'))
+									$this->request->post_set($field . '_to_time', '00:00:00');
 
-								$_POST[$field . '_to'] = $this->timezone->convert($_POST[$field . '_to'] . ' ' . $_POST[$field . '_to_time'], $this->config['session_data']['timezone'], $this->config['default_timezone']);
+								$this->request->post_set($field . '_to', $this->timezone->convert($this->request->post($field . '_to') . ' ' . $this->request->post($field . '_to_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
 							}
 
-							unset($_POST[$field . '_to_time']);
-							unset($_POST[$field . '_to_custom']);
+							$this->request->post_unset($field . '_to_time');
+							$this->request->post_unset($field . '_to_custom');
 						}
 
-						$this->db->where($this->field->unambig($field, $ftypes) . ' <=', $_POST[$field . '_to'], $where_clause_enforce);
+						$this->db->where($this->field->unambig($field, $ftypes) . ' <=', $this->request->post($field . '_to'), $where_clause_enforce);
 					} else {
 						/* The condition is '=' (equal) */
-						$this->db->where($this->field->unambig($field, $ftypes), $_POST[$field], $where_clause_enforce);
+						$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field), $where_clause_enforce);
 					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] != 'rel')) {
-					if (is_array($_POST[$field])) {
-						$this->db->where_in($this->config['name'] . '.' . $field, $_POST[$field]);
+					if (is_array($this->request->post($field))) {
+						$this->db->where_in($this->config['name'] . '.' . $field, $this->request->post($field));
 					} else {
-						$this->db->where($this->config['name'] . '.' . $field, $_POST[$field]);
+						$this->db->where($this->config['name'] . '.' . $field, $this->request->post($field));
 					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel')) {
-					if (is_array($_POST[$field])) {
-						$this->db->where_in($ftypes[$field]['table'] . '.id', $_POST[$field]);
+					if (is_array($this->request->post($field))) {
+						$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
 					} else {
-						$this->db->where($ftypes[$field]['table'] . '.id', $_POST[$field]);
+						$this->db->where($ftypes[$field]['table'] . '.id', $this->request->post($field));
 					}
 				} else {
 					/* FIXME: TODO: Choose between like() or where(), not both. */
 					/* FIXME: TODO: What exactly falls here ? */
-					$this->db->like($this->field->unambig($field, $ftypes), $_POST[$field]);
-					$this->db->where($this->field->unambig($field, $ftypes), $_POST[$field]);
+					$this->db->like($this->field->unambig($field, $ftypes), $this->request->post($field));
+					$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
 				}
 			}
 		}
@@ -2884,10 +2893,10 @@ class ND_Controller extends UW_Controller {
 					array_push($selected, 'id');
 
 				/* Resolve fields */
-				$this->field->resolve($ftypes, $selected, $_POST['fields_criteria']);
+				$this->field->resolve($ftypes, $selected, $this->request->post('fields_criteria'));
 			} else {
 				/* Resolve and select the fields to be displayed in the result */		
-				$this->field->resolve($ftypes, $_POST['fields_result'], $_POST['fields_criteria']);
+				$this->field->resolve($ftypes, $this->request->post('fields_result'), $this->request->post('fields_criteria'));
 			}
 
 			$this->db->from($this->config['name']); // from() method is needed here for get_compiled_select_str() call
@@ -3308,9 +3317,9 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('create', NDPHP_LANG_MOD_OP_CREATE);
 
 		/* Check if there is any autocomplete data set in a POST */
-		if (isset($_POST['autocomplete'])) {
+		if ($this->request->post_isset('autocomplete')) {
 			/* If so... the POST data always have precedence over the URL data */
-			$data['view']['autocomplete'] = json_decode($_POST['autocomplete'], true);
+			$data['view']['autocomplete'] = json_decode($this->request->post('autocomplete'), true);
 		} else if ($autocomplete !== NULL) {
 			/* URL parameters always come encoded in safe base64 format */
 			$data['view']['autocomplete'] = json_decode($this->ndphp->safe_b64decode($autocomplete), true);
@@ -3479,7 +3488,7 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* Pre-Insert hook */
-		$hook_pre_return = $this->_hook_insert_pre($_POST, $ftypes);
+		$hook_pre_return = $this->_hook_insert_pre($this->request->post(), $ftypes);
 
 		/* Pre-process file uploads */
 		foreach ($_FILES as $k => $v) {
@@ -3497,11 +3506,11 @@ class ND_Controller extends UW_Controller {
 			array_push($file_uploads, $k);
 
 			/* Set the POST variable value */
-			$_POST[$k] = $_FILES[$k]['name'];
+			$this->request->post_set($k, $_FILES[$k]['name']);
 		}
 
 		/* Pre-process $_POST array */
-		foreach ($_POST as $field => $value) {
+		foreach ($this->request->post() as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
 				$mixed_field = $this->get->mixed_crud_field($field);
@@ -3517,7 +3526,7 @@ class ND_Controller extends UW_Controller {
 
 				/* Security Check: Check CREATE permissions for this particular entry (table:mixed_<t1>_<ft2>) */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $this->config['name'], 'mixed_' . $this->config['name'] . '_' . $mixed_field[0])) {
-					unset($_POST[$field]);
+					$this->request->post_unset($field);
 					continue;
 				}
 
@@ -3525,14 +3534,14 @@ class ND_Controller extends UW_Controller {
 				$mixed_rels[$mixed_field[0]][$mixed_field[2]][$mixed_field[1]] = $value;
 
 				/* Keep track of the mixed field and remove it from $_POST */
-				$log_removed_fields[$field] = $_POST[$field];
-				unset($_POST[$field]);
+				$log_removed_fields[$field] = $this->request->post($field);
+				$this->request->post_unset($field);
 				continue;
 			}
 
 			/* Security check */
 			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $this->config['name'], $field)) {
-				unset($_POST[$field]);
+				$this->request->post_unset($field);
 				continue;
 			}
 
@@ -3541,25 +3550,25 @@ class ND_Controller extends UW_Controller {
 				$table = $field;
 				$rel[$table] = $value;
 				/* Keep track of the relational field and remove it from $_POST */
-				$log_removed_fields[$field] = $_POST[$field];
-				unset($_POST[$field]);
+				$log_removed_fields[$field] = $this->request->post($field);
+				$this->request->post_unset($field);
 			} else if ($ftypes[$field]['type'] == 'datetime') {
 				/* Datetime field types requires special processing in order to append
 				 * the 'time' component to the 'date'.
 				 */
-				$_POST[$field] = $this->timezone->convert($value . ' ' . $_POST[$field . '_time'], $this->config['session_data']['timezone'], $this->config['default_timezone']);
-				unset($_POST[$field . '_time']);
+				$this->request->post_set($field, $this->timezone->convert($value . ' ' . $this->request->post($field . '_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
+				$this->request->post_unset($field . '_time');
 			}
 
 			/* Check if fields are empty */
-			if (($_POST[$field] == NULL) || (trim($_POST[$field], ' \t') == '')) {
+			if (($this->request->post($field) == NULL) || (trim($this->request->post($field), ' \t') == '')) {
 				/* 
 				 * Boolean fields (checkboxes) are set as 0 by default, using a hidden
 				 * field in the create view.
 				 */
 
 				/* Remove empty fields */
-				unset($_POST[$field]);
+				$this->request->post_unset($field);
 			}
 
 			/* Grant that foreign table id is eligible to be inserted */
@@ -3570,7 +3579,7 @@ class ND_Controller extends UW_Controller {
 
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
-				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $_POST[$field]))
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field)))
 					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 			}
 		}
@@ -3578,13 +3587,13 @@ class ND_Controller extends UW_Controller {
 		/* We need to merge any table row filtering fields (such as users_id) with the POST data
 		 * in order to correctly set the table row filtering permissions (if any was configured on $_table_row_filter_config).
 		 */
-		$_POST = array_merge($_POST, $this->filter->table_row_get());
+		$this->request->post_set_all(array_merge($this->request->post(), $this->filter->table_row_get()));
  
 		/* Initialize transaction */
 		$this->db->trans_begin();
 
 		/* Insert data into database */
-		$this->db->insert($this->config['name'], $_POST);
+		$this->db->insert($this->config['name'], $this->request->post());
 
 		$last_id = $this->db->last_insert_id();
 		
@@ -3596,9 +3605,10 @@ class ND_Controller extends UW_Controller {
 		/* If logging is enabled, check for changed fields and log them */
 		$this->logging->trans_begin();
 
-		$_POST['id'] = $last_id;
+		/* Set 'id' key as the last inserted id */
+		$this->request->post_set('id', $last_id);
 
-		foreach (array_merge($_POST, $log_removed_fields) as $pfield => $pvalue) {
+		foreach (array_merge($this->request->post(), $log_removed_fields) as $pfield => $pvalue) {
 			/* If $pvalue is of type array and contains a control value (zero value) as it's last element, pop it out */
 			if ((gettype($pvalue) == 'array') && !end($pvalue))
 				array_pop($pvalue);
@@ -3616,7 +3626,7 @@ class ND_Controller extends UW_Controller {
 			);
 		}
 
-		unset($_POST['id']);
+		$this->request->post_unset('id');
 
 		$this->logging->trans_end();
 
@@ -3679,7 +3689,7 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* Post-Insert hook */
-		$this->_hook_insert_post($last_id, $_POST, $ftypes, $hook_pre_return);
+		$this->_hook_insert_post($last_id, $this->request->post(), $ftypes, $hook_pre_return);
 
 		if ($retid) {
 			return $last_id;
@@ -3963,7 +3973,7 @@ class ND_Controller extends UW_Controller {
 
 		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
 		if ($id)
-			$_POST['id'] = $id;
+			$this->request->post_set('id', $id);
 
 		/* Check if this is a view table type */
 		if ($this->config['table_type_view'])
@@ -3973,12 +3983,12 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($_POST['id']))
+		if (!$this->filter->table_row_perm($this->request->post('id')))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Set/Update the value of the specified field. (JSON REST API) */
 		if ($field !== NULL && $value !== NULL)
-			$_POST[$field] = $field_value;
+			$this->request->post_set($field, $field_value);
 
 		/* Retrieve fields meta data */
 		$ftypes = $this->get->fields();
@@ -3993,7 +4003,7 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* Pre-Update hook */
-		$hook_pre_return = $this->_hook_update_pre($_POST['id'], $_POST, $ftypes);
+		$hook_pre_return = $this->_hook_update_pre($this->request->post('id'), $this->request->post(), $ftypes);
 
 		/* Initialize transaction */
 		$this->db->trans_begin();
@@ -4014,11 +4024,11 @@ class ND_Controller extends UW_Controller {
 			array_push($file_uploads, $k);
 
 			/* Set the POST value */
-			$_POST[$k] = $_FILES[$k]['name'];
+			$this->request->post_set($k, $_FILES[$k]['name']);
 		}
 
 		/* Process multiple relationships and special fields first */
-		foreach ($_POST as $field => $value) {
+		foreach ($this->request->post() as $field => $value) {
 			/* Extract mixed relationships, if any */
 			if (substr($field, 0, 6) == 'mixed_') {
 				$mixed_field = $this->get->mixed_crud_field($field);
@@ -4034,7 +4044,7 @@ class ND_Controller extends UW_Controller {
 
 				/* Security Check: Check UPDATE permissions for this particular entry (table:mixed_<t1>_<ft2>) */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], 'mixed_' . $this->config['name'] . '_' . $mixed_field[0])) {
-					unset($_POST[$field]);
+					$this->request->post_unset($field);
 					continue;
 				}
 
@@ -4042,8 +4052,8 @@ class ND_Controller extends UW_Controller {
 				$mixed_rels[$mixed_field[0]][$mixed_field[2]][$mixed_field[1]] = $value;
 
 				/* Keep track of the mixed field and remove it from $_POST */
-				$log_removed_fields[$field] = $_POST[$field];
-				unset($_POST[$field]);
+				$log_removed_fields[$field] = $this->request->post($field);
+				$this->request->post_unset($field);
 
 				continue;
 			}
@@ -4052,8 +4062,8 @@ class ND_Controller extends UW_Controller {
 			 * the 'time' component to the 'date'.
 			 */
 			if ($ftypes[$field]['type'] == 'datetime') {
-				$_POST[$field] = $this->timezone->convert($value . ' ' . $_POST[$field . '_time'], $this->config['session_data']['timezone'], $this->config['default_timezone']);
-				unset($_POST[$field . '_time']);
+				$this->request->post_set($field, $this->timezone->convert($value . ' ' . $this->request->post($field . '_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
+				$this->request->post_unset($field . '_time');
 				
 				continue;
 			}
@@ -4086,32 +4096,32 @@ class ND_Controller extends UW_Controller {
 			);
 
 			/* Keep track of the relational field and remove it from $_POST */
-			$log_removed_fields[$field] = $_POST[$field];
-			unset($_POST[$field]);
+			$log_removed_fields[$field] = $this->request->post($field);
+			$this->request->post_unset($field);
 		}
 
 		/* Set all empty fields ('') to NULL and evaluate column permissions. Also grant input pattern matching. */
-		foreach ($_POST as $field => $value) {
+		foreach ($this->request->post() as $field => $value) {
 			/* Security check */
 			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], $field)) {
 				/* We cannot unset the 'id' field for obvious reasons (reasons: see all the code below belonging to update()) */
 				if ($field != 'id')
-					unset($_POST[$field]);
+					$this->request->post_unset($field);
 
 				continue;
 			}
 
 			/* Check if this is a file field that was requested to be removed */
 			if (substr($field, 0, 6) == '_file_') {
-				if (isset($_POST[$field . '_remove']) && $_POST[$field . '_remove']) {
+				if ($this->request->post_isset($field . '_remove') && $this->request->post($field . '_remove')) {
 					/* Remove the file from filesystem */
-					$this->_remove_file_upload($this->config['name'], $_POST['id'], $field);
+					$this->_remove_file_upload($this->config['name'], $this->request->post('id'), $field);
 
 					/* Reset database field value */
-					$_POST[$field] = NULL;
+					$this->request->post_set($field, NULL);
 				} else if (!in_array($field, $file_uploads)) {
 					/* Otherwise, if the file was not requested to be removed and no file was uploaded, prevent any update to this field */
-					unset($_POST[$field]);
+					$this->request->post_unset($field);
 				}
 
 				continue;
@@ -4126,13 +4136,13 @@ class ND_Controller extends UW_Controller {
 			}
 
 			/* Set to NULL if empty */
-			if (trim($_POST[$field], ' \t') == '') {
-				$_POST[$field] = NULL;
+			if (trim($this->request->post($field), ' \t') == '') {
+				$this->request->post_set($field, NULL);
 			}
 
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
-				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $_POST[$field])) {
+				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field))) {
 					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 				}
 			}
@@ -4141,14 +4151,14 @@ class ND_Controller extends UW_Controller {
 		/* If logging is enabled, check for changed fields and log them */
 		$this->logging->trans_begin();
 
-		$changed_fields = $this->get->post_changed_fields_data($this->config['name'], $_POST['id'], array_merge($_POST, $log_removed_fields));
+		$changed_fields = $this->get->post_changed_fields_data($this->config['name'], $this->request->post('id'), array_merge($this->request->post(), $log_removed_fields));
 
 		foreach ($changed_fields as $cfield) {
 			$this->logging->log(
 				/* op         */ 'UPDATE',
 				/* table      */ $this->config['name'],
 				/* field      */ $cfield['field'],
-				/* entry_id   */ $_POST['id'],
+				/* entry_id   */ $this->request->post('id'),
 				/* value_new  */ $cfield['value_new'],
 				/* value_old  */ $cfield['value_old'],
 				/* session_id */ $this->config['session_data']['sessions_id'],
@@ -4161,17 +4171,17 @@ class ND_Controller extends UW_Controller {
 
 
 		/* Update entry data */
-		$this->db->where('id', $_POST['id']);
-		$this->db->update($this->config['name'], $_POST);
+		$this->db->where('id', $this->request->post('id'));
+		$this->db->update($this->config['name'], $this->request->post());
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
-			$this->upload->remove_file($this->config['name'], $_POST['id'], $file);
-			$this->upload->process_file($this->config['name'], $_POST['id'], $file);
+			$this->upload->remove_file($this->config['name'], $this->request->post('id'), $file);
+			$this->upload->process_file($this->config['name'], $this->request->post('id'), $file);
 		}
 
 		/* Set the last inserted ID variable */
-		$last_id = $_POST['id'];
+		$last_id = $this->request->post('id');
 
 		/* Process mixed relationships if there are any to be updated */
 		$this->_load_module('process', true);
@@ -4180,7 +4190,7 @@ class ND_Controller extends UW_Controller {
 		/* Process multiple relationships (TODO: the following procedures should be consolidated into a _rel_process_post_data() method) */
 		foreach ($multiple_rels as $rel_field) {
 			/* Remove all related entries from relational table */
-			$this->db->delete($rel_field['table'], array($this->config['name'] . '_id' => $_POST['id']));
+			$this->db->delete($rel_field['table'], array($this->config['name'] . '_id' => $this->request->post('id')));
 
 			/* Insert new relationships */
 			foreach ($rel_field['values'] as $rel_id) {
@@ -4192,7 +4202,7 @@ class ND_Controller extends UW_Controller {
 					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
-				$this->db->insert($rel_field['table'], array($this->config['name'] . '_id' => $_POST['id'], $rel_field['rel_table'] . '_id' => $rel_id));
+				$this->db->insert($rel_field['table'], array($this->config['name'] . '_id' => $this->request->post('id'), $rel_field['rel_table'] . '_id' => $rel_id));
 			}
 		}
 
@@ -4209,7 +4219,7 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* Post-Update hook */
-		$this->_hook_update_post($_POST['id'], $_POST, $ftypes, $hook_pre_return);
+		$this->_hook_update_post($this->request->post('id'), $this->request->post(), $ftypes, $hook_pre_return);
 
 		if ($retbool) {
 			return true;
@@ -4218,9 +4228,9 @@ class ND_Controller extends UW_Controller {
 				$this->response->output($this->rest->json_update());
 				return;
 			} else if ($this->request->is_ajax()) {
-				$this->response->output($_POST['id']);
+				$this->response->output($this->request->post('id'));
 			} else {
-				redirect($this->config['name'] . '/view/' . $_POST['id']);
+				redirect($this->config['name'] . '/view/' . $this->request->post('id'));
 			}
 		}
 	}
@@ -4446,21 +4456,21 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_delete, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($_POST['id']))
+		if (!$this->filter->table_row_perm($this->request->post('id')))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$ftypes = $this->get->fields();
 
 		/* Set/Update $_POST['id'] if $id is different than 0 (usually used by JSON REST API) */
 		if ($id)
-			$_POST['id'] = $id;
+			$this->request->post_set('id', $id);
 
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/delete_pre.php') as $plugin)
 			include($plugin);
 
 		/* Pre-Delete hook */
-		$hook_pre_return = $this->_hook_delete_pre($_POST['id'], $_POST, $ftypes);
+		$hook_pre_return = $this->_hook_delete_pre($this->request->post('id'), $this->request->post(), $ftypes);
 
 		/* Init transaction */
 		$this->db->trans_begin();
@@ -4471,7 +4481,7 @@ class ND_Controller extends UW_Controller {
 			/* op         */ 'DELETE',
 			/* table      */ $this->config['name'],
 			/* field      */ 'id',
-			/* entry_id   */ $_POST['id'],
+			/* entry_id   */ $this->request->post('id'),
 			/* value_new  */ NULL,
 			/* value_old  */ NULL,
 			/* session_id */ $this->config['session_data']['sessions_id'],
@@ -4483,7 +4493,7 @@ class ND_Controller extends UW_Controller {
 		/* We don't need to follow relationships as the foreign keys must be configured
 		 * as CASCADE ON DELETE on the relational table.
 		 */
-		$this->db->where('id', $_POST['id']);
+		$this->db->where('id', $this->request->post('id'));
 		$this->db->delete($this->config['name']);
 
 		/* Commit transaction */
@@ -4495,7 +4505,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Delete uploaded files, if any */
-		$this->upload->purge_entry_files($this->config['name'], $_POST['id']);
+		$this->upload->purge_entry_files($this->config['name'], $this->request->post('id'));
 
 		/* NOTE: All relationships (including mixed relationships) shall be deleted through CASCADE events defined on the
 		 * DBMS data model.
@@ -4506,7 +4516,7 @@ class ND_Controller extends UW_Controller {
 			include($plugin);
 
 		/* Post-Delete hook */
-		$this->_hook_delete_post($_POST['id'], $_POST, $ftypes, $hook_pre_return);
+		$this->_hook_delete_post($this->request->post('id'), $this->request->post(), $ftypes, $hook_pre_return);
 
 		if ($retbool) {
 			return true;

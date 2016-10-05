@@ -1,3 +1,12 @@
+v0.03h (2016-10-05):
+
+ - Fixed issues with group views.
+ - Minor refactoring on core controllers code.
+ - Improved request module.
+ - New dropdown System menu entry, with configuration options (moved from configuration controller) and system utilities.
+ - Updated tracker.
+
+
 v0.03g (2016-10-03):
 
  - Fixed issues with searches targeting boolean types.

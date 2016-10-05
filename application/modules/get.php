@@ -1227,7 +1227,7 @@ class UW_Get extends UW_Module {
 
 	public function value_from_post($id, $field, $POST = NULL) {
 		if ($POST === NULL)
-			$POST = $_POST;
+			$POST = $this->request->post();
 
 		return $POST[$field];
 	}

@@ -154,36 +154,6 @@ class Configuration extends ND_Controller {
 
 	protected $_upload_file_encryption = false;
 
-	protected $_links_submenu_body_list = array(
-		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
-		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
-		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	),
-		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	),
-		array(NDPHP_LANG_MOD_OP_EXPORT_PDF,		'R', 'pdf',			NULL, 'export', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_EXPORT_CSV,		'R', 'csv',			NULL, 'export', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_CHARTS,			'R', 'charts',		NULL, 'ajax',	false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'system_update',NULL, 'method', false,	NULL 								)
-	);
-
-	protected $_links_submenu_body_result = array(
-		/* array('Description', $sec_perm, method, 'image/path/img.png', 'ajax' / 'export' / 'method' / 'modal' / 'raw', with id?, access key) */
-		array(NDPHP_LANG_MOD_OP_CREATE,			'C', 'create',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_CREATE	),
-		array(NDPHP_LANG_MOD_OP_LIST,			'R', 'list',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_LIST	),
-		array(NDPHP_LANG_MOD_OP_GROUPS,			'R', 'groups',		NULL, 'ajax',	false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_GROUPS	),
-		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	),
-		array(NDPHP_LANG_MOD_OP_EXPORT_PDF,		'R', 'pdf',			NULL, 'export', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_EXPORT_CSV,		'R', 'csv',			NULL, 'export', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_SAVE_SEARCH,	'R', 'search_save',	NULL, 'modal',	false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_CHARTS,			'R', 'charts',		NULL, 'ajax',	false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_SCHEDULER,		'R', 'scheduler',	NULL, 'ajax',	false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_BACKUP,			'R', 'backup',		NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_CACHE_CLEAR,	'R', 'cache_clear',	NULL, 'method', false,	NULL 								),
-		array(NDPHP_LANG_MOD_OP_UPDATE,			'R', 'system_update',NULL, 'method', false,	NULL 								)
-	);
-
 	/* Hidden fields per view.
 	 *
 	 * Note that for relationship fields, the field name used here must be the one

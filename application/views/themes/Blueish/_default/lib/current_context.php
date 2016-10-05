@@ -63,6 +63,10 @@
 
 	/* Set the current menu entry as active */
 	jQuery('#menu_entry_<?=$view['ctrl']?>').addClass('active');
+	<?php if (in_array($view['ctrl'], array('configuration', 'charts_config', 'scheduler'))): ?>
+		/* Controllers belonging to System group shall also show the system menu as active */
+		jQuery('#menu_entry_system').addClass('active');
+	<?php endif; ?>
 </script>
 
 <a id="doc_rest_json" target="_blank" href="<?=filter_html(base_url(), $config['charset'])?>index.php/<?=filter_html($view['ctrl'], $config['charset'])?>/json_doc" style="display: none;" accesskey="<?=filter_html(NDPHP_LANG_MOD_OP_ACCESS_KEY_JSON, $config['charset'])?>">REST JSON API</a>
