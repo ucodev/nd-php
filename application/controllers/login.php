@@ -247,7 +247,7 @@ class Login extends UW_Controller {
 				'privenckey' => base64_encode($privenckey),
 				'logged_in' => true,
 				'sessions_id' => 0, /* Will be set when session table is queried */
-				'_apicall' => false
+				'_apicall' => (strstr($this->request->header('Accept'), 'application/json') !== false)
 			)
 		);
 
@@ -399,7 +399,15 @@ class Login extends UW_Controller {
 			 */
 			redirect($this->ndphp->safe_b64decode($_POST['referer']), false, true); /* Full URL redirect */
 		} else {
-			redirect('/');
+			if (strstr($this->request->header('Accept'), 'application/json') !== false) {
+				$data['user_id'] = $row['id'];
+				$data['session_id'] = $this->session->userdata('sessions_id');
+				$data['apikey'] = $row['apikey'];
+
+				$this->response->output(json_encode($data));
+			} else {
+				redirect('/');
+			}
 		}
 	}
 

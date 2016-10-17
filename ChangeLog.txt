@@ -1,3 +1,9 @@
+v0.03i (2016-10-17):
+
+ - Implemented JSON replies for login controller.
+ - Enable JSON replies when Accept header contains application/json.
+
+
 v0.03h1 (2016-10-05):
 
  - Replaced search model with the correct file.

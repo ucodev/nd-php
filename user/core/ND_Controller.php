@@ -121,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03h1';
+	protected $_ndphp_version = '0.03i';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -966,7 +966,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Check if JSON replies should be enabled */
-		if ($json_replies) {
+		if ($json_replies || (strstr($this->request->header('Accept'), 'application/json') !== false)) {
 			$this->_json_replies = true;
 			$this->_load_module('rest', true);
 		}
