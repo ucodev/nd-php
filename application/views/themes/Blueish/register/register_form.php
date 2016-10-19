@@ -71,7 +71,7 @@
 		jQuery.extend(jQuery.validator.messages, {
 			required: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filter_html_js_str(ucfirst(NDPHP_LANG_MOD_WORD_REQUIRED), $config['charset'])?></span>",
 			equalTo: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filter_html_js_str(NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH, $config['charset'])?></span>",
-			maxlength: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filer_html_js_str(NDPHP_LANG_MOD_ATTN_VALUE_LESS_THAN, $config['charset'])?> {0} <?=filter_html_js_str(NDPHP_LANG_MOD_WORD_CHARACTERS, $config['charset'])?></span>",
+			maxlength: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_VALUE_LESS_THAN, $config['charset'])?> {0} <?=filter_html_js_str(NDPHP_LANG_MOD_WORD_CHARACTERS, $config['charset'])?></span>",
 			minlength: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_VALUE_MORE_THAN, $config['charset'])?> {0} <?=filter_html_js_str(NDPHP_LANG_MOD_WORD_CHARACTERS, $config['charset'])?></span>",
 			digits: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_ONLY_DIGITS, $config['charset'])?></span>",
 			email: "<br /><span style=\"color: red; font-size: 75%;\">* <?=filter_html_js_str(NDPHP_LANG_MOD_ATTN_NEED_VALID_EMAIL, $config['charset'])?></span>",
@@ -144,7 +144,7 @@
 		<tr id="newuser_row_phone">
 			<td id="newuser_key_phone"><?=filter_html(NDPHP_LANG_MOD_COMMON_PHONE, $config['charset'])?>:</td>
 			<td id="newuser_value_phone">
-				<input id="phone" name="phone" type="text" required="required" minlength="8" maxlength="16" />
+				<input id="phone" name="phone" type="text" minlength="8" maxlength="16" />
 			</td>
 		</tr>
 		<tr id="newuser_row_vat">

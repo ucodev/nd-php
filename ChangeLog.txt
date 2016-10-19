@@ -1,3 +1,14 @@
+v0.03j (2016-10-19):
+
+ - Improved registration controller.
+ - Removed authentication based on API key (incompatible with privenckey).
+ - Improved JSON replies pre-checks and setup.
+ - JSON data keys are now validated (safe chars).
+ - Improved request module.
+ - Login / Logout now support JSON replies.
+ - Updated tracker.
+
+
 v0.03i (2016-10-17):
 
  - Implemented JSON replies for login controller.

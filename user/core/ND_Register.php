@@ -86,7 +86,7 @@ class ND_Register extends UW_Controller {
 	private $ndsms_acct_key_no_custom = 'ffffffffffffffffffffffffffffffff';
 	private $ndsms_rest_sms_url = 'https://cloud.nd-php.com/ndsms/api/index.php/sms/send/';
 	private $ndjson_apikey = 'ffffffffffffffffffffffffffffffff';
-	private $ndjson_vat_url = 'https://cloud.nd-php.com/ndjson/index.php/vat/check/$!ndjson_apikey!$';
+	private $ndjson_vat_url = 'https://cloud.nd-php.org/ndjson/index.php/vat/check/$!ndjson_apikey!$';
 	/*** END OF NOT AVAILABLE YET ***/
 
 
@@ -360,18 +360,18 @@ class ND_Register extends UW_Controller {
 		return true;
 	}
 
-	private function send_confirmation_sms($phone, $token, $country_custom_sender) {
+	private function send_confirmation_sms($phone, $token) {
 		$ch = curl_init();
 
 		/* If the country doesn't accept custom sender id, send the message from a real mobile number */
-		$sender_id = $country_custom_sender ? $this->nd_sms_from : $this->nd_sms_from_no_custom;
+		$sender_id = $this->nd_sms_from;
 
-		curl_setopt($ch, CURLOPT_URL, $this->ndsms_rest_sms_url . ($country_custom_sender ? $this->ndsms_acct_name : $this->ndsms_acct_name_no_custom) . '/' . ($country_custom_sender ? $this->ndsms_acct_key : $this->ndsms_acct_key_no_custom) . '/' . $phone . '/' . $token . '/' . $sender_id);
+		curl_setopt($ch, CURLOPT_URL, $this->ndsms_rest_sms_url . $this->ndsms_acct_name . '/' . $this->ndsms_acct_key . '/' . $phone . '/' . $token . '/' . $sender_id);
 		error_log($this->ndsms_rest_sms_url . $this->ndsms_acct_name . '/' . $this->ndsms_acct_key . '/' . $phone . '/' . $token . '/' . $sender_id);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
 		if (!curl_exec($ch)) {
 			error_log('register.php: send_confirmation_sms(): cURL error: ' . curl_error($ch));
@@ -385,9 +385,9 @@ class ND_Register extends UW_Controller {
 		$res_json = json_decode($res);
 
 		if ($res_json->{'status'} != 'ACCEPTED')
-			return FALSE;
+			return false;
 
-		return TRUE;
+		return true;
 	}
 
 	protected function register_pre_process(&$POST) {
@@ -480,7 +480,7 @@ class ND_Register extends UW_Controller {
 		}
 
 		/* Validate country */
-		$this->db->select('id,code,eu_state,custom_sender');
+		$this->db->select('id,code,eu_state');
 		$this->db->from('countries');
 		$this->db->where('id', intval($_POST['countries_id']));
 
@@ -495,7 +495,6 @@ class ND_Register extends UW_Controller {
 
 		$countries_id = $row['id'];
 		$country_code = $row['code'];
-		$country_custom_sender = $row['custom_sender'];
 
 		/* Validate VAT if country is a EU state and if company field was filled */
 		if (($row['eu_state'] == '1') && (strlen($_POST['vat']) < 10) && isset($_POST['company']) && (strlen($_POST['company']) >= 2)) {
@@ -522,7 +521,7 @@ class ND_Register extends UW_Controller {
 		}
 
 		/* Validate email */
-		if (preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,4}$/', $_POST['email']) === false) {
+		if (preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,16}$/', $_POST['email']) === false) {
 			header('HTTP/1.1 403 Forbidden');
 			die(NDPHP_LANG_MOD_INVALID_EMAIL);
 		}
@@ -572,16 +571,11 @@ class ND_Register extends UW_Controller {
 				die(NDPHP_LANG_MOD_INFO_PHONE_REGISTERED);
 			}
 
-			$this->load->library('libphonenumber/phonenumberutil', '', 'phoneutil'); /* Use libphonenumber for extra accuracy */
-
-			$phone_util = $this->phoneutil->getInstance();
-			$phone_nr_proto = $phone_util->parse($_POST['phone'], $country_code);
-			$valid_phone = $phone_util->isValidNumber($phone_nr_proto);
-
-			if (!$valid_phone) {
-				header("HTTP/1.1 403 Forbidden");
-				die(NDPHP_LANG_MOD_INVALID_PHONE);
-			}
+			/* TODO: FIXME: Validate phone number (with libphonenumber?) */
+			//if (!$valid_phone) {
+			//	header("HTTP/1.1 403 Forbidden");
+			//	die(NDPHP_LANG_MOD_INVALID_PHONE);
+			//}
 		}
 
 		/* Setup user data row */
@@ -589,6 +583,8 @@ class ND_Register extends UW_Controller {
 		$userdata['last_name'] = htmlentities($_POST['last_name'], ENT_QUOTES, $this->_charset);
 		$userdata['username'] = $_POST['username'];
 		$userdata['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
+		$userdata['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $userdata['password'], false);
+		$userdata['apikey'] = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 		$userdata['email'] = $_POST['email'];
 		$userdata['phone'] = $_POST['phone'];
 
@@ -600,9 +596,17 @@ class ND_Register extends UW_Controller {
 		$userdata['subscription_change_date'] = date('Y-m-d H:i:s');
 		$userdata['subscription_renew_date'] = date('Y-m-d', strtotime("+1 month"));
 		$userdata['countries_id'] = $_POST['countries_id'];
-		$userdata['active'] = 0;
-		$userdata['locked'] = 1;
-		$userdata['expire'] = '2030-12-31 23:59:59';
+		$userdata['active'] = 1;
+		$userdata['locked'] = 0;
+		/* If the account registration requires email and/or phone number confirmation, it will be active for only
+		 * 24 hours until the email and/or phone is confirmed.
+		 */
+		if ($this->register_confirm_email || $this->register_confirm_phone) {
+			$userdata['expire'] = date('Y-m-d H:m:i', strtotime("+1 day"));
+		} else {
+			$userdata['expire'] = '2030-12-31 23:59:59';
+		}
+
 		$userdata['registered'] = date('Y-m-d H:i:s');
 		$userdata['confirm_email_hash'] = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 		$userdata['confirm_phone_token'] = mt_rand(100000, 999999);
@@ -639,7 +643,7 @@ class ND_Register extends UW_Controller {
 
 			if ($this->register_confirm_email == 1) {
 				/* Send confirmation email */
-				if ($this->send_confirmation_email($userdata['email'], $users_id, $users_id_enc, $userdata['first_name'], $userdata['last_name'], $userdata['confirm_email_hash']) !== TRUE) {
+				if ($this->send_confirmation_email($userdata['email'], $users_id, $users_id_enc, $userdata['first_name'], $userdata['last_name'], $userdata['confirm_email_hash']) !== true) {
 					header('HTTP/1.1 500 Internal Server Error');
 					die(NDPHP_LANG_MOD_UNABLE_SEND_CONFIRM_EMAIL);
 				}
@@ -647,7 +651,7 @@ class ND_Register extends UW_Controller {
 
 			if ($this->register_confirm_phone == 1) {
 				/* Send confirmation sms token */
-				if ($this->send_confirmation_sms($userdata['phone'], $userdata['confirm_phone_token'], $country_custom_sender) !== TRUE) {
+				if ($this->send_confirmation_sms($userdata['phone'], $userdata['confirm_phone_token']) !== true) {
 					header('HTTP/1.1 500 Internal Server Error');
 					die(NDPHP_LANG_MOD_UNABLE_SEND_CONFIRM_SMS);
 				}
@@ -674,8 +678,16 @@ class ND_Register extends UW_Controller {
 				if ($res === true) {
 					$this->user_active_process($users_id);
 
-					echo('<br />' . NDPHP_LANG_MOD_REGISTER_USER_ACCT_IS_NOW . ' <span style="font-weight: bold">' . NDPHP_LANG_MOD_WORD_ACTIVE_F . '</span>.<br />');
-					echo('<br /><br /><center><a href="' . base_url() . '/index.php/login" class="register_button_link">' . NDPHP_LANG_MOD_LOGIN_LOGIN . '</a></center>');
+					if (strstr($this->request->header('Accept'), 'application/json') !== false) {
+						$data['user_id'] = $users_id;
+						$data['apikey'] = $userdata['apikey'];
+
+						$this->response->header('Content-Type', 'application/json');
+						$this->response->output(json_encode($data));
+					} else {
+						echo('<br />' . NDPHP_LANG_MOD_REGISTER_USER_ACCT_IS_NOW . ' <span style="font-weight: bold">' . NDPHP_LANG_MOD_WORD_ACTIVE_F . '</span>.<br />');
+						echo('<br /><br /><center><a href="' . base_url() . '/index.php/login" class="register_button_link">' . NDPHP_LANG_MOD_LOGIN_LOGIN . '</a></center>');
+					}
 				} else {
 					header('HTTP/1.1 500 Internal Server Error');
 					die(NDPHP_LANG_MOD_UNABLE_ACTIVATED_ACCOUNT . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT . ' #1');
@@ -1010,7 +1022,6 @@ class ND_Register extends UW_Controller {
 	private function user_active_process($users_id) {
 		/* Update users_id and apikey on users table */
 		$userdata['users_id'] = $users_id;
-		$userdata['apikey'] = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 		$userdata['acct_last_reset'] = date('Y-m-d H:i:s');
 
 		$this->db->trans_begin();

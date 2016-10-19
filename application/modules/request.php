@@ -169,6 +169,9 @@ class UW_Request extends UW_Module {
 	}
 
 	public function is_json() {
+		if (strstr($this->header('Accept'), 'application/json') !== false)
+			return true;
+
 		return $this->json() !== NULL;
 	}
 

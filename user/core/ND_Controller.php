@@ -121,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03i';
+	protected $_ndphp_version = '0.03j';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -952,23 +952,44 @@ class ND_Controller extends UW_Controller {
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_pre.php') as $plugin)
 			include($plugin);
 
+		/* Check if JSON replies should be enabled */
+		if ($json_replies || $this->request->is_json()) {
+			/* Enable JSON replies */
+			$this->_json_replies = true;
+
+			/* If JSON replies are enabled, load rest module */
+			$this->_load_module('rest', true);
+
+			/* Check if this is a POST */
+			if ($this->request->is_post()) {
+				/* Fetch JSON data, if any */
+				$json_req = $this->request->json();
+
+				/* If there is JSON data set, map it to POST data */
+				if (isset($json_req['data'])) {
+					$this->request->post_set_all($json_req['data']);
+				} else {
+					/* We need to cleanup the POST data in order to pass the POST keys validation */
+					/* Note that POST data is supposed to be empty from now on, since no $json_req['data'] is set,
+					 * causing the effective POST data array to be empty.
+					 */
+					$this->request->post_set_all(array());
+				}
+			}
+		}
+
 		/* POST data handlers */
-		if (count($this->request->post())) {
+		if ($this->request->is_post() && count($this->request->post())) {
 			/* Set all $_POST keys to lowercase */
 			foreach ($this->request->post() as $key => $value) {
+				//echo('key: ' . $key . '<br />' . "\n");
 				$this->request->post_unset($key);
 				$this->request->post_set(strtolower($key), $value);
 			}
 
 			/* Grant that $_POST keys are safe, if any */
-			if (!$this->request->is_json() && count($this->request->post()) && !$this->security->safe_keys($this->request->post(), $this->_security_safe_chars))
+			if (count($this->request->post()) && !$this->security->safe_keys($this->request->post(), $this->_security_safe_chars))
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
-		}
-
-		/* Check if JSON replies should be enabled */
-		if ($json_replies || (strstr($this->request->header('Accept'), 'application/json') !== false)) {
-			$this->_json_replies = true;
-			$this->_load_module('rest', true);
 		}
 
 		/* If we need to instantiate this controller to fetch controller specific configurtions, we should do so
@@ -993,15 +1014,6 @@ class ND_Controller extends UW_Controller {
 			
 			/* Check if the request is of type JSON and if this is a valid API call */
 			if ($this->request->is_json() && isset($json_req['_apikey']) && isset($json_req['_userid'])) {
-				/* Enable JSON replies. This is the default for REST API */
-				$this->_json_replies = true;
-
-				/* If JSON replies are enabled, load rest module */
-				$this->_load_module('rest', true);
-
-				/* Set the json data as $_POST */
-				$this->request->post_set_all($json_req['data']);
-
 				/* TODO: FIXME: Pre-validate _apikey and _userid format before querying the database */
 
 				/* TODO: FIXME: Authentication procedures should be migrated into a model and used both in the

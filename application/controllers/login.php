@@ -299,24 +299,13 @@ class Login extends UW_Controller {
 		$this->session->set('sessions_id', $sessions_id);
 	}
 
-	public function authenticate($user_id = NULL, $api_key = NULL) {
+	public function authenticate() {
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/authenticate_pre.php') as $plugin)
 			include($plugin);
 
 		/* Check if this is an authentication based on api key */
-		if (($user_id != NULL) && ($api_key != NULL)) {
-			$this->db->from('users');
-			$this->db->where('id', $user_id);
-			$this->db->where('apikey', $api_key);
-			$query = $this->db->get();
-
-			if ($query->num_rows() == 1) {
-				$row = $query->row_array();
-			} else {
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_API_KEY, $this->_default_charset, !$this->request->is_ajax());
-			}
-		} else if (!isset($_POST['username'])) {
+		if (!isset($_POST['username'])) {
 			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_default_charset, !$this->request->is_ajax());
 		} else {
 			/* Retrive username information from database */
@@ -399,11 +388,12 @@ class Login extends UW_Controller {
 			 */
 			redirect($this->ndphp->safe_b64decode($_POST['referer']), false, true); /* Full URL redirect */
 		} else {
-			if (strstr($this->request->header('Accept'), 'application/json') !== false) {
+			if ($this->request->is_json()) {
 				$data['user_id'] = $row['id'];
 				$data['session_id'] = $this->session->userdata('sessions_id');
 				$data['apikey'] = $row['apikey'];
 
+				$this->response->header('Content-Type', 'application/json');
 				$this->response->output(json_encode($data));
 			} else {
 				redirect('/');
@@ -433,7 +423,16 @@ class Login extends UW_Controller {
 		$this->session->cleanup();
 		$this->session->destroy();
 
-		/* Redirect to base */
-		redirect('/');
+		/* If this was a JSON request ... */
+		if ($this->request->is_json()) {
+			/* Reply with JSON data */
+			$data['status'] = true;
+			$data['data']['logout'] = true;
+			$this->response->header('Content-Type', 'application/json');
+			$this->response->output(json_encode($data));
+		} else {
+			/* Otherwise redirect to base URL */
+			redirect('/');
+		}
 	}
 }
