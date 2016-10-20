@@ -85,9 +85,23 @@ class UW_Response extends UW_Module {
 	}
 
 	public function code($code, $content = NULL, $charset = 'UTF-8', $template = true, $protocol = 'HTTP/1.1') {
+
+
 		if ((intval($code) >= 400 && intval($code) <= 417) || (intval($code) >= 500 && intval($code) <= 505)) {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
-			if ($content !== NULL && !$template) die($content);
+
+			/* If the peer accepts JSON encoded responses, we'll go for it */
+			if (strstr($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+				$this->header('Content-Type', 'application/json');
+				$data['status'] = false;
+				$data['code'] = $code;
+				$data['content'] = $content;
+				die(json_encode($data));
+			}
+
+			if ($content !== NULL && !$template)
+				die($content);
+
 			$data = array();
 			$data['config'] = array();
 			$data['config']['charset'] = $charset;
@@ -97,10 +111,13 @@ class UW_Response extends UW_Module {
 			$data['view']['code']['number'] = $code;
 			$data['view']['code']['name'] = $this->_code_name_desc[$code][0];
 			$data['view']['code']['description'] = $this->_code_name_desc[$code][1];
+
 			die($this->view->load('_templates/errors/status_code', $data, true));
 		} else {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
-			if ($content !== NULL) $this->output($content);
+
+			if ($content !== NULL)
+				$this->output($content);
 		}
 	}
 

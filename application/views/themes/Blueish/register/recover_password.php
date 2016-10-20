@@ -107,10 +107,6 @@
 			<td id="recover_password_value"><input name="email" type="text" required="required" minlength="6" /></td>
 		</tr>
 		<tr id="recover_password_row">
-			<td id="recover_password_key"><?=filter_html(NDPHP_LANG_MOD_RECOVER_REGISTERED_PHONE, $config['charset'])?></td>
-			<td id="recover_password_value"><input name="phone" type="text" required="required" minlength="8" /></td>
-		</tr>
-		<tr id="recover_password_row">
 			<td id="recover_password_key"><?=filter_html(NDPHP_LANG_MOD_RECOVER_FIRST_NAME, $config['charset'])?></td>
 			<td id="recover_password_value"><input name="first_name" type="text" required="required" minlength="2" /></td>
 		</tr>

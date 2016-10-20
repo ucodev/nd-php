@@ -300,6 +300,16 @@ class Login extends UW_Controller {
 	}
 
 	public function authenticate() {
+		/* Check if this is a JSON encoded request. If so, replace POST data with JSON data */
+		if ($this->request->is_json()) {
+			/* Fetch JSON data */
+			$json_req = $this->request->json();
+
+			/* If JSON data exists and is valid, replace POST data with it */
+			if ($json_req)
+				$this->request->post_set_all($json_req);
+		}
+
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/authenticate_pre.php') as $plugin)
 			include($plugin);
@@ -389,9 +399,10 @@ class Login extends UW_Controller {
 			redirect($this->ndphp->safe_b64decode($_POST['referer']), false, true); /* Full URL redirect */
 		} else {
 			if ($this->request->is_json()) {
-				$data['user_id'] = $row['id'];
-				$data['session_id'] = $this->session->userdata('sessions_id');
-				$data['apikey'] = $row['apikey'];
+				$data['status'] = true;
+				$data['data']['user_id'] = $row['id'];
+				$data['data']['session_id'] = $this->session->userdata('sessions_id');
+				$data['data']['apikey'] = $row['apikey'];
 
 				$this->response->header('Content-Type', 'application/json');
 				$this->response->output(json_encode($data));

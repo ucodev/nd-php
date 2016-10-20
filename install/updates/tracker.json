@@ -151,6 +151,7 @@
 			"application/views/themes/Blueish/login/login_form.php",
 			"application/views/themes/Blueish/logging/error_log.php",
 			"application/views/themes/Blueish/register/register_form.php",
+			"application/views/themes/Blueish/register/recover_password.php",
 			"application/views/themes/Blueish/header.php",
 			"application/views/themes/Blueish/footer.php",
 			"documentation/NDCA.pdf",

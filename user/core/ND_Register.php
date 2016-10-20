@@ -399,8 +399,20 @@ class ND_Register extends UW_Controller {
 	}
 
 	public function newuser($ajax = 0) {
+		/* Check if this is a JSON encoded request. If so, replace POST data with JSON data */
+		if ($this->request->is_json()) {
+			/* Fetch JSON data */
+			$json_req = $this->request->json();
+
+			/* If JSON data exists and is valid, replace POST data with it */
+			if ($json_req)
+				$this->request->post_set_all($json_req);
+		}
+
+		/* Invoke pre hook */
 		$this->register_pre_process($_POST);
 
+		/* Register user */
 		$users_id = $this->newuser_protected($ajax);
 
 		/* If logging is enabled, log this registration request */
@@ -416,6 +428,7 @@ class ND_Register extends UW_Controller {
 			));
 		}
 
+		/* Invoke post hook */
 		$this->register_post_process($users_id);
 	}
 
@@ -424,60 +437,42 @@ class ND_Register extends UW_Controller {
 			/* Validate reCAPTCHA */
 			$res = recaptcha_check_answer($this->recaptcha_private_key, $_SERVER['REMOTE_ADDR'], $_POST['recaptcha_challenge_field'], $_POST['recaptcha_response_field']);
 
-			if (!$res->is_valid) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_INVALID_RECAPTCHA_VALUE);
-			}
+			if (!$res->is_valid)
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_RECAPTCHA_VALUE, $this->_charset, !$this->request->is_ajax());
 		}
 
 		/* Validate First Name */
-		if (preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['first_name']) === false) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_FIRST_NAME);
-		}
+		if (preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['first_name']) === false)
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate Last Name */
-		if (preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['last_name']) === false) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_LAST_NAME);
-		}
+		if (preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['last_name']) === false)
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_LAST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate password */
-		if (strlen($_POST['password']) < 6) {
-			header('HTTP/1.1 403 Forbidden');
-			die('Password must have at least 6 characters');
-		}
+		if (strlen($_POST['password']) < 8)
+			$this->response->code('403', 'Password must have at least 8 characters', $this->_charset, !$this->request->is_ajax());
 
-		if (strlen($_POST['password']) > 32) {
-			header('HTTP/1.1 403 Forbidden');
-			die('Password must have less than 32 characters');
-		}
+		if (strlen($_POST['password']) > 32)
+			$this->response->code('403', 'Password cannot be greater than 32 characters', $this->_charset, !$this->request->is_ajax());
 
-		if ($_POST['password'] != $_POST['password_check']) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH);
-		}
+		if ($_POST['password'] != $_POST['password_check'])
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH, $this->_charset, !$this->request->is_ajax());
 
-		if (!isset($_POST['terms']) || ($_POST['terms'] != '1')) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_ATTN_READ_ACCEPT_TERMS);
-		}
+		if (!isset($_POST['terms']) || ($_POST['terms'] != '1'))
+			$this->response->code('403', NDPHP_LANG_MOD_ATTN_READ_ACCEPT_TERMS, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate username */
-		if (preg_match('/[a-zA-Z0-9_]{6,32}/', $_POST['username']) === false) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_USERNAME);
-		}
+		if (preg_match('/[a-zA-Z0-9_]{6,32}/', $_POST['username']) === false)
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_USERNAME, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id');
 		$this->db->from('users');
 		$this->db->where('username', $_POST['username']);
 		$query = $this->db->get();
 
-		if ($query->num_rows()) {
-			header("HTTP/1.1 403 Forbidden");
-			die(NDPHP_LANG_MOD_INFO_TAKEN_USERNAME);
-		}
+		if ($query->num_rows())
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_TAKEN_USERNAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate country */
 		$this->db->select('id,code,eu_state');
@@ -486,10 +481,8 @@ class ND_Register extends UW_Controller {
 
 		$query = $this->db->get();
 
-		if (!$query->num_rows()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_COUNTRY);
-		}
+		if (!$query->num_rows())
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_COUNTRY, $this->_charset, !$this->request->is_ajax());
 
 		$row = $query->row_array();
 
@@ -497,10 +490,8 @@ class ND_Register extends UW_Controller {
 		$country_code = $row['code'];
 
 		/* Validate VAT if country is a EU state and if company field was filled */
-		if (($row['eu_state'] == '1') && (strlen($_POST['vat']) < 10) && isset($_POST['company']) && (strlen($_POST['company']) >= 2)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INFO_INCOMPLETE_VAT_EU);
-		}
+		if (($row['eu_state'] == '1') && (strlen($_POST['vat']) < 10) && isset($_POST['company']) && (strlen($_POST['company']) >= 2))
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_INCOMPLETE_VAT_EU, $this->_charset, !$this->request->is_ajax());
 
 		if ($this->register_confirm_vat_eu == 1) {
 			if (isset($_POST['company']) && (strlen($_POST['company']) >= 2) && ($row['eu_state'] == '1')) {
@@ -508,40 +499,30 @@ class ND_Register extends UW_Controller {
 
 				$vatinfo = json_decode($vat_json, true);
 
-				if (!$vatinfo || ($vatinfo == array())) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_UNABLE_CONFIRM_VAT_EU);
-				}
+				if (!$vatinfo || ($vatinfo == array()))
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_CONFIRM_VAT_EU, $this->_charset, !$this->request->is_ajax());
 
-				if ($vatinfo['valid'] !== true) {
-					header('HTTP/1.1 403 Forbidden');
-					die(NDPHP_LANG_MOD_INVALID_VAT_EU);
-				}
+				if ($vatinfo['valid'] !== true)
+					$this->response->code('403', NDPHP_LANG_MOD_INVALID_VAT_EU, $this->_charset, !$this->request->is_ajax());
 			}
 		}
 
 		/* Validate email */
-		if (preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,16}$/', $_POST['email']) === false) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_EMAIL);
-		}
+		if (preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,16}$/', $_POST['email']) === false)
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_EMAIL, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id');
 		$this->db->from('users');
 		$this->db->where('email', $_POST['email']);
 		$query = $this->db->get();
 
-		if ($query->num_rows()) {
-			header("HTTP/1.1 403 Forbidden");
-			die(NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED);
-		}
+		if ($query->num_rows())
+			$this->response->code('403', NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED, $this->_charset, !$this->request->is_ajax());
 
 		if ($this->register_confirm_phone == 1) {
 			/* Validate phone */
-			if (preg_match('/^\+\d{8,16}$/', $_POST['phone']) === false) {
-				header('HTTP/1.1 403 Forbidden');
-				die(NDPHP_LANG_MOD_INVALID_PHONE);
-			}
+			if (preg_match('/^\+\d{8,16}$/', $_POST['phone']) === false)
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_PHONE, $this->_charset, !$this->request->is_ajax());
 
 			$query = $this->db->query('SELECT *,LENGTH(prefix) AS len FROM countries ORDER BY len DESC,id ASC');
 
@@ -556,20 +537,16 @@ class ND_Register extends UW_Controller {
 				}	
 			}
 
-			if (!$valid_phone_prefix) {
-				header("HTTP/1.1 403 Forbidden");
-				die(NDPHP_LANG_MOD_INVALID_PHONE_PREFIX);
-			}
+			if (!$valid_phone_prefix)
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_PHONE_PREFIX, $this->_charset, !$this->request->is_ajax());
 
 			$this->db->select('id');
 			$this->db->from('users');
 			$this->db->where('phone', $_POST['phone']);
 			$query = $this->db->get();
 
-			if ($query->num_rows()) {
-				header("HTTP/1.1 403 Forbidden");
-				die(NDPHP_LANG_MOD_INFO_PHONE_REGISTERED);
-			}
+			if ($query->num_rows())
+				$this->response->code('403', NDPHP_LANG_MOD_INFO_PHONE_REGISTERED, $this->_charset, !$this->request->is_ajax());
 
 			/* TODO: FIXME: Validate phone number (with libphonenumber?) */
 			//if (!$valid_phone) {
@@ -634,8 +611,7 @@ class ND_Register extends UW_Controller {
 		if ($this->db->trans_status() === false) {
 			error_log('register.php: newuser(): Insert failed.');
 			$this->db->trans_rollback();
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_TRANSACTION . ' #1.');
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$users_id_enc = urlencode($this->ndphp->safe_b64encode($this->encrypt->encode($users_id . '.' . mt_rand(100000, 999999))));
 
@@ -643,18 +619,16 @@ class ND_Register extends UW_Controller {
 
 			if ($this->register_confirm_email == 1) {
 				/* Send confirmation email */
-				if ($this->send_confirmation_email($userdata['email'], $users_id, $users_id_enc, $userdata['first_name'], $userdata['last_name'], $userdata['confirm_email_hash']) !== true) {
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_SEND_CONFIRM_EMAIL);
-				}
+				if ($this->send_confirmation_email($userdata['email'], $users_id, $users_id_enc, $userdata['first_name'], $userdata['last_name'], $userdata['confirm_email_hash']) !== true)
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SEND_CONFIRM_EMAIL, $this->_charset, !$this->request->is_ajax());
 			}
 
 			if ($this->register_confirm_phone == 1) {
 				/* Send confirmation sms token */
-				if ($this->send_confirmation_sms($userdata['phone'], $userdata['confirm_phone_token']) !== true) {
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_SEND_CONFIRM_SMS);
-				}
+				if ($this->send_confirmation_sms($userdata['phone'], $userdata['confirm_phone_token']) !== true)
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SEND_CONFIRM_SMS, $this->_charset, !$this->request->is_ajax());
+
+				/* TODO: FIXME: Missing JSON response */
 
 				$this->confirm_sms_form($users_id_enc, $ajax);
 			} else if ($this->register_confirm_email == 1) {
@@ -663,11 +637,23 @@ class ND_Register extends UW_Controller {
 				if ($res === true) {
 					$this->user_active_process($users_id);
 
-					/* FIXME: Create a view file for the following content. (Controller should never deliver html) */
+					if (strstr($this->request->header('Accept'), 'application/json') !== false) {
+						$data['status'] = true;
+						$data['data']['user_id'] = $users_id;
+						$data['data']['registered'] = true;
+						$data['data']['email_pending'] = true;
 
-					$data['view']['message'] .= '<br />' . NDPHP_LANG_MOD_REGISTER_USER_ACCT_IS_NOW . ' <span style="font-weight: bold">' . NDPHP_LANG_MOD_WORD_ACTIVE_F . '</span>.<br />';
-					$data['view']['message'] .= '<br /><br /><center><a href="' . base_url() . '/index.php/login" class="register_button_link">' . NDPHP_LANG_MOD_LOGIN_LOGIN . '</a></center>';
+						$this->response->header('Content-Type', 'application/json');
+						$this->response->output(json_encode($data));
+					} else {
+						/* FIXME: Create a view file for the following content. (Controller should never deliver html) */
+
+						$data['view']['message'] .= '<br />' . NDPHP_LANG_MOD_REGISTER_USER_ACCT_IS_NOW . ' <span style="font-weight: bold">' . NDPHP_LANG_MOD_WORD_ACTIVE_F . '</span>.<br />';
+						$data['view']['message'] .= '<br /><br /><center><a href="' . base_url() . '/index.php/login" class="register_button_link">' . NDPHP_LANG_MOD_LOGIN_LOGIN . '</a></center>';
+					}
 				} else {
+					/* TODO: FIXME: Missing JSON response */
+
 					$data['view']['message'] .= '<br />' . NDPHP_LANG_MOD_REGISTER_CHECK_MOBILE_INBOX . '<br />';
 				}
 
@@ -679,8 +665,9 @@ class ND_Register extends UW_Controller {
 					$this->user_active_process($users_id);
 
 					if (strstr($this->request->header('Accept'), 'application/json') !== false) {
-						$data['user_id'] = $users_id;
-						$data['apikey'] = $userdata['apikey'];
+						$data['status'] = true;
+						$data['data']['user_id'] = $users_id;
+						$data['data']['registered'] = true;
 
 						$this->response->header('Content-Type', 'application/json');
 						$this->response->output(json_encode($data));
@@ -689,8 +676,7 @@ class ND_Register extends UW_Controller {
 						echo('<br /><br /><center><a href="' . base_url() . '/index.php/login" class="register_button_link">' . NDPHP_LANG_MOD_LOGIN_LOGIN . '</a></center>');
 					}
 				} else {
-					header('HTTP/1.1 500 Internal Server Error');
-					die(NDPHP_LANG_MOD_UNABLE_ACTIVATED_ACCOUNT . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT . ' #1');
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_ACTIVATED_ACCOUNT . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT . ' #1', $this->_charset, !$this->request->is_ajax());
 				}
 			}
 		}
@@ -701,10 +687,8 @@ class ND_Register extends UW_Controller {
 	public function recover_password_form() {
 		$features = $this->_get_features();
 
-		if (!$features['user_recovery']) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_DISABLED_USER_PASS_RECOVER);
-		}
+		if (!$features['user_recovery'])
+			$this->response->code('500', NDPHP_LANG_MOD_DISABLED_USER_PASS_RECOVER, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id,country,code');
 		$this->db->from('countries');
@@ -712,10 +696,8 @@ class ND_Register extends UW_Controller {
 
 		$query = $this->db->get();
 
-		if (!$query->num_rows()) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_RECOVER_CREDENTIALS);
-		}
+		if (!$query->num_rows())
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RECOVER_CREDENTIALS, $this->_charset, !$this->request->is_ajax());
 
 		$data = array();
 
@@ -752,36 +734,33 @@ class ND_Register extends UW_Controller {
 		}
 
 		if (!isset($_POST['email'])) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MISSING_EMAIL);
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_EMAIL, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$email = $_POST['email'];
 		}
 
+		/*
 		if (!isset($_POST['phone'])) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MISSING_PHONE);
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_PHONE, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$phone = $_POST['phone'];
 		}
+		*/
 
 		if (!isset($_POST['first_name'])) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MISSING_FIRST_NAME);
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$first_name = $_POST['first_name'];
 		}
 
 		if (!isset($_POST['last_name'])) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MISSING_LAST_NAME);
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_LAST_NAME, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$last_name = $_POST['last_name'];
 		}
 
 		if (!isset($_POST['countries_id']) || !$_POST['countries_id'] || ($_POST['countries_id'] == 242)) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MISSING_VALID_COUNTRY);
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_VALID_COUNTRY, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$countries_id = $_POST['countries_id'];
 		}
@@ -789,7 +768,7 @@ class ND_Register extends UW_Controller {
 		$this->db->select('id,username');
 		$this->db->from('users');
 		$this->db->where('email', $email);
-		$this->db->where('phone', $phone);
+		//$this->db->where('phone', $phone);
 		$this->db->where('first_name', $first_name);
 		$this->db->where('last_name', $last_name);
 		$this->db->where('countries_id', $countries_id);
@@ -798,16 +777,14 @@ class ND_Register extends UW_Controller {
 
 		if (!$query->num_rows()) {
 			error_log('recover_password(): No data match.');
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_REGISTER_NO_DATA_MATCH);
+			$this->response->code('403', NDPHP_LANG_MOD_REGISTER_NO_DATA_MATCH, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$rawdata = $query->row_array();
 
 		if ($rawdata['id'] == 1) {
 			error_log('recover_password(): No data match.');
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_REGISTER_NO_DATA_MATCH);
+			$this->response->code('403', NDPHP_LANG_MOD_REGISTER_NO_DATA_MATCH, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$plain_password = $this->rand_string(24);
@@ -834,8 +811,7 @@ class ND_Register extends UW_Controller {
 
 		if (!$query->num_rows()) {
 			error_log('register.php: confirm_sms_form(): Invalid users_id: ' . $users_id);
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_USER_ID);
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_ID, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$row = $query->row_array();
@@ -883,8 +859,7 @@ class ND_Register extends UW_Controller {
 
 		if (!$query->num_rows()) {
 			error_log('register.php: confirm_sms_token(): Invalid users_id: ' . $users_id);
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_USER_ID);
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_ID, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$row = $query->row_array();
@@ -894,8 +869,8 @@ class ND_Register extends UW_Controller {
 		}
 
 		if ($row['confirm_phone_token'] != $smstoken) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_INVALID_SMS_TOKEN);
+			error_log('register.php: confirm_sms_token(): Invalid sms token (' . $smstoken . ') for user id: ' . $users_id);
+			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SMS_TOKEN, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$userdata['phone_confirmed'] = 1;
@@ -908,8 +883,7 @@ class ND_Register extends UW_Controller {
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 			error_log('register.php: confirm_sms_token(): Failed to update phone_confirmed on User ID: ' . $users_id);
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_TRANSACTION . ' #1. ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION . ' #1. ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -1020,9 +994,10 @@ class ND_Register extends UW_Controller {
 	}
 
 	private function user_active_process($users_id) {
-		/* Update users_id and apikey on users table */
+		/* Update user data */
 		$userdata['users_id'] = $users_id;
 		$userdata['acct_last_reset'] = date('Y-m-d H:i:s');
+		$userdata['expire'] = '2030-12-31 23:59:59';
 
 		$this->db->trans_begin();
 
@@ -1032,8 +1007,7 @@ class ND_Register extends UW_Controller {
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 			error_log('register.php: user_active_process(): Unable to update users_id on User ID: ' . $users_id);
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_UPDATE_TABLE_USERS . '<br />');
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_TABLE_USERS, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -1049,8 +1023,7 @@ class ND_Register extends UW_Controller {
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 			error_log('register.php: user_active_process(): Failed to update rel_users_roles on User ID: ' . $users_id);
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_UPDATE_USER_ROLES);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_UPDATE_USER_ROLES, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}
@@ -1092,8 +1065,7 @@ class ND_Register extends UW_Controller {
 		if ($this->db->trans_status() === false) {
 			$this->db->trans_rollback();
 			error_log('register.php: user_try_unlock(): Failed to update user lock on User ID: ' . $users_id);
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_FAILED_TRANSACTION . ' #1');
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_TRANSACTION, $this->_charset, !$this->request->is_ajax());
 		} else {
 			$this->db->trans_commit();
 		}

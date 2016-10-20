@@ -1,3 +1,10 @@
+v0.03j1 (2016-10-20):
+
+ - Authentication and registration requests now accept JSON encoded data.
+ - Code refactoring on register module.
+ - Updated tracker.
+
+
 v0.03j (2016-10-19):
 
  - Improved registration controller.
