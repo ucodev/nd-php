@@ -114,6 +114,10 @@
  * * Paypal payments interface is outdated.
  *
  *
+ * DEBUG:
+ *
+ * + Something went wrong with remove view / delete (more than one id was being passed in the POST request comming from remove view).
+ *
  */
 
 class ND_Controller extends UW_Controller {
@@ -121,7 +125,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03k';
+	protected $_ndphp_version = '0.03k1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
