@@ -44,7 +44,7 @@ class Files extends ND_Controller {
 	/** Other overloads **/
 
 	/** Custom functions **/
-	public function access($table, $entry_id, $field, $filename, $download = 'no') {
+	public function access($table, $field, $filename, $entry_id, $download = 'no') {
 		$file_path = SYSTEM_BASE_DIR . '/uploads/' . $this->session->userdata('user_id') . '/' . $table . '/' . $entry_id . '/' . $field . '/' . openssl_digest(rawurldecode($filename), 'sha256');
 
 		/* Set the field name to be used to check permissions */

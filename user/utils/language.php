@@ -104,6 +104,8 @@ define('NDPHP_LANG_MOD_ERROR_UPLOAD_NO_TMP_DIR',	'Missing a temporary folder.');
 define('NDPHP_LANG_MOD_ERROR_UPLOAD_CANT_WRITE',	'Failed to write file to disk.');
 define('NDPHP_LANG_MOD_ERROR_UPLOAD_EXTENSION',		'A PHP extension stopped the file upload.');
 define('NDPHP_LANG_MOD_ERROR_UPLOAD_UNKNOWN',		'An unknown error occurred while performing the upload.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER',		'The specified upload driver is not supported.');
+define('NDPHP_LANG_MOD_ERROR_UPLOAD_NO_CONTENT',	'No file content found in the upload request.');
 
 define('NDPHP_LANG_MOD_FAILED_INSERT',				'Failed to perform insert.');
 define('NDPHP_LANG_MOD_FAILED_UPDATE',				'Failed to perform update.');
@@ -115,6 +117,9 @@ define('NDPHP_LANG_MOD_FAILED_UPDATE_USER_DATA',	'Failed to update user data.');
 define('NDPHP_LANG_MOD_FAILED_SEND_SMS',			'Error while sending SMS.');
 define('NDPHP_LANG_MOD_FAILED_UPDATE_USER_ROLES',	'Failed to update user roles.');
 define('NDPHP_LANG_MOD_FAILED_ROLE_UPDATE',			'Failed to update role.');
+define('NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE',	'Failed to create a temporary file.');
+define('NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD',		'Failed to upload file to S3 bucket.');
+define('NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE',		'Failed to remove file from S3 bucket.');
 
 define('NDPHP_LANG_MOD_INVALID_ANIMATION_DEFAULT',	'Invalid default animation defined.');
 define('NDPHP_LANG_MOD_INVALID_ANIMATION_ORDERING',	'Invalid ordering animation defined.');
@@ -326,6 +331,7 @@ define('NDPHP_LANG_MOD_UNABLE_UPDATE_NOSUIT_VERSION','Unable to find a suitable 
 define('NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR',		'Unable to determine the views base directory.');
 define('NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA',	'Unable to retrieve data for file');
 define('NDPHP_LANG_MOD_UNABLE_LOAD_NDAPP_URL',		'Unable to load ND App from the specified URL');
+define('NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS','Unable to put contents on temporary file.');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');

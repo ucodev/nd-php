@@ -49,7 +49,111 @@ class UW_Upload extends UW_Module {
 		$this->_init();
 	}
 
-	public function process_file($table, $id, $field) {
+	public function in_file_uploads($file, $file_uploads) {
+		foreach ($file_uploads as $item) {
+			if ($file == $item[0])
+				return true;
+		}
+
+		return false;
+	}
+
+	public function pre_process() {
+		$file_uploads = array();
+
+		/* Check if the file is being uploaded via JSON encoded request */
+		if ($this->request->is_json()) {
+			foreach ($this->request->post() as $field => $value) {
+				if (substr($field, 0, 6) != '_file_')
+					continue;
+
+				if (!isset($value['contents']))
+					$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_CONTENT, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Set file metadata */
+				$meta['driver'] = $this->config['upload_file_driver'];
+				$meta['from_json'] = true;
+				$meta['name'] = $value['name'];
+				$meta['type'] = $value['type'];
+				$meta['created'] = $value['created'];
+				$meta['modified'] = $value['modified'];
+
+				switch ($meta['driver']) {
+					case 'local': $meta['path'] = $field . '/' . $meta['name']; break;
+					case 's3':    $meta['path'] = $this->config['session_data']['user_id'] . '/' . $this->config['name'] . '/' . openssl_digest(time() . $field . rawurldecode($meta['name']), 'sha256') . '.' . end(explode('.', $meta['name'])); break;
+				}
+
+				$meta['url'] = $meta['path'];
+
+				/* Create a temporary file */
+				if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Store the contents of the uploaded file into the local temporary file */
+				if (file_put_contents($tfile, base64_decode($value['contents'])) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Clear contents from value */
+				$value['contents'] = NULL;
+
+				$meta['size'] = filesize($tfile);
+
+				/* Push file metadata into uploads array */
+				array_push($file_uploads, array($field, $meta));
+
+				/* Map the JSON encoded data to native PHP files global */
+				$_FILES[$field]['name'] = $meta['name'];
+				$_FILES[$field]['size'] = $meta['size'];
+				$_FILES[$field]['error'] = NULL;
+				$_FILES[$field]['tmp_name'] = $tfile;
+
+				/* Set the POST variable value */
+				$this->request->post_set($field, json_encode($meta));
+			}
+		} else {
+			foreach ($_FILES as $k => $v) {
+				if (!$_FILES[$k]['name'])
+					continue;
+
+				/* Filter filename */
+				$_FILES[$k]['name'] = preg_replace('/[^' . $this->config['upload_file_name_filter'] . ']+/', '_', $_FILES[$k]['name']);
+
+				switch ($_FILES[$k]['error']) {
+					case UPLOAD_ERR_NO_FILE:
+					case UPLOAD_ERR_PARTIAL: continue;
+				}
+
+				/* Set file metadata */
+				$meta['driver'] = $this->config['upload_file_driver'];
+				$meta['from_json'] = false;
+				$meta['name'] = $_FILES[$k]['name'];
+				$meta['type'] = NULL;
+				$meta['size'] = $_FILES[$k]['size'];
+				$meta['created'] = date('Y-m-d H:i:s');
+				$meta['modified'] = $meta['created'];
+
+				switch ($meta['driver']) {
+					case 'local': $meta['path'] = $k . '/' . $meta['name']; break;
+					case 's3':    $meta['path'] = $this->config['session_data']['user_id'] . '/' . $this->config['name'] . '/' . openssl_digest(time() . $field . rawurldecode($meta['name']), 'sha256') . '.' . end(explode('.', $meta['name'])); break;
+				}
+
+				$meta['url'] = $meta['path'];
+
+				/* Push file metadata into uploads array */
+				array_push($file_uploads, array($k, $meta));
+
+				/* Set the POST variable value */
+				$this->request->post_set($k, json_encode($meta));
+			}	
+		}
+
+		return $file_uploads;
+	}
+
+	public function process_file($table, $id, $file) {
+		$field = $file[0];
+		$meta = $file[1];
+
 		if (!isset($_FILES[$field]['error']) || is_array($_FILES[$field]['error']))
 			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->config['default_charset'], !$this->request->is_ajax());
 
@@ -61,43 +165,94 @@ class UW_Upload extends UW_Module {
 		if ($_FILES[$field]['size'] > $this->config['upload_file_max_size'])
 			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->config['default_charset'], !$this->request->is_ajax());
 
-		/* Craft destination path */
-		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
-
-		/* Create directory if it doesn't exist */
-		if (mkdir($dest_path, 0750, true) === false)
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->config['default_charset'], !$this->request->is_ajax());
-
 		/* Compute file hash */
 		$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
 
-		if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+		/* Process the file accordingly to the selected driver */
+		if ($meta['driver'] == 'local') {
+			/* Craft destination path */
+			$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
 
-		/* Encrypt file, if required */
-		if ($this->config['upload_file_encryption'] === true) {
-			/* FIXME: TODO: For limited type tables, we should use the user's private encryption key here */
-			$content_ciphered = $this->encrypt->encode(file_get_contents($dest_path . '/' . $file_hash));
-			if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false)
-				$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
+			/* Create directory if it doesn't exist */
+			if (mkdir($dest_path, 0750, true) === false)
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->config['default_charset'], !$this->request->is_ajax());
 
-			if (fwrite($fp, $content_ciphered) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
+			/* Move file from temporary location */
+			if ($meta['from_json'] === false) {
+				/* The file was uploaded with multipart encoding, so move_uploaded_file() shall be used */
+				if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+			} else {
+				/* The file was uploaded via REST API (JSON encoded), so rename() shall be used
+				 * since this is a regular temporary file, created by the REST API upload handler.
+				 */
+				if (rename($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+			}
 
-			fclose($fp);
+			/* Encrypt file, if required */
+			if ($this->config['upload_file_encryption'] === true) {
+				/* FIXME: TODO: For limited type tables, we should use the user's private encryption key here */
+				$content_ciphered = $this->encrypt->encode(file_get_contents($dest_path . '/' . $file_hash));
+				if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false)
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
+
+				if (fwrite($fp, $content_ciphered) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
+
+				fclose($fp);
+			}
+		} else if ($meta['driver'] == 's3') {
+			$this->load->module('s3');
+
+			if ($meta['from_json'] === false) {
+				/* The file was uploaded with multipart encoding, so move_uploaded_file() shall be used */
+
+				/* Create a temporary file name */
+				if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Move the uploaded file into a well known temporary file */
+				if (move_uploaded_file($_FILES[$field]['tmp_name'], $tfile) === false)
+					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Upload the file to S3 bucket */
+				if ($this->s3->upload($meta['path'], file_get_contents($tfile), $this->config['upload_file_encryption']) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Unlink the temporary file */
+				unlink($tfile);
+			} else {
+				/* The file was uploaded via REST API (JSON encoded), so rename() shall be used
+				 * since this is a regular temporary file, created by the REST API upload handler.
+				 */
+				if ($this->s3->upload($meta['path'], file_get_contents($_FILES[$field]['tmp_name']), $this->config['upload_file_encryption']) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+			}
+		} else {
+			$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 	}
 
-	public function remove_file($table, $id, $field) {
-		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
+	public function remove_file($table, $id, $file) {
+		$field = $file[0];
+		$meta = $file[1];
 
-		$this->_rrmdir($dest_path);
-	}
+		switch ($this->config['upload_file_driver']) {
+			case 'local': {
+				$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
 
-	public function purge_entry_files($table, $id) {
-		$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id;
+				$this->_rrmdir($dest_path);
+			} break;
+			case 's3': {
+				$this->load->module('s3');
 
-		$this->_rrmdir($dest_path);
+				/* Remove the file from the S3 bucket */
+				if ($this->s3->drop($meta['path']) === false)
+					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE, $this->config['default_charset'], !$this->request->is_ajax());
+			} break;
+			default: $this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
+		}
 	}
 
 	private function _rrmdir($dir) {

@@ -174,11 +174,20 @@
 												?>
 											<?php elseif ($view['fields'][$field]['input_type'] == 'file'): ?>
 													<!-- FIXME: We're using $row['id'] in the URL, but this field may be hidden, thus not available... -->
-													<a id="<?=filter_html_special($field, $config['charset'])?>_<?=$i?>" target="_blank" title="<?=filter_html($value, $config['charset'])?>" href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>">
-														<?php if ($config['render']['images'] && in_array(end(explode('.', $value)), $config['render']['ext'])): ?>
-															<img alt="<?=filter_html($value, $config['charset'])?>" style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;" src="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($row['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>" />
+													<a
+														id="<?=filter_html_special($field, $config['charset'])?>_<?=$i?>"
+														target="_blank"
+														title="<?=filter_html($value['name'], $config['charset'])?>"
+														href="<?=filter_html($value['url'], $config['charset'])?>"
+													>
+														<?php if ($config['render']['images'] && in_array(end(explode('.', $value['name'])), $config['render']['ext'])): ?>
+															<img
+																alt="<?=filter_html($value['name'], $config['charset'])?>"
+																style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;"
+																src="<?=filter_html($value['url'], $config['charset'])?>"
+															/>
 														<?php else: ?>
-															<?=filter_html($value, $config['charset'])?>
+															<?=filter_html($value['name'], $config['charset'])?>
 														<?php endif; ?>
 													</a>
 											<?php else: ?>

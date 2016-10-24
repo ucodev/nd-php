@@ -49,7 +49,7 @@ class UW_Field extends UW_Module {
 		$this->_init();
 	}
 
-	public function value_mangle($fields, $query) {
+	public function value_mangle($fields, $query, $id = NULL) {
 		$result_mangled = array();
 
 		foreach ($query->result_array() as $data) {
@@ -61,6 +61,16 @@ class UW_Field extends UW_Module {
 					/* NOTE: Currently, we only need to mangle datetime fields (to support user timezone) */
 					/* Convert data from database default timezone to user timezone */
 					$row[$field] = $this->timezone->convert($value, $this->config['default_timezone'], $this->config['session_data']['timezone']);
+				} else if ($fields[$field]['input_type'] == 'file' && $value) {
+					/* Decode JSON data */
+					$row[$field] = json_decode($value, true);
+
+					/* Append ID to the local URL */
+					if ($row[$field]['driver'] == 'local' && (isset($row['id']) || $id !== NULL)) {
+						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['url'] . '/' . (isset($row['id']) ? $row['id'] : $id);
+					} else if ($row[$field]['driver'] == 's3') {
+						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['url'];
+					}
 				} else {
 					/* Just push the value without modification */
 					$row[$field] = $value;

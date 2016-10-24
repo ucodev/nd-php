@@ -236,17 +236,17 @@
 										<div class="col-sm-6">
 											<a
 												target="_blank"
-												title="<?=filter_html($value, $config['charset'])?>"
-												href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($view['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>"
+												title="<?=filter_html($value['name'], $config['charset'])?>"
+												href="<?=filter_html($value['url'], $config['charset'])?>"
 											>
-												<?php if ($config['render']['images'] && in_array(end(explode('.', $value)), $config['render']['ext'])): ?>
+												<?php if ($config['render']['images'] && in_array(end(explode('.', $value['name'])), $config['render']['ext'])): ?>
 													<img
-														alt="<?=filter_html($value, $config['charset'])?>"
+														alt="<?=filter_html($value['name'], $config['charset'])?>"
 														style="width: <?=filter_html($config['render']['size']['width'], $config['charset'])?>; height: <?=filter_html($config['render']['size']['height'], $config['charset'])?>;"
-														src="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['ctrl'], $config['charset'])?>/<?=filter_html($view['id'], $config['charset'])?>/<?=filter_html($field, $config['charset'])?>/<?=filter_html($value, $config['charset'])?>"
+														src="<?=filter_html($value['url'], $config['charset'])?>"
 													/>
 												<?php else: ?>
-													<?=filter_html($value, $config['charset'])?>
+													<?=filter_html($value['name'], $config['charset'])?>
 												<?php endif; ?>
 											</a>
 											<?php if ($value): ?>

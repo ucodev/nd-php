@@ -67,12 +67,12 @@ class ND_Register extends UW_Controller {
 	private $nd_sms_from_no_custom = '0000000000';
 	private $nd_sms_confirm_url = 'https://localhost/ndphp/index.php/register/confirm_sms_form/';
 	private $nd_mail_confirm_url = 'https://localhost/ndphp/index.php/register/confirm_email_hash/';
-	private $nd_mail_from = 'no-reply@nd-php.com';
+	private $nd_mail_from = 'no-reply@nd-php.org';
 	private $nd_mail_from_name = 'ND PHP Support Dept.';
 	private $nd_mail_subject = 'ND PHP ExampleApp Registration';
-	private $nd_mail_smtp_host = 'mail.example.net';
+	private $nd_mail_smtp_host = 'mail.example.exa';
 	private $nd_mail_smtp_port = '25';
-	private $nd_mail_smtp_user = 'no-reply@nd-php.com';
+	private $nd_mail_smtp_user = 'no-reply@nd-php.org';
 	private $nd_mail_smtp_pass = 'someUserPassword';
 	private $nd_mail_smtp_ssl = '0';
 	private $nd_mail_smtp_tls = '0';
@@ -132,10 +132,8 @@ class ND_Register extends UW_Controller {
 		$this->_temp_dir = $config['temporary_directory'];
 
 		/* Check if we're under maintenance mode */
-		if ($config['maintenance'] && !$this->security->im_admin()) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE);
-		}
+		if ($config['maintenance'] && !$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
 
 		$this->nd_app_base_url = $config['base_url'];
 		$this->nd_mail_confirm_url = $config['base_url'] . '/index.php/register/confirm_email_hash/';
@@ -156,11 +154,9 @@ class ND_Register extends UW_Controller {
 		$features = $this->_get_features();
 
 		/* Check if we're under multi or single user mode */
-		if (!$features['multi_user']) {
+		if (!$features['multi_user'])
 			/* If we're under single user mode, user registration is not available */
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_DISABLED_MULTI_USER);
-		}
+			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_MULTI_USER, $this->_charset, !$this->request->is_ajax());
 
 		/* TODO: FIXME: These private variables should be removed in the future and only the $features array shall be used all around the nd code. */
 		$this->register_confirm_vat_eu = $features['register_confirm_vat_eu'];
@@ -183,10 +179,8 @@ class ND_Register extends UW_Controller {
 	public function index() {
 		$features = $this->_get_features();
 
-		if (!$features['user_registration']) {
-			header('HTTP/1.1 403 Forbidden');
-			die(NDPHP_LANG_MOD_DISABLED_USER_REGISTER);
-		}
+		if (!$features['user_registration'])
+			$this->response->code('403', NDPHP_LANG_MOD_DISABLED_USER_REGISTER, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id,country,code');
 		$this->db->from('countries');
@@ -194,10 +188,8 @@ class ND_Register extends UW_Controller {
 
 		$query = $this->db->get();
 
-		if (!$query->num_rows()) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die(NDPHP_LANG_MOD_UNABLE_REGISTER_NEW_USERS);
-		}
+		if (!$query->num_rows())
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_REGISTER_NEW_USERS, $this->_charset, !$this->request->is_ajax());
 
 		$data = array();
 
@@ -375,7 +367,7 @@ class ND_Register extends UW_Controller {
 
 		if (!curl_exec($ch)) {
 			error_log('register.php: send_confirmation_sms(): cURL error: ' . curl_error($ch));
-			die(NDPHP_LANG_MOD_FAILED_SEND_SMS);
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_SEND_SMS, $this->_charset, !$this->request->is_ajax());
 		}
 
 		$res = curl_multi_getcontent($ch);
@@ -1055,7 +1047,7 @@ class ND_Register extends UW_Controller {
 		$userdata['active'] = 1;
 		$userdata['locked'] = 0;
 		$userdata['date_confirmed'] = date('Y-m-d H:i:s');
-		$userdata['expire'] = (date('Y') + 1) . '-' . date('m-d H:i:s'); // 1 year active before re-confirmation
+		$userdata['expire'] = (date('Y') + 1) . '-' . date('m-d H:i:s'); // 1 year active before re-confirmation. FIXME: TODO: This shall be increased
 
 		$this->db->trans_begin();
 

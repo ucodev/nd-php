@@ -1060,7 +1060,7 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(64) NOT NULL,
   `password` varchar(512) NOT NULL,
-  `_file_photo` varchar(128) DEFAULT NULL,
+  `_file_photo` varchar(2048) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `phone` varchar(16) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '0',

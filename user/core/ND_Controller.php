@@ -121,7 +121,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03j1';
+	protected $_ndphp_version = '0.03k';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -510,7 +510,7 @@ class ND_Controller extends UW_Controller {
 		array(NDPHP_LANG_MOD_OP_SEARCH,			'R', 'search',		NULL, 'ajax',   false,	NDPHP_LANG_MOD_OP_ACCESS_KEY_SEARCH	)
 	);
 
-	/* If set to true, uploaded files will be stored encrypted */
+	/* If set to true, uploaded files will be stored encrypted (only supported on 'local' driver) */
 	protected $_upload_file_encryption = true;
 
 	/* Upload max file size */
@@ -518,6 +518,12 @@ class ND_Controller extends UW_Controller {
 
 	/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */
 	protected $_upload_file_name_filter = 'a-zA-Z0-9_\.';
+
+	/* The upload driver to be used (supported drivers: local, s3) */
+	protected $_upload_file_driver = 'local';
+
+	/* The base URL for the uploaded images. Leave blank if 'local' driver is being used */
+	protected $_upload_file_base_url = '';
 
 	/* Session data buffer (will be populated with construct) */
 	protected $_session_data = array();
@@ -853,6 +859,12 @@ class ND_Controller extends UW_Controller {
 		$this->config['upload_file_encryption']					= $this->_upload_file_encryption;
 		$this->config['upload_file_name_filter']				= $this->_upload_file_name_filter;
 		$this->config['upload_file_max_size']					= $this->_upload_file_max_size;
+		$this->config['upload_file_driver']						= $this->_upload_file_driver;
+		if ($this->config['upload_file_driver'] == 'local') {
+			$this->config['upload_file_base_url']				= base_url() . 'index.php/files/access/' . $this->config['name'];
+		} else {
+			$this->config['upload_file_base_url']				= $this->_upload_file_base_url;
+		}
 
 		$this->config['charts_enable_list']						= $this->_charts_enable_list;
 		$this->config['charts_enable_result']					= $this->_charts_enable_result;
@@ -1032,7 +1044,7 @@ class ND_Controller extends UW_Controller {
 				$query = $this->db->get();
 
 				if (!$query->num_rows())
-					$this->response->code('403', '{"status":false,"reason":"' . NDPHP_LANG_MOD_INVALID_CREDENTIALS . '"}', $this->_default_charset, !$this->request->is_ajax());
+					$this->response->code('403', NDPHP_LANG_MOD_INVALID_CREDENTIALS, $this->_default_charset, !$this->request->is_ajax());
 
 				/* Setup user roles */
 				$user_roles = array();
@@ -1050,7 +1062,7 @@ class ND_Controller extends UW_Controller {
 					$privenckey = $this->encrypt->decrypt($row['privenckey'], $json_req['_password'], false);
 
 					if (strlen($privenckey) != 256)
-						$this->response->code('500', '{"status":false,"reason":"' . NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY . '"}', $this->_default_charset, !$this->request->is_ajax());
+						$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_default_charset, !$this->request->is_ajax());
 				}
 
 				/* Get user id */
@@ -3493,8 +3505,6 @@ class ND_Controller extends UW_Controller {
 		$rel = NULL;
 		$mixed_rels = array();
 
-		$file_uploads = array();
-
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/insert_pre.php') as $plugin)
 			include($plugin);
@@ -3503,23 +3513,7 @@ class ND_Controller extends UW_Controller {
 		$hook_pre_return = $this->_hook_insert_pre($this->request->post(), $ftypes);
 
 		/* Pre-process file uploads */
-		foreach ($_FILES as $k => $v) {
-			if (!$_FILES[$k]['name'])
-				continue;
-
-			/* Filter filename */
-			$_FILES[$k]['name'] = preg_replace('/[^' . $this->config['upload_file_name_filter'] . ']+/', '_', $_FILES[$k]['name']);
-
-			switch ($_FILES[$k]['error']) {
-				case UPLOAD_ERR_NO_FILE:
-				case UPLOAD_ERR_PARTIAL: continue;
-			}
-
-			array_push($file_uploads, $k);
-
-			/* Set the POST variable value */
-			$this->request->post_set($k, $_FILES[$k]['name']);
-		}
+		$file_uploads = $this->upload->pre_process();
 
 		/* Pre-process $_POST array */
 		foreach ($this->request->post() as $field => $value) {
@@ -3787,7 +3781,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Select only the fields that were returned by _get_fields() */
 		$this->filter->selected_fields($data['view']['fields'], array($this->config['name'] . '.id' => $id));
-		$data['view']['result_array'] = $this->field->value_mangle($data['view']['fields'], $this->db->get($this->config['name']));
+		$data['view']['result_array'] = $this->field->value_mangle($data['view']['fields'], $this->db->get($this->config['name']), $id);
 
 		$data['view']['rel'] = array();
 
@@ -4007,9 +4001,6 @@ class ND_Controller extends UW_Controller {
 		$mixed_rels = array();
 		$multiple_rels = array();
 
-		/* Array containing file names to be uploaded */
-		$file_uploads = array();
-
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_pre.php') as $plugin)
 			include($plugin);
@@ -4020,24 +4011,8 @@ class ND_Controller extends UW_Controller {
 		/* Initialize transaction */
 		$this->db->trans_begin();
 
-		/* Process file uploads */
-		foreach ($_FILES as $k => $v) {
-			if (!$_FILES[$k]['name'])
-				continue;
-
-			/* Filter filename */
-			$_FILES[$k]['name'] = preg_replace('/[^' . $this->config['upload_file_name_filter'] . ']+/', '_', $_FILES[$k]['name']);
-
-			switch ($_FILES[$k]['error']) {
-				case UPLOAD_ERR_NO_FILE:
-				case UPLOAD_ERR_PARTIAL: continue;
-			}
-
-			array_push($file_uploads, $k);
-
-			/* Set the POST value */
-			$this->request->post_set($k, $_FILES[$k]['name']);
-		}
+		/* Pre-process file uploads */
+		$file_uploads = $this->upload->pre_process();
 
 		/* Process multiple relationships and special fields first */
 		foreach ($this->request->post() as $field => $value) {
@@ -4126,12 +4101,19 @@ class ND_Controller extends UW_Controller {
 			/* Check if this is a file field that was requested to be removed */
 			if (substr($field, 0, 6) == '_file_') {
 				if ($this->request->post_isset($field . '_remove') && $this->request->post($field . '_remove')) {
+					/* Get file metadata */
+					$this->db->select($field);
+					$this->db->from($this->config['name']);
+					$this->db->where('id', $this->request->post('id'));
+					$q = $this->db->get();
+					$row = $q->row_array();
+
 					/* Remove the file from filesystem */
-					$this->_remove_file_upload($this->config['name'], $this->request->post('id'), $field);
+					$this->upload->remove_file($this->config['name'], $this->request->post('id'), $row[$field]);
 
 					/* Reset database field value */
 					$this->request->post_set($field, NULL);
-				} else if (!in_array($field, $file_uploads)) {
+				} else if (!$this->upload->in_file_uploads($field, $file_uploads)) {
 					/* Otherwise, if the file was not requested to be removed and no file was uploaded, prevent any update to this field */
 					$this->request->post_unset($field);
 				}
@@ -4487,6 +4469,20 @@ class ND_Controller extends UW_Controller {
 		/* Init transaction */
 		$this->db->trans_begin();
 
+		/* Fetch the entry */
+		$this->db->from($this->config['name']);
+		$this->db->where('id', $this->request->post('id'));
+		$q = $this->db->get();
+		$row = $q->row_array();
+
+		/* Remove uploaded files */
+		foreach ($row as $k => $v) {
+			if (substr($k, 0, 6) == '_file_') {
+				/* TODO: FIXME: Error checking missing */
+				$this->upload->remove_file($this->config['name'], $this->request->post('id'), array($k, json_decode($row[$k], true)));
+			}
+		}
+
 		/* If logging is enabled, log this delete request */
 		/* If logging is enabled, log this read access */
 		$this->logging->log(
@@ -4515,9 +4511,6 @@ class ND_Controller extends UW_Controller {
 		} else {
 			$this->db->trans_commit();
 		}
-
-		/* Delete uploaded files, if any */
-		$this->upload->purge_entry_files($this->config['name'], $this->request->post('id'));
 
 		/* NOTE: All relationships (including mixed relationships) shall be deleted through CASCADE events defined on the
 		 * DBMS data model.
@@ -4719,7 +4712,7 @@ class ND_Controller extends UW_Controller {
 			$this->db->where($foreign_table . '_id', $foreign_id);
 			$this->db->order_by('id', 'asc');
 			$this->db->limit(1, $mid - 1);
-			
+
 			/* We need to mangle the relationship data. We also use _get_fields_basic_types() to avoid the
 			 * overhead of calling _get_fields()
 			 */

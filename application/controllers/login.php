@@ -240,7 +240,7 @@ class Login extends UW_Controller {
 				'user_id' => $user_id,
 				'email' => $email,
 				'first_name' => $first_name,
-				'photo' => $photo ? (base_url() . 'index.php/files/access/users/' . $user_id . '/_file_photo/' . $photo) : NULL,
+				'photo' => $photo ? (base_url() . 'index.php/files/access/users/_file_photo/' . json_decode($photo, true)['name'] . '/' . $user_id) : NULL,
 				'timezone' => $timezone,
 				'database' => $database,
 				'roles' => $user_roles,

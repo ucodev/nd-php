@@ -133,9 +133,9 @@
 			<?php if (isset($view['values'][$field])): ?>
 				<a
 					target="_blank"
-					href="<?=filter_html(base_url(), $config['charset'])?>index.php/files/access/<?=filter_html($view['foreign_table'], $config['charset'])?>/<?=filter_html($view['foreign_id'], $config['charset'])?>/mixed_<?=filter_html($view['ctrl'], $config['charset'])?>_<?=filter_html($field, $config['charset'])?>_<?=filter_html($view['mixed_id'], $config['charset'])?>/<?=filter_html($view['values'][$field], $config['charset'])?>"
+					href="<?=filter_html($view['values'][$field]['url'], $config['charset'])?>"
 				>
-					<?=filter_html($view['values'][$field], $config['charset'])?>
+					<?=filter_html($view['values'][$field]['name'], $config['charset'])?>
 				</a>
 				<br />
 			<?php endif; ?>

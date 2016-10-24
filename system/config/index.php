@@ -35,6 +35,10 @@ $config = array();
 include('system/config/autoload.php');
 $config['autoload'] = $autoload;
 
+/* AWS Settings */
+include('system/config/aws.php');
+$config['aws'] = $aws;
+
 /* Base settings */
 include('system/config/base.php');
 $config['base'] = $base;

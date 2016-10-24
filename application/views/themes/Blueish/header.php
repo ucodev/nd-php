@@ -282,7 +282,7 @@
 									</a>
 								</li>
 								<li>
-									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/configuration/update">
+									<a href="<?=filter_html(base_url(), $config['charset'])?>index.php/update/system_update">
 										<?=filter_html(NDPHP_LANG_MOD_OP_UPDATE, $config['charset'])?>
 									</a>
 								</li>

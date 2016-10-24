@@ -210,7 +210,7 @@ class Users extends ND_Controller {
 			
 			/* Update user session data */
 			$this->config['session_data']['username'] = $row['username'];
-			$this->config['session_data']['photo'] = $row['photo'] ? (base_url() . 'index.php/files/access/users/' . $id . '/_file_photo/' . $row['photo']) : NULL;
+			$this->config['session_data']['photo'] = $row['photo'] ? (base_url() . 'index.php/files/access/users/_file_photo/' . json_decode($row['photo'], true)['name'] . '/' . $id) : NULL;
 			$this->config['session_data']['email'] = $row['email'];
 			$this->config['session_data']['timezone'] = $row['timezone'];
 			$this->config['session_data']['privenckey'] = base64_encode($row['privenckey']);

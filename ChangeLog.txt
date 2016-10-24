@@ -1,3 +1,17 @@
+v0.03k (2016-10-24):
+
+ - Fixed System Update link.
+ - Improved registration controller.
+ - Added support for metadata on uploaded files.
+ - Added support for multiple upload drivers.
+ - Added support for Amazon S3 buckets.
+ - Updated tracker.
+ - Updated language files.
+ - Updated users data model.
+ - Updated installation instructions.
+ - Added support for JSON+Base64 encoded file uploads via REST API.
+
+
 v0.03j1 (2016-10-20):
 
  - Authentication and registration requests now accept JSON encoded data.

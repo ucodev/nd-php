@@ -10,7 +10,8 @@ Basic instructions to install the ND PHP Framework
  For Ubuntu based distributions, install the required packages with apt-get:
 
   # apt-get install php php-mcrypt php-gd php-curl php-memcached \
-                    php-mbstring php-xml php-mysql libapache2-mod-php
+                    php-mbstring php-xml php-mysql php-aws-sdk \
+                    libapache2-mod-php
 
   (NOTE: For pure Debian distros, you may need to use 'php5' prefix instead of
          'php'. For instance: apt-get install php5 php5-mcrypt ...)

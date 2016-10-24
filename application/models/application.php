@@ -2018,7 +2018,7 @@ class UW_Application extends UW_Model {
 			case 'multiple'	: 	return 'multiple'; /* This isn't a field but a special table... so there's no native type for it */
 			case 'mixed'	: 	return 'mixed'; /* This isn't a field but a special table... so there's no native type for it */
 			case 'timer'	: 	return 'time';
-			case 'file'		: 	return 'varchar(255)'; /* FIXME: We should use the length defined in the field properties */
+			case 'file'		: 	return 'varchar(2048)'; /* FIXME: Should we use the length defined in the field properties? */
 			case 'separator':	return 'tinyint(1)';
 		}
 	}
