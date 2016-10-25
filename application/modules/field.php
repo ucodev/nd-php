@@ -65,11 +65,15 @@ class UW_Field extends UW_Module {
 					/* Decode JSON data */
 					$row[$field] = json_decode($value, true);
 
-					/* Append ID to the local URL */
+					/* Check if we've successfully decoded the $value contents */
+					if ($row[$field] === false)
+						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_FILE_METADATA, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Craft the file location (URL) */
 					if ($row[$field]['driver'] == 'local' && (isset($row['id']) || $id !== NULL)) {
-						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['url'] . '/' . (isset($row['id']) ? $row['id'] : $id);
+						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['path'] . '/' . (isset($row['id']) ? $row['id'] : $id);
 					} else if ($row[$field]['driver'] == 's3') {
-						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['url'];
+						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['path'];
 					}
 				} else {
 					/* Just push the value without modification */

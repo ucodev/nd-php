@@ -200,6 +200,9 @@ define('NDPHP_LANG_MOD_MISSING_PHONE',				'You must supply a phone number.');
 define('NDPHP_LANG_MOD_MISSING_FIRST_NAME',			'You must supply your first name.');
 define('NDPHP_LANG_MOD_MISSING_LAST_NAME',			'You must supply your last name.');
 define('NDPHP_LANG_MOD_MISSING_VALID_COUNTRY',		'You must supply a valid country.');
+define('NDPHP_LANG_MOD_MISSING_CONTENT_ENCODING',	'No content encoding specified.');
+define('NDPHP_LANG_MOD_MISSING_FILE_PROPERTY',		'A file property is missing');
+define('NDPHP_LANG_MOD_MISSING_FILE_PROPERTY_SIZE_NO_CONTENT','The size property is required when no content is specified.');
 
 define('NDPHP_LAND_MOD_NOTE_ITEM_INSERTED',			'Note that the submited item was successfully inserted.');
 
@@ -332,9 +335,12 @@ define('NDPHP_LANG_MOD_UNABLE_VIEW_BASE_DIR',		'Unable to determine the views ba
 define('NDPHP_LANG_MOD_UNABLE_RETRIEVE_FILE_DATA',	'Unable to retrieve data for file');
 define('NDPHP_LANG_MOD_UNABLE_LOAD_NDAPP_URL',		'Unable to load ND App from the specified URL');
 define('NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS','Unable to put contents on temporary file.');
+define('NDPHP_LANG_MOD_UNABLE_DECODE_FILE_METADATA','Unable to decode file metadata.');
+define('NDPHP_LANG_MOD_UNABLE_DECODE_BASE64',		'Unable to decode the expected base64 content.');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');
+define('NDPHP_LANG_MOD_UNSUPPORTED_CONTENT_ENCODING','Unsupported content encoding.');
 
 define('NDPHP_LANG_MOD_UNDEFINED_CTRL_VIEW_QUERY',	'This controller is defined as a VIEW table type, but no VIEW QUERY was defined.');
 define('NDPHP_LANG_MOD_UNDEFINED_METHOD',			'Undefined method');

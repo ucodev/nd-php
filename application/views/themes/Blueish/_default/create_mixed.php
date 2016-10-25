@@ -141,6 +141,9 @@
 				<?php if (isset($config['mixed']['table_field_width'][$field])) echo('style="width: ' . filter_html($config['mixed']['table_field_width'][$field], $config['charset']) . ';"'); ?>
 			/>
 			<?=in_array($field, $view['required']) ? '*' : ''?>
+			<script type="text/javascript">
+				jQuery("#mixed_<?=filter_html_special($view['ctrl'], $config['charset'])?>_<?=filter_html_special($field, $config['charset'])?>_<?=filter_html_special($view['mixed_id'], $config['charset'])?>").filestyle({buttonName: "btn-primary"});
+			</script>
 	<?php elseif ($meta['input_type'] == 'textarea'): ?>
 			<?php if (in_array($field, $config['rich_text'])): ?>
 				<script type="text/javascript">

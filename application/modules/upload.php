@@ -64,11 +64,15 @@ class UW_Upload extends UW_Module {
 		/* Check if the file is being uploaded via JSON encoded request */
 		if ($this->request->is_json()) {
 			foreach ($this->request->post() as $field => $value) {
+				/* Check if this is a file field... if not, ignore it */
 				if (substr($field, 0, 6) != '_file_')
 					continue;
 
-				if (!isset($value['contents']))
-					$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_CONTENT, $this->config['default_charset'], !$this->request->is_ajax());
+				/* Grant that all the required file properties are set */
+				foreach (array('name', 'type', 'created', 'modified') as $property) {
+					if (!isset($value[$property]))
+						$this->response->code('403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY . ': ' . $property, $this->config['default_charset'], !$this->request->is_ajax());
+				}
 
 				/* Set file metadata */
 				$meta['driver'] = $this->config['upload_file_driver'];
@@ -78,40 +82,80 @@ class UW_Upload extends UW_Module {
 				$meta['created'] = $value['created'];
 				$meta['modified'] = $value['modified'];
 
+				/* If the file size was specified in the request, use it for now... (it may be replaced if 'contents' is set) */
+				if (isset($value['size']))
+					$meta['size'] = $value['size'];
+
+				/* When no content is specified, the size propery must be explicit */
+				if (!isset($value['contents']) && !isset($value['size']))
+					$this->response->code('403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY_SIZE_NO_CONTENT, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Compute file path based on the selected upload driver */
 				switch ($meta['driver']) {
 					case 'local': $meta['path'] = $field . '/' . $meta['name']; break;
 					case 's3':    $meta['path'] = $this->config['session_data']['user_id'] . '/' . $this->config['name'] . '/' . openssl_digest(time() . $field . rawurldecode($meta['name']), 'sha256') . '.' . end(explode('.', $meta['name'])); break;
 				}
 
-				$meta['url'] = $meta['path'];
+				/* If content is set, decode it and store the data in a temporary file */
+				if (isset($value['contents'])) {
+					/* Content cannot be empty */
+					if (!$value['contents'])
+						$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_CONTENT, $this->config['default_charset'], !$this->request->is_ajax());
 
-				/* Create a temporary file */
-				if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false)
-					$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
+					/* Is content is set, the enconding shall be explicit */
+					if (!isset($value['encoding']))
+						$this->response->code('403', NDPHP_LANG_MOD_MISSING_CONTENT_ENCODING, $this->config['default_charset'], !$this->request->is_ajax());
 
-				/* Store the contents of the uploaded file into the local temporary file */
-				if (file_put_contents($tfile, base64_decode($value['contents'])) === false)
-					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS, $this->config['default_charset'], !$this->request->is_ajax());
+					/* Create a temporary file */
+					if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false)
+						$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
 
-				/* Clear contents from value */
-				$value['contents'] = NULL;
+					/* Decode the file contents, if required */
+					if ($value['encoding'] == 'base64') {
+						/* Try to decode the file contents */
+						$fcontents = base64_decode($value['contents']);
 
-				$meta['size'] = filesize($tfile);
+						/* Check if we've successfully decoded the contents */
+						if ($fcontents === false)
+							$this->response->code('403', NDPHP_LANG_MOD_UNABLE_DECODE_BASE64, $this->config['default_charset'], !$this->request->is_ajax());
 
-				/* Push file metadata into uploads array */
-				array_push($file_uploads, array($field, $meta));
+						/* Re-assign the decoded data */
+						$value['contents'] = $fcontents;
 
-				/* Map the JSON encoded data to native PHP files global */
-				$_FILES[$field]['name'] = $meta['name'];
-				$_FILES[$field]['size'] = $meta['size'];
-				$_FILES[$field]['error'] = NULL;
-				$_FILES[$field]['tmp_name'] = $tfile;
+						/* Clear $fcontents */
+						$fcontents = NULL;
+					} else if ($value['encoding'] == 'plain') {
+						/* No action required */
+					} else {
+						$this->response->code('403', NDPHP_LANG_MOD_UNSUPPORTED_CONTENT_ENCODING, $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Store the contents of the uploaded file into the local temporary file */
+					if (file_put_contents($tfile, $value['contents']) === false)
+						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Clear contents from value */
+					$value['contents'] = NULL;
+
+					/* Set size property based on file size */
+					$meta['size'] = filesize($tfile);
+
+					/* Push file metadata into uploads array */
+					array_push($file_uploads, array($field, $meta));
+
+					/* Map the JSON encoded data to native PHP files global */
+					$_FILES[$field]['name'] = $meta['name'];
+					$_FILES[$field]['size'] = $meta['size'];
+					$_FILES[$field]['error'] = 0;
+					$_FILES[$field]['tmp_name'] = $tfile;
+				}
 
 				/* Set the POST variable value */
 				$this->request->post_set($field, json_encode($meta));
 			}
 		} else {
 			foreach ($_FILES as $k => $v) {
+				/* If there's no file name set, ignore this entry */
 				if (!$_FILES[$k]['name'])
 					continue;
 
@@ -132,12 +176,11 @@ class UW_Upload extends UW_Module {
 				$meta['created'] = date('Y-m-d H:i:s');
 				$meta['modified'] = $meta['created'];
 
+				/* Compute file path based on the selected upload driver */
 				switch ($meta['driver']) {
 					case 'local': $meta['path'] = $k . '/' . $meta['name']; break;
 					case 's3':    $meta['path'] = $this->config['session_data']['user_id'] . '/' . $this->config['name'] . '/' . openssl_digest(time() . $field . rawurldecode($meta['name']), 'sha256') . '.' . end(explode('.', $meta['name'])); break;
 				}
-
-				$meta['url'] = $meta['path'];
 
 				/* Push file metadata into uploads array */
 				array_push($file_uploads, array($k, $meta));
@@ -147,6 +190,7 @@ class UW_Upload extends UW_Module {
 			}	
 		}
 
+		/* All good */
 		return $file_uploads;
 	}
 

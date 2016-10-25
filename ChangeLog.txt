@@ -1,3 +1,11 @@
+v0.03l (2016-10-25):
+
+ - Fixed filestyle on mixed create / edit views.
+ - Improved error checking on upload module.
+ - Added support for upload encoding selection via REST API.
+ - Updated language files.
+
+
 v0.03k1 (2016-10-24):
 
  - Updated tracker.
