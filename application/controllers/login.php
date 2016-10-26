@@ -244,7 +244,7 @@ class Login extends UW_Controller {
 				'timezone' => $timezone,
 				'database' => $database,
 				'roles' => $user_roles,
-				'privenckey' => base64_encode($privenckey),
+				'privenckey' => bin2hex($privenckey),
 				'logged_in' => true,
 				'sessions_id' => 0, /* Will be set when session table is queried */
 				'_apicall' => (strstr($this->request->header('Accept'), 'application/json') !== false)

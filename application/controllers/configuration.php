@@ -47,7 +47,7 @@ class Configuration extends ND_Controller {
 	/** Hooks **/
 	protected function _hook_insert_post(&$id, &$POST, &$fields, $hook_pre_return) {
 		/* If this is an active configuration, perform any required system updates routines that are based on configuration */
-		if ($POST['active']) {
+		if ($this->request->post('active')) {
 			/* Update cache configuration */
 			$this->_memcached_config_setup();
 
@@ -61,7 +61,7 @@ class Configuration extends ND_Controller {
 	protected function _hook_update_pre(&$id, &$POST, &$fields) {
 		$hook_pre_return = NULL;
 		
-		if (isset($POST['active']) && !$POST['active']) {
+		if ($this->request->post_isset('active') && !$this->request->post('active')) {
 			/* Check if there's another active configuration */
 			$this->db->from('configuration');
 			$this->db->where('active', 1);
@@ -81,7 +81,7 @@ class Configuration extends ND_Controller {
 
 	protected function _hook_update_post(&$id, &$POST, &$fields, $hook_pre_return) {
 		/* If this is an active configuration, perform any required system updates routines that are based on configuration */
-		if ($POST['active']) {
+		if ($this->request->post('active')) {
 			/* Update cache configuration */
 			$this->_memcached_config_setup();
 

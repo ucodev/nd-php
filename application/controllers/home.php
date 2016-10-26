@@ -172,7 +172,7 @@ class Home extends ND_Controller {
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('result_global', NDPHP_LANG_MOD_SEARCH_GLOBAL_RESULT);
 
 		/* Set the search_value to be filled in the global search bar */
-		$data['view']['search_value'] = $_POST['search_value'];
+		$data['view']['search_value'] = $this->request->post('search_value');
 
 		/* All good */
 		return $data;

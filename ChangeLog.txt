@@ -1,3 +1,11 @@
+v0.03m (2016-10-26):
+
+ - Normalized data on REST calls responses.
+ - Fixed some verification issues (too strict) on update pre hook from users controller.
+ - Fixed issues with hooks POST data.
+ - Updated tracker.
+
+
 v0.03l (2016-10-25):
 
  - Fixed filestyle on mixed create / edit views.

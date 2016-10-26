@@ -125,7 +125,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03l';
+	protected $_ndphp_version = '0.03m';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1081,7 +1081,7 @@ class ND_Controller extends UW_Controller {
 						'timezone' => $row['timezone'],
 						'database' => $row['default_database'],
 						'roles' => $user_roles,
-						'privenckey' => base64_encode($privenckey),
+						'privenckey' => bin2hex($privenckey),
 						'logged_in' => true,
 						'sessions_id' => 0,
 						'_apicall' => true

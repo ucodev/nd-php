@@ -182,8 +182,6 @@
 			"system/utils/base.php",
 			"system/utils/core.php",
 			"tmp/.htaccess",
-			"user/config/aws.php",
-			"user/config/cache.php",
 			"user/config/index.php",
 			"user/core/ND_Controller.php",
 			"user/core/ND_Register.php",

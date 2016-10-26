@@ -64,7 +64,7 @@ class Users extends ND_Controller {
 		}
 
 		/* Check if the username is at least 5 characters long */
-		if (strlen($POST['username']) < 5) {
+		if (strlen($this->request->post('username')) < 5) {
 			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
@@ -76,10 +76,10 @@ class Users extends ND_Controller {
 		 * and the decrypted key will be stored as a session variable.
 		 *
 		 */
-		$hook_pre_return['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $POST['password'], false);
+		$hook_pre_return['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $this->request->post('password'), false);
 
 		/* Convert password to hash */
-		$POST['password'] = password_hash($POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
+		$this->request->post_set('password', password_hash($this->request->post('password'), PASSWORD_BCRYPT, array('cost' => 10)));
 
 		/* Return the hook context */
 		return $hook_pre_return;
@@ -112,45 +112,51 @@ class Users extends ND_Controller {
 		$hook_pre_return = array();
 
 		/* Block any attempt to remove ROLE_ADMIN from $id == 1 */
-		if (($id == 1) && (!isset($POST['rel_users_roles']) || !in_array(1, $POST['rel_users_roles'])))
+		if (($id == 1) && ($this->request->post_isset('rel_users_roles') && !in_array(1, $this->request->post('rel_users_roles'))))
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Check if the username is at least 5 characters long */
-		if (strlen($POST['username']) < 5) {
+		if ($this->request->post_isset('username') && strlen($this->request->post('username')) < 5) {
 			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
 		/* If password was changed ... */
-		$this->db->select('password,privenckey');
-		$this->db->from($this->config['name']);
-		$this->db->where('id', $id);
-		$query = $this->db->get();
-		$row = $query->row_array();
+		if ($this->request->post_isset('password')) {
+			$this->db->select('password,privenckey');
+			$this->db->from($this->config['name']);
+			$this->db->where('id', $id);
+			$query = $this->db->get();
+			$row = $query->row_array();
 
-		if ($row['password'] != $POST['password']) {
-			/* WARNING: If we're updating the password via REST API, we need to grant that the call provided the plain password
-			 * for authentication (in the '_password' JSON request field) in addition to the API KEY. If not, the privenckey
-			 * session variable is NULL and thus we cannot change the user password (or he will never access the private encrypted
-			 * data again).
-			 */
-
-			if (strlen(base64_decode($this->session->userdata('privenckey'))) != 256) {
-				/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
-				 * to be changed.
+			if ($row['password'] != $this->request->post('password')) {
+				/* WARNING: If we're updating the password via REST API, we need to grant that the call provided the plain password
+				 * for authentication (in the '_password' JSON request field) in addition to the API KEY. If not, the privenckey
+				 * session variable is NULL and thus we cannot change the user password (or he will never access the private encrypted
+				 * data again).
 				 */
-				$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS, $this->config['default_charset'], !$this->request->is_ajax());
+
+				$privenckey = hex2bin($this->config['session_data']['privenckey']);
+
+				if (strlen($privenckey) != 256) {
+					/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
+					 * to be changed.
+					 */
+					$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS .': ' . strlen($privenckey), $this->config['default_charset'], !$this->request->is_ajax());
+				}
+
+				/* Re-encrypt the user private encryption key with the new password */
+				$hook_pre_return['privenckey'] = $this->encrypt->encrypt($privenckey, $this->request->post('password'), false);
+				$hook_pre_return['old_password'] = $row['password'];
+
+				/* hash new password */
+				$this->request->post_set('password', password_hash($this->request->post('password'), PASSWORD_BCRYPT, array('cost' => 10)));
+			} else {
+				$this->request->post_unset('password');
 			}
-
-			/* Re-encrypt the user private encryption key with the new password */
-			$hook_pre_return['privenckey'] = $this->encrypt->encrypt(base64_decode($this->session->userdata('privenckey')), $POST['password'], false);
-			$hook_pre_return['old_password'] = $row['password'];
-
-			/* hash new password */
-			$POST['password'] = password_hash($POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
 		}
 
 		/* Grant that users_id is set */
-		$POST['users_id'] = $id;
+		$this->request->post_set('users_id', $id);
 
 		/* Return the hook context */
 		return $hook_pre_return;
@@ -213,7 +219,7 @@ class Users extends ND_Controller {
 			$this->config['session_data']['photo'] = $row['photo'] ? (base_url() . 'index.php/files/access/users/_file_photo/' . json_decode($row['photo'], true)['name'] . '/' . $id) : NULL;
 			$this->config['session_data']['email'] = $row['email'];
 			$this->config['session_data']['timezone'] = $row['timezone'];
-			$this->config['session_data']['privenckey'] = base64_encode($row['privenckey']);
+			$this->config['session_data']['privenckey'] = bin2hex($row['privenckey']);
 			/* FIXME: Missing database variable? */
 			$this->config['session_data']['roles'] = $user_roles;
 

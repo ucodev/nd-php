@@ -137,6 +137,7 @@ class UW_Rest extends UW_Module {
 
 	public function json_insert($insert_id) {
 		$json_res['status'] = true;
+		$json_res['data']['inserted'] = true;
 		$json_res['data']['insert_id'] = $insert_id;
 
 		/* Update accounting counters if accounting is enabled */
@@ -148,6 +149,7 @@ class UW_Rest extends UW_Module {
 
 	public function json_update() {
 		$json_res['status'] = true;
+		$json_res['data']['updated'] = true;
 
 		/* Update accounting counters if accounting is enabled */
 		if ($this->config['accounting'])
@@ -158,6 +160,7 @@ class UW_Rest extends UW_Module {
 
 	public function json_delete($data) {
 		$json_res['status'] = true;
+		$json_res['data']['deleted'] = true;
 
 		/* Update accounting counters if accounting is enabled */
 		if ($this->config['accounting'])

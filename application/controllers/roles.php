@@ -44,7 +44,7 @@ class Roles extends ND_Controller {
 		$hook_pre_return = NULL;
 
 		/* Do not allow changes to ROLE_ADMIN name */
-		if ($id == 1 && isset($POST['role']) && $POST['role'] != 'ROLE_ADMIN')
+		if ($id == 1 && $this->request->post_isset('role') && $this->request->post('role') != 'ROLE_ADMIN')
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 
 		return $hook_pre_return;
@@ -151,12 +151,12 @@ class Roles extends ND_Controller {
 		if (!$this->security->im_admin())
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		$role_id = intval($_POST['role_id']);
+		$role_id = intval($this->request->post('role_id'));
 		
 		if (!$role_id)
 			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DATA_FOUND . '.', $this->config['default_charset'], !$this->request->is_ajax());
 		
-		unset($_POST['role_id']);
+		$this->request->post_unset('role_id');
 		
 		/* Translation table */
 		$trans = array();
@@ -174,7 +174,7 @@ class Roles extends ND_Controller {
 
 		/* Delete previous permission table referencing the current role_id */
 		
-		foreach ($_POST as $field => $value) {
+		foreach ($this->request->post() as $field => $value) {
 			if (!$value)
 				continue;
 
