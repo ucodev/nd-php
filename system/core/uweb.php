@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 28/09/2016
+ * Date: 26/10/2016
  * License: GPLv3
  */
 
@@ -1830,6 +1830,10 @@ class UW_Database extends UW_Base {
 
 	public function close() {
 		$this->__destruct();
+	}
+
+	public function error_code() {
+		return $this->_db[$this->_cur_db]->errorCode();
 	}
 
 	public function test($host, $dbname, $dbuser, $dbpass, $port = '3306', $driver = 'mysql', $charset = 'utf8') {

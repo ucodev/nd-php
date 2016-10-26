@@ -85,8 +85,6 @@ class UW_Response extends UW_Module {
 	}
 
 	public function code($code, $content = NULL, $charset = 'UTF-8', $template = true, $protocol = 'HTTP/1.1') {
-
-
 		if ((intval($code) >= 400 && intval($code) <= 417) || (intval($code) >= 500 && intval($code) <= 505)) {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
 

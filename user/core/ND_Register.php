@@ -464,7 +464,7 @@ class ND_Register extends UW_Controller {
 		$query = $this->db->get();
 
 		if ($query->num_rows())
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_TAKEN_USERNAME, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('409', NDPHP_LANG_MOD_INFO_TAKEN_USERNAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate country */
 		$this->db->select('id,code,eu_state');
@@ -509,7 +509,7 @@ class ND_Register extends UW_Controller {
 		$query = $this->db->get();
 
 		if ($query->num_rows())
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('409', NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED, $this->_charset, !$this->request->is_ajax());
 
 		if ($this->register_confirm_phone == 1) {
 			/* Validate phone */
@@ -538,7 +538,7 @@ class ND_Register extends UW_Controller {
 			$query = $this->db->get();
 
 			if ($query->num_rows())
-				$this->response->code('403', NDPHP_LANG_MOD_INFO_PHONE_REGISTERED, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('409', NDPHP_LANG_MOD_INFO_PHONE_REGISTERED, $this->_charset, !$this->request->is_ajax());
 
 			/* TODO: FIXME: Validate phone number (with libphonenumber?) */
 			//if (!$valid_phone) {

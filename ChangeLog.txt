@@ -1,3 +1,12 @@
+v0.03n (2016-10-26):
+
+ - Conflicting data upon user registration now correctly deliver 409 status code.
+ - Updated uWeb.
+ - Insert and update operations now explicitly inform about constraint violantions (409 instead of 500).
+ - Update and delete operations now explicitly fail with 404 status code when the target entry does not exist.
+ - Updated language files.
+
+
 v0.03m (2016-10-26):
 
  - Normalized data on REST calls responses.

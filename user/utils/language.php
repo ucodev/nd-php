@@ -180,6 +180,7 @@ define('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE',			'NOTE: New Values will be replaced
 define('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE',		'I\'ve read and accept the');
 define('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE',		'System is up to date.');
 define('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE',	'Installation already complete.');
+define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',		'Entry not found.');
 
 define('NDPHP_LANG_MOD_LINK_ADD_FUNDS',				'Add funds');
 define('NDPHP_LANG_MOD_LINK_HOME',					'Home');
@@ -337,6 +338,8 @@ define('NDPHP_LANG_MOD_UNABLE_LOAD_NDAPP_URL',		'Unable to load ND App from the 
 define('NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS','Unable to put contents on temporary file.');
 define('NDPHP_LANG_MOD_UNABLE_DECODE_FILE_METADATA','Unable to decode file metadata.');
 define('NDPHP_LANG_MOD_UNABLE_DECODE_BASE64',		'Unable to decode the expected base64 content.');
+define('NDPHP_LANG_MOD_UNABLE_INSERT_ENTRY_CONFLICT','Unable to insert register into the database due to a constraint violation.');
+define('NDPHP_LANG_MOD_UNABLE_UPDATE_ENTRY_CONFLICT','Unable to update register in the database due to a constraint violation.');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');

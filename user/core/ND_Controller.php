@@ -125,7 +125,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03m';
+	protected $_ndphp_version = '0.03n';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -3605,6 +3605,12 @@ class ND_Controller extends UW_Controller {
 		/* Insert data into database */
 		$this->db->insert($this->config['name'], $this->request->post());
 
+		/* Check if there was constraint violations */
+		if ($this->db->error_code() == '23000' || $this->db->error_code() == '40002') {
+			$this->db->trans_rollback();
+			$this->response->code('409', NDPHP_LANG_MOD_UNABLE_INSERT_ENTRY_CONFLICT, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
 		$last_id = $this->db->last_insert_id();
 		
 		if (!$last_id) {
@@ -4170,7 +4176,19 @@ class ND_Controller extends UW_Controller {
 
 		/* Update entry data */
 		$this->db->where('id', $this->request->post('id'));
-		$this->db->update($this->config['name'], $this->request->post());
+		$qr = $this->db->update($this->config['name'], $this->request->post());
+
+		/* Check if any row was affected */
+		if (!$qr->num_rows()) {
+			$this->db->trans_rollback();
+			$this->response->code('404', NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
+		/* Check if there was constraint violations */
+		if ($this->db->error_code() == '23000' || $this->db->error_code() == '40002') {
+			$this->db->trans_rollback();
+			$this->response->code('409', NDPHP_LANG_MOD_UNABLE_UPDATE_ENTRY_CONFLICT, $this->config['default_charset'], !$this->request->is_ajax());
+		}
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
@@ -4477,6 +4495,13 @@ class ND_Controller extends UW_Controller {
 		$this->db->from($this->config['name']);
 		$this->db->where('id', $this->request->post('id'));
 		$q = $this->db->get();
+
+		/* Check if any row was affected */
+		if (!$q->num_rows()) {
+			$this->db->trans_rollback();
+			$this->response->code('404', NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
 		$row = $q->row_array();
 
 		/* Remove uploaded files */
