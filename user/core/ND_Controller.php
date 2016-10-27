@@ -41,7 +41,6 @@
  *
  * TODO:
  *
- * + Upload file support for JSON RESTful API.
  * * Single and multiple relationship [select] fields shall change behaviour when the number of entries are greater than 500 or so (use a search based autocomplete listing).
  * * Default action for item selection (currently hardcoded as View, but one should be able to change it to Edit).
  * * Multi Dropdown filters, allowing a selection of an item from a dropdown to filter the contents of another dropdown (or more)
@@ -125,7 +124,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03n';
+	protected $_ndphp_version = '0.03o';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1483,16 +1482,26 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Setup ordering field if none was specified */
-		if ($field == NULL)
-			$field = $this->config['table_field_order_list'];
+		if ($field == NULL) {
+			if ($this->request->is_json() && $this->request->post_isset('_orderby') && $this->request->post('_orderby')) {
+				$field = $this->request->post('_orderby');
+			} else {
+				$field = $this->config['table_field_order_list'];
+			}
+		}
 
 		/* Grant that field contains only safe characters */
 		if (!$this->security->safe_names($field, $this->config['security_safe_chars']))
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Setup ordering */
-		if ($order == NULL)
-			$order = $this->config['table_field_order_list_modifier'];
+		if ($order == NULL) {
+			if ($this->request->is_json() && $this->request->post_isset('_ordering') && $this->request->post('_ordering')) {
+				$order = $this->request->post('_ordering');
+			} else {
+				$order = $this->config['table_field_order_list_modifier'];
+			}
+		}
 
 		/* Initialize $data */
 		$data = array();
@@ -1610,8 +1619,22 @@ class ND_Controller extends UW_Controller {
 
 		/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
 		if ($this->config['json_replies'] === true) {
-			if ($this->request->post('_limit'))
-				$this->db->limit($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'), $this->request->post('_offset') ? $this->request->post('_offset') : 0);
+			/* Check if there is a limit and/or offset defined */
+			if ($this->request->post_isset('_limit')) {
+				/* Validate limit value (must be greater than zero */
+				if ($this->request->post('_limit') <= 0)
+					$this->response->code('400', NDPHP_LANG_MOD_INVALID_LIMIT_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* If set, validate offset value (must be zero or greater) */
+				if ($this->request->post_isset('_offset') && ($this->request->post('_offset') < 0))
+					$this->response->code('400', NDPHP_LANG_MOD_INVALID_OFFSET_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Set limit (and, if set, the offset) */
+				$this->db->limit($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'), $this->request->post_isset('_offset') ? $this->request->post('_offset') : 0);
+			} else {
+				/* If no limit was explicitly set, use the default */
+				$this->db->limit($this->config['json_result_hard_limit']);
+			}
 		} else if ($page >= 0) {
 			/* Limit results to the number of rows per page (pagination) */
 			$this->db->limit($this->config['table_pagination_rpp_list'], $page);
@@ -2268,14 +2291,24 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if ($order_field == NULL)
-			$order_field = $this->config['table_field_order_result'];
+		if ($order_field == NULL) {
+			if ($this->request->is_json() && $this->request->post_isset('_orderby') && $this->request->post('_orderby')) {
+				$order_field = $this->request->post('_orderby');
+			} else {
+				$order_field = $this->config['table_field_order_result'];
+			}
+		}
 
 		if (!$this->security->safe_names($order_field, $this->config['security_safe_chars']))
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if ($order_type == NULL)
-			$order_type = $this->config['table_field_order_result_modifier'];
+		if ($order_type == NULL) {
+			if ($this->request->is_json() && $this->request->post_isset('_ordering') && $this->request->post('_ordering')) {
+				$order_type = $this->request->post('_ordering');
+			} else {
+				$order_type = $this->config['table_field_order_result_modifier'];
+			}
+		}
 
 		/* Initialize $data */
 		$data = array();
@@ -2346,6 +2379,14 @@ class ND_Controller extends UW_Controller {
 
 			/* Unset POST data */
 			$this->request->post_unset('search_value');
+
+			/* If a limit was set in the request data, add it to $ndav */
+			if ($this->request->post_isset('_limit'))
+				$nadv['_limit'] = $this->request->post('_limit');
+
+			/* If an offset was set in the request data, add it to $ndav */
+			if ($this->request->post_isset('_offset'))
+				$nadv['_offset'] = $this->request->post('_offset');
 
 			/* Set the new POST data with the $nadv context */
 			$this->request->post_set_all($nadv);
@@ -2888,8 +2929,22 @@ class ND_Controller extends UW_Controller {
 			/* Pagination */
 			/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
 			if ($this->config['json_replies'] === true) {
-				if ($this->request->post('_limit'))
-					$result_query = $result_query . ' LIMIT ' . ($this->request->post('_offset') ? $this->request->post('_offset') : '0') . ', ' . ($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'));
+				/* Check if there is a limit and/or offset defined */
+				if ($this->request->post_isset('_limit')) {
+					/* Validate limit value (must be greater than zero */
+					if ($this->request->post('_limit') <= 0)
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_LIMIT_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* If set, validate offset value (must be zero or greater) */
+					if ($this->request->post_isset('_offset') && ($this->request->post('_offset') < 0))
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_OFFSET_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Set limit (and, if set, the offset) */
+					$result_query = $result_query . ' LIMIT ' . ($this->request->post_isset('_offset') ? $this->request->post('_offset') : '0') . ', ' . ($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'));
+				} else {
+					/* If no limit was explicitly set, use the default */
+					$result_query = $result_query . ' LIMIT ' . $this->config['json_result_hard_limit'];
+				}
 			} else if ($page >= 0) {
 				/* Limit results to the number of rows per page (pagination) */
 				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->config['table_pagination_rpp_result'];
@@ -2953,9 +3008,23 @@ class ND_Controller extends UW_Controller {
 
 
 			/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
-			if ($this->config['json_replies'] === true) {
-				if ($this->request->post('_limit'))
-					$this->db->limit($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'), $this->request->post('_offset') ? $this->request->post('_offset') : 0);
+			if ($this->request->is_json() === true) {
+				/* Check if there is a limit and/or offset defined */
+				if ($this->request->post_isset('_limit')) {
+					/* Validate limit value (must be greater than zero */
+					if ($this->request->post('_limit') <= 0)
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_LIMIT_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* If set, validate offset value (must be zero or greater) */
+					if ($this->request->post_isset('_offset') && ($this->request->post('_offset') < 0))
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_OFFSET_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Set limit (and, if set, the offset) */
+					$this->db->limit($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'), $this->request->post_isset('_offset') ? $this->request->post('_offset') : 0);
+				} else {
+					/* If no limit was explicitly set, use the default */
+					$this->db->limit($this->config['json_result_hard_limit']);
+				}
 			} else if ($page >= 0) {
 				/* Limit results to the number of rows per page (pagination) */
 				$this->db->limit($this->config['table_pagination_rpp_list'], $page);
@@ -4646,7 +4715,14 @@ class ND_Controller extends UW_Controller {
 
 		/* Select only the fields that were returned by _get_fields() */
 		$this->filter->selected_fields($data['view']['fields'], array($this->config['name'] . '.id' => $id));
-		$data['view']['result_array'] = $this->field->value_mangle($data['view']['fields'], $this->db->get($this->config['name']));
+		$q = $this->db->get($this->config['name']);
+
+		/* If this is a REST JSON request and the entry was not found, return 404 */
+		if ($this->request->is_json() && !$q->num_rows())
+			$this->response->code('404', NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Mangle the data received */
+		$data['view']['result_array'] = $this->field->value_mangle($data['view']['fields'], $q);
 
 		$data['view']['rel'] = array();
 

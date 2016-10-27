@@ -30,6 +30,21 @@
  *
  */
 
+/*
+ * Raw Roadmap
+ *
+ * Legend:
+ *
+ *			+ More likely to be done on next release
+ *			* Less likely to be done on next release
+ *			- Probably won't be done on next release
+ *
+ * TODO:
+ *
+ * * Make a copy of the current tree before performing the system update.
+ *
+ */
+
 class Update extends ND_Controller {
 	/* ND PHP Framework - update settings */
 	private $_ndphp_github_content_url = 'https://raw.githubusercontent.com/ucodev/nd-php/';

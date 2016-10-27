@@ -1,3 +1,12 @@
+v0.03o (2016-10-27):
+
+ - Updated TODOs and FIXMEs
+ - View operations now explicitly fail with 404 status code when the requested entry does not exist (REST only).
+ - Improved limit and offset values checking for result / listing REST calls.
+ - Added support _orderby and _ordering properties to result / listing REST JSON data requests.
+ - Updated language files.
+
+
 v0.03n (2016-10-26):
 
  - Conflicting data upon user registration now correctly deliver 409 status code.

@@ -400,7 +400,7 @@ class Login extends UW_Controller {
 		} else {
 			if ($this->request->is_json()) {
 				$data['status'] = true;
-				$data['data']['user_id'] = $row['id'];
+				$data['data']['user_id'] = intval($row['id']);
 				$data['data']['session_id'] = $this->session->userdata('sessions_id');
 				$data['data']['apikey'] = $row['apikey'];
 
