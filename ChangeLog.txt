@@ -1,3 +1,10 @@
+v0.03p (2016-10-28):
+
+ - Updated safe characters list.
+ - Updated uWeb.
+ - Updated timezones controller.
+
+
 v0.03o (2016-10-27):
 
  - Updated TODOs and FIXMEs

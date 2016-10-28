@@ -124,7 +124,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03o';
+	protected $_ndphp_version = '0.03p';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -556,8 +556,8 @@ class ND_Controller extends UW_Controller {
 
 
 	/* Security */
-	protected $_security_safe_chars = "a-zA-Z0-9_"; /* Mainly used to validate names of tables, fields and keys */
-	protected $_security_perms = array();			/* Will be populated by $this->security->perm_get() */
+	protected $_security_safe_chars = "a-zA-Z0-9_-"; /* Mainly used to validate names of tables, fields and keys */
+	protected $_security_perms = array();			 /* Will be populated by $this->security->perm_get() */
 
 
 	/** Charts **/

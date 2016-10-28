@@ -41,7 +41,11 @@ class Timezones extends ND_Controller {
 	
 	/** Hooks **/
 	
+
 	/** Other overloads **/
+
+	/* JSON REST API listing / result hard limits */
+	protected $_json_result_hard_limit = 600;
 
 	/* Aliases for the current table field names */
 	protected $_table_field_aliases = array(
@@ -54,6 +58,7 @@ class Timezones extends ND_Controller {
 	protected $_rel_table_fields_config = array(
 		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc'), NULL)
 	);
+
 
 	/** Custom functions **/
 }

@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 26/10/2016
+ * Date: 28/10/2016
  * License: GPLv3
  */
 
@@ -1789,8 +1789,13 @@ class UW_Database extends UW_Base {
 			if (isset($config['database'][$dbalias]['persistent']) && $config['database'][$dbalias]['persistent'] === true)
 				$attr[PDO::ATTR_PERSISTENT] = true;
 
-			if (isset($config['database'][$dbalias]['strict']) && $config['database'][$dbalias]['strict'] === true && $config['database'][$dbalias]['driver'] == 'mysql')
-				$attr[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET sql_mode = "STRICT_ALL_TABLES"';
+			/* Set MySQL specific attributes */
+			if ($config['database'][$dbalias]['driver'] == 'mysql') {
+				if (isset($config['database'][$dbalias]['strict']) && $config['database'][$dbalias]['strict'] === true)
+					$attr[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET sql_mode = "STRICT_ALL_TABLES"';
+
+				$attr[PDO::MYSQL_ATTR_FOUND_ROWS] = true;
+			}
 
 			/* Try to connect to the database */
 			try {
