@@ -104,6 +104,7 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         case 'charts_types':
         case 'configuration':
         case 'countries':
+        case 'currencies':
         case 'dbms':
         case 'documentation':
         case 'features':
@@ -111,6 +112,7 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         case 'help_tfhd':
         case 'home':
         case 'install':
+        case 'genders':
         case 'items':
         case 'logging':
         case 'login':

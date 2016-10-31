@@ -410,6 +410,7 @@ define('NDPHP_LANG_MOD_COMMON_TRANSACTION_DATE',	'Transaction Date');
 define('NDPHP_LANG_MOD_COMMON_TRANSACTION_TYPE',	'Transaction Type');
 define('NDPHP_LANG_MOD_COMMON_FIRST_NAME',			'First Name');
 define('NDPHP_LANG_MOD_COMMON_LAST_NAME',			'Last Name');
+define('NDPHP_LANG_MOD_COMMON_BIRTHDATE',			'Birth Date');
 define('NDPHP_LANG_MOD_COMMON_COMPANY_NAME',		'Company');
 define('NDPHP_LANG_MOD_COMMON_USERNAME',			'Username');
 define('NDPHP_LANG_MOD_COMMON_PASSWORD',			'Password');
@@ -419,6 +420,13 @@ define('NDPHP_LANG_MOD_COMMON_COUNTRY_CODE',		'Code');
 define('NDPHP_LANG_MOD_COMMON_COUNTRY_PREFIX',		'Prefix');
 define('NDPHP_LANG_MOD_COMMON_COUNTRY_EU_STATE',	'EU State');
 define('NDPHP_LANG_MOD_COMMON_COUNTRY_VAT_RATE',	'VAT Rate');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY',			'Currency');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY_CODE',		'Code');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY_SIGN',		'Sign');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY_SIGN_POS',	'Sign Position');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY_RATE',		'Rate');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY_UPDATED',	'Last Update');
+define('NDPHP_LANG_MOD_COMMON_CURRENCY_DEFAULT',	'Default');
 define('NDPHP_LANG_MOD_COMMON_EMAIL',				'Email');
 define('NDPHP_LANG_MOD_COMMON_PHONE',				'Mobile');
 define('NDPHP_LANG_MOD_COMMON_VAT_NUMBER_EU',		'EU VAT');
@@ -528,6 +536,7 @@ define('NDPHP_LANG_MOD_COMMON_NOTIFY_ALL',			'Notify All');
 define('NDPHP_LANG_MOD_COMMON_NOTIFY_WHEN',			'Notify When');
 define('NDPHP_LANG_MOD_COMMON_PLACEHOLDER_REPEAT_PASSWORD', '(Repeat password)');
 define('NDPHP_LANG_MOD_COMMON_TOGGLE_NAVIGATION',	'Toggle navigation');
+define('NDPHP_LANG_MOD_COMMON_GENDER',				'Gender');
 
 define('NDPHP_LANG_MOD_MENU_BUILDER_NAME',			'Builder');
 define('NDPHP_LANG_MOD_MENU_BUILDER_DESC',			'Builder');
@@ -541,12 +550,16 @@ define('NDPHP_LANG_MOD_MENU_CONFIGURATION_NAME',	'Configuration');
 define('NDPHP_LANG_MOD_MENU_CONFIGURATION_DESC',	'Configuration');
 define('NDPHP_LANG_MOD_MENU_COUNTRIES_NAME',		'Countries');
 define('NDPHP_LANG_MOD_MENU_COUNTRIES_DESC',		'Countries');
+define('NDPHP_LANG_MOD_MENU_CURRENCIES_NAME',		'Currencies');
+define('NDPHP_LANG_MOD_MENU_CURRENCIES_DESC',		'Currencies');
 define('NDPHP_LANG_MOD_MENU_DBMS_NAME',				'Databases');
 define('NDPHP_LANG_MOD_MENU_DBMS_DESC',				'Databases');
 define('NDPHP_LANG_MOD_MENU_DOCUMENTATION_NAME',	'Documentation');
 define('NDPHP_LANG_MOD_MENU_DOCUMENTATION_DESC',	'Documentation');
 define('NDPHP_LANG_MOD_MENU_FEATURES_NAME',			'Features');
 define('NDPHP_LANG_MOD_MENU_FEATURES_DESC',			'Features');
+define('NDPHP_LANG_MOD_MENU_GENDERS_NAME',			'Genders');
+define('NDPHP_LANG_MOD_MENU_GENDERS_DESC',			'Genders');
 define('NDPHP_LANG_MOD_MENU_ITEMS_NAME',			'Items');
 define('NDPHP_LANG_MOD_MENU_ITEMS_DESC',			'Items');
 define('NDPHP_LANG_MOD_MENU_LOGGING_NAME',			'Logging');
@@ -871,9 +884,18 @@ define('NDPHP_LANG_MOD_HELP_CONFIGURATION_RECAPTCHA_PUB_KEY',	'The public key of
 
 define('NDPHP_LANG_MOD_HELP_COUNTRIES_COUNTRY',					'The country name.');
 define('NDPHP_LANG_MOD_HELP_COUNTRIES_CODE',					'The country short code.');
-define('NDPHP_LANG_MOD_HELP_COUNTRIES_PREFIX',					'The country international phone prefix');
+define('NDPHP_LANG_MOD_HELP_COUNTRIES_PREFIX',					'The country international phone prefix.');
 define('NDPHP_LANG_MOD_HELP_COUNTRIES_EU_STATE',				'Set to true if the country is a EU member.');
 define('NDPHP_LANG_MOD_HELP_COUNTRIES_VAT_RATE',				'If the country is a EU member, this field will contain the maximum VAT rate applied in that country.');
+define('NDPHP_LANG_MOD_HELP_COUNTRIES_CURRENCIES_ID',			'The main currency adopted by the country.');
+
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_CURRENCY',				'The currency long name.');
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_CODE',					'The currency code (3 characters)');
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_SIGN',					'The currency sign. Eg: $ for USD.');
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_SIGN_POSITION',			'The position of the currency sign, relative to the digits. Eg: USD $ is positioned Left to the digits. Use L for left, R for right.');
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_RATE',					'The currency rate.');
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_UPDATED',				'Last time the currency rate was updated.');
+define('NDPHP_LANG_MOD_HELP_CURRENCIES_DEFAULT',				'Whether this is the default currency.');
 
 define('NDPHP_LANG_MOD_HELP_DBMS_ALIAS',						'The alias for the database name. This is the value used by load routines.');
 define('NDPHP_LANG_MOD_HELP_DBMS_NAME',							'The real database name.');
@@ -890,6 +912,8 @@ define('NDPHP_LANG_MOD_HELP_DOCUMENTATION_DESCRIPTION',			'The long description 
 
 define('NDPHP_LANG_MOD_HELP_FEATURES_FEATURE',					'The feature identifier. Must be capitalized.');
 define('NDPHP_LANG_MOD_HELP_FEATURES_DESCRIPTION',				'The long description for this feature.');
+
+define('NDPHP_LANG_MOD_HELP_GENDERS_GENDER',					'The gender long name.');
 
 define('NDPHP_LANG_MOD_HELP_ITEMS_ITEM',						'The item short name.');
 define('NDPHP_LANG_MOD_HELP_ITEMS_DESCRIPTION',					'The long description for this item.');
@@ -1025,7 +1049,10 @@ define('NDPHP_LANG_MOD_HELP_USERS_SUBSCRIPTION_CHANGE_DATE',	'The last time the 
 define('NDPHP_LANG_MOD_HELP_USERS_SUBSCRIPTION_RENEW_DATE',		'The next time that user account will be billed for subscription renewal.');
 define('NDPHP_LANG_MOD_HELP_USERS_FIRST_NAME',					'First real name of the user.');
 define('NDPHP_LANG_MOD_HELP_USERS_LAST_NAME',					'Last real name of the user.');
+define('NDPHP_LANG_MOD_HELP_USERS_GENDERS_ID',					'The user\'s gender.');
+define('NDPHP_LANG_MOD_HELP_USERS_BIRTHDATE',					'Birth date of the user.');
 define('NDPHP_LANG_MOD_HELP_USERS_COUNTRIES_ID',				'The user\'s country.');
+define('NDPHP_LANG_MOD_HELP_USERS_CURRENCIES_ID',				'The user\'s default currency.');
 define('NDPHP_LANG_MOD_HELP_USERS_TIMEZONES_ID',				'The primary timezone of the user. Note that this value will be accounted for when showing datetime values.');
 define('NDPHP_LANG_MOD_HELP_USERS_COMPANY',						'Company or organization name.');
 define('NDPHP_LANG_MOD_HELP_USERS_ADDRESS_LINE1',				'The first line of the user street address. Typically containing the building and street name');

@@ -83,3 +83,16 @@ function redirect($directory, $with_index = true, $full_url = false) {
 		header('Location: ' . base_url() . uri_remove_extra_slashes(($with_index ? 'index.php/' : '') . $directory));
 	}
 }
+
+function remote_addr() {
+	if (isset($_SERVER['HTTP_X_CLIENT_IP']) && !empty($_SERVER['HTTP_X_CLIENT_IP']))
+		return $_SERVER['HTTP_X_CLIENT_IP'];
+
+	if (isset($_SERVER['HTTP_X_REAL_IP']) && !empty($_SERVER['HTTP_X_REAL_IP']))
+		return $_SERVER['HTTP_X_REAL_IP'];
+
+	if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+		return trim(explode(',', $_SERVER['HTTP_X_REAL_IP'])[0]);
+
+	return $_SERVER['REMOTE_ADDR'];
+}

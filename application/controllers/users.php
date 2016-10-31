@@ -306,8 +306,8 @@ class Users extends ND_Controller {
 	protected $_hide_fields_edit = array('id');
 	protected $_hide_fields_view = array('password');
 	protected $_hide_fields_remove = array('password');
-	protected $_hide_fields_list = array('password', 'phone', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert');
-	protected $_hide_fields_result = array('password', 'phone', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert');
+	protected $_hide_fields_list = array('password', 'phone', 'birthdate', 'genders_id', 'currencies_id', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert');
+	protected $_hide_fields_result = array('password', 'phone', 'birthdate', 'genders_id', 'currencies_id', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert');
 	protected $_hide_fields_search = array('password'); // Include fields searched on searchbar (basic)
 	protected $_hide_fields_export = array('password');
 
@@ -338,6 +338,7 @@ class Users extends ND_Controller {
 		'_separator_personal' => NDPHP_LANG_MOD_SEP_USER_PERSONAL,
 		'first_name' => NDPHP_LANG_MOD_COMMON_FIRST_NAME,
 		'last_name' => NDPHP_LANG_MOD_COMMON_LAST_NAME,
+		'birthdate' => NDPHP_LANG_MOD_COMMON_BIRTHDATE,
 		'company' => NDPHP_LANG_MOD_COMMON_COMPANY_NAME,
 		'address_line1' => NDPHP_LANG_MOD_COMMON_ADDR_LINE1,
 		'address_line2' => NDPHP_LANG_MOD_COMMON_ADDR_LINE2,
@@ -372,7 +373,9 @@ class Users extends ND_Controller {
 	protected $_rel_table_fields_config = array(
 		'timezones' => array(NDPHP_LANG_MOD_COMMON_TIMEZONE, NULL, array(1), array('id', 'asc'), NULL),
 		'subscription_types' => array(NDPHP_LANG_MOD_COMMON_SUBSCRIPTION, NULL, array(1), array('id', 'asc'), NULL),
+		'genders' => array(NDPHP_LANG_MOD_COMMON_GENDER, NULL, array(1), array('id', 'asc'), NULL),
 		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc'), NULL),
+		'currencies' => array(NDPHP_LANG_MOD_COMMON_CURRENCY, NULL, array(1), array('id', 'asc'), NULL),
 		'dbms' => array(NDPHP_LANG_MOD_COMMON_DATABASE_ALIAS, NULL, array(1), array('id', 'asc'), NULL),
 		'roles' => array(NDPHP_LANG_MOD_SEP_USER_ROLES, NULL, array(1), array('id', 'asc'), NULL)
 	);

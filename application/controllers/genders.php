@@ -30,7 +30,7 @@
  *
  */
 
-class Countries extends ND_Controller {
+class Genders extends ND_Controller {
 	/* Constructor */
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
@@ -42,20 +42,12 @@ class Countries extends ND_Controller {
 	/** Hooks **/
 	
 	/** Other overloads **/
-	
+
 	/* Aliases for the current table field names */
 	protected $_table_field_aliases = array(
-		'country' => NDPHP_LANG_MOD_COMMON_COUNTRY,
-		'code' => NDPHP_LANG_MOD_COMMON_COUNTRY_CODE,
-		'prefix' => NDPHP_LANG_MOD_COMMON_COUNTRY_PREFIX,
-		'eu_state' => NDPHP_LANG_MOD_COMMON_COUNTRY_EU_STATE,
-		'vat_rate' => NDPHP_LANG_MOD_COMMON_COUNTRY_VAT_RATE
-	);
-
-	protected $_rel_table_fields_config = array(
-		'currencies' => array(NDPHP_LANG_MOD_COMMON_CURRENCY, NULL, array(1), array('id', 'asc'), NULL)
+		'gender' => NDPHP_LANG_MOD_COMMON_GENDER
 	);
 
 	/** Custom functions **/
-}
 
+}

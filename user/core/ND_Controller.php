@@ -61,7 +61,6 @@
  * * On-the-fly field edit support [Views] (Double-click on a field value to edit it on the fly)
  * * Per user locale support.
  * * Per user charset support.
- * * Currency (per user) support
  * * Implement guest user support. Authentication for guest user is done automatically for controllers allowing it. This user must be disabled by default.
  * * Total mixed entries as a list_default() / result() field.
  * - Implement different families of views (configurable per table: backend, blog, shop, page, etc...)
@@ -124,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03p';
+	protected $_ndphp_version = '0.03q';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)

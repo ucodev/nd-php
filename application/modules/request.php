@@ -203,6 +203,8 @@ class UW_Request extends UW_Module {
 	}
 
 	public function remote_addr() {
-		return (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unspecified';
+		$raddr = remote_addr();
+
+		return $raddr ? $raddr : 'Unspecified';
 	}
 }

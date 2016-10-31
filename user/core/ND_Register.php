@@ -434,11 +434,11 @@ class ND_Register extends UW_Controller {
 		}
 
 		/* Validate First Name */
-		if (preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['first_name']) === false)
+		if (isset($_POST['first_name']) && preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['first_name']) === false)
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate Last Name */
-		if (preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['last_name']) === false)
+		if (isset($_POST['last_name']) && preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['last_name']) === false)
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_LAST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate password */
@@ -548,23 +548,41 @@ class ND_Register extends UW_Controller {
 		}
 
 		/* Setup user data row */
-		$userdata['first_name'] = htmlentities($_POST['first_name'], ENT_QUOTES, $this->_charset);
-		$userdata['last_name'] = htmlentities($_POST['last_name'], ENT_QUOTES, $this->_charset);
+		if (isset($_POST['first_name']))
+			$userdata['first_name'] = htmlentities($_POST['first_name'], ENT_QUOTES, $this->_charset);
+
+		if (isset($_POST['last_name']))
+			$userdata['last_name'] = htmlentities($_POST['last_name'], ENT_QUOTES, $this->_charset);
+
+		if (isset($_POST['birthdate']))
+			$userdata['birthdate'] = htmlentities($_POST['birthdate'], ENT_QUOTES, $this->_charset);
+
 		$userdata['username'] = $_POST['username'];
 		$userdata['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
 		$userdata['privenckey'] = $this->encrypt->encrypt(openssl_random_pseudo_bytes(256), $userdata['password'], false);
 		$userdata['apikey'] = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
 		$userdata['email'] = $_POST['email'];
-		$userdata['phone'] = $_POST['phone'];
+
+		if (isset($_POST['phone']))
+			$userdata['phone'] = $_POST['phone'];
 
 		if (isset($_POST['company']) && ($_POST['company']))
 			$userdata['company'] = $_POST['company'];
 
-		$userdata['vat'] = $_POST['vat'];
+		if (isset($_POST['vat']))
+			$userdata['vat'] = $_POST['vat'];
+
 		$userdata['subscription_types_id'] = 1;
 		$userdata['subscription_change_date'] = date('Y-m-d H:i:s');
 		$userdata['subscription_renew_date'] = date('Y-m-d', strtotime("+1 month"));
 		$userdata['countries_id'] = $_POST['countries_id'];
+
+		if (isset($_POST['timezones_id']))
+			$userdata['timezones_id'];
+
+		if (isset($_POST['currencies_id']))
+			$userdata['currencies_id'];
+
 		$userdata['active'] = 1;
 		$userdata['locked'] = 0;
 		/* If the account registration requires email and/or phone number confirmation, it will be active for only

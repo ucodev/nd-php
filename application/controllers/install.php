@@ -145,6 +145,9 @@ class Install extends UW_Controller {
 	private function _db_import_dump($dump_file) {
 		$query = '';
 
+		/* Disable prepared statements */
+		$this->db->stmt_disable();
+
 		/* Init transactional import */
 		$this->db->trans_begin();
 
@@ -173,6 +176,9 @@ class Install extends UW_Controller {
 
 		/* Commit transaction */
 		$this->db->trans_commit();
+
+		/* Re-enable prepared statements */
+		$this->db->stmt_enable();
 
 		/* All good */
 		return true;
@@ -1065,6 +1071,72 @@ class Install extends UW_Controller {
 			'help_url' => '#'
 		));
 
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'countries',
+			'field_name'  => 'currencies_id',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_COUNTRIES_CURRENCIES_ID,
+			'help_url' => '#'
+		));
+
+
+		/* Currencies help data */
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'currency',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_CURRENCY,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'code',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_CODE,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'sign',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_SIGN,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'sign_position',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_SIGN_POSITION,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'rate',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_RATE,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'updated',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_UPDATED,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'currencies',
+			'field_name'  => 'default',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CURRENCIES_DEFAULT,
+			'help_url' => '#'
+		));
+
 
 		/* DBMS help data */
 		$this->db->insert('_help_tfhd', array(
@@ -1172,6 +1244,16 @@ class Install extends UW_Controller {
 			'field_name'  => 'description',
 			'field_units' => NULL,
 			'help_description' => NDPHP_LANG_MOD_HELP_FEATURES_DESCRIPTION,
+			'help_url' => '#'
+		));
+
+
+		/* Genders help data */
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'genders',
+			'field_name'  => 'gender',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_GENDERS_GENDER,
 			'help_url' => '#'
 		));
 
@@ -2141,9 +2223,33 @@ class Install extends UW_Controller {
 
 		$this->db->insert('_help_tfhd', array(
 			'table_name'  => 'users',
+			'field_name'  => 'genders_id',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_USERS_GENDERS_ID,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'users',
+			'field_name'  => 'birthdate',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_USERS_BIRTHDATE,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'users',
 			'field_name'  => 'countries_id',
 			'field_units' => NULL,
 			'help_description' => NDPHP_LANG_MOD_HELP_USERS_COUNTRIES_ID,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'users',
+			'field_name'  => 'currencies_id',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_USERS_CURRENCIES_ID,
 			'help_url' => '#'
 		));
 

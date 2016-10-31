@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 28/10/2016
+ * Date: 31/10/2016
  * License: GPLv3
  */
 
@@ -1795,6 +1795,8 @@ class UW_Database extends UW_Base {
 					$attr[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET sql_mode = "STRICT_ALL_TABLES"';
 
 				$attr[PDO::MYSQL_ATTR_FOUND_ROWS] = true;
+
+				$attr[PDO::ATTR_EMULATE_PREPARES] = false;
 			}
 
 			/* Try to connect to the database */
@@ -2051,13 +2053,25 @@ class UW_Database extends UW_Base {
 	}
 
 	public function stmt_disable() {
+		global $config;
+
 		/* Disable prepared statements */
 		$this->_cfg_use_stmt = false;
+
+		/* Set MySQL specific attributes */
+		if ($config['database'][$this->_cur_db]['driver'] == 'mysql')
+			$this->_db[$this->_cur_db]->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 	}
 
 	public function stmt_enable() {
+		global $config;
+
 		/* Enable prepared statements (enabled by default) */
 		$this->_cfg_use_stmt = true;
+
+		/* Set MySQL specific attributes */
+		if ($config['database'][$this->_cur_db]['driver'] == 'mysql')
+			$this->_db[$this->_cur_db]->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 	}
 
 	public function dump($charset = 'utf8', $timezone = '+00:00', $newline = "\r\n") {

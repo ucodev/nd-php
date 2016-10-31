@@ -1,3 +1,15 @@
+v0.03q (2016-10-31):
+
+ - Updated optional and mandatory fields on registration controller.
+ - Updated uWeb.
+ - Fixed implicit string convertion for data retrieved from the database.
+ - Added support for remote address extraction from X-Client-IP, X-Real-IP and X-Forwarded-For HTTP headers.
+ - Added native gender and currency support.
+ - Included birthdate, gender and currency information in the base user profile (Users controller).
+ - Updated language files.
+ - Updated tracker.
+
+
 v0.03p (2016-10-28):
 
  - Updated safe characters list.
