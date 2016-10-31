@@ -46,12 +46,12 @@ class Currencies extends ND_Controller {
 	/* Aliases for the current table field names */
 	protected $_table_field_aliases = array(
 		'currency' => NDPHP_LANG_MOD_COMMON_CURRENCY,
-		'code' => NDPHP_LANG_MOD_COMMON_CODE,
-		'sign' => NDPHP_LANG_MOD_COMMON_SIGN,
-		'sign_position' => NDPHP_LANG_MOD_COMMON_SIGN_POS,
-		'rate' => NDPHP_LANG_MOD_COMMON_RATE,
-		'updated' => NDPHP_LANG_MOD_COMMON_UPDATED,
-		'default' => NDPHP_LANG_MOD_COMMON_DEFAULT
+		'code' => NDPHP_LANG_MOD_COMMON_CURRENCY_CODE,
+		'sign' => NDPHP_LANG_MOD_COMMON_CURRENCY_SIGN,
+		'sign_position' => NDPHP_LANG_MOD_COMMON_CURRENCY_SIGN_POS,
+		'rate' => NDPHP_LANG_MOD_COMMON_CURRENCY_RATE,
+		'updated' => NDPHP_LANG_MOD_COMMON_CURRENCY_UPDATED,
+		'default' => NDPHP_LANG_MOD_COMMON_CURRENCY_DEFAULT
 	);
 
 	/** Custom functions **/

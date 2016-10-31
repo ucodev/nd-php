@@ -45,6 +45,7 @@
  	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/jquery/blockui/blockui.js"></script>
  	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/ndphp/ide.js.php"></script>
  	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/json/json2.js"></script>
+ 	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/prototype/prototype.js"></script>
  	<script type="text/javascript" src="<?=filter_html(static_js_url(), $config['charset'])?>/lib/editarea/edit_area/edit_area_full.js"></script>
 
  	<script type="text/javascript">

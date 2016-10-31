@@ -1,3 +1,10 @@
+v0.03r (2016-10-31):
+
+ - Updated currencies controller.
+ - Fixed IDE Builder editor issues.
+ - Updated tracker.
+
+
 v0.03q (2016-10-31):
 
  - Updated optional and mandatory fields on registration controller.
