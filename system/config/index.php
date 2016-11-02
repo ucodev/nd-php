@@ -55,6 +55,10 @@ $config['database'] = $database;
 include('system/config/encrypt.php');
 $config['encrypt'] = $encrypt;
 
+/* Open Exchange Rates Settings */
+include('system/config/oer.php');
+$config['oer'] = $oer;
+
 /* Session settings */
 include('system/config/session.php');
 $config['session'] = $session;

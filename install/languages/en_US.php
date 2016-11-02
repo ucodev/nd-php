@@ -66,6 +66,7 @@ define('NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS',	'Please provide additional auth
 define('NDPHP_LANG_MOD_ATTN_PHP_VERSION',			'PHP versions lesser than 5.6.0 are not supported.');
 define('NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL',	'The scheduler configuration is not set as external.');
 define('NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND',		'No session found.');
+define('NDPHP_LANG_MOD_ATTN_NO_CURRENCY_DEFAULT',	'No default currency was found.');
 
 define('NDPHP_LANG_MOD_CANNOT_LOAD_PREV_VIEW',		'Cannot load the previous view.');
 define('NDPHP_LANG_MOD_CANNOT_VERIFY_PASSWORD',		'Cannot verify password.');
@@ -342,6 +343,8 @@ define('NDPHP_LANG_MOD_UNABLE_DECODE_FILE_METADATA','Unable to decode file metad
 define('NDPHP_LANG_MOD_UNABLE_DECODE_BASE64',		'Unable to decode the expected base64 content.');
 define('NDPHP_LANG_MOD_UNABLE_INSERT_ENTRY_CONFLICT','Unable to insert register into the database due to a constraint violation.');
 define('NDPHP_LANG_MOD_UNABLE_UPDATE_ENTRY_CONFLICT','Unable to update register in the database due to a constraint violation.');
+define('NDPHP_LANG_MOD_UNABLE_RETRIEVE_OER_RATES',	'Unable to retrieve currency rates from OER.');
+define('NDPHP_LANG_MOD_UNABLE_UPDATE_CURRENCY_RATES','Unable to update currencies.');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');

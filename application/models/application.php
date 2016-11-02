@@ -2225,7 +2225,9 @@ class UW_Application extends UW_Model {
 			if ($app_model['menus'][$i]['type'] == 'custom') {
 				$ch = curl_init();
 				$headers = array(
-					'Cache-Control: no-cache'
+					'Cache-Control: no-cache',
+					'Accept: application/json',
+					'Content-Type: application/json'
 				);
 				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 				curl_setopt($ch, CURLOPT_URL, base_url() . 'index.php/' . $app_model['menus'][$i]['db']['name'] . '/view/1'); /* Doesn't matter if the ID exists or not... We just need to initialize the controller for the first time */

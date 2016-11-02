@@ -1,3 +1,10 @@
+v0.03s (2016-11-02):
+
+ - Fixed VIEW creation process on IDE Builder.
+ - Added support for Open Exchange Rates.
+ - Updated language files.
+
+
 v0.03r (2016-10-31):
 
  - Updated currencies controller.

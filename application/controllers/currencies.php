@@ -54,6 +54,67 @@ class Currencies extends ND_Controller {
 		'default' => NDPHP_LANG_MOD_COMMON_CURRENCY_DEFAULT
 	);
 
+
 	/** Custom functions **/
 
+	public function update_rates() {
+		global $config;
+
+		/* Grant that only ROLE_ADMIN is able to invoke this method */
+		if (!$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Fetch the default (base) currency */
+		$this->db->from('currencies');
+		$this->db->where('default', true);
+		$this->db->limit(1);
+		$q = $this->db->get();
+
+		/* If no default currency is set, bail out */
+		if (!$q->num_rows())
+			$this->response->code('403', NDPHP_LANG_MOD_ATTN_NO_CURRENCY_DEFAULT, $this->config['default_charset'], !$this->request->is_ajax());
+
+		$row = $q->row_array();
+
+		/* Otherwise set it as the base currency */
+		$base_currency = $row['code'];
+
+		/* Fetch the currency exchange rates from OER */
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $config['oer']['base_url'] . '/' . $config['oer']['version'] . '?app_id=' . $config['oer']['key'] . '&base=' . $base_currency);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$output = curl_exec($ch);
+		curl_close($ch);
+
+		/* Try to decode JSON data */
+		$oer_rates = json_decode($output, true);
+
+		/* If we're unable to decode the data from OER, bail out */
+		if ($oer_rates === false)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_RETRIEVE_OER_RATES, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Initialize currency rates update transaction */
+		$this->db->trans_begin();
+
+		/* Update each existing rate */
+		foreach ($oer_rates['rates'] as $code => $rate) {
+			$this->db->where('code', $code);
+			$this->db->update('currencies', array(
+				'rate' => $rate,
+				'updated' => date('Y-m-d H:i:s', $oer_rates['timestamp']))
+			);
+		}
+
+		/* Check if we're successful */
+		if ($this->db->trans_status() === false) {
+			$this->db->trans_rollback();
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_UPDATE_CURRENCY_RATES, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
+		/* Commit data */
+		$this->db->trans_commit();
+
+		/* All good */
+		$this->response->code('200', 'OK', $this->config['default_charset'], !$this->request->is_ajax());
+	}
 }

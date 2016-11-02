@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03r';
+	protected $_ndphp_version = '0.03s';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1190,6 +1190,7 @@ class ND_Controller extends UW_Controller {
 			if (!$this->_table_type_view_query)
 				$this->response->code('500', NDPHP_LANG_MOD_UNDEFINED_CTRL_VIEW_QUERY, $this->_default_charset, !$this->request->is_ajax());
 
+			/* TODO: FIXME: Do not trust uWeb (keep a untrust level for the underlying layers): Re-check the safe chars for $GLOBALS['__controller'] */
 			$this->db->query('CREATE OR REPLACE VIEW ' . $GLOBALS['__controller'] . ' AS ' . $this->_table_type_view_query);
 		}
 
