@@ -1,3 +1,11 @@
+v0.03t (2016-11-08):
+
+ - Added support for more than 150 currencies.
+ - Cache is now cleared before and after a new model is deployed.
+ - Optimized view creation / replacement process.
+ - Updated tracker.
+
+
 v0.03s (2016-11-02):
 
  - Fixed VIEW creation process on IDE Builder.

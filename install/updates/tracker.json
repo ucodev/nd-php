@@ -179,6 +179,7 @@
 			"system/config/aws.php",
 			"system/config/cache.php",
 			"system/config/index.php",
+			"system/config/oer.php",
 			"system/core/index.php",
 			"system/core/uweb.php",
 			"system/extensions/pagination.php",

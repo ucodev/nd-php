@@ -151,6 +151,10 @@ class Builder extends ND_Controller {
 		if (($application = json_decode($json_raw, true)) === NULL)
 			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->config['default_charset'], !$this->request->is_ajax());
 
+		/* Clear cache if it is active */
+		if ($this->cache->is_active())
+			$this->cache->flush();
+
 		/* Save the new application model */
 		$this->db->trans_begin();
 
@@ -197,7 +201,7 @@ class Builder extends ND_Controller {
 			'model' => $json_raw
 		));
 
-		/* Clear cache if it is active */
+		/* Re-clear cache if it is active (just to make sure) */
 		if ($this->cache->is_active())
 			$this->cache->flush();
 
