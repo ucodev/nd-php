@@ -1,3 +1,10 @@
+v0.03u (2016-11-14):
+
+ - Default upload file settings can now be set at config/base.php
+ - Added support for brand, website and about fields on users profile.
+ - Updated language files.
+
+
 v0.03t (2016-11-08):
 
  - Added support for more than 150 currencies.

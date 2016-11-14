@@ -3,3 +3,5 @@
 /* Base settings */
 $base['controller'] = 'install'; /* Default controller */
 $base['acceptable_uri_regex'] = '/^[a-zA-Z0-9\ \~\%\.\:\_\\-\+\=\/\@]+$/'; /* Acceptable URI charaters */
+$base['default_upload_file_driver'] = 'local';
+$base['default_upload_file_base_url'] = '';

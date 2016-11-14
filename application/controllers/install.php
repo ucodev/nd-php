@@ -2271,6 +2271,14 @@ class Install extends UW_Controller {
 
 		$this->db->insert('_help_tfhd', array(
 			'table_name'  => 'users',
+			'field_name'  => 'brand',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_USERS_BRAND,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'users',
 			'field_name'  => 'address_line1',
 			'field_units' => NULL,
 			'help_description' => NDPHP_LANG_MOD_HELP_USERS_ADDRESS_LINE1,
@@ -2306,6 +2314,22 @@ class Install extends UW_Controller {
 			'field_name'  => 'vat',
 			'field_units' => NULL,
 			'help_description' => NDPHP_LANG_MOD_HELP_USERS_VAT,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'users',
+			'field_name'  => 'website',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_USERS_WEBSITE,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'users',
+			'field_name'  => 'about',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_USERS_ABOUT,
 			'help_url' => '#'
 		));
 

@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03t';
+	protected $_ndphp_version = '0.03u';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -521,10 +521,10 @@ class ND_Controller extends UW_Controller {
 	/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */
 	protected $_upload_file_name_filter = 'a-zA-Z0-9_\.';
 
-	/* The upload driver to be used (supported drivers: local, s3) */
-	protected $_upload_file_driver = 'local';
+	/* The upload driver to be used (supported drivers: local, s3) [If left blank, see user/config/base.php settings] */
+	protected $_upload_file_driver = '';
 
-	/* The base URL for the uploaded images. Leave blank if 'local' driver is being used */
+	/* The base URL for the uploaded images. Leave blank if 'local' driver is being used. [If left blank, see user/config/base.php settings] */
 	protected $_upload_file_base_url = '';
 
 	/* Session data buffer (will be populated with construct) */
@@ -745,6 +745,8 @@ class ND_Controller extends UW_Controller {
 	/** Custom functions **/
 
 	public function config_populate() {
+		global $config;
+
 		/* Populate public configuration ($config) */
 		$this->config['ndphp_version']							= $this->_ndphp_version;
 
@@ -862,6 +864,16 @@ class ND_Controller extends UW_Controller {
 		$this->config['upload_file_name_filter']				= $this->_upload_file_name_filter;
 		$this->config['upload_file_max_size']					= $this->_upload_file_max_size;
 		$this->config['upload_file_driver']						= $this->_upload_file_driver;
+
+		if (!$this->config['upload_file_driver']) {
+			if (isset($config['base']['default_upload_file_driver']) && isset($config['base']['default_upload_file_base_url'])) {
+				$this->config['upload_file_driver'] = $config['base']['default_upload_file_driver'];
+				$this->config['upload_file_base_url'] = $config['base']['default_upload_file_base_url'];
+			} else {
+				$this->config['upload_file_driver'] = 'local';
+			}
+		}
+
 		if ($this->config['upload_file_driver'] == 'local') {
 			$this->config['upload_file_base_url']				= base_url() . 'index.php/files/access/' . $this->config['name'];
 		} else {
