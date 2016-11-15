@@ -1,3 +1,10 @@
+v0.03u1 (2016-11-15):
+
+ - Added support for brand, website and about fields on users registration controller.
+ - Fixed issues with default upload file settings.
+ - Updated tracker.
+
+
 v0.03u (2016-11-14):
 
  - Default upload file settings can now be set at config/base.php

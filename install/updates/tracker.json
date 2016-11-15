@@ -177,6 +177,7 @@
 			"logs/.htaccess",
 			"system/index.php",
 			"system/config/aws.php",
+			"system/config/base.php",
 			"system/config/cache.php",
 			"system/config/index.php",
 			"system/config/oer.php",

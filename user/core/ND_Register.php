@@ -549,13 +549,13 @@ class ND_Register extends UW_Controller {
 
 		/* Setup user data row */
 		if (isset($_POST['first_name']))
-			$userdata['first_name'] = htmlentities($_POST['first_name'], ENT_QUOTES, $this->_charset);
+			$userdata['first_name'] = $_POST['first_name'];
 
 		if (isset($_POST['last_name']))
-			$userdata['last_name'] = htmlentities($_POST['last_name'], ENT_QUOTES, $this->_charset);
+			$userdata['last_name'] = $_POST['last_name'];
 
 		if (isset($_POST['birthdate']))
-			$userdata['birthdate'] = htmlentities($_POST['birthdate'], ENT_QUOTES, $this->_charset);
+			$userdata['birthdate'] = $_POST['birthdate'];
 
 		$userdata['username'] = $_POST['username'];
 		$userdata['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT, array('cost' => 10));
@@ -569,19 +569,32 @@ class ND_Register extends UW_Controller {
 		if (isset($_POST['company']) && ($_POST['company']))
 			$userdata['company'] = $_POST['company'];
 
+		if (isset($_POST['brand']) && ($_POST['brand']))
+			$userdata['brand'] = $_POST['brand'];
+
 		if (isset($_POST['vat']))
 			$userdata['vat'] = $_POST['vat'];
 
 		$userdata['subscription_types_id'] = 1;
 		$userdata['subscription_change_date'] = date('Y-m-d H:i:s');
 		$userdata['subscription_renew_date'] = date('Y-m-d', strtotime("+1 month"));
-		$userdata['countries_id'] = $_POST['countries_id'];
+
+		$userdata['countries_id'] = $_POST['countries_id']; /* TODO: FIXME: needs validation */
 
 		if (isset($_POST['timezones_id']))
-			$userdata['timezones_id'];
+			$userdata['timezones_id'] = intval($_POST['timezones_id']); /* TODO: FIXME: needs validation */
 
 		if (isset($_POST['currencies_id']))
-			$userdata['currencies_id'];
+			$userdata['currencies_id'] = intval($_POST['currencies_id']); /* TODO: FIXME: needs validation */
+
+		if (isset($_POST['genders_id']))
+			$userdata['genders_id'] = intval($_POST['genders_id']); /* TODO: FIXME: needs validation */
+
+		if (isset($_POST['website']))
+			$userdata['website'] = $_POST['website'];
+
+		if (isset($_POST['about']))
+			$userdata['about'] = $_POST['about'];
 
 		$userdata['active'] = 1;
 		$userdata['locked'] = 0;

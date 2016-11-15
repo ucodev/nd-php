@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03u';
+	protected $_ndphp_version = '0.03u1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -867,6 +867,8 @@ class ND_Controller extends UW_Controller {
 
 		if (!$this->config['upload_file_driver']) {
 			if (isset($config['base']['default_upload_file_driver']) && isset($config['base']['default_upload_file_base_url'])) {
+				$this->_upload_file_driver = $config['base']['default_upload_file_driver'];
+				$this->_upload_file_base_url = $config['base']['default_upload_file_base_url'];
 				$this->config['upload_file_driver'] = $config['base']['default_upload_file_driver'];
 				$this->config['upload_file_base_url'] = $config['base']['default_upload_file_base_url'];
 			} else {
