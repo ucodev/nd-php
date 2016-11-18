@@ -1145,7 +1145,7 @@ CREATE TABLE `users` (
   `postcode` varchar(16) DEFAULT NULL,
   `vat` varchar(24) DEFAULT NULL,
   `website` varchar(128) DEFAULT NULL,
-  `about` varchar(512) DEFAULT NULL,
+  `about` text DEFAULT NULL,
   `_separator_register` tinyint(1) DEFAULT NULL,
   `expire` datetime DEFAULT NULL,
   `registered` datetime DEFAULT NULL,

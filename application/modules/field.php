@@ -118,6 +118,13 @@ class UW_Field extends UW_Module {
 			 * 
 			 */
 			if (substr($field, -3, 3) == '_id') {
+				/* If this is a JSON request, do not resolve the field */
+				if ($this->request->is_json()) {
+					array_push($select, $field);
+					continue;
+				}
+
+				/* Extract relationship table and fetch table fields */
 				$table = substr($field, 0, -3);
 				$table_fields = $this->get->table_fields($table);
 				$this->db->join($table, $table . '.id = ' . $this->config['name'] . '.' . $field, 'left');
@@ -155,14 +162,20 @@ class UW_Field extends UW_Module {
 				$table_fields = $this->get->table_fields($meta['table']);
 
 				$this->db->join($meta['rel_table'], $this->config['name'] . '.id = ' . $meta['rel_table'] . '.' . $this->config['name'] . '_id', 'left');
-				$this->db->join($meta['table'], $meta['table'] . '.id = ' . $meta['rel_table'] . '.' . $meta['table'] . '_id', 'left');
+
+				/* Only join with the foreign table if this isn't a REST JSON request...
+				 * REST JSON responses only require to deliver entry id's, not the resolved name.
+				 */
+				if (!$this->request->is_json())
+					$this->db->join($meta['table'], $meta['table'] . '.id = ' . $meta['rel_table'] . '.' . $meta['table'] . '_id', 'left');
 
 				/* Concatenate configured fields on _rel_table_fields_config in the results
 				 * for this table, if more than one field was configured.
 				 */
 				$cc_fields = '';
-				if (isset($this->config['rel_table_fields_config'][$meta['table']]) &&
-						($this->config['rel_table_fields_config'][$meta['table']][2] != NULL) &&
+				/* Only process additional concatenation fields if the request isn't a JSON REST request */
+				if (!$this->request->is_json() && isset($this->config['rel_table_fields_config'][$meta['table']]) &&
+						($this->config['rel_table_fields_config'][$meta['table']][2] !== NULL) &&
 						(count($this->config['rel_table_fields_config'][$meta['table']][2]) > 1)) {
 					/* Initialize concat field separator */
 					$cc_fields = 'CONCAT_WS(\'' . $this->config['rel_table_fields_config'][$meta['table']][1] . '\',';
@@ -176,14 +189,21 @@ class UW_Field extends UW_Module {
 					 * _rel_table_fields_config, or only one field was registered in the
 					 * fields array.
 					 */
-					$cc_fields = '`' . $meta['table'] . '`.`' . $meta['rel_field'] . '`';
+
+					/* If the request is a REST JSON request, fetch the ID instead of $meta['rel_field']... */
+					if ($this->request->is_json()) {
+						$cc_fields = '`' . $meta['rel_table'] . '`.`' . $meta['table'] . '_id`'; /* The result will be an id list concatenated with a ',' separator */
+					} else {
+						$cc_fields = '`' . $meta['table'] . '`.`' . $meta['rel_field'] . '`';
+					}
 				}
 
 				/* Only push this field into the $select set if it is marked for selection (empty $selected, or present in $selected)...
 				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
+				 * Also, for REST JSON requests, the contatenation separator is always set to ','
 				 */
 				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
-					array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ' SEPARATOR \'' . $this->config['rel_group_concat_sep'] . '\') AS `' . $field . '`');
+					array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ($this->request->is_json() ? ' SEPARATOR \',\'' : ' SEPARATOR \'' . $this->config['rel_group_concat_sep'] . '\'') . ') AS `' . $field . '`');
 			} else {
 				/* Otherwise, just select the current table field */
 

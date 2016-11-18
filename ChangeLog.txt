@@ -1,3 +1,12 @@
+v0.03v (2016-11-18):
+
+ - Updated hidden fields on users controller.
+ - Changed user 'about' field type to text.
+ - Remove field resolution from JSON responses.
+ - Added support for image propreties on uploads module.
+ - Updated tracker.
+
+
 v0.03u1 (2016-11-15):
 
  - Added support for brand, website and about fields on users registration controller.

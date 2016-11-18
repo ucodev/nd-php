@@ -140,6 +140,13 @@ class UW_Upload extends UW_Module {
 					/* Set size property based on file size */
 					$meta['size'] = filesize($tfile);
 
+					/* If file is an image, also set the image properties */
+					if (($img_props = getimagesize($tfile)) !== false) {
+						$meta['image'] = array();
+						$meta['image']['width'] = $img_props['width'];
+						$meta['image']['height'] = $img_props['height'];
+					}
+
 					/* Push file metadata into uploads array */
 					array_push($file_uploads, array($field, $meta));
 
@@ -173,6 +180,7 @@ class UW_Upload extends UW_Module {
 				$meta['name'] = $_FILES[$k]['name'];
 				$meta['type'] = NULL;
 				$meta['size'] = $_FILES[$k]['size'];
+				/* TODO: FIXME: Missing $meta['image'] */
 				$meta['created'] = date('Y-m-d H:i:s');
 				$meta['modified'] = $meta['created'];
 
