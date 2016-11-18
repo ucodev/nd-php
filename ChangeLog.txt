@@ -1,3 +1,8 @@
+v0.03v2 (2016-11-18):
+
+ - Role to ID fixup on application model.
+
+
 v0.03v1 (2016-11-18):
 
  - Fixed image properties issues on upload module.

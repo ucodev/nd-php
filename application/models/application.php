@@ -1468,7 +1468,7 @@ class UW_Application extends UW_Model {
 		/* If the menu is of type 'limited', add permission admin permissions for the fields 'users_id' */
 		if ($menu['type'] == 'limited') {
 			$this->db->insert('_acl_rtcp', array(
-				'roles_id' => $roles[$role_to_id['ROLE_ADMIN']],
+				'roles_id' => $role_to_id['ROLE_ADMIN'],
 				'_table' => $menu['db']['name'],
 				'_column' => 'users_id',
 				'permissions' => 'CRUS'
