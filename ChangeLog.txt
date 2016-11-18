@@ -1,3 +1,10 @@
+v0.03v1 (2016-11-18):
+
+ - Fixed image properties issues on upload module.
+ - 'created' and 'modified' properties for files uploaded via REST JSON are now optional.
+ - Limited controllers now grant default CRUS permissions for ROLE_ADMIN when a upopn model deployment.
+
+
 v0.03v (2016-11-18):
 
  - Updated hidden fields on users controller.

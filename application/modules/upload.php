@@ -79,8 +79,20 @@ class UW_Upload extends UW_Module {
 				$meta['from_json'] = true;
 				$meta['name'] = $value['name'];
 				$meta['type'] = $value['type'];
-				$meta['created'] = $value['created'];
-				$meta['modified'] = $value['modified'];
+
+				/* Created time is optional */
+				if (isset($value['created'])) {
+					$meta['created'] = $value['created'];
+				} else {
+					$meta['created'] = date('Y-m-d H:i:s');
+				}
+
+				/* Modified time is optional */
+				if (isset($value['created']) && isset($value['modified'])) {
+					$meta['modified'] = $value['modified'];
+				} else {
+					$meta['modified'] = $meta['created'];
+				}
 
 				/* If the file size was specified in the request, use it for now... (it may be replaced if 'contents' is set) */
 				if (isset($value['size']))
@@ -143,8 +155,8 @@ class UW_Upload extends UW_Module {
 					/* If file is an image, also set the image properties */
 					if (($img_props = getimagesize($tfile)) !== false) {
 						$meta['image'] = array();
-						$meta['image']['width'] = $img_props['width'];
-						$meta['image']['height'] = $img_props['height'];
+						$meta['image']['width'] = $img_props[0];
+						$meta['image']['height'] = $img_props[1];
 					}
 
 					/* Push file metadata into uploads array */
@@ -180,7 +192,14 @@ class UW_Upload extends UW_Module {
 				$meta['name'] = $_FILES[$k]['name'];
 				$meta['type'] = NULL;
 				$meta['size'] = $_FILES[$k]['size'];
-				/* TODO: FIXME: Missing $meta['image'] */
+
+				/* If file is an image, also set the image properties */
+				if (($img_props = getimagesize($_FILES[$field]['tmp_name'])) !== false) {
+					$meta['image'] = array();
+					$meta['image']['width'] = $img_props[0];
+					$meta['image']['height'] = $img_props[1];
+				}
+
 				$meta['created'] = date('Y-m-d H:i:s');
 				$meta['modified'] = $meta['created'];
 
