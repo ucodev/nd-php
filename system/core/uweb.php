@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 31/10/2016
+ * Date: 21/11/2016
  * License: GPLv3
  */
 
@@ -1372,7 +1372,7 @@ class UW_Database extends UW_Base {
 			$new_column = str_replace('`', '', $new_column);
 		}
 
-		return $this->query('ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $column . '` `' . $new_column . '` ' . $type . ($is_null ? ' NULL' : ' NOT NULL') . ' DEFAULT ' . $default . ($after ? ' AFTER `' . $after . '`' : ''));
+		return $this->query('ALTER TABLE `' . $table . '` CHANGE COLUMN `' . $column . '` `' . $new_column . '` ' . $type . ($is_null ? ' NULL' : ' NOT NULL') . ((!$is_null && $default == 'NULL') ? '' : (' DEFAULT ' . $default)) . ($after ? ' AFTER `' . $after . '`' : ''));
 	}
 
 	public function table_column_unique_add($table, $column, $enforce = true) {

@@ -1,3 +1,10 @@
+v0.03w (2016-11-24):
+
+ - Fixed mandatory property checks on JSON file uploads.
+ - Updated uWeb.
+ - Required fields no longer demand default values on IDE Builder.
+
+
 v0.03v2 (2016-11-18):
 
  - Role to ID fixup on application model.

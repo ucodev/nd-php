@@ -69,7 +69,7 @@ class UW_Upload extends UW_Module {
 					continue;
 
 				/* Grant that all the required file properties are set */
-				foreach (array('name', 'type', 'created', 'modified') as $property) {
+				foreach (array('name', 'type') as $property) {
 					if (!isset($value[$property]))
 						$this->response->code('403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY . ': ' . $property, $this->config['default_charset'], !$this->request->is_ajax());
 				}

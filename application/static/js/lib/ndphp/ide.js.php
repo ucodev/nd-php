@@ -305,62 +305,59 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
         }
     }
 
-    /* If this is a required field, validate if the placeholder is of the right type */
+    /* If this is a required field, validate if the default value (if set) is of the right type */
     if ('constraints' in field && field['constraints']['required']) {
         /* If this is a required field and no placeholder is set, it will cause an error on data model... */
-        if (!field['properties']['default_value'].length) {
-            alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" was set as required, but no default value was defined.');
-            return false;
-        }
-
-        /* Validate, per field type, if the supplied value match a particular pattern */
-        switch (field['title']) {
-            case 'Separator': {
-                /* Separators cannot be set as required because they will never (and they must not) have values set */
-                alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" cannot have a required constraint.');
-                return false;
-            } break;
-            case 'Numeric': {
-                var pat = /(^\d+$|^\d+\.\d+$)/;
-
-                if (!pat.test(field['properties']['default_value'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Numeric type (integer or float expected).');
+        if (field['properties']['default_value'].length) {
+            /* Validate, per field type, if the supplied value match a particular pattern */
+            switch (field['title']) {
+                case 'Separator': {
+                    /* Separators cannot be set as required because they will never (and they must not) have values set */
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" cannot have a required constraint.');
                     return false;
-                }
-            } break;
-            case 'Timer':
-            case 'Time': {
-                var pat = /(^\d{1,2}:\d{1,2}$|^\d{1,2}:\d{1,2}:\d{1,2}$)/;
+                } break;
+                case 'Numeric': {
+                    var pat = /(^\d+$|^\d+\.\d+$)/;
 
-                if (!pat.test(field['properties']['default_value'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Time type (HH:MM:SS expected).');
-                    return false;
-                }
-            } break;
-            case 'Date': {
-                var pat = /^\d{4,4}-\d{2,2}-\d{2,2}$/;
+                    if (!pat.test(field['properties']['default_value'])) {
+                        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Numeric type (integer or float expected).');
+                        return false;
+                    }
+                } break;
+                case 'Timer':
+                case 'Time': {
+                    var pat = /(^\d{1,2}:\d{1,2}$|^\d{1,2}:\d{1,2}:\d{1,2}$)/;
 
-                if (!pat.test(field['properties']['default_value'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Date type (YYYY-MM-DD expected).');
-                    return false;
-                }
-            } break;
-            case 'Date &amp; Time': {
-                var pat = /^\d{4,4}-\d{2,2}-\d{2,2} \d{1,2}:\d{1,2}:\d{1,2}$/;
+                    if (!pat.test(field['properties']['default_value'])) {
+                        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Time type (HH:MM:SS expected).');
+                        return false;
+                    }
+                } break;
+                case 'Date': {
+                    var pat = /^\d{4,4}-\d{2,2}-\d{2,2}$/;
 
-                if (!pat.test(field['properties']['default_value'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Date & Time type (YYYY-MM-DD HH:MM:SS expected).');
-                    return false;
-                }
-            } break;
-            case 'Drop-Down': {
-                var pat = /^\d+$/i;
+                    if (!pat.test(field['properties']['default_value'])) {
+                        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Date type (YYYY-MM-DD expected).');
+                        return false;
+                    }
+                } break;
+                case 'Date &amp; Time': {
+                    var pat = /^\d{4,4}-\d{2,2}-\d{2,2} \d{1,2}:\d{1,2}:\d{1,2}$/;
 
-                if (!pat.test(field['properties']['default_value'])) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Drop-Down type (integer expected).');
-                    return false;
-                }
-            } break;
+                    if (!pat.test(field['properties']['default_value'])) {
+                        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Date & Time type (YYYY-MM-DD HH:MM:SS expected).');
+                        return false;
+                    }
+                } break;
+                case 'Drop-Down': {
+                    var pat = /^\d+$/i;
+
+                    if (!pat.test(field['properties']['default_value'])) {
+                        alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" contains an invalid format on its default value for the Drop-Down type (integer expected).');
+                        return false;
+                    }
+                } break;
+            }
         }
     }
 
