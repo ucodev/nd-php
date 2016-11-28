@@ -1,3 +1,14 @@
+v0.03x (2016-11-28):
+
+ - Added support for generic user fields.
+ - Added support for registration codes.
+ - Listing and results JSON response data format is now structured into "result", "count" and "total".
+ - Updated base data model.
+ - Updated installer.
+ - Updated tracker.
+ - Updated language files.
+
+
 v0.03w (2016-11-24):
 
  - Fixed mandatory property checks on JSON file uploads.

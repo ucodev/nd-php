@@ -306,8 +306,8 @@ class Users extends ND_Controller {
 	protected $_hide_fields_edit = array('id');
 	protected $_hide_fields_view = array('password');
 	protected $_hide_fields_remove = array('password');
-	protected $_hide_fields_list = array('password', 'phone', 'birthdate', 'genders_id', 'currencies_id', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'brand', 'website', 'about', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert');
-	protected $_hide_fields_result = array('password', 'phone', 'birthdate', 'genders_id', 'currencies_id', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'brand', 'website', 'about', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert');
+	protected $_hide_fields_list = array('password', 'phone', 'birthdate', 'genders_id', 'currencies_id', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'brand', 'website', 'about', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert', 'generic_counter_1', 'generic_counter_2', 'generic_counter_3', 'generic_counter_4', 'generic_text_1', 'generic_text_2', 'generic_text_3', 'generic_text_4', 'generic_datetime_1', 'generic_datetime_2', 'generic_datetime_3', 'generic_datetime_4');
+	protected $_hide_fields_result = array('password', 'phone', 'birthdate', 'genders_id', 'currencies_id', 'address_line1', 'address_line2', 'city', 'postcode', 'vat', 'apikey', 'confirm_email_hash', 'confirm_phone_token', 'phone_confirmed', 'date_confirmed', 'registered', 'email_confirmed', 'allow_negative', 'expire', 'subscription_change_date', 'subscription_renew_date', 'company', 'brand', 'website', 'about', 'first_name', 'last_name', 'acct_last_reset', 'acct_rest_list', 'acct_rest_result', 'acct_rest_view', 'acct_rest_delete', 'acct_rest_update', 'acct_rest_insert', 'generic_counter_1', 'generic_counter_2', 'generic_counter_3', 'generic_counter_4', 'generic_text_1', 'generic_text_2', 'generic_text_3', 'generic_text_4', 'generic_datetime_1', 'generic_datetime_2', 'generic_datetime_3', 'generic_datetime_4');
 	protected $_hide_fields_search = array('password'); // Include fields searched on searchbar (basic)
 	protected $_hide_fields_export = array('password');
 
@@ -370,6 +370,19 @@ class Users extends ND_Controller {
 		'acct_rest_delete' => NDPHP_LANG_MOD_COMMON_ACCT_REST_DELETE_CNTR,
 		'acct_rest_update' => NDPHP_LANG_MOD_COMMON_ACCT_REST_UPDATE_CNTR,
 		'acct_rest_insert' => NDPHP_LANG_MOD_COMMON_ACCT_REST_INSERT_CNTR,
+		'_separator_generic' => NDPHP_LANG_MOD_SEP_USER_GENERIC,
+		'generic_counter_1' => NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_1,
+		'generic_counter_2' => NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_2,
+		'generic_counter_3' => NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_3,
+		'generic_counter_4' => NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_4,
+		'generic_text_1' => NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_1,
+		'generic_text_2' => NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_2,
+		'generic_text_3' => NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_3,
+		'generic_text_4' => NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_4,
+		'generic_datetime_1' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_1,
+		'generic_datetime_2' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_2,
+		'generic_datetime_3' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_3,
+		'generic_datetime_4' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_4,
 		'_separator_sharding' => NDPHP_LANG_MOD_COMMON_SHARDING
 	);
 

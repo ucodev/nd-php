@@ -115,7 +115,9 @@ class UW_Rest extends UW_Module {
 
 	public function json_list($data) {
 		$json_res['status'] = true;
-		$json_res['data'] = $data['view']['result_array'];
+		$json_res['data']['result'] = $data['view']['result_array'];
+		$json_res['data']['count'] = count($data['view']['result_array']);
+		$json_res['data']['total'] = $data['view']['total_items'];
 
 		/* Update accounting counters if accounting is enabled */
 		if ($this->config['accounting'])
@@ -126,7 +128,9 @@ class UW_Rest extends UW_Module {
 
 	public function json_result($data) {
 		$json_res['status'] = true;
-		$json_res['data'] = $data['view']['result_array'];
+		$json_res['data']['result'] = $data['view']['result_array'];
+		$json_res['data']['count'] = count($data['view']['result_array']);
+		$json_res['data']['total'] = $data['view']['total_items'];
 
 		/* Update accounting counters if accounting is enabled */
 		if ($this->config['accounting'])

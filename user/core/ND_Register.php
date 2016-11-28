@@ -596,6 +596,9 @@ class ND_Register extends UW_Controller {
 		if (isset($_POST['about']))
 			$userdata['about'] = $_POST['about'];
 
+		if (isset($_POST['code']))
+			$userdata['registration_code'] = $_POST['code'];
+
 		$userdata['active'] = 1;
 		$userdata['locked'] = 0;
 		/* If the account registration requires email and/or phone number confirmation, it will be active for only
@@ -1050,6 +1053,65 @@ class ND_Register extends UW_Controller {
 		} else {
 			$this->db->trans_commit();
 		}
+
+		/* Apply registration codes, if any */
+		$this->db->trans_begin();
+
+		$this->db->select('registration_code');
+		$this->db->from('users');
+		$this->db->where('id', $users_id);
+
+		$q = $this->db->get();
+
+		$user_row = $q->row_array();
+
+		/* If there is a registration code ... */
+		if ($user_row['registration_code']) {
+			$this->db->select('id,roles_id,remaining');
+			$this->db->from('codes');
+			$this->db->where('codes_types_id', 1);
+			$this->db->where('code', $user_row['registration_code']);
+			$this->db->where('remaining >=', 1);
+			$q = $this->db->get();
+
+			$code_row = array();
+
+			/* Check if the code matches an existing code... */
+			if ($q->num_rows()) {
+				/* And apply the corresponding role to this user */
+				$code_row = $q->row_array();
+
+				$roledata['users_id'] = $users_id;
+				$roledata['roles_id'] = $code_row['roles_id'];
+
+				$this->db->insert('rel_users_roles', $roledata);
+			} else {
+				$this->trans_rollback();
+				error_log('register.php: user_active_process(): The registration code does not exist or is no longer valid. (User ID: ' . $users_id . ').');
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE, $this->_charset, !$this->request->is_ajax());
+			}
+		}
+
+		/* Decrement the remaning code count */
+		$this->db->where('id', $code_row['id']);
+		$this->db->update('codes', array(
+			'remaining' => ($code_row['remaining'] - 1)
+		));
+
+		/* Set the user registration code status to 'true' */
+		$this->db->where('id', $users_id);
+		$this->db->where('users', array(
+			'registration_code_status' => true
+		));
+
+		if ($this->db->trans_status() === false) {
+			$this->db->trans_rollback();
+			error_log('register.php: user_active_process(): Failed to update registration code logic for User ID: ' . $users_id . ' #2.');
+			$this->response->code('500', NDPHP_LANG_MOD_FAILED_REGISTRATION_CODE, $this->_charset, !$this->request->is_ajax());
+		}
+
+		/* All good */
+		$this->db->trans_commit();
 	}
 
 	private function user_try_unlock($users_id) {

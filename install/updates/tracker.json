@@ -29,6 +29,8 @@
 			"application/controllers/charts_config.php",
 			"application/controllers/charts_geometry.php",
 			"application/controllers/charts_types.php",
+			"application/controllers/codes.php",
+			"application/controllers/codes_types.php",
 			"application/controllers/configuration.php",
 			"application/controllers/countries.php",
 			"application/controllers/currencies.php",

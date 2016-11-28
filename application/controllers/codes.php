@@ -30,7 +30,7 @@
  *
  */
 
-class Genders extends ND_Controller {
+class Codes extends ND_Controller {
 	/* Constructor */
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct($session_enable, $json_replies);
@@ -45,8 +45,17 @@ class Genders extends ND_Controller {
 
 	/* Aliases for the current table field names */
 	protected $_table_field_aliases = array(
-		'gender' => NDPHP_LANG_MOD_COMMON_GENDER
+		'code' => NDPHP_LANG_MOD_COMMON_CODE,
+		'remaining' => NDPHP_LANG_MOD_COMMON_REMAINING,
+		'valid_from' => NDPHP_LANG_MOD_COMMON_VALID_FROM,
+		'valid_to' => NDPHP_LANG_MOD_COMMON_VALID_TO
 	);
+
+	protected $_rel_table_fields_config = array(
+		'codes_types' => array(NDPHP_LANG_MOD_COMMON_CODE_TYPE, NULL, array(1), array('id', 'asc'), NULL),
+		'roles' => array(NDPHP_LANG_MOD_COMMON_ROLE, NULL, array(1), array('id', 'asc'), NULL)
+	);
+
 
 	/** Custom functions **/
 

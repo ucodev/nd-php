@@ -812,6 +812,72 @@ class Install extends UW_Controller {
 			'help_url' => '#'
 		));
 
+		/* Codes help data */
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes',
+			'field_name'  => 'code',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_CODE,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes',
+			'field_name'  => 'codes_types_id',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_CODES_TYPES_ID,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes',
+			'field_name'  => 'remaining',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_REMAINING,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes',
+			'field_name'  => 'valid_from',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_VALID_FROM,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes',
+			'field_name'  => 'valid_to',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_VALID_TO,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes',
+			'field_name'  => 'roles_id',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_ROLES_ID,
+			'help_url' => '#'
+		));
+
+		/* Codes help data */
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes_types',
+			'field_name'  => 'code_type',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_TYPES_CODE_TYPE,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'codes_types',
+			'field_name'  => 'description',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_CODES_TYPES_DESCRIPTION,
+			'help_url' => '#'
+		));
+
 		/* Configuration help data */
 		$this->db->insert('_help_tfhd', array(
 			'table_name'  => 'configuration',

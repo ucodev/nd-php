@@ -121,6 +121,7 @@ define('NDPHP_LANG_MOD_FAILED_ROLE_UPDATE',			'Failed to update role.');
 define('NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE',	'Failed to create a temporary file.');
 define('NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD',		'Failed to upload file to S3 bucket.');
 define('NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE',		'Failed to remove file from S3 bucket.');
+define('NDPHP_LANG_MOD_FAILED_REGISTRATION_CODE',	'Failed to apply registration code.');
 
 define('NDPHP_LANG_MOD_INVALID_ANIMATION_DEFAULT',	'Invalid default animation defined.');
 define('NDPHP_LANG_MOD_INVALID_ANIMATION_ORDERING',	'Invalid ordering animation defined.');
@@ -163,6 +164,7 @@ define('NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT',	'Username must be at least 5
 define('NDPHP_LANG_MOD_INVALID_MAGIC_IDENTIFIER',	'Incorrect magic identifier.');
 define('NDPHP_LANG_MOD_INVALID_LIMIT_VALUE',		'Limit value must be greater than zero.');
 define('NDPHP_LANG_MOD_INVALID_OFFSET_VALUE',		'Offset value must be zero or greater.');
+define('NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE',	'The registration code does not exist or it is no longer valid.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
@@ -543,6 +545,24 @@ define('NDPHP_LANG_MOD_COMMON_GENDER',				'Gender');
 define('NDPHP_LANG_MOD_COMMON_BRAND',				'Brand');
 define('NDPHP_LANG_MOD_COMMON_WEBSITE',				'Website');
 define('NDPHP_LANG_MOD_COMMON_ABOUT',				'About');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_1',	'Generic Counter 1');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_2',	'Generic Counter 2');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_3',	'Generic Counter 3');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_COUNTER_4',	'Generic Counter 4');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_1',		'Generic Text 1');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_2',		'Generic Text 2');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_3',		'Generic Text 3');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_TEXT_4',		'Generic Text 4');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_1',	'Generic Datetime 1');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_2',	'Generic Datetime 2');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_3',	'Generic Datetime 3');
+define('NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_4',	'Generic Datetime 4');
+define('NDPHP_LANG_MOD_COMMON_CODE',				'Code');
+define('NDPHP_LANG_MOD_COMMON_REMAINING',			'Remaining');
+define('NDPHP_LANG_MOD_COMMON_VALID_FROM',			'Valid from');
+define('NDPHP_LANG_MOD_COMMON_VALID_TO',			'Valid to');
+define('NDPHP_LANG_MOD_COMMON_CODE_TYPE',			'Code Type');
+
 
 define('NDPHP_LANG_MOD_MENU_BUILDER_NAME',			'Builder');
 define('NDPHP_LANG_MOD_MENU_BUILDER_DESC',			'Builder');
@@ -552,6 +572,10 @@ define('NDPHP_LANG_MOD_MENU_CHARTS_GEOMETRY_NAME',	'Charts Geometry');
 define('NDPHP_LANG_MOD_MENU_CHARTS_GEOMETRY_DESC',	'Charts Geometry');
 define('NDPHP_LANG_MOD_MENU_CHARTS_TYPES_NAME',		'Charts Types');
 define('NDPHP_LANG_MOD_MENU_CHARTS_TYPES_DESC',		'Charts Types');
+define('NDPHP_LANG_MOD_MENU_CODES_NAME',			'Codes');
+define('NDPHP_LANG_MOD_MENU_CODES_DESC',			'Codes');
+define('NDPHP_LANG_MOD_MENU_CODES_TYPES_NAME',		'Codes Types');
+define('NDPHP_LANG_MOD_MENU_CODES_TYPES_DESC',		'Codes Types');
 define('NDPHP_LANG_MOD_MENU_CONFIGURATION_NAME',	'Configuration');
 define('NDPHP_LANG_MOD_MENU_CONFIGURATION_DESC',	'Configuration');
 define('NDPHP_LANG_MOD_MENU_COUNTRIES_NAME',		'Countries');
@@ -767,8 +791,10 @@ define('NDPHP_LANG_MOD_SEP_USER_CREDIT',			'Credit');
 define('NDPHP_LANG_MOD_SEP_USER_API',				'API');
 define('NDPHP_LANG_MOD_SEP_USER_ROLES',				'Roles');
 define('NDPHP_LANG_MOD_SEP_USER_ACCOUNTING',		'Accounting');
+deifne('NDPHP_LANG_MOD_SEP_USER_GENERIC',			'Generic');
 define('NDPHP_LANG_MOD_SEP_CONFIGURATION_PROJECT',	'Project');
 define('NDPHP_LANG_MOD_SEP_CONFIGURATION_FEATURES',	'Features');
+
 
 define('NDPHP_LANG_MOD_BUTTON_SEARCH',				'Search Button');
 
@@ -859,6 +885,16 @@ define('NDPHP_LANG_MOD_HELP_CHARTS_GEOMETRY_DESCRIPTION',		'The chart geometry d
 
 define('NDPHP_LANG_MOD_HELP_CHARTS_TYPES_CHART_TYPE',			'The chart type.');
 define('NDPHP_LANG_MOD_HELP_CHARTS_TYPES_DESCRIPTION',			'The chart type description.');
+
+define('NDPHP_LANG_MOD_HELP_CODES_CODE',						'The code short name.');
+define('NDPHP_LANG_MOD_HELP_CODES_CODES_TYPES_ID',				'The type of code.');
+define('NDPHP_LANG_MOD_HELP_CODES_REMAINING',					'The remaining code count.');
+define('NDPHP_LANG_MOD_HELP_CODES_VALID_FROM',					'When the code will become available.');
+define('NDPHP_LANG_MOD_HELP_CODES_VALID_TO',					'When the code will cease to be available.');
+define('NDPHP_LANG_MOD_HELP_CODES_ROLES_ID',					'The role that will be applied to the user if the code is applied to the profile.');
+
+define('NDPHP_LANG_MOD_HELP_CODES_TYPES_CODE_TYPE',				'The type of the code.');
+define('NDPHP_LANG_MOD_HELP_CODES_TYPES_DESCRIPTION',			'The code type long description.');
 
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_CONFIGURATION', 		'The configuration name.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_BASE_URL',			'The base url of the application.');
