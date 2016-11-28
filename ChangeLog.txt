@@ -1,3 +1,9 @@
+v0.03x1 (2016-11-28):
+
+ - Minor fixes on installtion process.
+ - Fixed language files.
+
+
 v0.03x (2016-11-28):
 
  - Added support for generic user fields.

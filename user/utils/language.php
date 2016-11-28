@@ -791,7 +791,7 @@ define('NDPHP_LANG_MOD_SEP_USER_CREDIT',			'Credit');
 define('NDPHP_LANG_MOD_SEP_USER_API',				'API');
 define('NDPHP_LANG_MOD_SEP_USER_ROLES',				'Roles');
 define('NDPHP_LANG_MOD_SEP_USER_ACCOUNTING',		'Accounting');
-deifne('NDPHP_LANG_MOD_SEP_USER_GENERIC',			'Generic');
+define('NDPHP_LANG_MOD_SEP_USER_GENERIC',			'Generic');
 define('NDPHP_LANG_MOD_SEP_CONFIGURATION_PROJECT',	'Project');
 define('NDPHP_LANG_MOD_SEP_CONFIGURATION_FEATURES',	'Features');
 
