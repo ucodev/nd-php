@@ -1,3 +1,8 @@
+v0.03x2 (2016-12-06):
+
+ - Successful authentication JSON reply now includes user timezone and roles info.
+
+
 v0.03x1 (2016-11-28):
 
  - Minor fixes on installtion process.

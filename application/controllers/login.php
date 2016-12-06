@@ -402,6 +402,8 @@ class Login extends UW_Controller {
 				$data['status'] = true;
 				$data['data']['user_id'] = intval($row['id']);
 				$data['data']['session_id'] = $this->session->userdata('sessions_id');
+				$data['data']['timezone'] = $this->session->userdata('timezone');
+				$data['data']['roles'] = $this->session->userdata('roles');
 				$data['data']['apikey'] = $row['apikey'];
 
 				$this->response->header('Content-Type', 'application/json');
