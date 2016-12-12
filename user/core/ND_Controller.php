@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03x2';
+	protected $_ndphp_version = '0.03x3';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2808,7 +2808,10 @@ class ND_Controller extends UW_Controller {
 					}
 
 					/* Numbers, Times and Dates are processed with the same comparators */
-					if (($this->request->post($field . '_cond') != '><') && ($this->request->post($field . '_cond') != '=')) {
+					if (!$this->request->post_isset($field . '_cond') && is_array($this->request->post($field))) {
+						/* If the search value is of type array, we shall use a WHERE IN clause */
+						$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+					} else if (($this->request->post($field . '_cond') != '><') && ($this->request->post($field . '_cond') != '=')) {
 						/* Lesser, Greater, Different */
 						$this->db->where($this->field->unambig($field, $ftypes) . ' ' . $this->request->post($field . '_cond'), $this->request->post($field), $where_clause_enforce);
 					} else if ($this->request->post($field . '_cond') == '><') {

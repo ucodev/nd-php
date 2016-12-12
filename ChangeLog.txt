@@ -1,3 +1,9 @@
+v0.03x3 (2016-12-12):
+
+ - NDSL searches now support numeric array searches.
+ - Application deploy model now does not have an execution time limit.
+
+
 v0.03x2 (2016-12-06):
 
  - Successful authentication JSON reply now includes user timezone and roles info.

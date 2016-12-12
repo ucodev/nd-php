@@ -2189,6 +2189,9 @@ class UW_Application extends UW_Model {
 	/****************/
 
 	public function deploy_model($app_model = NULL) {
+		/* No time limit for deployments */
+		set_time_limit(0);
+
 		/* No model, no fun :() */
 		if ($app_model === NULL) {
 			error_log('process_model(): $application_model is NULL');
