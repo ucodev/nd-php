@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03x3';
+	protected $_ndphp_version = '0.03x4';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4556,6 +4556,10 @@ class ND_Controller extends UW_Controller {
 
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
 
+		/* Set/Update $_POST['id'] if $id is different than 0 (usually used by JSON REST API) */
+		if ($id)
+			$this->request->post_set('id', $id);
+
 		/* Check if this is a view table type */
 		if ($this->config['table_type_view'])
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL . ' DELETE.', $this->config['default_charset'], !$this->request->is_ajax());
@@ -4568,10 +4572,6 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$ftypes = $this->get->fields();
-
-		/* Set/Update $_POST['id'] if $id is different than 0 (usually used by JSON REST API) */
-		if ($id)
-			$this->request->post_set('id', $id);
 
 		/* Load pre plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/delete_pre.php') as $plugin)

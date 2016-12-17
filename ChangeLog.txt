@@ -1,3 +1,8 @@
+v0.03x4 (2016-12-17):
+
+ - Fixed issues with JSON REST calls to delete.
+
+
 v0.03x3 (2016-12-12):
 
  - NDSL searches now support numeric array searches.
