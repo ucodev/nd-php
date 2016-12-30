@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03x4';
+	protected $_ndphp_version = '0.03x5';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -261,6 +261,9 @@ class ND_Controller extends UW_Controller {
 
 	/* The query that will generate the view (requires $_table_type_view set to true) */
 	protected $_table_type_view_query = ''; /* Eg: 'SELECT * FROM users WHERE id > 1' */
+
+	/* Extra queries (or VIEW creation) for this custom controller */
+	protected $_table_type_view_query_extra = array(); /* Eg: array('CREATE OR REPLACE VIEW rel_vi_table1_table2 AS SELECT ...'); */
 
 	/* The fields to be concatenated as the options of the relationship table. Also the place to set relational field name aliases. */
 	protected $_rel_table_fields_config = array(
@@ -808,6 +811,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['table_row_filtering_config']				= $this->_table_row_filtering_config;
 		$this->config['table_type_view']						= $this->_table_type_view;
 		$this->config['table_type_view_query']					= $this->_table_type_view_query;
+		$this->config['table_type_view_query_extra']			= $this->_table_type_view_query_extra;
 
 		$this->config['rel_choice_hide_fields']					= $this->_rel_choice_hide_fields;
 		$this->config['rel_choice_hide_fields_create']			= $this->_rel_choice_hide_fields_create;
@@ -1209,6 +1213,13 @@ class ND_Controller extends UW_Controller {
 
 			/* TODO: FIXME: Do not trust uWeb (keep a untrust level for the underlying layers): Re-check the safe chars for $GLOBALS['__controller'] */
 			$this->db->query('CREATE OR REPLACE VIEW ' . $GLOBALS['__controller'] . ' AS ' . $this->_table_type_view_query);
+
+			/* Check if there are any extra queries to be executed for this custom controller */
+			if (count($this->_table_type_view_query_extra)) {
+				foreach ($this->_table_type_view_query_extra as $tv_extra) {
+					$this->db->query($tv_extra);
+				}
+			}
 
 			/* Re-enable prepared statements */
 			$this->db->stmt_enable();

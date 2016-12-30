@@ -1,3 +1,10 @@
+v0.03x5 (2016-12-30):
+
+ - Minor fixes on registration and roles controllers.
+ - Files uploaded from JSON REST API with S3 driver are now unlinked after being transmitted.
+ - Added support for extra queries for custom controllers.
+
+
 v0.03x4 (2016-12-17):
 
  - Fixed issues with JSON REST calls to delete.

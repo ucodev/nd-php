@@ -101,8 +101,8 @@ class Roles extends ND_Controller {
 				/* Get table fields */
 				$table_fields = array();
 
-				foreach ($this->get->fields($table, array(), true) as $field => $meta) {
-					array_push($table_fields, $field);
+				foreach ($this->get->fields($table, array(), true) as $tfield => $meta) {
+					array_push($table_fields, $tfield);
 				}
 
 				$tables[$table] = $table_fields;

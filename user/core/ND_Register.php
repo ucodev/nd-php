@@ -1086,7 +1086,7 @@ class ND_Register extends UW_Controller {
 
 				$this->db->insert('rel_users_roles', $roledata);
 			} else {
-				$this->trans_rollback();
+				$this->db->trans_rollback();
 				error_log('register.php: user_active_process(): The registration code does not exist or is no longer valid. (User ID: ' . $users_id . ').');
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE, $this->_charset, !$this->request->is_ajax());
 			}

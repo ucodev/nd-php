@@ -284,21 +284,36 @@ class UW_Upload extends UW_Module {
 					$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
 
 				/* Move the uploaded file into a well known temporary file */
-				if (move_uploaded_file($_FILES[$field]['tmp_name'], $tfile) === false)
+				if (move_uploaded_file($_FILES[$field]['tmp_name'], $tfile) === false) {
+					/* Unlink the temporary file */
+					unlink($_FILES[$field]['tmp_name']);
+
 					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+				}
 
 				/* Upload the file to S3 bucket */
-				if ($this->s3->upload($meta['path'], file_get_contents($tfile), $this->config['upload_file_encryption']) === false)
+				if ($this->s3->upload($meta['path'], file_get_contents($tfile), $this->config['upload_file_encryption']) === false) {
+					/* Unlink the temporary file */
+					unlink($_FILES[$field]['tmp_name']);
+
 					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+				}
 
 				/* Unlink the temporary file */
 				unlink($tfile);
 			} else {
-				/* The file was uploaded via REST API (JSON encoded), so rename() shall be used
-				 * since this is a regular temporary file, created by the REST API upload handler.
+				/* The file was uploaded via REST API (JSON encoded), so no rename() shall be used
+				 * since the temporary file can be directly uploaded to S3.
 				 */
-				if ($this->s3->upload($meta['path'], file_get_contents($_FILES[$field]['tmp_name']), $this->config['upload_file_encryption']) === false)
+				if ($this->s3->upload($meta['path'], file_get_contents($_FILES[$field]['tmp_name']), $this->config['upload_file_encryption']) === false) {
+					/* Unlink the temporary file */
+					unlink($_FILES[$field]['tmp_name']);
+
 					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+
+				/* Unlink the temporary file */
+				unlink($_FILES[$field]['tmp_name']);
 			}
 		} else {
 			$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
