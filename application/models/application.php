@@ -331,6 +331,13 @@ class UW_Application extends UW_Model {
 
 		/* Commit foreign keys */
 		foreach ($this->_pp_batch_db_fk as $fkey) {
+			/* If the foreign table is custom (a database VIEW), do not add the foreign key (since it's not possible) */
+			if ($this->_context_table_is_custom($fkey['foreign_table'])) {
+				/* TODO: FIXME: Although we cannot add a foreign key, we should add an index */
+
+				continue;
+			}
+
 			$this->db->table_key_column_foreign_add($fkey['src_table'], $fkey['src_field'], $fkey['foreign_table'], $fkey['foreign_field'], $fkey['cascade_delete'], $fkey['cascade_update']);
 		}
 
@@ -641,6 +648,21 @@ class UW_Application extends UW_Model {
 
 		/* All good */
 		return true;
+	}
+
+
+	/***************/
+	/* CONTEXT API */
+	/***************/
+
+	private $_context_table_custom = array();
+
+	private function _context_table_store_custom($table) {
+		array_push($this->_context_table_custom, $table);
+	}
+
+	private function _context_table_is_custom($table) {
+		return in_array($This->_context_table_custom, $table);
 	}
 
 
@@ -2044,15 +2066,6 @@ class UW_Application extends UW_Model {
 		if (($field['type'] != 'dropdown') && ($field['type'] != 'multiple') && ($field['type'] != 'mixed'))
 			return false;
 
-		/* Check if the field references a custom menu */
-		for ($i = 0; $i < count($app_model['menus']); $i ++) {
-			if (($app_model['menus'][$i]['name'] == $field['name']) && ($app_model['menus'][$i]['type'] == 'custom')) {
-				return false; 	/* Since a custom menu is a database VIEW, no keys shall be created for this field
-								 * since we cannot create foreign keys referencing the VIEW.
-								 */
-			}
-		}
-
 		/* The field is one of dropdown, multiple or mixed type and does not reference a database VIEW,
 		 * so it requires keys.
 		 */
@@ -2118,6 +2131,10 @@ class UW_Application extends UW_Model {
 
 			/* Set database name for this table. NOTE: Detached tables shall use a '_' prefix */
 			$app_model['menus'][$i]['db']['name'] = ($app_model['menus'][$i]['type'] == 'detached' ? '_' : '') . str_replace(' ', '_', strtolower($app_model['menus'][$i]['name']));
+
+			/* Check if the menu type is custom. Store the context if it is */
+			if ($app_model['menus'][$i]['type'] == 'custom')
+				$this->_context_table_store_custom($app_model['menus'][$i]['db']['name']);
 
 			/* Process table columns */
 			for ($j = 0; $j < count($app_model['menus'][$i]['fields']); $j ++) {

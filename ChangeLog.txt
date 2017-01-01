@@ -1,3 +1,8 @@
+v0.03x6 (2017-01-01):
+
+ - Fixed issues on the application builder when a relational field references a custom controller.
+
+
 v0.03x5 (2016-12-30):
 
  - Minor fixes on registration and roles controllers.
