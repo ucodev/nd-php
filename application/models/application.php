@@ -671,7 +671,7 @@ class UW_Application extends UW_Model {
 	}
 
 	private function _context_table_is_custom($table) {
-		return in_array($This->_context_table_custom, $table);
+		return in_array($table, $this->_context_table_custom);
 	}
 
 
