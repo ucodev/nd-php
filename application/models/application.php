@@ -399,6 +399,11 @@ class UW_Application extends UW_Model {
 		return ($foreign_table_raw[0] == '_') ? array($knowable, trim($foreign_table_raw, '_')) : array(trim($foreign_table_raw, '_'), $knowable);
 	}
 
+	private function _parse_field_foreign_table($field) {
+		/* NOTE: This method only supports single relationship fields */
+		return substr($field, 0, -3); /* Strip '_id' suffix */
+	}
+
 
 	/********************/
 	/*  CONVERTION API  */
@@ -522,8 +527,12 @@ class UW_Application extends UW_Model {
 			}
 		} else if ($obj['is_field']) {
 			if ($obj['type'] == 'dropdown') {
-				/* If the object is a special column, drop the FK before droping the field */
-				$this->db->table_key_column_foreign_drop($obj['db_table'], $obj['db_table_field']);
+				/* Only attempt to drop the foreign key if the table isn't a view (custom controller) */
+				if (!$this->_context_table_is_custom($this->_parse_field_foreign_table($obj['db_table_field']))) {
+					/* If the object is a special column, drop the FK before droping the field */
+					$this->db->table_key_column_foreign_drop($obj['db_table'], $obj['db_table_field']);
+				}
+
 				$this->db->table_column_drop($obj['db_table'], $obj['db_table_field']);
 			} else if ($obj['type'] == 'multiple') {
 				/* If the object is a many-to-many relational table, drop the table */
@@ -695,9 +704,12 @@ class UW_Application extends UW_Model {
 			}
 		}
 
-		/* Drop foreign keys */
-		$this->db->table_key_column_foreign_drop($table_name, $columns[0] . '_id');
-		$this->db->table_key_column_foreign_drop($table_name, $columns[1] . '_id');
+		/* Drop foreign keys if the foreign table isn't a VIEW (custom controller) */
+		if (!$this->_context_table_is_custom($columns[0]))
+			$this->db->table_key_column_foreign_drop($table_name, $columns[0] . '_id');
+
+		if (!$this->_context_table_is_custom($columns[1]))
+			$this->db->table_key_column_foreign_drop($table_name, $columns[1] . '_id');
 
 		/* Check if the first table reference was changed */
 		if (isset($this->_convert_renamed_tables[$columns[0]])) {
@@ -791,9 +803,12 @@ class UW_Application extends UW_Model {
 			}
 		}
 
-		/* Drop foreign keys */
-		$this->db->table_key_column_foreign_drop($table_name, $columns[0] . '_id');
-		$this->db->table_key_column_foreign_drop($table_name, $columns[1] . '_id');
+		/* Drop foreign keys, if the foreign table isn't a VIEW (custom controller) */
+		if (!$this->_context_table_is_custom($columns[0]))
+			$this->db->table_key_column_foreign_drop($table_name, $columns[0] . '_id');
+
+		if (!$this->_context_table_is_custom($columns[1]))
+			$this->db->table_key_column_foreign_drop($table_name, $columns[1] . '_id');
 
 		/* Check if the first table reference was changed */
 		if (isset($this->_convert_renamed_tables[$columns[0]])) {
@@ -1095,10 +1110,15 @@ class UW_Application extends UW_Model {
 			if ($field['db']['type'] == 'int(11)') {
 				/* Check if the table was renamed... */
 				if (isset($this->_convert_renamed_tables[$field_obj['db_table']])) {
-					/* We need to force the index name based on the old table name */
-					$this->db->table_key_column_foreign_drop($menu['db']['name'], $field_obj['db_table_field'], 'uw_fk_' . $field_obj['db_table'] . '_' . $field_obj['db_table_field']);
+					/* Only attempt to drop the foreign key if the table isn't a view (custom controller) */
+					if (!$this->_context_table_is_custom($this->_parse_field_foreign_table($field_obj['db_table_field']))) {
+						/* We need to force the index name based on the old table name */
+						$this->db->table_key_column_foreign_drop($menu['db']['name'], $field_obj['db_table_field'], 'uw_fk_' . $field_obj['db_table'] . '_' . $field_obj['db_table_field']);
+					}
 				} else {
-					$this->db->table_key_column_foreign_drop($menu['db']['name'], $field_obj['db_table_field']);
+					/* Only attempt to drop the foreign key if the table isn't a view (custom controller) */
+					if (!$this->_context_table_is_custom($this->_parse_field_foreign_table($field_obj['db_table_field'])))
+						$this->db->table_key_column_foreign_drop($menu['db']['name'], $field_obj['db_table_field']);
 				}
 
 				/* Change the single relationship field */
