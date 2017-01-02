@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03x8';
+	protected $_ndphp_version = '0.03x9';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2613,6 +2613,12 @@ class ND_Controller extends UW_Controller {
 				redirect($this->config['name'] . '/search');
 			}
 
+			/* Check if this is a logical OR condition */
+			$or_cond = false;
+
+			if ($this->request->post_isset($field . '_or') && $this->request->post($field . '_or'))
+				$or_cond = true; /* Mark this condition as a logical OR */
+
 			/* TODO:
 			 * 
 			 * datetime types are increasing the view and controller complexity due to the
@@ -2650,9 +2656,17 @@ class ND_Controller extends UW_Controller {
 					}
 
 					if ($negate) {
-						$this->db->is_not_null($this->field->unambig($field, $ftypes));
+						if ($or_cond) {
+							$this->db->or_is_not_null($this->field->unambig($field, $ftypes));
+						} else {
+							$this->db->is_not_null($this->field->unambig($field, $ftypes));
+						}
 					} else {
-						$this->db->is_null($this->field->unambig($field, $ftypes));
+						if ($or_cond) {
+							$this->db->or_is_null($this->field->unambig($field, $ftypes));
+						} else {
+							$this->db->is_null($this->field->unambig($field, $ftypes));
+						}
 					}
 
 					continue;
@@ -2662,6 +2676,9 @@ class ND_Controller extends UW_Controller {
 				 * the database operations they are treated as numbers (integers).
 				 */
 				if ($ftypes[$field]['type'] == 'mixed') {
+					/* TODO: FIXME: We do not support logical OR's on mixed type fields yet... */
+
+
 					/* Search all fields in mixed_* table for matching entries based on criteria */
 
 					/* Fetch mixed table fields */
@@ -2731,19 +2748,35 @@ class ND_Controller extends UW_Controller {
 						/* Exact match */
 						if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
 							/* Different than */
-							$this->db->where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+							if ($or_cond) {
+								$this->db->or_where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+							} else {
+								$this->db->where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+							}
 						} else {
 							/* Equal to */
-							$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
+							if ($or_cond) {
+								$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post($field));
+							} else {
+								$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
+							}
 						}
 					} else {
 						/* Pattern matching */
 						if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
 							/* Not like */
-							$this->db->not_like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
+							if ($or_cond) {
+								$this->db->or_not_like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
+							} else {
+								$this->db->not_like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
+							}
 						} else {
 							/* Like */
-							$this->db->like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
+							if ($or_cond) {
+								$this->db->or_like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
+							} else {
+								$this->db->like($this->field->unambig($field, $ftypes), '%' . $this->request->post($field) . '%');
+							}
 						}
 					}
 				} else if (($ftypes[$field]['input_type'] == 'number') ||
@@ -2821,14 +2854,26 @@ class ND_Controller extends UW_Controller {
 					/* Numbers, Times and Dates are processed with the same comparators */
 					if (!$this->request->post_isset($field . '_cond') && is_array($this->request->post($field))) {
 						/* If the search value is of type array, we shall use a WHERE IN clause */
-						$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+						if ($or_cond) {
+							$this->db->or_where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+						} else {
+							$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+						}
 					} else if (($this->request->post($field . '_cond') != '><') && ($this->request->post($field . '_cond') != '=')) {
 						/* Lesser, Greater, Different */
-						$this->db->where($this->field->unambig($field, $ftypes) . ' ' . $this->request->post($field . '_cond'), $this->request->post($field), $where_clause_enforce);
+						if ($or_cond) {
+							$this->db->or_where($this->field->unambig($field, $ftypes) . ' ' . $this->request->post($field . '_cond'), $this->request->post($field), $where_clause_enforce);
+						} else {
+							$this->db->where($this->field->unambig($field, $ftypes) . ' ' . $this->request->post($field . '_cond'), $this->request->post($field), $where_clause_enforce);
+						}
 					} else if ($this->request->post($field . '_cond') == '><') {
 						/* Between */
 						/* FIXME: TODO: Use between() function here */
-						$this->db->where($this->field->unambig($field, $ftypes) . ' >=', $this->request->post($field), $where_clause_enforce);
+						if ($or_cond) {
+							$this->db->or_where($this->field->unambig($field, $ftypes) . ' >=', $this->request->post($field), $where_clause_enforce);
+						} else {
+							$this->db->where($this->field->unambig($field, $ftypes) . ' >=', $this->request->post($field), $where_clause_enforce);
+						}
 						
 						/* Field _to requires special processing */
 						if ($ftypes[$field]['type'] == 'time') {
@@ -2892,28 +2937,57 @@ class ND_Controller extends UW_Controller {
 							$this->request->post_unset($field . '_to_custom');
 						}
 
-						$this->db->where($this->field->unambig($field, $ftypes) . ' <=', $this->request->post($field . '_to'), $where_clause_enforce);
+						if ($or_cond) {
+							$this->db->or_where($this->field->unambig($field, $ftypes) . ' <=', $this->request->post($field . '_to'), $where_clause_enforce);
+						} else {
+							$this->db->where($this->field->unambig($field, $ftypes) . ' <=', $this->request->post($field . '_to'), $where_clause_enforce);
+						}
 					} else {
 						/* The condition is '=' (equal) */
-						$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field), $where_clause_enforce);
+						if ($or_cond) {
+							$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post($field), $where_clause_enforce);
+						} else {
+							$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field), $where_clause_enforce);
+						}
 					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] != 'rel')) {
 					if (is_array($this->request->post($field))) {
-						$this->db->where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+						if ($or_cond) {
+							$this->db->or_where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+						} else {
+							$this->db->where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+						}
 					} else {
-						$this->db->where($this->config['name'] . '.' . $field, $this->request->post($field));
+						if ($or_cond) {
+							$this->db->or_where($this->config['name'] . '.' . $field, $this->request->post($field));
+						} else {
+							$this->db->where($this->config['name'] . '.' . $field, $this->request->post($field));
+						}
 					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel')) {
 					if (is_array($this->request->post($field))) {
-						$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						if ($or_cond) {
+							$this->db->or_where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						} else {
+							$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						}
 					} else {
-						$this->db->where($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						if ($or_cond) {
+							$this->db->or_where($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						} else {
+							$this->db->where($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						}
 					}
 				} else {
 					/* FIXME: TODO: Choose between like() or where(), not both. */
 					/* FIXME: TODO: What exactly falls here ? */
-					$this->db->like($this->field->unambig($field, $ftypes), $this->request->post($field));
-					$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
+					if ($or_cond) {
+						$this->db->or_like($this->field->unambig($field, $ftypes), $this->request->post($field));
+						$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post($field));
+					} else {
+						$this->db->like($this->field->unambig($field, $ftypes), $this->request->post($field));
+						$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
+					}
 				}
 			}
 		}
