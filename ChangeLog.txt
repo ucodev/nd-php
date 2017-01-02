@@ -1,3 +1,8 @@
+v0.03z (2017-01-02):
+
+ - Fixed logical OR search issues.
+
+
 v0.03x9 (2017-01-02):
 
  - Added support for logical OR searches (including NDSL queries). Mixed types not yet supported.

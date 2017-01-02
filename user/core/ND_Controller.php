@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03x9';
+	protected $_ndphp_version = '0.03z';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -639,17 +639,17 @@ class ND_Controller extends UW_Controller {
 		return;
 	}
 
-	protected function _hook_result_generic_enter(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page) {
+	protected function _hook__enter(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page) {
 		$hook_enter_return = NULL;
 
 		return $hook_enter_return;
 	}
 
-	protected function _hook_result_generic_filter(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page, $hook_enter_return) {
+	protected function _hook__filter(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page, $hook_enter_return) {
 		return $hook_enter_return;
 	}
 
-	protected function _hook_result_generic_leave(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page, $hook_enter_return) {
+	protected function _hook__leave(&$data, &$type, &$result_query, &$order_field, &$order_type, &$page, $hook_enter_return) {
 		return;
 	}
 
@@ -2309,7 +2309,7 @@ class ND_Controller extends UW_Controller {
 		$this->search($advanced, true, false, true, true);
 	}
 
-	protected function result_generic($type = 'advanced', $result_query = NULL,
+	protected function ($type = 'advanced', $result_query = NULL,
 							$order_field = NULL, $order_type = NULL, $page = 0) {
 		/* Sanity checks */
 		/* TODO: FIXME: NOTE: Negative $page values are being used by groups to fetch the full list of records...
@@ -2345,11 +2345,11 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_enter.php') as $plugin)
+		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/_enter.php') as $plugin)
 			include($plugin);
 
 		/* Hook handler (enter) */
-		$hook_enter_return = $this->_hook_result_generic_enter($data, $type, $result_query, $order_field, $order_type, $page);
+		$hook_enter_return = $this->_hook__enter($data, $type, $result_query, $order_field, $order_type, $page);
 
 		/* If logging is enabled, log this search result request */
 		$this->logging->log(
@@ -2613,12 +2613,6 @@ class ND_Controller extends UW_Controller {
 				redirect($this->config['name'] . '/search');
 			}
 
-			/* Check if this is a logical OR condition */
-			$or_cond = false;
-
-			if ($this->request->post_isset($field . '_or') && $this->request->post($field . '_or'))
-				$or_cond = true; /* Mark this condition as a logical OR */
-
 			/* TODO:
 			 * 
 			 * datetime types are increasing the view and controller complexity due to the
@@ -2640,6 +2634,13 @@ class ND_Controller extends UW_Controller {
 				/* Check permissions */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_search, $this->config['name'], $field))
 					continue;
+
+				/* Check if this is a logical OR condition */
+				if ($this->request->post_isset($field . '_or') && $this->request->post($field . '_or')) {
+					$or_cond = true; /* Mark this condition as a logical OR */
+				} else {
+					$or_cond = false;
+				}
 
 				/* Check for NULL comparisions... but don't compare NULL datetime fields that contain a custom interval set (in this case only the custom interval field will be processed) */
 				if ((($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] != 'datetime' && $ftypes[$field]['type'] != 'date' && $ftypes[$field]['type'] != 'time') ||
@@ -3093,7 +3094,7 @@ class ND_Controller extends UW_Controller {
 			$this->db->from($this->config['name']); // from() method is needed here for get_compiled_select_str() call
 
 			/* Apply result filter hook */
-			$hook_enter_return = $this->_hook_result_generic_filter($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);
+			$hook_enter_return = $this->_hook__filter($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);
 
 			$data['view']['result_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
 
@@ -3168,10 +3169,10 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('search', NDPHP_LANG_MOD_OP_SEARCH, array('result', 'query', $data['view']['result_query']), NDPHP_LANG_MOD_OP_RESULT);
 
 		/* Hook handler (leave) */
-		$this->_hook_result_generic_leave($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);
+		$this->_hook__leave($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_leave.php') as $plugin)
+		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/_leave.php') as $plugin)
 			include($plugin);
 
 		/* Setup total items information, if required */
@@ -3192,7 +3193,7 @@ class ND_Controller extends UW_Controller {
 	public function result($type = 'advanced', $result_query = NULL, $order_field = NULL, $order_type = NULL, $page = 0,
 		$body_only = false, $body_header = true, $body_footer = true, $modalbox = false)
 	{
-		$data = $this->result_generic($type, $result_query, $order_field, $order_type, $page);
+		$data = $this->($type, $result_query, $order_field, $order_type, $page);
 
 		if ($modalbox)
 			$data['config']['modalbox'] = true;
@@ -3247,7 +3248,7 @@ class ND_Controller extends UW_Controller {
 		);
 
 		/* Load result generic data */
-		$data = $this->result_generic($type, $result_query, $order_field, $order_type, -1 /* $page */); /* FIXME: We should not rely on result_generic(). A specific implementation for grouping is required. */
+		$data = $this->($type, $result_query, $order_field, $order_type, -1 /* $page */); /* FIXME: We should not rely on (). A specific implementation for grouping is required. */
 
 		$group_result_array = array();
 		$group_hash = array();

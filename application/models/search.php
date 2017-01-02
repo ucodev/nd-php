@@ -157,14 +157,8 @@ class UW_Search extends UW_Model {
 					} break;
 
 					case 'or': {
-						/* 'or' condition can be used in any context, but requires a context */
-						if ($this->_context === NULL) {
-							$this->_set_result_error("Unexpected condition '" . $cond . "' on field '" . $field . "'. Context required.");
-							return false;
-						}
-
 						$nadv[$field . '_or'] = $value;
-					}
+					} break;
 
 					/* TODO: Can't decide if this approach is ugly or not... for now it'll be kept as is */
 					case 'to':
@@ -257,6 +251,11 @@ class UW_Search extends UW_Model {
 						/* Set current context */
 						$this->_context = $cond;
 					} break;
+
+					default: {
+						$this->_set_result_error("Unexpected keyword: " . $cond);
+						return false;
+					}
 				}
 			}
 		}
