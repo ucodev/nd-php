@@ -1,3 +1,9 @@
+v0.03z2 (2017-01-03):
+
+ - Added support for exact text search arrays.
+ - Changed some response codes for bad search requests.
+
+
 v0.03z1 (2017-01-02):
 
  - Recovered core controller file.

@@ -124,9 +124,17 @@ class UW_Search extends UW_Model {
 						}
 
 						/* 'contains' condition accepts only strings */
-						if ($this->_get_type($value) != 'string') {
+						if (($this->_get_type($value) != 'string') && ($this->_get_type($value) != 'array')) {
 							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: String.");
 							return false;
+						}
+
+						/* Currently, array searches for text are only supported for exact matches (TODO, FIXME: Add support for array pattern matches) */
+						if (($this->_get_type($value) == 'array')) {
+							if (!isset($criteria['exact']) || !$criteria['exact']) {
+								$this->_set_result_error("Array searches for text types must have the 'exact' property set to boolean true.");
+								return false;
+							}
 						}
 
 						/* Set the criteria value */

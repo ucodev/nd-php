@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z1';
+	protected $_ndphp_version = '0.03z2';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2600,11 +2600,11 @@ class ND_Controller extends UW_Controller {
 
 			/* Grant that Id field is selected on result fields */
 			if (!in_array('id', $this->request->post('fields_result')))
-				$this->response->code('403', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->config['default_charset'], !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Grant that at least one search criteria field is selected */
 			if (!count($this->request->post('fields_criteria')))
-				$this->response->code('403', NDPHP_LANG_MOD_MISSING_SEARCH_CRITERIA, $this->config['default_charset'], !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_MISSING_SEARCH_CRITERIA, $this->config['default_charset'], !$this->request->is_ajax());
 
 
 			/* Check if result and criteria contain at least one field */
@@ -2750,16 +2750,32 @@ class ND_Controller extends UW_Controller {
 						if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
 							/* Different than */
 							if ($or_cond) {
-								$this->db->or_where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+								if (gettype($this->request->post($field)) == 'array') {
+									$this->db->or_where_not_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+								} else {
+									$this->db->or_where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+								}
 							} else {
-								$this->db->where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+								if (gettype($this->request->post($field)) == 'array') {
+									$this->db->where_not_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+								} else {
+									$this->db->where($this->field->unambig($field, $ftypes) . ' !=', $this->request->post($field));
+								}
 							}
 						} else {
 							/* Equal to */
 							if ($or_cond) {
-								$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post($field));
+								if (gettype($this->request->post($field)) == 'array') {
+									$this->db->or_where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+								} else {
+									$this->db->or_where($this->field->unambig($field, $ftypes), $this->request->post($field));
+								}
 							} else {
-								$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
+								if (gettype($this->request->post($field)) == 'array') {
+									$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+								} else {
+									$this->db->where($this->field->unambig($field, $ftypes), $this->request->post($field));
+								}
 							}
 						}
 					} else {
