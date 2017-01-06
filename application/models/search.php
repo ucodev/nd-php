@@ -222,6 +222,7 @@ class UW_Search extends UW_Model {
 						$this->_context = $cond;
 					} break;
 
+					case 'not_in': $nadv[$field . '_not'] = '1';
 					case 'in': {
 						/* 'in' condition expects no previous context */
 						if ($this->_context !== NULL) {
@@ -242,6 +243,7 @@ class UW_Search extends UW_Model {
 						$this->_context = $cond;
 					} break;
 
+					case 'is_not': $nadv[$field . '_not'] = '1';
 					case 'is': {
 						/* 'is' condition expects no previous context */
 						if ($this->_context !== NULL) {

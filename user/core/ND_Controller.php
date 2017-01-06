@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z4';
+	protected $_ndphp_version = '0.03z5';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2644,6 +2644,17 @@ class ND_Controller extends UW_Controller {
 					$or_cond = false;
 				}
 
+				/* Assume non-negative logic by default */
+				$negate = false;
+				
+				if ($this->request->post_isset($field . '_cond') && ($this->request->post($field . '_cond') == '!=')) {
+					$negate = true;
+				} else if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
+					$negate = true;
+				} else if ($this->request->post_isset($field . '_not') && $this->request->post($field . '_not')) {
+					$negate = true;
+				}
+
 				/* Check for NULL comparisions... but don't compare NULL datetime fields that contain a custom interval set (in this case only the custom interval field will be processed) */
 				if ((($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] != 'datetime' && $ftypes[$field]['type'] != 'date' && $ftypes[$field]['type'] != 'time') ||
 							(($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] == 'datetime' && !$this->request->post($field . '_custom')) ||
@@ -2652,15 +2663,6 @@ class ND_Controller extends UW_Controller {
 				{
 					if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel'))
 						$this->response->code('400', NDPHP_LANG_MOD_INVALID_NULL_COMPARISION_REL, $this->config['default_charset'], !$this->request->is_ajax());
-
-					/* Assume non-negative logic by default */
-					$negate = false;
-					
-					if ($this->request->post_isset($field . '_cond') && ($this->request->post($field . '_cond') == '!=')) {
-						$negate = true;
-					} else if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
-						$negate = true;
-					}
 
 					if ($negate) {
 						if ($or_cond) {
@@ -2878,9 +2880,17 @@ class ND_Controller extends UW_Controller {
 					if (!$this->request->post_isset($field . '_cond') && is_array($this->request->post($field))) {
 						/* If the search value is of type array, we shall use a WHERE IN clause */
 						if ($or_cond) {
-							$this->db->or_where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+							if ($negate) {
+								$this->db->or_where_not_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+							} else {
+								$this->db->or_where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+							}
 						} else {
-							$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+							if ($negate) {
+								$this->db->where_not_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+							} else {
+								$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
+							}
 						}
 					} else if (($this->request->post($field . '_cond') != '><') && ($this->request->post($field . '_cond') != '=')) {
 						if (($this->request->post($field . '_cond') != '>') && ($this->request->post($field . '_cond') != '<') &&
@@ -2982,9 +2992,17 @@ class ND_Controller extends UW_Controller {
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] != 'rel')) {
 					if (is_array($this->request->post($field))) {
 						if ($or_cond) {
-							$this->db->or_where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+							if ($negate) {
+								$this->db->or_where_not_in($this->config['name'] . '.' . $field, $this->request->post($field));
+							} else {
+								$this->db->or_where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+							}
 						} else {
-							$this->db->where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+							if ($negate) {
+								$this->db->where_not_in($this->config['name'] . '.' . $field, $this->request->post($field));
+							} else {
+								$this->db->where_in($this->config['name'] . '.' . $field, $this->request->post($field));
+							}
 						}
 					} else {
 						/* Set search condition for this single relationship search */
@@ -3009,9 +3027,17 @@ class ND_Controller extends UW_Controller {
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel')) {
 					if (is_array($this->request->post($field))) {
 						if ($or_cond) {
-							$this->db->or_where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							if ($negate) {
+								$this->db->or_where_not_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							} else {
+								$this->db->or_where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							}
 						} else {
-							$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							if ($negate) {
+								$this->db->where_not_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							} else {
+								$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							}
 						}
 					} else {
 						/* Set search condition for this multiple relationship search */
