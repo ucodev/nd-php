@@ -1,3 +1,11 @@
+v0.03z4 (2017-01-06):
+
+ - Fixed NULL comparision issues on advanced searches.
+ - Updated some more 500 to 400, indicating an understood but malformed request.
+ - Some small fixes all around.
+ - Updated language files.
+
+
 v0.03z3 (2017-01-06):
 
  - Changed some status codes from 500 to 400 to clearly indicate that it was a bad request, not an internal server error.

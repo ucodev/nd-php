@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,6 +166,7 @@ define('NDPHP_LANG_MOD_INVALID_LIMIT_VALUE',		'Limit value must be greater than 
 define('NDPHP_LANG_MOD_INVALID_OFFSET_VALUE',		'Offset value must be zero or greater.');
 define('NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE',	'The registration code does not exist or it is no longer valid.');
 define('NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION',   'Invalid search condition');
+define('NDPHP_LANG_MOD_INVALID_NULL_COMPARISION_REL','Invalid NULL comparision request on a multiple relationship field.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');

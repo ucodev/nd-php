@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ class UW_Search extends UW_Model {
 			return "double";
 		} else if (gettype($value) == "boolean") {
 			return "boolean";
-		} else if (gettype($value) == "null") {
+		} else if ($value === NULL) {
 			return "null";
 		} else {
 			return "string";
@@ -246,12 +246,6 @@ class UW_Search extends UW_Model {
 						/* 'is' condition expects no previous context */
 						if ($this->_context !== NULL) {
 							$this->_set_result_error("Unexpected context '" . $this->_context . "' found on field '" . $field . "' under condition '" . $cond . "'.");
-							return false;
-						}
-
-						/* 'is' condition only accepts numeric */
-						if ($this->_get_type($value) != 'boolean') {
-							$this->_set_result_error("Unexpected type '" . $this->_get_type($value) . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Boolean.");
 							return false;
 						}
 

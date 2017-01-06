@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z3';
+	protected $_ndphp_version = '0.03z4';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1869,16 +1869,16 @@ class ND_Controller extends UW_Controller {
 
 		/* Some sanity checks first */
 		if (!in_array($this->request->post('import_csv_sep'), array(',', ';')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
 		if (!in_array($this->request->post('import_csv_delim'), array('"', '\'')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
 		if (!in_array($this->request->post('import_csv_esc'), array('\\')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
 		if (!in_array($this->request->post('import_csv_rel_type'), array('value', 'id')))
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_POST_DATA, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Craft CSV file destination path */
 		$dest_path = SYSTEM_BASE_DIR . '/uploads/import/' . $this->config['session_data']['user_id'] . '/' . $this->config['name'];
@@ -1969,7 +1969,7 @@ class ND_Controller extends UW_Controller {
 			}
 
 			if (!$field_found)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_CSV_FIELD_CTRL, $this->config['default_charset'], !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_UNABLE_MATCH_CSV_FIELD_CTRL, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
 		/* Assign the resolved fields array to $header */
@@ -2061,7 +2061,7 @@ class ND_Controller extends UW_Controller {
 							/* The foreign key wasn't found */
 							$this->db->trans_rollback();
 
-							$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->config['default_charset'], !$this->request->is_ajax());
+							$this->response->code('400', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->config['default_charset'], !$this->request->is_ajax());
 						}
 
 						array_push($rel[$header[$i]], $rel_value_id);
@@ -2124,7 +2124,7 @@ class ND_Controller extends UW_Controller {
 						/* The foreign key wasn't found */
 						$this->db->trans_rollback();
 
-						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->config['default_charset'], !$this->request->is_ajax());
+						$this->response->code('400', NDPHP_LANG_MOD_UNABLE_MATCH_REL_VALUE_FK . ' (CSV ' . NDPHP_LANG_MOD_WORD_LINE . ': ' . $line . ', ' . NDPHP_LANG_MOD_WORD_COLUMN . ': ' . $i . ')', $this->config['default_charset'], !$this->request->is_ajax());
 					}
 				}
 
@@ -2206,8 +2206,10 @@ class ND_Controller extends UW_Controller {
 		$this->db->where('users_id', $this->config['session_data']['user_id']);
 		$q = $this->db->get();
 
-		if (!$q->num_rows())
-			$this->response->code('500', NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE, $this->config['default_charset'], !$this->request->is_ajax()); /* Keep the reason ambiguous */
+		if (!$q->num_rows()) {
+			$this->db->trans_rollback();
+			$this->response->code('400', NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE, $this->config['default_charset'], !$this->request->is_ajax()); /* Keep the reason ambiguous */
+		}
 
 		$this->db->delete('_saved_searches', array('id' => $search_saved_id));
 
@@ -2403,7 +2405,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Check if conversion was successful by checking if $nadv !== false. If it failed, throw some error */
 			if ($nadv === false)
-				$this->response->code('500', $this->search->get_result_error(), $this->config['default_charset'], !$this->request->is_ajax());
+				$this->response->code('400', $this->search->get_result_error(), $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Updadte the view search_value context */
 			$data['view']['search_value'] = $this->request->post('search_value');
@@ -2648,6 +2650,10 @@ class ND_Controller extends UW_Controller {
 							(($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] == 'date' && !$this->request->post($field . '_custom')) ||
 							(($this->request->post($field) === NULL || $this->request->post($field) === '') && $ftypes[$field]['type'] == 'time' && !$this->request->post($field . '_custom')))
 				{
+					if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel'))
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_NULL_COMPARISION_REL, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Assume non-negative logic by default */
 					$negate = false;
 					
 					if ($this->request->post_isset($field . '_cond') && ($this->request->post($field . '_cond') == '!=')) {
@@ -2658,15 +2664,15 @@ class ND_Controller extends UW_Controller {
 
 					if ($negate) {
 						if ($or_cond) {
-							$this->db->or_is_not_null($this->field->unambig($field, $ftypes));
+							$this->db->or_is_not_null($ftypes[$field]['input_type'] == 'select' ? $field : $this->field->unambig($field, $ftypes));
 						} else {
-							$this->db->is_not_null($this->field->unambig($field, $ftypes));
+							$this->db->is_not_null($ftypes[$field]['input_type'] == 'select' ? $field : $this->field->unambig($field, $ftypes));
 						}
 					} else {
 						if ($or_cond) {
-							$this->db->or_is_null($this->field->unambig($field, $ftypes));
+							$this->db->or_is_null($ftypes[$field]['input_type'] == 'select' ? $field : $this->field->unambig($field, $ftypes));
 						} else {
-							$this->db->is_null($this->field->unambig($field, $ftypes));
+							$this->db->is_null($ftypes[$field]['input_type'] == 'select' ? $field : $this->field->unambig($field, $ftypes));
 						}
 					}
 
@@ -2906,7 +2912,7 @@ class ND_Controller extends UW_Controller {
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
-									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
+									$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
 								$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
@@ -2923,7 +2929,7 @@ class ND_Controller extends UW_Controller {
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
-									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
+									$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
 								$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
@@ -2941,7 +2947,7 @@ class ND_Controller extends UW_Controller {
 
 								/* Check if the supplied interval value is valid */
 								if ($interval_fields === false)
-									$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
+									$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 								/* Craft the custom where clause value */
 								$this->request->post_set($field . '_to', 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
