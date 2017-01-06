@@ -63,6 +63,8 @@ class UW_Search extends UW_Model {
 			return "double";
 		} else if (gettype($value) == "boolean") {
 			return "boolean";
+		} else if (gettype($value) == "null") {
+			return "null";
 		} else {
 			return "string";
 		}
@@ -198,8 +200,8 @@ class UW_Search extends UW_Model {
 						/* Get value type */
 						$vtype = $this->_get_type($value);
 
-						/* 'gt' condition does not accept strings nor arrays */
-						if ($vtype == 'string' || $vtype == 'array' || $vtype == 'boolean') {
+						/* 'gt' (and all other conditions that fall under here) condition does not accept strings nor arrays */
+						if ($vtype == 'string' || $vtype == 'array' || $vtype == 'boolean' || $vtype == 'null') {
 							$this->_set_result_error("Unexpected type '" . $vtype . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Integer, Double, Relative, Datetime, Date or Time.");
 							return false;
 						}
@@ -253,8 +255,21 @@ class UW_Search extends UW_Model {
 							return false;
 						}
 
+						/* Get value type */
+						$vtype = $this->_get_type($value);
+
+						/* 'is' condition only accepts boolean or null types */
+						if (($vtype != 'boolean') && ($vtype != 'null')) {
+							$this->_set_result_error("Unexpected type '" . $vtype . "' on condition '" . $cond . "' for field '" . $field . "'. Expecting: Boolean or NULL.");
+							return false;
+						}
+
 						/* Set the criteria value */
-						$nadv[$field] = ($value === true) ? '1' : '0';
+						if ($vtype == 'boolean') {
+							$nadv[$field] = ($value === true) ? '1' : '0';
+						} else {
+							$nadv[$field] = NULL;
+						}
 
 						/* Set current context */
 						$this->_context = $cond;

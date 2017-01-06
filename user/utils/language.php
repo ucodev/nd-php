@@ -165,6 +165,7 @@ define('NDPHP_LANG_MOD_INVALID_MAGIC_IDENTIFIER',	'Incorrect magic identifier.')
 define('NDPHP_LANG_MOD_INVALID_LIMIT_VALUE',		'Limit value must be greater than zero.');
 define('NDPHP_LANG_MOD_INVALID_OFFSET_VALUE',		'Offset value must be zero or greater.');
 define('NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE',	'The registration code does not exist or it is no longer valid.');
+define('NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION',   'Invalid search condition');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');

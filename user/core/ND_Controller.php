@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z2';
+	protected $_ndphp_version = '0.03z3';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1523,7 +1523,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that field contains only safe characters */
 		if (!$this->security->safe_names($field, $this->config['security_safe_chars']))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_CHARS_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Setup ordering */
 		if ($order == NULL) {
@@ -2331,7 +2331,7 @@ class ND_Controller extends UW_Controller {
 		}
 
 		if (!$this->security->safe_names($order_field, $this->config['security_safe_chars']))
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->config['default_charset'], !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_CHARS_FIELD_ORDER, $this->config['default_charset'], !$this->request->is_ajax());
 
 		if ($order_type == NULL) {
 			if ($this->request->is_json() && $this->request->post_isset('_ordering') && $this->request->post('_ordering')) {
@@ -2813,7 +2813,7 @@ class ND_Controller extends UW_Controller {
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
-								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
+								$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
 							$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
@@ -2830,7 +2830,7 @@ class ND_Controller extends UW_Controller {
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
-								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
+								$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
 							$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
@@ -2848,7 +2848,7 @@ class ND_Controller extends UW_Controller {
 
 							/* Check if the supplied interval value is valid */
 							if ($interval_fields === false)
-								$this->response->code('500', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
+								$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT . ' { + | - } <digit> { SECOND | MINUTE | HOUR | DAY | WEEK | MONTH | YEAR }. Example: - 10 DAY', $this->config['default_charset'], !$this->request->is_ajax());
 
 							/* Craft the custom where clause value */
 							$this->request->post_set($field, 'NOW() ' . $interval_fields[0] . ' INTERVAL ' . $interval_fields[1] . ' ' . $interval_fields[2]);
@@ -2877,6 +2877,12 @@ class ND_Controller extends UW_Controller {
 							$this->db->where_in($this->field->unambig($field, $ftypes), $this->request->post($field));
 						}
 					} else if (($this->request->post($field . '_cond') != '><') && ($this->request->post($field . '_cond') != '=')) {
+						if (($this->request->post($field . '_cond') != '>') && ($this->request->post($field . '_cond') != '<') &&
+								($this->request->post($field . '_cond') != '>=') && ($this->request->post($field . '_cond') != '<='))
+						{
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION . ': ' . $this->request->post($field . '_cond'));
+						}
+
 						/* Lesser, Greater, Different */
 						if ($or_cond) {
 							$this->db->or_where($this->field->unambig($field, $ftypes) . ' ' . $this->request->post($field . '_cond'), $this->request->post($field), $where_clause_enforce);
@@ -2975,10 +2981,23 @@ class ND_Controller extends UW_Controller {
 							$this->db->where_in($this->config['name'] . '.' . $field, $this->request->post($field));
 						}
 					} else {
-						if ($or_cond) {
-							$this->db->or_where($this->config['name'] . '.' . $field, $this->request->post($field));
+						/* Set search condition for this single relationship search */
+						if (!$this->request->post_isset($field . '_cond') || $this->request->post($field . '_cond') == '=') {
+							$rel_cond = '=';
+						} else if ($this->request->post($field . '_cond') == '!=') {
+							$rel_cond = '!=';
+						} else if (($this->request->post($field . '_cond') != '>') && ($this->request->post($field . '_cond') != '<') &&
+								($this->request->post($field . '_cond') != '>=') && ($this->request->post($field . '_cond') != '<='))
+						{
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION . ': ' . $this->request->post($field . '_cond'));
 						} else {
-							$this->db->where($this->config['name'] . '.' . $field, $this->request->post($field));
+							$rel_cond = $this->request->post($field . '_cond');
+						}
+
+						if ($or_cond) {
+							$this->db->or_where($this->config['name'] . '.' . $field . ' ' . $rel_cond, $this->request->post($field));
+						} else {
+							$this->db->where($this->config['name'] . '.' . $field . ' ' . $rel_cond, $this->request->post($field));
 						}
 					}
 				} else if (($ftypes[$field]['input_type'] == 'select') && ($ftypes[$field]['type'] == 'rel')) {
@@ -2989,10 +3008,23 @@ class ND_Controller extends UW_Controller {
 							$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
 						}
 					} else {
-						if ($or_cond) {
-							$this->db->or_where($ftypes[$field]['table'] . '.id', $this->request->post($field));
+						/* Set search condition for this multiple relationship search */
+						if (!$this->request->post_isset($field . '_cond') || $this->request->post($field . '_cond') == '=') {
+							$rel_cond = '=';
+						} else if ($this->request->post($field . '_cond') == '!=') {
+							$rel_cond = '!=';
+						} else if (($this->request->post($field . '_cond') != '>') && ($this->request->post($field . '_cond') != '<') &&
+								($this->request->post($field . '_cond') != '>=') && ($this->request->post($field . '_cond') != '<='))
+						{
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION . ': ' . $this->request->post($field . '_cond'));
 						} else {
-							$this->db->where($ftypes[$field]['table'] . '.id', $this->request->post($field));
+							$rel_cond = $this->request->post($field . '_cond');
+						}
+
+						if ($or_cond) {
+							$this->db->or_where($ftypes[$field]['table'] . '.id ' . $rel_cond, $this->request->post($field));
+						} else {
+							$this->db->where($ftypes[$field]['table'] . '.id ' . $rel_cond, $this->request->post($field));
 						}
 					}
 				} else {
@@ -3012,10 +3044,11 @@ class ND_Controller extends UW_Controller {
 		/* NOTE: If none of the above types matched, we've a default 'query' type here */
 
 		/* Switch order on each call */
-		if ($order_type == "asc")
+		if ($order_type == "asc") {
 			$data['config']['order'] = "desc";
-		else
+		} else {
 			$data['config']['order'] = "asc";
+		}
 
 		/* FIXME:
 		 * By default, field 'id' is set as the ordering field. This will cause an error
@@ -3065,14 +3098,14 @@ class ND_Controller extends UW_Controller {
 						$this->response->code('400', NDPHP_LANG_MOD_INVALID_OFFSET_VALUE, $this->config['default_charset'], !$this->request->is_ajax());
 
 					/* Set limit (and, if set, the offset) */
-					$result_query = $result_query . ' LIMIT ' . ($this->request->post_isset('_offset') ? $this->request->post('_offset') : '0') . ', ' . ($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? $this->config['json_result_hard_limit'] : $this->request->post('_limit'));
+					$result_query = $result_query . ' LIMIT ' . ($this->request->post_isset('_offset') ? intval($this->request->post('_offset')) : '0') . ', ' . ($this->request->post('_limit') > $this->config['json_result_hard_limit'] ? intval($this->config['json_result_hard_limit']) : intval($this->request->post('_limit')));
 				} else {
 					/* If no limit was explicitly set, use the default */
-					$result_query = $result_query . ' LIMIT ' . $this->config['json_result_hard_limit'];
+					$result_query = $result_query . ' LIMIT ' . intval($this->config['json_result_hard_limit']);
 				}
 			} else if ($page >= 0) {
 				/* Limit results to the number of rows per page (pagination) */
-				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . $this->config['table_pagination_rpp_result'];
+				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . intval($this->config['table_pagination_rpp_result']);
 			}
 
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
