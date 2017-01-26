@@ -704,53 +704,56 @@ class UW_Get extends UW_Module {
 					$rel_fields = $table_fields[1];
 				}
 
-				/* TODO: FIXME: Cache the field options. Note that this cache should be invalidated when the corresponding
-				 * foreign table data is modified.
-				 */
+				/* Only fetch foreign table options if this isn't a REST JSON request */				
+				if (!$this->request->is_json()) {
+					/* TODO: FIXME: Cache the field options. Note that this cache should be invalidated when the corresponding
+					* foreign table data is modified.
+					*/
 
-				/* Fetch foreign table entries */
-				$this->db->select('id,' . $rel_fields);
-				$this->db->from($table);
+					/* Fetch foreign table entries */
+					$this->db->select('id,' . $rel_fields);
+					$this->db->from($table);
 
-				/* Order and limit results */
-				if (isset($this->config['rel_table_fields_config'][$table])) {
-					if ($this->config['rel_table_fields_config'][$table][3] !== NULL)
-						$this->db->order_by($this->config['rel_table_fields_config'][$table][3][0], $this->config['rel_table_fields_config'][$table][3][1]);
+					/* Order and limit results */
+					if (isset($this->config['rel_table_fields_config'][$table])) {
+						if ($this->config['rel_table_fields_config'][$table][3] !== NULL)
+							$this->db->order_by($this->config['rel_table_fields_config'][$table][3][0], $this->config['rel_table_fields_config'][$table][3][1]);
 
-					if (isset($this->config['rel_table_fields_config'][$table][4]) && $this->config['rel_table_fields_config'][$table][4] !== NULL)
-						$this->db->limit($this->config['rel_table_fields_config'][$table][4]);
-				}
+						if (isset($this->config['rel_table_fields_config'][$table][4]) && $this->config['rel_table_fields_config'][$table][4] !== NULL)
+							$this->db->limit($this->config['rel_table_fields_config'][$table][4]);
+					}
 
-				/* Apply any applicable filters */
-				$this->filter->table_row_apply($table);
+					/* Apply any applicable filters */
+					$this->filter->table_row_apply($table);
 
-				/* We need to use the value_mangle() method here to grant that options values are mangled
-				 *
-				 * We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
-				 * recursion to the fields() method was applied here.
-				 */
-				$result_array = $this->field->value_mangle($this->fields_basic_types($table), $this->db->get());
+					/* We need to use the value_mangle() method here to grant that options values are mangled
+					*
+					* We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
+					* recursion to the fields() method was applied here.
+					*/
+					$result_array = $this->field->value_mangle($this->fields_basic_types($table), $this->db->get());
 
-				/* Craft options values based on concatenations' configuration (if any).
-				 * If no configuration is set for this particular relationship, the default
-				 * option value is used (this is, the values of the second field of the
-				 * relationship table).
-				 */
-				foreach ($result_array as $row) {
-					if (isset($this->config['rel_table_fields_config'][$table]) && ($this->config['rel_table_fields_config'][$table][2] != NULL)) {
-						/* Setup the amount of concatenated fields required for the options */
-						$fields[$field['name']]['options'][$row['id']] = '';
-						foreach ($this->config['rel_table_fields_config'][$table][2] as $rel_field)
-							$fields[$field['name']]['options'][$row['id']] .= $row[$table_fields[$rel_field]] . (($this->config['rel_table_fields_config'][$table][1] != NULL) ? $this->config['rel_table_fields_config'][$table][1] : ' ');
-                            /* ^^^ -> Field Options Array                     ^^^ -> Resolved Option Field      ^^^ -> Separator   */
+					/* Craft options values based on concatenations' configuration (if any).
+					* If no configuration is set for this particular relationship, the default
+					* option value is used (this is, the values of the second field of the
+					* relationship table).
+					*/
+					foreach ($result_array as $row) {
+						if (isset($this->config['rel_table_fields_config'][$table]) && ($this->config['rel_table_fields_config'][$table][2] != NULL)) {
+							/* Setup the amount of concatenated fields required for the options */
+							$fields[$field['name']]['options'][$row['id']] = '';
+							foreach ($this->config['rel_table_fields_config'][$table][2] as $rel_field)
+								$fields[$field['name']]['options'][$row['id']] .= $row[$table_fields[$rel_field]] . (($this->config['rel_table_fields_config'][$table][1] != NULL) ? $this->config['rel_table_fields_config'][$table][1] : ' ');
+								/* ^^^ -> Field Options Array                     ^^^ -> Resolved Option Field      ^^^ -> Separator   */
 
-						/* Remove trailing separator */
-						$fields[$field['name']]['options'][$row['id']] = trim($fields[$field['name']]['options'][$row['id']], (($this->config['rel_table_fields_config'][$table][1] != NULL) ? $this->config['rel_table_fields_config'][$table][1] : ' '));
-					} else {
-						/* If no concatenated fields were configured, use the default value.
-					 	 * (The default value is always the second field from the rel table)
-					 	 */
-						$fields[$field['name']]['options'][$row['id']] = $row[$table_fields[1]];
+							/* Remove trailing separator */
+							$fields[$field['name']]['options'][$row['id']] = trim($fields[$field['name']]['options'][$row['id']], (($this->config['rel_table_fields_config'][$table][1] != NULL) ? $this->config['rel_table_fields_config'][$table][1] : ' '));
+						} else {
+							/* If no concatenated fields were configured, use the default value.
+							* (The default value is always the second field from the rel table)
+							*/
+							$fields[$field['name']]['options'][$row['id']] = $row[$table_fields[1]];
+						}
 					}
 				}
 
@@ -835,53 +838,56 @@ class UW_Get extends UW_Module {
 					$rel_fields = $table_fields[1];
 				}
 
-				/* TODO: FIXME: Cache the field options. Note that this cache should be invalidated when the corresponding
-				 * foreign table data is modified.
-				 */
+				/* Only fetch foreign field options if this isn't a REST JSON request */
+				if (!$this->request->is_json()) {
+					/* TODO: FIXME: Cache the field options. Note that this cache should be invalidated when the corresponding
+					* foreign table data is modified.
+					*/
 
-				/* Get foreign table contents */
-				$this->db->select('id,' . $rel_fields);
-				$this->db->from($rel);
+					/* Get foreign table contents */
+					$this->db->select('id,' . $rel_fields);
+					$this->db->from($rel);
 
-				/* Order and limit results */
-				if (isset($this->config['rel_table_fields_config'][$rel])) {
-					if ($this->config['rel_table_fields_config'][$rel][3] !== NULL)
-						$this->db->order_by($this->config['rel_table_fields_config'][$rel][3][0], $this->config['rel_table_fields_config'][$rel][3][1]);
+					/* Order and limit results */
+					if (isset($this->config['rel_table_fields_config'][$rel])) {
+						if ($this->config['rel_table_fields_config'][$rel][3] !== NULL)
+							$this->db->order_by($this->config['rel_table_fields_config'][$rel][3][0], $this->config['rel_table_fields_config'][$rel][3][1]);
 
-					if (isset($this->config['rel_table_fields_config'][$rel][4]) && $this->config['rel_table_fields_config'][$rel][4] !== NULL)
-						$this->db->limit($this->config['rel_table_fields_config'][$rel][4]);
-				}
+						if (isset($this->config['rel_table_fields_config'][$rel][4]) && $this->config['rel_table_fields_config'][$rel][4] !== NULL)
+							$this->db->limit($this->config['rel_table_fields_config'][$rel][4]);
+					}
 
-				/* Apply any applicable filters */
-				$this->filter->table_row_apply($rel);
+					/* Apply any applicable filters */
+					$this->filter->table_row_apply($rel);
 
-				/* We need to use the value_mangle() method here to grant that options values are mangled
-				 *
-				 * We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
-				 * recursion to the fields() method was applied here.
-				 */
-				$result_array = $this->field->value_mangle($this->fields_basic_types($rel), $this->db->get());
+					/* We need to use the value_mangle() method here to grant that options values are mangled
+					*
+					* We also use the fields_basic_types() method to reduce the overhead that would otherwise be caused if
+					* recursion to the fields() method was applied here.
+					*/
+					$result_array = $this->field->value_mangle($this->fields_basic_types($rel), $this->db->get());
 
-				/* Craft options values based on concatenations' configuration (if any).
-				 * If no configuration is set for this particular relationship, the default
-				 * option value is used (this is, the values of the second field of the
-				 * relationship table).
-				 */
-				foreach ($result_array as $row) {
-					if (isset($this->config['rel_table_fields_config'][$rel]) && ($this->config['rel_table_fields_config'][$rel][2] != NULL)) {
-						/* Setup the amount of concatenated fields required for the options */
-						$fields[$table]['options'][$row['id']] = '';
-						foreach ($this->config['rel_table_fields_config'][$rel][2] as $rel_field)
-							$fields[$table]['options'][$row['id']] .= $row[$table_fields[$rel_field]] . (($this->config['rel_table_fields_config'][$rel][1] != NULL) ? $this->config['rel_table_fields_config'][$rel][1] : ' ');
-	                        /* ^^^ -> Field Options Array                                                                   ^^^ -> Resolved Option Field      ^^^ -> Separator   */
+					/* Craft options values based on concatenations' configuration (if any).
+					* If no configuration is set for this particular relationship, the default
+					* option value is used (this is, the values of the second field of the
+					* relationship table).
+					*/
+					foreach ($result_array as $row) {
+						if (isset($this->config['rel_table_fields_config'][$rel]) && ($this->config['rel_table_fields_config'][$rel][2] != NULL)) {
+							/* Setup the amount of concatenated fields required for the options */
+							$fields[$table]['options'][$row['id']] = '';
+							foreach ($this->config['rel_table_fields_config'][$rel][2] as $rel_field)
+								$fields[$table]['options'][$row['id']] .= $row[$table_fields[$rel_field]] . (($this->config['rel_table_fields_config'][$rel][1] != NULL) ? $this->config['rel_table_fields_config'][$rel][1] : ' ');
+								/* ^^^ -> Field Options Array                                                                   ^^^ -> Resolved Option Field      ^^^ -> Separator   */
 
-						/* Remove trailing separator */
-						$fields[$table]['options'][$row['id']] = trim($fields[$table]['options'][$row['id']], (($this->config['rel_table_fields_config'][$rel][1] != NULL) ? $this->config['rel_table_fields_config'][$rel][1] : ' '));
-					} else {
-						/* If no concatenated fields were configured, use the default value.
-					 	 * (The default value is always the second field from the rel table)
-					 	 */
-						$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
+							/* Remove trailing separator */
+							$fields[$table]['options'][$row['id']] = trim($fields[$table]['options'][$row['id']], (($this->config['rel_table_fields_config'][$rel][1] != NULL) ? $this->config['rel_table_fields_config'][$rel][1] : ' '));
+						} else {
+							/* If no concatenated fields were configured, use the default value.
+							* (The default value is always the second field from the rel table)
+							*/
+							$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
+						}
 					}
 				}
 
@@ -1024,26 +1030,29 @@ class UW_Get extends UW_Module {
 			 */
 			$rel_fields = $table_fields[1];
 
-			$this->db->select('id,' . $rel_fields);
-			$this->db->from($rel);
+			/* Only fetch foreign field options if this isn't a REST JSON request */
+			if (!$this->request->is_json()) {
+				$this->db->select('id,' . $rel_fields);
+				$this->db->from($rel);
 
-			/* Filter the rows based on access configuration parameters */
-			$this->filter->table_row_apply($rel);
+				/* Filter the rows based on access configuration parameters */
+				$this->filter->table_row_apply($rel);
 
-			/* We need to use _field_value_mangle() here to grant that relationship values are mangled
-			 *
-			 * We also use the _get_fields_basic_types() to avoid the overhead that would be caused if
-			 * recursion of _get_fields() was used here.
-			 */
-			$result_array = $this->field->value_mangle($this->fields_basic_types($rel), $this->db->get());
+				/* We need to use _field_value_mangle() here to grant that relationship values are mangled
+				*
+				* We also use the _get_fields_basic_types() to avoid the overhead that would be caused if
+				* recursion of _get_fields() was used here.
+				*/
+				$result_array = $this->field->value_mangle($this->fields_basic_types($rel), $this->db->get());
 
-			/* Set the altname and viewname */
-			$fields[$table]['altname'] = $rel;
-			$fields[$table]['viewname'] = isset($this->config['mixed_fieldset_legend_config'][$rel]) ? $this->config['mixed_fieldset_legend_config'][$rel] : $rel;
-			
-			/* Craft options values */
-			foreach ($result_array as $row) {
-				$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
+				/* Set the altname and viewname */
+				$fields[$table]['altname'] = $rel;
+				$fields[$table]['viewname'] = isset($this->config['mixed_fieldset_legend_config'][$rel]) ? $this->config['mixed_fieldset_legend_config'][$rel] : $rel;
+				
+				/* Craft options values */
+				foreach ($result_array as $row) {
+					$fields[$table]['options'][$row['id']] = $row[$table_fields[1]];
+				}
 			}
 		}
 		
@@ -1125,7 +1134,7 @@ class UW_Get extends UW_Module {
 
 	public function view_data_generic($title = 'NO_TITLE', $description = "NO_DESCRIPTION") {
 		/* REST JSON requests do not require this data */
-		if (!$this->request->is_json())
+		if ($this->request->is_json())
 			return array();
 
 		$data = array();

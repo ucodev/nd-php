@@ -1,3 +1,9 @@
+v0.03z7 (2017-01-16):
+
+ - Fixed issue with non-REST JSON requests preventing views data from being processed.
+ - Field options won't be processed on REST JSON requests.
+
+
 v0.03z6 (2017-01-26):
 
  - Fixed issues with NDSL searches on multiple relationship fields.
