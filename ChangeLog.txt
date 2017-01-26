@@ -1,3 +1,10 @@
+v0.03z6 (2017-01-26):
+
+ - Fixed issues with NDSL searches on multiple relationship fields.
+ - Added support for distinct property on NDSL queries.
+ - Disabled most unecessary features for REST JSON requests.
+
+
 v0.03z5 (2017-01-06):
 
  - Added support for NDSL negative logic for "is" and "in" ("not_in" and "is_not")

@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,6 +144,10 @@ class UW_Get extends UW_Module {
 	}
 
 	public function help($table = NULL) {
+		/* REST JSON requests do not require this data */
+		if ($this->request->is_json())
+			return NULL;
+
 		/* If no table was specified, used this controller table */
 		if ($table === NULL)
 			$table = $this->config['name'];
@@ -198,6 +202,10 @@ class UW_Get extends UW_Module {
 	}
 
 	public function build() {
+		/* REST JSON requests do not require this data */
+		if ($this->request->is_json())
+			return NULL;
+
 		/* If we already have a populated the build data cache, just return it... */
 		if (isset($this->config['cache_build']))
 			return $this->config['cache_build'];
@@ -241,6 +249,10 @@ class UW_Get extends UW_Module {
 	}
 
 	public function theme() {
+		/* REST JSON requests do not require this data */
+		if ($this->request->is_json())
+			return NULL;
+
 		/* If we already have a populated the theme data cache, just return it... */
 		if (isset($this->config['cache_theme']))
 			return $this->config['cache_theme'];
@@ -300,6 +312,10 @@ class UW_Get extends UW_Module {
 	}
 
 	public function view_breadcrumb($method, $second_level = NULL, $id = NULL, $third_level = NULL) {
+		/* REST JSON requests do not require this data */
+		if ($this->request->is_json())
+			return NULL;
+
 		/* NOTE: Currently, breadcrumbs won't contain more than 3 levels */
 
 		/* Re-initialize breadcrumb */
@@ -472,6 +488,10 @@ class UW_Get extends UW_Module {
 	}
 
 	public function menu_entries() {
+		/* REST JSON requests do not require this data */
+		if ($this->request->is_json())
+			return array();
+
 		$entries = array();
 
 		foreach ($this->tables() as $table) {
@@ -1104,6 +1124,10 @@ class UW_Get extends UW_Module {
 	}
 
 	public function view_data_generic($title = 'NO_TITLE', $description = "NO_DESCRIPTION") {
+		/* REST JSON requests do not require this data */
+		if (!$this->request->is_json())
+			return array();
+
 		$data = array();
 
 		/* Configuration data - Used for configuration and control. It should not be used as 'printable' data */

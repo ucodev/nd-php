@@ -94,6 +94,10 @@ class UW_Search extends UW_Model {
 		/* Initialize the advanced search context array */
 		$nadv = array();
 
+		/* Check if distinct is set */
+		if (isset($ndsl['_distinct']))
+			$nadv['__distinct'] = $ndsl['_distinct'];
+
 		/* Set the result fields */
 		if (isset($ndsl['_show'])) {
 			foreach ($ndsl['_show'] as $result_field)

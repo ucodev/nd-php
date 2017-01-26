@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z5';
+	protected $_ndphp_version = '0.03z6';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1558,8 +1558,9 @@ class ND_Controller extends UW_Controller {
 		);
 
 
-		/* Setup charts */
-		$this->_load_module('charts', true);
+		/* Setup charts if this isn't a REST JSON request */
+		if (!$this->request->is_json())
+			$this->_load_module('charts', true);
 
 		/* Get view title value */
 		$title = NULL;
@@ -1581,7 +1582,8 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['submenu'] = $this->config['links_submenu_body_list'];
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('list', NDPHP_LANG_MOD_OP_LIST);
 
-		$data['config']['charts']['total'] = $this->charts->count_charts();
+		if (!$this->request->is_json())
+			$data['config']['charts']['total'] = $this->charts->count_charts();
 
 		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
 		$data['config']['render']['size'] = $this->config['view_image_file_rendering_size_list'];
@@ -1591,9 +1593,6 @@ class ND_Controller extends UW_Controller {
 
 		/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
 		if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
-			/* Fetch all fields */
-			$data['view']['fields'] = $this->get->fields(NULL); /* TODO: Myabe we can filter out unused fields here, based on the '_show' array? */
-
 			/* Set the selected fields */
 			$selected = $this->request->post('_show');
 
@@ -1602,10 +1601,7 @@ class ND_Controller extends UW_Controller {
 				array_push($selected, 'id');
 
 			/* Resolve fields */
-			$this->field->resolve($data['view']['fields'], $selected);
-
-			/* Hidden fields */
-			$data['config']['hidden_fields'] = array();
+			$this->field->resolve($this->get->fields(NULL), $selected);
 		} else {
 			$data['view']['fields'] = $this->get->fields(NULL, $this->config['hide_fields_list']); /* $this->get->fields() uses a perm_read filter by default */
 
@@ -2366,8 +2362,9 @@ class ND_Controller extends UW_Controller {
 			/* log it?    */ $this->config['logging']
 		);
 
-		/* Setup charts */
-		$this->_load_module('charts', true);
+		/* Setup charts, if this isn't a REST JSON request */
+		if (!$this->request->is_json())
+			$this->_load_module('charts', true);
 
 		/* Get view title */
 		$title = NULL;
@@ -2389,7 +2386,8 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['quick'] = $this->config['links_quick_modal_result'];
 		$data['view']['links']['submenu'] = $this->config['links_submenu_body_result'];
 
-		$data['config']['charts']['total'] = $this->charts->count_charts();
+		if (!$this->request->is_json())
+			$data['config']['charts']['total'] = $this->charts->count_charts();
 
 		$data['config']['render'] = array();
 		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
@@ -2614,6 +2612,10 @@ class ND_Controller extends UW_Controller {
 				/* FIXME: TODO: a redirect() isn't a good approach here ... better to raise some error */
 				redirect($this->config['name'] . '/search');
 			}
+
+			/* Check if DISTINCT is to be used */
+			if ($this->request->post_isset('__distinct') && ($this->request->post('__distinct') == true))
+				$this->db->distinct();
 
 			/* TODO:
 			 * 
@@ -3028,15 +3030,15 @@ class ND_Controller extends UW_Controller {
 					if (is_array($this->request->post($field))) {
 						if ($or_cond) {
 							if ($negate) {
-								$this->db->or_where_not_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+								$this->db->or_where_not_in($ftypes[$field]['rel_table'] . '.' . $ftypes[$field]['table'] . '_id', $this->request->post($field));
 							} else {
-								$this->db->or_where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+								$this->db->or_where_in($ftypes[$field]['rel_table'] . '.' . $ftypes[$field]['table'] . '_id', $this->request->post($field));
 							}
 						} else {
 							if ($negate) {
-								$this->db->where_not_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+								$this->db->where_not_in($ftypes[$field]['rel_table'] . '.' . $ftypes[$field]['table'] . '_id', $this->request->post($field));
 							} else {
-								$this->db->where_in($ftypes[$field]['table'] . '.id', $this->request->post($field));
+								$this->db->where_in($ftypes[$field]['rel_table'] . '.' . $ftypes[$field]['table'] . '_id', $this->request->post($field));
 							}
 						}
 					} else {
@@ -3054,9 +3056,9 @@ class ND_Controller extends UW_Controller {
 						}
 
 						if ($or_cond) {
-							$this->db->or_where($ftypes[$field]['table'] . '.id ' . $rel_cond, $this->request->post($field));
+							$this->db->or_where($ftypes[$field]['rel_table'] . '.' . $ftypes[$field]['table'] . '_id ' . $rel_cond, $this->request->post($field));
 						} else {
-							$this->db->where($ftypes[$field]['table'] . '.id ' . $rel_cond, $this->request->post($field));
+							$this->db->where($ftypes[$field]['rel_table'] . '.' . $ftypes[$field]['table'] . '_id ' . $rel_cond, $this->request->post($field));
 						}
 					}
 				} else {
@@ -4843,8 +4845,9 @@ class ND_Controller extends UW_Controller {
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_view_generic_enter($data, $id, $export);
 
-		/* Setup charts */
-		$this->_load_module('charts', true);
+		/* Setup charts, if this isn't a REST JSON request */
+		if (!$this->request->is_json())
+			$this->_load_module('charts', true);
 
 		/* Get view title */
 		$title = NULL;
@@ -4865,7 +4868,9 @@ class ND_Controller extends UW_Controller {
 		$data['view']['fields'] = $this->get->fields(NULL, $this->config['hide_fields_view']); /* _get_fields() uses a perm_read filter by default */
 		$data['view']['links']['submenu'] = $this->config['links_submenu_body_view'];
 
-		$data['config']['charts']['total'] = $this->charts->count_charts_foreign();
+		if (!$this->request->is_json())
+			$data['config']['charts']['total'] = $this->charts->count_charts_foreign();
+
 		$data['config']['choices'] = count($this->config['rel_choice_hide_fields_view']) ? $this->config['rel_choice_hide_fields_view'] : $this->config['rel_choice_hide_fields'];
 		$data['config']['choices_filters'] = array();
 		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
@@ -4917,8 +4922,11 @@ class ND_Controller extends UW_Controller {
 		$data['view']['rel'] = array();
 
 		/* Process multiple relationships */
+		
 		foreach ($data['view']['fields'] as $field => $meta) {
 			if ($meta['type'] == 'rel') {
+				/* TODO: FIXME: JSON requests don't need the `item` field (they just present the `id`) */
+
 				/* Query the database to retrieve the selected elements for this ID */
 				$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.' . $meta['rel_field'] . ' AS item');
 				$this->db->from($this->config['name']);
@@ -4933,7 +4941,7 @@ class ND_Controller extends UW_Controller {
 					continue;
 
 				foreach ($query->result_array() as $row) {
-					/* If any of the fields are NULL, skip the row. (FIXME: This is not required because we're using having() */
+					/* If any of the fields are NULL, skip the row. (FIXME: This is not required because we're using having()) */
 					if (!$row['id'] || !$row['item'])
 						continue;
 
