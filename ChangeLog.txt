@@ -1,4 +1,10 @@
-v0.03z7 (2017-01-16):
+v0.03z8 (2017-01-28):
+
+ - Some more optimizations on REST JSON specific calls.
+ - Fixed issues with related tables fetcher.
+
+
+v0.03z7 (2017-01-26):
 
  - Fixed issue with non-REST JSON requests preventing views data from being processed.
  - Field options won't be processed on REST JSON requests.
@@ -123,7 +129,7 @@ v0.03v1 (2016-11-18):
 
  - Fixed image properties issues on upload module.
  - 'created' and 'modified' properties for files uploaded via REST JSON are now optional.
- - Limited controllers now grant default CRUS permissions for ROLE_ADMIN when a upopn model deployment.
+ - Limited controllers now grant default CRUS permissions for ROLE_ADMIN upon model deployment.
 
 
 v0.03v (2016-11-18):

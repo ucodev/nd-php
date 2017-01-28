@@ -384,15 +384,29 @@ class UW_Get extends UW_Module {
 		if ($target === NULL)
 			$target = $this->config['name'];
 
+		/* Check if target table is present in the relationship table name */
 		if (!strpos($rel, $target))
 			return array();
 
+		/* Remove the prefix and target table name from the relationship table name */
 		$foreign_table_raw = str_replace($target, '', substr($rel, $mixed ? 6 : 4));
 
-		/* After removing the $target table name from the string, the remaining starts with '_', then
+		/* After removing the $target table name from the string, if the remaining string starts with '_', then
 		 * that foreign table was positioned at the end of the relationship table name.
 		 */
-		return ($foreign_table_raw[0] == '_') ? array($target, trim($foreign_table_raw, '_')) : array(trim($foreign_table_raw, '_'), $target);
+		$rel_tables = ($foreign_table_raw[0] == '_') ? array($target, trim($foreign_table_raw, '_')) : array(trim($foreign_table_raw, '_'), $target);
+
+		/* Check if all tables in array are valid... otherwise this isn't a related table */
+		$tables = $this->tables();
+
+		if (!in_array($rel_tables[0], $tables))
+			return array();
+
+		if (!in_array($rel_tables[1], $tables))
+			return array();
+		
+		/* All good */
+		return $rel_tables;
 	}
 
 	public function single_rel_table_name($rel) {
