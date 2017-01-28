@@ -666,7 +666,8 @@ class UW_Database extends UW_Base {
 			$fields = rtrim($fields, ',');
 		}
 
-		$this->_q_select = 'SELECT ' . $fields . ' ';
+		/* select_expr */
+		$this->_q_select .= $fields;
 
 		return $this;
 	}
@@ -1486,18 +1487,33 @@ class UW_Database extends UW_Base {
 		if (!$table) {
 			/* SELECT */
 			if (!$this->_q_select) {
-				$query = 'SELECT * ';
-			} else {
-				$query  = $this->_q_select . ' ';
-			}
-			
-			/* DISTINCT */
-			if ($this->_q_distinct)
-				$query .= ' DISTINCT ';
+				/* Start crafting SELECT expression */
+				$query = 'SELECT ';
 
-			/* SQL_CALC_FOUND_ROWS */
-			if ($this->_q_calc_found_rows)
-				$query .= ' SQL_CALC_FOUND_ROWS ';
+				/* DISTINCT */
+				if ($this->_q_distinct)
+					$query .= ' DISTINCT ';
+
+				/* SQL_CALC_FOUND_ROWS */
+				if ($this->_q_calc_found_rows)
+					$query .= ' SQL_CALC_FOUND_ROWS ';
+
+				/* select_expr */
+				$query .= ' * ';
+			} else {
+				$query  = 'SELECT ';
+
+				/* DISTINCT */
+				if ($this->_q_distinct)
+					$query .= ' DISTINCT ';
+
+				/* SQL_CALC_FOUND_ROWS */
+				if ($this->_q_calc_found_rows)
+					$query .= ' SQL_CALC_FOUND_ROWS ';
+
+				/* select_expt */
+				$query .= $this->_q_select . ' ';
+			}
 
 			/* FROM */
 			if (!$this->_q_from) {
@@ -1620,7 +1636,7 @@ class UW_Database extends UW_Base {
 	}
 
 	public function found_rows() {
-		$q = $this->db->query('SELECT FOUND_ROWS() AS nr_rows');
+		$q = $this->query('SELECT FOUND_ROWS() AS nr_rows');
 		return $q->row_array()['nr_rows'];
 	}
 
