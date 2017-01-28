@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 21/11/2016
+ * Date: 28/01/2017
  * License: GPLv3
  */
 
@@ -10,7 +10,7 @@
  * This file is part of uweb.
  *
  * uWeb - uCodev Low Footprint Web Framework (https://github.com/ucodev/uweb)
- * Copyright (C) 2014-2016  Pedro A. Hortas
+ * Copyright (C) 2014-2017  Pedro A. Hortas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -527,6 +527,7 @@ class UW_Database extends UW_Base {
 	private $_cfg_use_stmt = true;
 	private $_q_select = NULL;
 	private $_q_distinct = false;
+	private $_q_calc_found_rows = false;
 	private $_q_from = NULL;
 	private $_q_join = NULL;
 	private $_q_where = NULL;
@@ -544,6 +545,7 @@ class UW_Database extends UW_Base {
 		/* Reset query data */
 		$this->_q_select = NULL;
 		$this->_q_distinct = false;
+		$this->_q_calc_found_rows = false;
 		$this->_q_from = NULL;
 		$this->_q_join = NULL;
 		$this->_q_where = NULL;
@@ -671,6 +673,12 @@ class UW_Database extends UW_Base {
 
 	public function distinct() {
 		$this->_q_distinct = true;
+
+		return $this;
+	}
+
+	public function calc_found_rows() {
+		$this->_q_calc_found_rows = true;
 
 		return $this;
 	}
@@ -1487,6 +1495,10 @@ class UW_Database extends UW_Base {
 			if ($this->_q_distinct)
 				$query .= ' DISTINCT ';
 
+			/* SQL_CALC_FOUND_ROWS */
+			if ($this->_q_calc_found_rows)
+				$query .= ' SQL_CALC_FOUND_ROWS ';
+
 			/* FROM */
 			if (!$this->_q_from) {
 				header('HTTP/1.1 500 Internal Server Error');
@@ -1605,6 +1617,11 @@ class UW_Database extends UW_Base {
 
 		/* Execute Query */
 		return $this->query($query, $data);
+	}
+
+	public function found_rows() {
+		$q = $this->db->query('SELECT FOUND_ROWS() AS nr_rows');
+		return $q->row_array()['nr_rows'];
 	}
 
 	public function count_all_results($table = NULL) {

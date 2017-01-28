@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z8';
+	protected $_ndphp_version = '0.03z9';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1670,6 +1670,9 @@ class ND_Controller extends UW_Controller {
 		/* Hook filter: Apply filters, if any */
 		$hook_enter_return = $this->_hook_list_generic_filter($data, $field, $order, $page, $hook_enter_return);
 
+		/* Calculate found rows. FIXME: TODO: This should be optional */
+		$this->db->calc_found_rows();
+
 		/* Store result array under view data array */
 		$data['view']['result_array'] = $this->field->value_mangle($data['view']['fields'], $this->db->get());
 
@@ -1678,9 +1681,7 @@ class ND_Controller extends UW_Controller {
 			$pagcfg['page'] = ($page / $this->config['table_pagination_rpp_list']) + 1; // $page is actually the number of the first row of the page
 			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->config['name'] . '/list_default/' . $field . '/' . $order . '/@ROW_NR@';
 			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_list(event, \'' . $this->config['name'] . '\', \'' . $field . '\', \'' . $order . '\', \'@ROW_NR@\');';
-			$this->db->from($this->config['name']);							/* FIXME:																*/
-			$this->filter->table_row_apply();						/*   - A better approach to retrieve total rows should be implemented	*/
-			$pagcfg['total_rows'] = $this->db->count_all_results(); /*   - Consider SQL_CALC_FOUND_ROWS?									*/
+			$pagcfg['total_rows'] = $this->db->found_rows(); /* TODO: FIXME: Should be optional */
 			$pagcfg['per_page'] = $this->config['table_pagination_rpp_list'];
 			
 			$this->pagination->initialize($pagcfg);
@@ -3147,7 +3148,7 @@ class ND_Controller extends UW_Controller {
 			
 			$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->query($result_query));
 			
-			/* Get total rows count */
+			/* Get total rows count. FIXME: TODO: Should be optional */
 			$total_rows_query = $this->db->query('SELECT FOUND_ROWS() AS nr_rows');
 			$total_rows = $total_rows_query->row_array()['nr_rows'];
 		} else {
@@ -3228,7 +3229,7 @@ class ND_Controller extends UW_Controller {
 			
 			$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->query($result_query));
 			
-			/* Get total rows count */
+			/* Get total rows count. FIXME: TODO: Should be optional */
 			$total_rows_query = $this->db->query('SELECT FOUND_ROWS() AS `nr_rows`');
 			$total_rows = $total_rows_query->row_array()['nr_rows'];
 		}

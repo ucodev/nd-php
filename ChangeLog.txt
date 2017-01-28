@@ -1,3 +1,9 @@
+v0.03z9 (2017-01-28):
+
+ - Updated uWeb.
+ - Optimized found rows calculations.
+
+
 v0.03z8 (2017-01-28):
 
  - Some more optimizations on REST JSON specific calls.
