@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.03z10';
+	protected $_ndphp_version = '0.04';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1208,17 +1208,29 @@ class ND_Controller extends UW_Controller {
 			if (!$this->_table_type_view_query)
 				$this->response->code('500', NDPHP_LANG_MOD_UNDEFINED_CTRL_VIEW_QUERY, $this->_default_charset, !$this->request->is_ajax());
 
+			/* Do not trust uWeb (keep a untrust level for the underlying layers): Re-check the safe chars for $GLOBALS['__controller'] */
+			if (!$this->security->safe_names($GLOBALS['__controller'], $this->_security_safe_chars))
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHARS_CTRL, $this->_default_charset, !$this->request->is_ajax());
+
 			/* Disable prepared statements */
 			$this->db->stmt_disable();
 
-			/* TODO: FIXME: Do not trust uWeb (keep a untrust level for the underlying layers): Re-check the safe chars for $GLOBALS['__controller'] */
-			$this->db->query('CREATE OR REPLACE VIEW ' . $GLOBALS['__controller'] . ' AS ' . $this->_table_type_view_query);
+			/* Check if any required views for this controller were already created. If not, create them and
+			 * store this indication in the cache (if available)
+			 */
+			if (!$this->cache->get('s_cache_' . $GLOBALS['__controller'] . '_views_created')) {
+				/* Create database view */
+				$this->db->query('CREATE OR REPLACE VIEW ' . $GLOBALS['__controller'] . ' AS ' . $this->_table_type_view_query);
 
-			/* Check if there are any extra queries to be executed for this custom controller */
-			if (count($this->_table_type_view_query_extra)) {
-				foreach ($this->_table_type_view_query_extra as $tv_extra) {
-					$this->db->query($tv_extra);
+				/* Check if there are any extra queries to be executed for this custom controller */
+				if (count($this->_table_type_view_query_extra)) {
+					foreach ($this->_table_type_view_query_extra as $tv_extra) {
+						$this->db->query($tv_extra);
+					}
 				}
+
+				/* Cache view creation status */
+				$this->cache->set('s_cache_' . $GLOBALS['__controller'] . '_views_created', true);
 			}
 
 			/* Re-enable prepared statements */
@@ -1670,8 +1682,24 @@ class ND_Controller extends UW_Controller {
 		/* Hook filter: Apply filters, if any */
 		$hook_enter_return = $this->_hook_list_generic_filter($data, $field, $order, $page, $hook_enter_return);
 
-		/* Calculate found rows. FIXME: TODO: This should be optional */
-		$this->db->calc_found_rows();
+		/* Check if total number of matches is required to be computed.
+		 * If this isn't a REST JSON request, then total number of matches is always computed (for pagination),
+		 * otherwise, calculated total number of matches only if the REST JSON request explicitly asks for it.
+		 */
+		if (!$this->request->is_json()) {
+			$totals = true;
+		} else {
+			/* Check if the REST JSON request explicitly requests total number of matches */
+			if ($this->request->post_isset('_totals') && $this->request->post('_totals')) {
+				$totals = true;
+			} else {
+				$totals = false;
+			}
+		}
+
+		/* Calculate found rows, if required */
+		if ($totals)
+			$this->db->calc_found_rows();
 
 		/* Store result array under view data array */
 		$data['view']['result_array'] = $this->field->value_mangle($data['view']['fields'], $this->db->get());
@@ -1681,7 +1709,12 @@ class ND_Controller extends UW_Controller {
 			$pagcfg['page'] = ($page / $this->config['table_pagination_rpp_list']) + 1; // $page is actually the number of the first row of the page
 			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->config['name'] . '/list_default/' . $field . '/' . $order . '/@ROW_NR@';
 			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_list(event, \'' . $this->config['name'] . '\', \'' . $field . '\', \'' . $order . '\', \'@ROW_NR@\');';
-			$pagcfg['total_rows'] = $this->db->found_rows(); /* TODO: FIXME: Should be optional */
+			/* Fetch found rows, if required */
+			if ($totals) {
+				$pagcfg['total_rows'] = $this->db->found_rows();
+			} else {
+				$pagcfg['total_rows'] = 0;
+			}
 			$pagcfg['per_page'] = $this->config['table_pagination_rpp_list'];
 			
 			$this->pagination->initialize($pagcfg);
@@ -3143,14 +3176,34 @@ class ND_Controller extends UW_Controller {
 				$result_query = $result_query . ' LIMIT ' . intval($page) . ', ' . intval($this->config['table_pagination_rpp_result']);
 			}
 
-			/* Force MySQL to count the total number of rows despite the LIMIT clause */
-			$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
+			/* Check if total number of matches is required to be computed.
+			 * If this isn't a REST JSON request, then total number of matches is always computed (for pagination),
+			 * otherwise, calculated total number of matches only if the REST JSON request explicitly asks for it.
+			 */
+			if (!$this->request->is_json()) {
+				$totals = true;
+			} else {
+				/* Check if the REST JSON request explicitly requests total number of matches */
+				if ($this->request->post_isset('_totals') && $this->request->post('_totals')) {
+					$totals = true;
+				} else {
+					$totals = false;
+				}
+			}
+
+			/* If required, force MySQL to count the total number of rows despite the LIMIT clause */
+			if ($totals)
+				$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
 			
 			$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->query($result_query));
 			
-			/* Get total rows count. FIXME: TODO: Should be optional */
-			$total_rows_query = $this->db->query('SELECT FOUND_ROWS() AS nr_rows');
-			$total_rows = $total_rows_query->row_array()['nr_rows'];
+			/* Get total rows count, if required */
+			if ($totals) {
+				$total_rows_query = $this->db->query('SELECT FOUND_ROWS() AS nr_rows');
+				$total_rows = $total_rows_query->row_array()['nr_rows'];
+			} else {
+				$total_rows = 0;
+			}
 		} else {
 			/* This is not a recall */
 
@@ -3223,15 +3276,33 @@ class ND_Controller extends UW_Controller {
 				$this->db->limit($this->config['table_pagination_rpp_list'], $page);
 			}
 			
-			/* Force MySQL to count the total number of rows despite the LIMIT clause */
+			/* Get compiled select statement */
 			$result_query = $this->db->get_compiled_select_str(NULL, true, false);
-			$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
+
+			/* Check if total number of matches is required to be computed.
+			 * If this isn't a REST JSON request, then total number of matches is always computed (for pagination),
+			 * otherwise, calculated total number of matches only if the REST JSON request explicitly asks for it.
+			 */
+			if (!$this->request->is_json()) {
+				$totals = true;
+			} else {
+				/* TODO: Check if the REST JSON request explicitly requests total number of matches */
+				$totals = false;
+			}
+
+			/* Force MySQL to count the total number of rows despite the LIMIT clause */
+			if ($totals)
+				$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
 			
 			$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->query($result_query));
 			
-			/* Get total rows count. FIXME: TODO: Should be optional */
-			$total_rows_query = $this->db->query('SELECT FOUND_ROWS() AS `nr_rows`');
-			$total_rows = $total_rows_query->row_array()['nr_rows'];
+			/* Get total rows count, if required. */
+			if ($totals) {
+				$total_rows_query = $this->db->query('SELECT FOUND_ROWS() AS `nr_rows`');
+				$total_rows = $total_rows_query->row_array()['nr_rows'];
+			} else {
+				$total_rows = 0;
+			}
 		}
 
 		$data['view']['fields'] = $ftypes_result;

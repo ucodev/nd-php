@@ -1,3 +1,11 @@
+v0.04 (2017-01-29):
+
+ - Added optional computation for total matches on REST JSON listing / result calls.
+ - Database views creation status is now cached.
+ - Added additional security checks.
+ - Updated language files.
+
+
 v0.03z10 (2017-01-28):
 
  - Updated uWeb.

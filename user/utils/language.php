@@ -167,6 +167,7 @@ define('NDPHP_LANG_MOD_INVALID_OFFSET_VALUE',		'Offset value must be zero or gre
 define('NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE',	'The registration code does not exist or it is no longer valid.');
 define('NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION',   'Invalid search condition');
 define('NDPHP_LANG_MOD_INVALID_NULL_COMPARISION_REL','Invalid NULL comparision request on a multiple relationship field.');
+define('NDPHP_LANG_MOD_INVALID_CHARS_CTRL',		    'Invalid charaters on controller name.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
