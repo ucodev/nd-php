@@ -1,3 +1,9 @@
+v0.04a (2017-01-29):
+
+ - Added missing REST JSON check for total match calculation on advanced search / result.
+ - Fixed version number.
+
+
 v0.04 (2017-01-29):
 
  - Added optional computation for total matches on REST JSON listing / result calls.

@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04';
+	protected $_ndphp_version = '0.04a';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -3286,8 +3286,12 @@ class ND_Controller extends UW_Controller {
 			if (!$this->request->is_json()) {
 				$totals = true;
 			} else {
-				/* TODO: Check if the REST JSON request explicitly requests total number of matches */
-				$totals = false;
+				/* Check if the REST JSON request explicitly requests total number of matches */
+				if ($this->request->post_isset('_totals') && $this->request->post('_totals')) {
+					$totals = true;
+				} else {
+					$totals = false;
+				}
 			}
 
 			/* Force MySQL to count the total number of rows despite the LIMIT clause */
