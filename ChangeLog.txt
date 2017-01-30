@@ -1,3 +1,8 @@
+v0.04b (2017-01-30):
+
+ - Fixed totals and distinct properties on search / result.
+
+
 v0.04a (2017-01-29):
 
  - Added missing REST JSON check for total match calculation on advanced search / result.

@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04a';
+	protected $_ndphp_version = '0.04b';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2445,13 +2445,21 @@ class ND_Controller extends UW_Controller {
 			/* Unset POST data */
 			$this->request->post_unset('search_value');
 
-			/* If a limit was set in the request data, add it to $ndav */
+			/* If the distinct property was set in the request data, add it to $nadv */
+			if ($this->request->post_isset('_distinct'))
+				$nadv['_distinct'] = $this->request->post('_distinct');
+
+			/* If a limit was set in the request data, add it to $nadv */
 			if ($this->request->post_isset('_limit'))
 				$nadv['_limit'] = $this->request->post('_limit');
 
-			/* If an offset was set in the request data, add it to $ndav */
+			/* If an offset was set in the request data, add it to $nadv */
 			if ($this->request->post_isset('_offset'))
 				$nadv['_offset'] = $this->request->post('_offset');
+
+			/* If a total match count was set in the request data, add it to $nadv */
+			if ($this->request->post_isset('_totals'))
+				$nadv['_totals'] = $this->request->post('_totals');
 
 			/* Set the new POST data with the $nadv context */
 			$this->request->post_set_all($nadv);
@@ -2648,7 +2656,7 @@ class ND_Controller extends UW_Controller {
 			}
 
 			/* Check if DISTINCT is to be used */
-			if ($this->request->post_isset('__distinct') && ($this->request->post('__distinct') == true))
+			if ($this->request->post_isset('_distinct') && ($this->request->post('_distinct') == true))
 				$this->db->distinct();
 
 			/* TODO:
