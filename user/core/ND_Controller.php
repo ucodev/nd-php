@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04b';
+	protected $_ndphp_version = '0.04b1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2796,7 +2796,8 @@ class ND_Controller extends UW_Controller {
 							($ftypes[$field]['type'] != 'date') &&
 							($ftypes[$field]['type'] != 'time') &&
 							($ftypes[$field]['type'] != 'timer') &&
-							($ftypes[$field]['type'] != 'datetime')) {
+							($ftypes[$field]['type'] != 'datetime') &&
+							($ftypes[$field]['type'] != 'decimal')) {
 					if ($this->request->post_isset($field . '_exact') && $this->request->post($field . '_exact')) {
 						/* Exact match */
 						if ($this->request->post_isset($field . '_diff') && $this->request->post($field . '_diff')) {
@@ -2852,7 +2853,8 @@ class ND_Controller extends UW_Controller {
 							($ftypes[$field]['type'] == 'date') ||
 							($ftypes[$field]['type'] == 'time') ||
 							($ftypes[$field]['type'] == 'timer') ||
-							($ftypes[$field]['type'] == 'datetime')) {
+							($ftypes[$field]['type'] == 'datetime') ||
+							($ftypes[$field]['type'] == 'decimal')) {
 					/* Datetime fields required special processing to concatenate $field _time
 					 * string to the field value.
 					 */
