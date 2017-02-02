@@ -96,7 +96,7 @@ class UW_Search extends UW_Model {
 
 		/* Check if distinct is set */
 		if (isset($ndsl['_distinct']))
-			$nadv['__distinct'] = $ndsl['_distinct'];
+			$nadv['_distinct'] = $ndsl['_distinct'];
 
 		/* Set the result fields */
 		if (isset($ndsl['_show'])) {
@@ -104,8 +104,8 @@ class UW_Search extends UW_Model {
 				$nadv['__result_' . $result_field] = true;
 		}
 
-		/* Check if the 'id' field is part of the result list. If not, set it, as it is mandatory for any result */
-		if (!isset($nadv['__result_id']))
+		/* Check if the 'id' field is part of the result list. If not, set it, as it is mandatory for any result, unless this is a distinct qualified query */
+		if (!isset($nadv['__result_id']) && (!isset($nadv['_distinct']) || !$nadv['_distinct']))
 			$nadv['__result_id'] = true;
 
 		/* Unset any unrequired values from now on */

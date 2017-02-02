@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04b1';
+	protected $_ndphp_version = '0.04b2';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2640,8 +2640,8 @@ class ND_Controller extends UW_Controller {
 			$this->request->post_set('fields_criteria', $fields_criteria);
 			$this->request->post_set('fields_result', $fields_result);
 
-			/* Grant that Id field is selected on result fields */
-			if (!in_array('id', $this->request->post('fields_result')))
+			/* Grant that Id field is selected on result fields, unless _distinct is set to true */
+			if (!in_array('id', $this->request->post('fields_result')) && (!$this->request->post_isset('_distinct') || !$this->request->post('_distinct')))
 				$this->response->code('400', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->config['default_charset'], !$this->request->is_ajax());
 
 			/* Grant that at least one search criteria field is selected */

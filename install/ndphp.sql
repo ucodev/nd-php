@@ -577,8 +577,8 @@ DROP TABLE IF EXISTS `logging`;
 CREATE TABLE `logging` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `operation` varchar(16) NOT NULL,
-  `_table` varchar(32) NOT NULL,
-  `_field` varchar(32) DEFAULT NULL,
+  `_table` varchar(64) NOT NULL,
+  `_field` varchar(64) DEFAULT NULL,
   `entryid` varchar(64) DEFAULT NULL,
   `value_old` text DEFAULT NULL,
   `value_new` text DEFAULT NULL,
