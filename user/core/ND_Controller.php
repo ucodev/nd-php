@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04b2';
+	protected $_ndphp_version = '0.04b3';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2641,8 +2641,11 @@ class ND_Controller extends UW_Controller {
 			$this->request->post_set('fields_result', $fields_result);
 
 			/* Grant that Id field is selected on result fields, unless _distinct is set to true */
-			if (!in_array('id', $this->request->post('fields_result')) && (!$this->request->post_isset('_distinct') || !$this->request->post('_distinct')))
-				$this->response->code('400', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->config['default_charset'], !$this->request->is_ajax());
+			if (!in_array('id', $this->request->post('fields_result'))) {
+				/* If distinct is not set to true, we cannot accept a search query without the 'id' being shown by default */
+				if (!($this->request->post_isset('_distinct') && $this->request->post('_distinct')))
+					$this->response->code('400', NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID, $this->config['default_charset'], !$this->request->is_ajax());
+			}
 
 			/* Grant that at least one search criteria field is selected */
 			if (!count($this->request->post('fields_criteria')))
@@ -3221,15 +3224,20 @@ class ND_Controller extends UW_Controller {
 			$this->filter->table_row_apply();
 
 			/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
-			if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
+			if (($this->config['json_replies'] === true)) { // && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
 				/* TODO: FIXME: This needs to be extensively tested */
 
 				/* Set the selected fields */
-				$selected = $this->request->post('_show');
+				$selected = $this->request->post('fields_result');
 
-				/* 'id' must always be present */
-				if (!in_array($selected, 'id'))
+				/* 'id' must always be present, unless this is a distinct call */
+				if ($this->request->post_isset('_distinct') && $this->request->post('_distinct')) {
+					/* Remove the 'id' field from $selected, otherwise distinct won't make sense */
+					$selected = array_diff($selected, array('id'));
+				} else if (!in_array($selected, 'id')) {
+					/* If distinct is not used, 'id' should always be shown */
 					array_push($selected, 'id');
+				}
 
 				/* Resolve fields */
 				$this->field->resolve($ftypes, $selected, $this->request->post('fields_criteria'));

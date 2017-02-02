@@ -94,10 +94,6 @@ class UW_Search extends UW_Model {
 		/* Initialize the advanced search context array */
 		$nadv = array();
 
-		/* Check if distinct is set */
-		if (isset($ndsl['_distinct']))
-			$nadv['_distinct'] = $ndsl['_distinct'];
-
 		/* Set the result fields */
 		if (isset($ndsl['_show'])) {
 			foreach ($ndsl['_show'] as $result_field)
@@ -105,8 +101,11 @@ class UW_Search extends UW_Model {
 		}
 
 		/* Check if the 'id' field is part of the result list. If not, set it, as it is mandatory for any result, unless this is a distinct qualified query */
-		if (!isset($nadv['__result_id']) && (!isset($nadv['_distinct']) || !$nadv['_distinct']))
-			$nadv['__result_id'] = true;
+		if (!isset($nadv['__result_id'])) {
+			/* If '_distinct' is not set, force 'id' field to be present in the results */
+			if (!(isset($nadv['_distinct']) && $nadv['_distinct']))
+				$nadv['__result_id'] = true;
+		}
 
 		/* Unset any unrequired values from now on */
 		unset($ndsl['_show']); /* NOTE: This MUST not be set in $nadv... otherwise it will conflict with any '_show' modifier that might be set with a REST RESULT call */
