@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04b3';
+	protected $_ndphp_version = '0.04b4';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4154,7 +4154,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($data['view']['fields'] as $field => $meta) {
 			if ($meta['type'] == 'rel') {
 				if ($this->request->is_json()) {
-					$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.id AS item');
+					$this->db->select($meta['rel_table'] . '.' . $meta['table'] . '_id AS id,' . $meta['rel_table'] . '.' . $meta['table'] . '_id AS item');
 					$this->db->from($meta['rel_table']);
 					$this->db->where($meta['rel_table'] . '.' . $this->config['name'] . '_id', $id);
 				} else {
@@ -4691,7 +4691,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($data['view']['fields'] as $field => $meta) {
 			if ($meta['type'] == 'rel') {
 				if ($this->request->is_json()) {
-					$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.id AS item');
+					$this->db->select($meta['rel_table'] . '.' . $meta['table'] . '_id AS id,' . $meta['rel_table'] . '.' . $meta['table'] . '_id AS item');
 					$this->db->from($meta['rel_table']);
 					$this->db->where($meta['rel_table'] . '.' . $this->config['name'] . '_id', $id);
 				} else {
@@ -5036,7 +5036,7 @@ class ND_Controller extends UW_Controller {
 		foreach ($data['view']['fields'] as $field => $meta) {
 			if ($meta['type'] == 'rel') {
 				if ($this->request->is_json()) {
-					$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.id AS item');
+					$this->db->select($meta['rel_table'] . '.' . $meta['table'] . '_id AS id,' . $meta['rel_table'] . '.' . $meta['table'] . '_id AS item');
 					$this->db->from($meta['rel_table']);
 					$this->db->where($meta['rel_table'] . '.' . $this->config['name'] . '_id', $id);
 				} else {
