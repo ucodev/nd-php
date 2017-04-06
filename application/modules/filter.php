@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,8 @@ class UW_Filter extends UW_Module {
 	public function table_row_apply($table = NULL) {
 		$this->load->module('get');
 
-		if ($this->security->im_admin())
+		/* Admin and superuser users do not have row filters applied */
+		if ($this->security->im_admin() || $this->security->im_superuser())
 			return;
 
 		$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
@@ -68,7 +69,8 @@ class UW_Filter extends UW_Module {
 	public function table_row_perm($id = false, $table = NULL, $id_field = 'id') {
 		$this->load->module('get');
 
-		if ($this->security->im_admin())
+		/* Admin and superuser users do not have row filters applied */
+		if ($this->security->im_admin() || $this->security->im_superuser())
 			return true;
 
 		if ($id === false)
@@ -100,7 +102,9 @@ class UW_Filter extends UW_Module {
 		$this->load->module('get');
 
 		/* Evaluates if there's a table row filter to be applied. If so, an assoc array is created for each configured filtering key */
-		if ($this->security->im_admin())
+
+		/* Admin and superuser users do not have row filters applied */
+		if ($this->security->im_admin() || $this->security->im_superuser())
 			return array();
 
 		$res = array();

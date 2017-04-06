@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04b4';
+	protected $_ndphp_version = '0.04c';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1053,9 +1053,10 @@ class ND_Controller extends UW_Controller {
 				 */
 
 				/* Query the database */
-				$this->db->select('users.id AS user_id,users.username AS username,users.first_name AS first_name,users.email AS email,users.privenckey AS privenckey, rel_users_roles.roles_id AS roles_id,timezones.timezone AS timezone,dbms.alias AS default_database');
+				$this->db->select('users.id AS user_id,users.username AS username,users.first_name AS first_name,users.email AS email,users.privenckey AS privenckey, rel_users_roles.roles_id AS roles_id,timezones.timezone AS timezone,dbms.alias AS default_database,roles.is_superuser,roles.is_admin');
 				$this->db->from('users');
 				$this->db->join('rel_users_roles', 'rel_users_roles.users_id = users.id', 'left');
+				$this->db->join('roles', 'rel_users_roles.roles_id = roles.id', 'left');
 				$this->db->join('timezones', 'users.timezones_id = timezones.id', 'left');
 				$this->db->join('dbms', 'users.dbms_id = dbms.id', 'left');
 				$this->db->where('users.id', $json_req['_userid']);
@@ -1068,9 +1069,19 @@ class ND_Controller extends UW_Controller {
 
 				/* Setup user roles */
 				$user_roles = array();
+				$user_superuser = false;
+				$user_admin = false;
 
 				foreach ($query->result_array() as $row) {
 					array_push($user_roles, $row['roles_id']);
+
+					/* Check if this is an admin role */
+					if ($row['is_admin'])
+						$user_admin = true;
+
+					/* Check if this is a superuser role */
+					if ($row['is_superuser'])
+						$user_superuser = true;
 				}
 				
 				/* Setup the user private encryption key */
@@ -1097,6 +1108,8 @@ class ND_Controller extends UW_Controller {
 						'timezone' => $row['timezone'],
 						'database' => $row['default_database'],
 						'roles' => $user_roles,
+						'is_admin' => $user_admin,
+						'is_superuser' => $user_superuser,
 						'privenckey' => bin2hex($privenckey),
 						'logged_in' => true,
 						'sessions_id' => 0,

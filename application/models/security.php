@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -270,6 +270,10 @@ class UW_Security extends UW_Model {
 	}
 
 	public function im_admin() {
-		return in_array(1, $this->session->userdata('roles'));
+		return $this->session->userdata('is_admin');
+	}
+
+	public function im_superuser() {
+		return $this->session->userdata('is_superuser');
 	}
 }

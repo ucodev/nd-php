@@ -1,3 +1,12 @@
+v0.04c (2017-04-06):
+
+ - Granted permissions on new fields from codes, notifications and users for ROLE_ADMIN.
+ - Successful REST Authentication now also returns user profile picture data.
+ - Added new security control parameters to roles.
+ - Updated ndphp data model.
+ - Row filtering is now also ignored for superusers (along with admin users).
+
+
 v0.04b4 (2017-02-09):
 
  - Fixed issues with view, edit and delete generic handlers on controllers with multiple relationships being access through REST JSON calls.

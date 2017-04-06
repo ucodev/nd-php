@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,7 @@ class Login extends UW_Controller {
 
 	private $_table_users = "users";
 	private $_table_rel_roles = "rel_users_roles";
+	private $_table_roles = "roles";
 
 	private $_maintenance_enabled = false;
 
@@ -169,16 +170,35 @@ class Login extends UW_Controller {
 			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Get user's roles */
-		$this->db->select('roles_id');
-		$this->db->from($this->_table_rel_roles);
-		$this->db->where('users_id', $user_id);
+		$this->db->select('roles.id,roles.is_admin,roles.is_superuser');
+		$this->db->from('users');
+		$this->db->join($this->_table_rel_roles, $this->_table_users . '.id = ' . $this->_table_rel_roles . '.users_id', 'left');
+		$this->db->join($this->_table_roles, $this->_table_rel_roles . '.roles_id = ' . $this->_table_roles . '.id', 'left');
+		$this->db->where($this->_table_users . '.id', $user_id);
 		$query = $this->db->get();
+
+		/* Check if there are any roles assigned to this user */
+		if (!$query->num_rows())
+			$this->response->code('401', 'session_setup(): ' . NDPHP_LANG_MOD_ACCESS_FORBIDDEN, $this->_default_charset, !$this->request->is_ajax());
+
+		/* Fetch roles */
 		$roles = $query->result_array();
 
+		/* Initialize user role variables */
 		$user_roles = array();
+		$user_admin = false;
+		$user_superuser = false;
 
 		foreach ($roles as $role) {
-			array_push($user_roles, $role['roles_id']);
+			array_push($user_roles, $role['id']);
+
+			/* Check if this is an admin role */
+			if ($role['is_admin'])
+				$user_admin = true;
+
+			/* Check if this is a superuser role */
+			if ($role['is_superuser'])
+				$user_superuser = true;
 		}
 
 		/* Get user timezone */
@@ -240,10 +260,12 @@ class Login extends UW_Controller {
 				'user_id' => $user_id,
 				'email' => $email,
 				'first_name' => $first_name,
-				'photo' => $photo ? (base_url() . 'index.php/files/access/users/_file_photo/' . json_decode($photo, true)['name'] . '/' . $user_id) : NULL,
+				'photo' => $photo,
 				'timezone' => $timezone,
 				'database' => $database,
 				'roles' => $user_roles,
+				'is_admin' => $user_admin,
+				'is_superuser' => $user_superuser,
 				'privenckey' => bin2hex($privenckey),
 				'logged_in' => true,
 				'sessions_id' => 0, /* Will be set when session table is queried */
@@ -403,7 +425,10 @@ class Login extends UW_Controller {
 				$data['data']['user_id'] = intval($row['id']);
 				$data['data']['session_id'] = $this->session->userdata('sessions_id');
 				$data['data']['timezone'] = $this->session->userdata('timezone');
+				$data['data']['photo'] = $this->session->userdata('photo');
 				$data['data']['roles'] = $this->session->userdata('roles');
+				$data['data']['is_admin'] = $this->session->userdata('is_admin');
+				$data['data']['is_superuser'] = $this->session->userdata('is_superuser');
 				$data['data']['apikey'] = $row['apikey'];
 
 				$this->response->header('Content-Type', 'application/json');
