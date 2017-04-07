@@ -1,3 +1,11 @@
+v0.04c1 (2017-04-07):
+
+ - Granted that ROLE_ADMIN is administrator even if is_admin permission is ommited.
+ - Updated field aliases on roles controller.
+ - Update language files.
+ - Updated installation controller.
+
+
 v0.04c (2017-04-06):
 
  - Granted permissions on new fields from codes, notifications and users for ROLE_ADMIN.

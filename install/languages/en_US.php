@@ -565,6 +565,8 @@ define('NDPHP_LANG_MOD_COMMON_REMAINING',			'Remaining');
 define('NDPHP_LANG_MOD_COMMON_VALID_FROM',			'Valid from');
 define('NDPHP_LANG_MOD_COMMON_VALID_TO',			'Valid to');
 define('NDPHP_LANG_MOD_COMMON_CODE_TYPE',			'Code Type');
+define('NDPHP_LANG_MOD_COMMON_IS_ADMIN',            'Is Administrator');
+define('NDPHP_LANG_MOD_COMMON_IS_SUPERUSER',        'Is Superuser');
 
 
 define('NDPHP_LANG_MOD_MENU_BUILDER_NAME',			'Builder');
@@ -1031,6 +1033,8 @@ define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_PAYMENT_DATE',		'When the payer perfo
 
 define('NDPHP_LANG_MOD_HELP_ROLES_ROLE',						'Short name for the role. Must be capitablized.');
 define('NDPHP_LANG_MOD_HELP_ROLES_DESCRIPTION',					'The long description for the role.');
+define('NDPHP_LANG_MOD_HELP_ROLES_IS_ADMIN',                    'Set Administrator privileges to this role.');
+define('NDPHP_LANG_MOD_HELP_ROLES_IS_SUPERUSER',                'Set Superuser privileges to this role.');
 
 define('NDPHP_LANG_MOD_HELP_SCHEDULER_ENTRY_NAME',				'A unique identifier for this scheduler entry.');
 define('NDPHP_LANG_MOD_HELP_SCHEDULER_DESCRIPTION',				'The long description for this scheduler entry.');

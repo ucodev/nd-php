@@ -270,7 +270,8 @@ class UW_Security extends UW_Model {
 	}
 
 	public function im_admin() {
-		return $this->session->userdata('is_admin');
+		/* ROLE_ADMIN is always admin, even when is_admin is not set */
+		return in_array(1, $this->session->userdata('roles')) || $this->session->userdata('is_admin');
 	}
 
 	public function im_superuser() {

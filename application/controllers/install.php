@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1842,6 +1842,22 @@ class Install extends UW_Controller {
 			'field_name'  => 'description',
 			'field_units' => NULL,
 			'help_description' => NDPHP_LANG_MOD_HELP_ROLES_DESCRIPTION,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'roles',
+			'field_name'  => 'is_admin',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_ROLES_IS_ADMIN,
+			'help_url' => '#'
+		));
+
+		$this->db->insert('_help_tfhd', array(
+			'table_name'  => 'roles',
+			'field_name'  => 'is_superuser',
+			'field_units' => NULL,
+			'help_description' => NDPHP_LANG_MOD_HELP_ROLES_IS_SUPERUSER,
 			'help_url' => '#'
 		));
 

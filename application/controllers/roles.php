@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,9 @@ class Roles extends ND_Controller {
 	/* Aliases for the current table field names */
 	protected $_table_field_aliases = array(
 		'role' => NDPHP_LANG_MOD_COMMON_ROLE,
-		'description' => NDPHP_LANG_MOD_COMMON_DESCRIPTION
+		'description' => NDPHP_LANG_MOD_COMMON_DESCRIPTION,
+		'is_admin' => NDPHP_LANG_MOD_COMMON_IS_ADMIN,
+		'is_superuser' => NDPHP_LANG_MOD_COMMON_IS_SUPERUSER
 	);
 
 
