@@ -33,7 +33,8 @@
 
 define('NDPHP_LANG_MOD_ACCESS_FORBIDDEN',			'Forbidden.');
 define('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED',	'Permission Denied.');
-define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only ROLE_ADMIN is allowed to access this resource.');
+define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only admin users are allowed to access this resource.');
+define('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN',		'Only ROLE_ADMIN is allowed to access this resource.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE',		'Account is not active.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED',			'Account is locked.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		'Account is expired.');
@@ -91,6 +92,22 @@ define('NDPHP_LANG_MOD_CANNOT_FIND_ACTIVE_CONFIG',	'Cannot find an active config
 define('NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN',	'Cannot change the ROLE_ADMIN name.');
 define('NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN',	'Cannot delete ROLE_ADMIN.');
 define('NDPHP_LANG_MOD_CANNOT_ADMIN_USER_NO_ADMIN',	'Cannot remove the ROLE_ADMIN role from User ID 1.');
+define('NDPHP_LANG_MOD_CANNOT_SET_IS_ADMIN_FIELD',  'Only ROLE_ADMIN (superadmin) can set is_admin field.');
+define('NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD','Only admin users can set is_superuser field.');
+define('NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_ROLES',  'Only ROLE_ADMIN (superadmin) can delete admin roles.');
+define('NDPHP_LANG_MOD_CANNOT_DELETE_SUPERUSER_ROLES','Only admin users can delete superuser roles.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_INSERT_ROLE_ADMIN','Only ROLE_ADMIN (superadmin) can insert the superadmin role (ROLE_ADMIN).');
+define('NDPHP_LANG_MOD_CANNOT_USERS_INSERT_ADMIN_ROLES','Only ROLE_ADMIN (superadmin) can insert admin roles.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_INSERT_SUPERUSER_ROLES','Only admin users can insert superuser roles.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_ADD_ROLE_ADMIN','Only ROLE_ADMIN (superadmin) can add special superdamin roles (ROLE_ADMIN) to users.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_ADD_ADMIN_ROLES','Only ROLE_ADMIN (superadmin) can add admin roles to users.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_ADD_SUPERUSER_ROLES','Only admin users can add superuser roles to users.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_ROLE_ADMIN','Only ROLE_ADMIN (superadmin) can manage ROLE_ADMIN on users with superadmin role (ROLE_ADMIN).');
+define('NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_ADMIN_ROLES','Only ROLE_ADMIN (superadmin) can manage admin roles on users with admin roles.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_SUPERUSER_ROLES','Only admin users can manage superuser roles on users with superuser roles.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_DELETE_ROLE_ADMIN','Only ROLE_ADMIN (superadmin) can delete users with superadmin role (ROLE_ADMIN).');
+define('NDPHP_LANG_MOD_CANNOT_USERS_DELETE_ADMIN_ROLES','Only ROLE_ADMIN (superadmin) can delete users with admin roles.');
+define('NDPHP_LANG_MOD_CANNOT_USERS_DELETE_SUPERUSER_ROLES','Only admin users can delete users with superuser roles.');
 
 define('NDPHP_LANG_MOD_DISABLED_MULTI_USER',		'Multi-user support is not enabled.');
 define('NDPHP_LANG_MOD_DISABLED_USER_REGISTER',		'User registration disabled.');

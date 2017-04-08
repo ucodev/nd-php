@@ -52,16 +52,37 @@ class UW_Filter extends UW_Module {
 	public function table_row_apply($table = NULL) {
 		$this->load->module('get');
 
-		/* Admin and superuser users do not have row filters applied */
-		if ($this->security->im_admin() || $this->security->im_superuser())
+		/* Superadmin users do not have row filters applied */
+		if ($this->security->im_superadmin())
 			return;
 
-		$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
-
 		if ($this->config['table_row_filtering'] === true) {
+			$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
+
 			foreach ($this->config['table_row_filtering_config'] as $key => $value) {
-				if (in_array($key, $field_list))
-					$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+				if (in_array($key, $field_list)) {
+					/* If this is a filter based on user ID, grant that the special privileges regarding superadmin, admin and superuser are applied */
+					if ($this->config['table_row_filtering_config'][$key] == 'user_id') {
+						if ($this->security->im_admin()) {
+							/* Admin users cannot access rows owned by superadmins */
+							$exclude_users_id = $this->security->users_superadmin();
+
+							if (count($exclude_users_id))
+								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+						} else if ($this->security->im_superuser()) {
+							/* Superuser users cannot access rows owned by superadmins nor admins */
+							$exclude_users_id = array_merge($this->security->users_superadmin(), $this->security->users_admin());
+
+							if (count($exclude_users_id))
+								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+						} else {
+							/* All other users can only access rows that they own */
+							$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+						}
+					} else {
+						$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+					}
+				}
 			}
 		}
 	}
@@ -69,28 +90,49 @@ class UW_Filter extends UW_Module {
 	public function table_row_perm($id = false, $table = NULL, $id_field = 'id') {
 		$this->load->module('get');
 
-		/* Admin and superuser users do not have row filters applied */
-		if ($this->security->im_admin() || $this->security->im_superuser())
+		/* Superuser users do not have row filters applied */
+		if ($this->security->im_superadmin())
 			return true;
 
 		if ($id === false)
 			return false;
 
-		$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
-
 		if ($this->config['table_row_filtering'] === true) {
+			$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
+
 			foreach ($this->config['table_row_filtering_config'] as $key => $value) {
 				if (in_array($key, $field_list)) {
 					$this->db->select($key);
 					$this->db->from($table ? $table : $this->config['name']);
-					$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
 					$this->db->where(($table ? $table : $this->config['name']) . '.' . $id_field, $id);
+
+					/* If this is a filter based on user ID, grant that the special privileges regarding superadmin, admin and superuser are applied */
+					if ($this->config['table_row_filtering_config'][$key] == 'userid') {
+						if ($this->security->im_admin()) {
+							/* Admin users cannot access rows owned by superadmins */
+							$exclude_users_id = $this->security->users_superadmin();
+
+							if (count($exclude_users_id))
+								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+						} else if ($this->security->im_superuser()) {
+							/* Superuser users cannot access rows owned by superadmins nor admins */
+							$exclude_users_id = array_merge($this->security->users_superadmin(), $this->security->users_admin());
+
+							if (count($exclude_users_id))
+								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+						} else {
+							/* All other users can only access rows that they own */
+							$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+						}
+					} else {
+						$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+					}
+
 					$query = $this->db->get();
 
+					/* If there are no results, then this user has no privileges to access the requested entry */
 					if (!$query->num_rows())
 						return false;
-
-					return true;
 				}
 			}
 		}
@@ -103,15 +145,11 @@ class UW_Filter extends UW_Module {
 
 		/* Evaluates if there's a table row filter to be applied. If so, an assoc array is created for each configured filtering key */
 
-		/* Admin and superuser users do not have row filters applied */
-		if ($this->security->im_admin() || $this->security->im_superuser())
-			return array();
-
 		$res = array();
 
-		$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
-
 		if ($this->config['table_row_filtering'] === true) {
+			$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
+
 			foreach ($this->config['table_row_filtering_config'] as $key => $value) {
 				if (in_array($key, $field_list)) {
 					$res[$key] = $this->config['session_data'][$value];

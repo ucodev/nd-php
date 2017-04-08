@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,31 @@ class Users extends ND_Controller {
 			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 
+		/* Validate roles */
+		if ($this->request->post_isset('rel_users_roles') && count($this->request->post('rel_users_roles'))) {
+			/* Check new roles */
+			$this->db->select('id,is_admin,is_superuser');
+			$this->db->from('roles');
+			$this->db->where_in('id', $this->request->post('rel_users_roles'));
+			$q = $this->db->get();
+
+			if ($q->num_rows()) {
+				foreach ($q->result_array() as $row) {
+					/* Only ROLE_ADMIN (superadmin) can insert the superadmin role (ROLE_ADMIN). */
+					if (($row['id'] == 1) && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_INSERT_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only ROLE_ADMIN (superadmin) can insert admin roles. */
+					if ($row['is_admin'] && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_INSERT_ADMIN_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only admin users can insert superuser roles. */
+					if ($row['is_superuser'] && !$this->security->im_admin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_INSERT_SUPERUSER_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+			}
+		}
+
 		/* Generate user's private key for encryption
 		 *
 		 * This key will be a pseudo random string with 256 bytes of length.
@@ -118,6 +143,56 @@ class Users extends ND_Controller {
 		/* Check if the username is at least 5 characters long */
 		if ($this->request->post_isset('username') && strlen($this->request->post('username')) < 5) {
 			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
+		/* Validate roles */
+		if ($this->request->post_isset('rel_users_roles') && count($this->request->post('rel_users_roles'))) {
+			/* Check new roles */
+			$this->db->select('id,is_admin,is_superuser');
+			$this->db->from('roles');
+			$this->db->where_in('id', $this->request->post('rel_users_roles'));
+			$q = $this->db->get();
+
+			if ($q->num_rows()) {
+				foreach ($q->result_array() as $row) {
+					/* Only ROLE_ADMIN (superadmin) can add special superdamin roles (ROLE_ADMIN) to users */
+					if (($row['id'] == 1) && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_ADD_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only ROLE_ADMIN (superadmin) can add admin roles to users */
+					if ($row['is_admin'] && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_ADD_ADMIN_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only admin users can add superuser roles to users */
+					if ($row['is_superuser'] && !$this->security->im_admin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_ADD_SUPERUSER_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+			}
+
+			/* Check removed roles */
+			$this->db->select('roles.id,roles.is_admin,roles.is_superuser');
+			$this->db->from('roles');
+			$this->db->join('rel_users_roles', 'rel_users_roles.roles_id = roles.id', 'left');
+			$this->db->join('users', 'rel_users_roles.users_id = users.id', 'left');
+			$this->db->where('users.id', $id);
+			$this->db->where_not_in('roles.id', $this->request->post('rel_users_roles'));
+			$q = $this->db->get();
+
+			if ($q->num_rows()) {
+				foreach ($q->result_array() as $row) {
+					/* Only ROLE_ADMIN (superadmin) can manage ROLE_ADMIN on users with superadmin role (ROLE_ADMIN) */
+					if (($row['id'] == 1) && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only ROLE_ADMIN (superadmin) can manage admin roles on users with admin roles */
+					if ($row['is_admin'] && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_ADMIN_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only admin users can manage superuser roles on users with superuser roles */
+					if ($row['is_superuser'] && !$this->security->im_admin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_SUPERUSER_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+			}
 		}
 
 		/* If password was changed ... */
@@ -232,6 +307,33 @@ class Users extends ND_Controller {
 		
 		if ($id == 1)
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Validate roles */
+		if ($this->request->post_isset('rel_users_roles') && count($this->request->post('rel_users_roles'))) {
+			/* Check current roles */
+			$this->db->select('roles.id,roles.is_admin,roles.is_superuser');
+			$this->db->from('roles');
+			$this->db->join('rel_users_roles', 'rel_users_roles.roles_id = roles.id', 'left');
+			$this->db->join('users', 'rel_users_roles.users_id = users.id', 'left');
+			$this->db->where('users.id', $id);
+			$q = $this->db->get();
+
+			if ($q->num_rows()) {
+				foreach ($q->result_array() as $row) {
+					/* Only ROLE_ADMIN (superadmin) can delete users with superadmin role (ROLE_ADMIN). */
+					if (($row['id'] == 1) && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_DELETE_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only ROLE_ADMIN (superadmin) can delete users with admin roles. */
+					if ($row['is_admin'] && !$this->security->im_superadmin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_DELETE_ADMIN_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Only admin users can manage delete users with superuser roles. */
+					if ($row['is_superuser'] && !$this->security->im_admin())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_USERS_DELETE_SUPERUSER_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+			}
+		}
 
 		return $hook_pre_return;
 	}

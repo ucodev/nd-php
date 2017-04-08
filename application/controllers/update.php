@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,8 +58,8 @@ class Update extends ND_Controller {
 		$this->_init(get_class(), true);
 
 		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+		if (!$this->security->im_superadmin())
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 
 	

@@ -30,6 +30,35 @@
  *
  */
 
+/*
+ * Notes:
+ *
+ *  Superadmin Role (ROLE_ADMIN):
+ *    - Full access to all critical controllers.
+ *    - Can set/unset is_admin and is_superuser privileges under any role.
+ *    - Can create, manage and delete any user with any set of roles.
+ *    - Can change/delete any entry from any user, under controllers with table_row_filtering settings enabled.
+ *    - Access granted by any permissions set under _acl_rtp and _acl_rtcp.
+ *    - Unfiltered rows for controllers with table_row_filtering settings enabled.
+ *
+ *  Admin Roles (is_admin):
+ *    - Can access 'logging' critical controller.
+ *    - Can set/unset is_superuser privilege under any non-admin (or superadmin) role.
+ *    - Cannot assign/unassign admin nor superadmin roles to/from users (only superuser roles).
+ *    - Can change/delete any entry from any user without superadmin role, under controllers with table_row_filtering settings enabled.
+ *    - Access granted by any permissions set under _acl_rtp and _acl_rtcp.
+ *    - Unfiltered rows for controllers with table_row_filtering settings enabled.
+ *
+ *  Superuser Roles (is_superuser):
+ *    - Cannot access critical controllers.
+ *    - Cannot set special permissions on roles (is_superuser and is_admin).
+ *    - Cannot assign/unassign roles with special permissions to/from users.
+ *    - Can change/delete any entry from any user without superadmin or admin roles, under controllers with table_row_filtering settings enabled.
+ *    - Access granted by any permissions set under _acl_rtp and _acl_rtcp.
+ *    - Unfiltered rows for controllers with table_row_filtering settings enabled.
+ *
+ */
+
 class Roles extends ND_Controller {
 	/* Constructor */
 	public function __construct($session_enable = true, $json_replies = false) {
@@ -40,12 +69,34 @@ class Roles extends ND_Controller {
 	}
 
 	/** Hooks **/
+	protected function _hook_insert_pre(&$POST, &$fields) {
+		$hook_pre_return = NULL;
+
+		/* Only ROLE_ADMIN (superadmin) can change is_admin field */
+		if ($this->request->post_isset('is_admin') && !$this->security->im_superadmin())
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_ADMIN_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Only administrators can change is_superuser field */
+		if ($this->request->post_isset('is_superuser') && !$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
+
+		return $hook_pre_return;
+	}
+
 	protected function _hook_update_pre(&$id, &$POST, &$fields) {
 		$hook_pre_return = NULL;
 
-		/* Do not allow changes to ROLE_ADMIN name */
+		/* Do not allow changes to ROLE_ADMIN name (roles.id == 1 is a super admin role) */
 		if ($id == 1 && $this->request->post_isset('role') && $this->request->post('role') != 'ROLE_ADMIN')
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_CHANGE_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Only ROLE_ADMIN (superadmin) can change is_admin field */
+		if ($this->request->post_isset('is_admin') && !$this->security->im_superadmin())
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_ADMIN_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Only administrators can change is_superuser field */
+		if ($this->request->post_isset('is_superuser') && !$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		return $hook_pre_return;
 	}
@@ -53,10 +104,30 @@ class Roles extends ND_Controller {
 	protected function _hook_delete_pre(&$id, &$POST, &$fields) {
 		$hook_pre_return = NULL;
 
-		/* Do now allow the ROLE_ADMIN to be deleted */
+		/* Do now allow the ROLE_ADMIN (superadmin) to be deleted */
 		if ($id == 1)
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ROLE_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 
+		/* Fetch role information */
+		$this->db->select('is_admin,is_superuser');
+		$this->db->from($this->config['name']);
+		$this->db->where('id', $id);
+		$q = $this->db->get();
+
+		/* Check if the role exists */
+		if (!$q->num_rows())
+			$this->request->code('404', 'No such role.', $this->config['default_charset'], !$this->request->is_ajax());
+		
+		$row = $q->row_array();
+
+		/* Only superadmin can delete is_admin roles */
+		if ($row['is_admin'] && !$this->security->im_superadmin())
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+		
+		/* Only administrators can delete is_superuser roles */
+		if ($row['is_superuser'] && !$this->security->im_admin())
+			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_SUPERUSER_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
+		
 		return $hook_pre_return;
 	}
 

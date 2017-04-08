@@ -269,6 +269,135 @@ class UW_Security extends UW_Model {
 		return true;
 	}
 
+	public function users_superadmin() {
+		/* Fetch an array of user id's' with ROLE_ADMIN */
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_sec_users_superadmin')) {
+				return $this->cache->get('d_cache_sec_users_superadmin');
+			}
+		}
+
+		/* Fetch data from database */
+		$this->db->select('users.id');
+		$this->db->distinct();
+		$this->db->from('users');
+		$this->db->join('rel_users_roles', 'rel_users_roles.users_id = users.id', 'left');
+		$this->db->join('roles', 'rel_users_roles.roles_id = roles.id', 'left');
+		$this->db->where('roles.id', 1); /* ROLE_ADMIN == 1 */
+		$q = $this->db->get();
+
+		if (!$q->num_rows())
+			return array();
+
+		$users_superadmin = array();
+
+		foreach ($q->result_array() as $row)
+			array_push($users_superadmin, $row['id']);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_sec_users_superadmin', true);
+			$this->cache->set('d_cache_sec_users_superadmin', $users_superadmin);
+		}
+
+		return $users_superadmin;
+	}
+
+	public function users_admin() {
+		/* Fetch an array of user id's' with roles assigned with the is_admin privilege set */
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_sec_users_admin')) {
+				return $this->cache->get('d_cache_sec_users_admin');
+			}
+		}
+
+		/* Fetch data from database */
+		$this->db->select('users.id');
+		$this->db->distinct();
+		$this->db->from('users');
+		$this->db->join('rel_users_roles', 'rel_users_roles.users_id = users.id', 'left');
+		$this->db->join('roles', 'rel_users_roles.roles_id = roles.id', 'left');
+		$this->db->where('roles.is_admin', 1);
+		$q = $this->db->get();
+
+		if (!$q->num_rows())
+			return array();
+
+		$users_admin = array();
+
+		foreach ($q->result_array() as $row)
+			array_push($users_admin, $row['id']);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_sec_users_admin', true);
+			$this->cache->set('d_cache_sec_users_admin', $users_superadmin);
+		}
+
+		return $users_admin;
+	}
+
+	public function users_superuser() {
+		/* Fetch an array of user id's' with roles assigned with the is_superuser privilege set */
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_sec_users_superuser')) {
+				return $this->cache->get('d_cache_sec_users_superuser');
+			}
+		}
+
+		/* Fetch data from database */
+		$this->db->select('users.id');
+		$this->db->distinct();
+		$this->db->from('users');
+		$this->db->join('rel_users_roles', 'rel_users_roles.users_id = users.id', 'left');
+		$this->db->join('roles', 'rel_users_roles.roles_id = roles.id', 'left');
+		$this->db->where('roles.is_superuser', 1);
+
+		$q = $this->db->get();
+
+		if (!$q->num_rows())
+			return array();
+
+		$users_superuser = array();
+
+		foreach ($q->result_array() as $row)
+			array_push($users_superuser, $row['id']);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_sec_users_superuser', true);
+			$this->cache->set('d_cache_sec_users_superuser', $users_superadmin);
+		}
+
+		return $users_superuser;
+	}
+
+	public function is_superadmin($user_id) {
+		/* Check if $user_id is superadmin */
+		return in_array($user_id, $this->users_superadmin());
+	}
+
+	public function is_admin($user_id) {
+		/* Check if $user_id is admin */
+		return in_array($user_id, $this->users_admin());
+	}
+
+	public function is_superuser($user_id) {
+		/* Check if $user_id is superuser */
+		return in_array($user_id, $this->users_superuser());
+	}
+
+	public function im_superadmin() {
+		/* ROLE_ADMIN is always admin, even when is_admin is not set */
+		return in_array(1, $this->session->userdata('roles'));
+	}
+
 	public function im_admin() {
 		/* ROLE_ADMIN is always admin, even when is_admin is not set */
 		return in_array(1, $this->session->userdata('roles')) || $this->session->userdata('is_admin');
