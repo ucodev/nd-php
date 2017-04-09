@@ -107,7 +107,7 @@ class UW_Filter extends UW_Module {
 					$this->db->where(($table ? $table : $this->config['name']) . '.' . $id_field, $id);
 
 					/* If this is a filter based on user ID, grant that the special privileges regarding superadmin, admin and superuser are applied */
-					if ($this->config['table_row_filtering_config'][$key] == 'userid') {
+					if ($this->config['table_row_filtering_config'][$key] == 'user_id') {
 						if ($this->security->im_admin()) {
 							/* Admin users cannot access rows owned by superadmins */
 							$exclude_users_id = $this->security->users_superadmin();

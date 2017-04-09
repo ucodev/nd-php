@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,9 @@ class UW_Field extends UW_Module {
 	}
 
 	public function value_mangle($fields, $query, $id = NULL) {
+		/* Access global configuration */
+		global $config;
+
 		$result_mangled = array();
 
 		foreach ($query->result_array() as $data) {
@@ -73,7 +76,27 @@ class UW_Field extends UW_Module {
 					if ($row[$field]['driver'] == 'local' && (isset($row['id']) || $id !== NULL)) {
 						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['path'] . '/' . (isset($row['id']) ? $row['id'] : $id);
 					} else if ($row[$field]['driver'] == 's3') {
+						/* Specific handles for AWS S3 buckets */
 						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['path'];
+
+						/* If there are resized versions of the image available, populate them under image object */
+						if (isset($row[$field]['image']) && ($config['aws']['bucket_img_resize'] === true)) {
+							if (isset($config['aws']['bucket_img_resize_xxsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxsmall_width'])) {
+								$row[$field]['image']['xxsmall'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_xxsmall_dir'] . '/' . $row[$field]['path'];
+							} else if (isset($config['aws']['bucket_img_resize_xsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xsmall_width'])) {
+								$row[$field]['image']['xsmall'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_xsmall_dir'] . '/' . $row[$field]['path'];
+							} else if (isset($config['aws']['bucket_img_resize_small_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_small_width'])) {
+								$row[$field]['image']['small'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_small_dir'] . '/' . $row[$field]['path'];
+							} else if (isset($config['aws']['bucket_img_resize_medium_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_medium_width'])) {
+								$row[$field]['image']['medium'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_medium_dir'] . '/' . $row[$field]['path'];
+							} else if (isset($config['aws']['bucket_img_resize_large_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_large_width'])) {
+								$row[$field]['image']['large'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_large_dir'] . '/' . $row[$field]['path'];
+							} else if (isset($config['aws']['bucket_img_resize_xlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xlarge_width'])) {
+								$row[$field]['image']['xlarge'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_xlarge_dir'] . '/' . $row[$field]['path'];
+							} else if (isset($config['aws']['bucket_img_resize_xxlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxlarge_width'])) {
+								$row[$field]['image']['xxlarge'] = $config['aws']['bucket_img_resize_base_url'] . '/' . $config['aws']['bucket_img_resize_xxlarge_dir'] . '/' . $row[$field]['path'];
+							}
+						}
 					}
 				} else {
 					/* Just push the value without modification */

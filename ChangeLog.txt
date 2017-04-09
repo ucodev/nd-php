@@ -1,3 +1,9 @@
+v0.04e (2017-04-09):
+
+ - Fixed session field name under filter module for admin and superuser filtering.
+ - Added support for resized image versions under AWS S3 file driver.
+
+
 v0.04d (2017-04-08):
 
  - Updated superadmin, admin and superuser security accesses.

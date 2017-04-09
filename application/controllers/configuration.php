@@ -38,7 +38,7 @@ class Configuration extends ND_Controller {
 		/* Initialize controller */
 		$this->_init(get_class(), true);
 
-		/* Grant that only admin users are able to access this controller */
+		/* Grant that only ROLE_ADMIN (superadmin) is able to access this controller */
 		if (!$this->security->im_superadmin())
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
