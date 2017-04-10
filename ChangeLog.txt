@@ -1,3 +1,10 @@
+v0.04f2 (2017-04-11):
+
+ - Minor fixes under ND core controller.
+ - Added file signature to _file_ objects.
+ - Improved S3 resized image upload routines.
+
+
 v0.04f1 (2017-04-10):
 
  - Fixed image field mangling for S3 images.

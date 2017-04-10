@@ -185,6 +185,7 @@ define('NDPHP_LANG_MOD_INVALID_REGISTRATION_CODE',	'The registration code does n
 define('NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION',   'Invalid search condition');
 define('NDPHP_LANG_MOD_INVALID_NULL_COMPARISION_REL','Invalid NULL comparision request on a multiple relationship field.');
 define('NDPHP_LANG_MOD_INVALID_CHARS_CTRL',		    'Invalid charaters on controller name.');
+define('NDPHP_LANG_MOD_INVALID_IMAGE_RESIZE_FORMAT','Invalid image format or extension. Only JPG, PNG, GIF and BMP are accepted for resize.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');

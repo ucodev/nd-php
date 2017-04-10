@@ -192,6 +192,7 @@ class UW_Upload extends UW_Module {
 				$meta['name'] = $_FILES[$k]['name'];
 				$meta['type'] = NULL;
 				$meta['size'] = $_FILES[$k]['size'];
+				$meta['hash'] = openssl_digest($_FILES[$field]['tmp_name'], 'sha256');
 
 				/* If file is an image, also set the image properties */
 				if (($img_props = getimagesize($_FILES[$field]['tmp_name'])) !== false) {
@@ -374,7 +375,7 @@ class UW_Upload extends UW_Module {
 	}
 
 	/* TODO: FIXME: Evaluate if this method should be migrated into the S3 module, or if makes more sense to keep it here */
-	private function _aws_s3_upload_resized_images($tfile, $width, $orig_s3_path, $encryption = false) {
+	private function _aws_s3_upload_resized_images($tfile, $width, $orig_s3_file_path, $encryption = false) {
 		/* Access global configuration */
 		global $config;
 
@@ -396,24 +397,72 @@ class UW_Upload extends UW_Module {
 				/* Scale image from original resource, if set */
 				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
 					/* Resize image */
-					if (($imgrc_small = imagescale($imgrc, $config['aws']['bucket_img_resize_' . $ver . '_width'])) === false) {
+					if (($imgrc_resized = imagescale($imgrc, $config['aws']['bucket_img_resize_' . $ver . '_width'])) === false) {
 						/* Unlink the temporary file */
 						unlink($tfile);
 
 						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
 					}
 
-					/* Store new image size (if it's not a JPEG, it will be converted into this format) */
-					if (imagejpeg($imgrc_small, $tfile . '.' . $ver . '.jpg') === false) {
-						/* Unlink the temporary file */
-						unlink($tfile);
+					/* Get file extension */
+					$extension = end(explode('.', $orig_s3_file_path));
 
-						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+					/* Convert the image file to match it's extension, if required */
+					switch (strtolower($extension)) {
+						case 'jpeg':
+						case 'jpg': {
+							/* Store new image size (if it's not a JPEG, it will be converted into this format) */
+							if (imagejpeg($imgrc_resized, $tfile . '.' . $ver . '.jpg') === false) {
+								/* Unlink the temporary file */
+								unlink($tfile);
+
+								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([JPG]' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+							}
+						} break;
+						case 'png': {
+							/* Store new image size (if it's not a PNG, it will be converted into this format) */
+							if (imagepng($imgrc_resized, $tfile . '.' . $ver . '.png') === false) {
+								/* Unlink the temporary file */
+								unlink($tfile);
+
+								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([PNG]' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+							}
+						} break;
+						case 'gif': {
+							/* Store new image size (if it's not a GIF, it will be converted into this format) */
+							if (imagegif($imgrc_resized, $tfile . '.' . $ver . '.gif') === false) {
+								/* Unlink the temporary file */
+								unlink($tfile);
+
+								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([GIF]' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+							}
+						} break;
+						case 'bmp': {
+							/* Store new image size (if it's not a BMP, it will be converted into this format) */
+							if (imagebmp($imgrc_resized, $tfile . '.' . $ver . '.bmp') === false) {
+								/* Unlink the temporary file */
+								unlink($tfile);
+
+								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([BMP] ' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+							}
+						} break;
+						default: {
+							/* Unable to convert image format */
+
+							/* Unlink the temporary file */
+							unlink($tfile);
+
+							$this->response->code('500', NDPHP_LANG_MOD_INVALID_IMAGE_RESIZE_FORMAT . ' ([' . strtoupper($extension) . ']' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+						}
 					}
+
+					/* Destroy image resource */
+					imagedestroy($imgrc_resized);
 
 					/* Upload resized image into S3 bucket */
 					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver . '.jpg'), $encryption) === false) {
 						/* Unlink the temporary file */
+						unlink($tfile . '.' . $ver . '.jpg');
 						unlink($tfile);
 
 						$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
@@ -423,6 +472,9 @@ class UW_Upload extends UW_Module {
 					unlink($tfile . '.' . $ver . '.jpg');
 				}
 			}
+
+			/* Destroy original image resource */
+			imagedestroy($imgrc);
 		}
 	}
 }

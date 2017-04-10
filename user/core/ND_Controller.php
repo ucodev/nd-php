@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04f1';
+	protected $_ndphp_version = '0.04f2';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4041,6 +4041,10 @@ class ND_Controller extends UW_Controller {
 				/* Remove all related entries from relational table */
 				$this->db->delete($table, array($this->config['name'] . '_id' => $last_id));
 			
+				/* Check if $value contains any data */				
+				if (!$value)
+					continue;
+
 				/* Insert new relationships */
 				foreach ($value as $rel_id) {
 					if (!$rel_id) /* Ignore the None (hidden) value */
@@ -4583,6 +4587,10 @@ class ND_Controller extends UW_Controller {
 		foreach ($multiple_rels as $rel_field) {
 			/* Remove all related entries from relational table */
 			$this->db->delete($rel_field['table'], array($this->config['name'] . '_id' => $this->request->post('id')));
+
+			/* Check if there are any values to be inserted */
+			if (!$rel_field['values'])
+				continue;
 
 			/* Insert new relationships */
 			foreach ($rel_field['values'] as $rel_id) {
