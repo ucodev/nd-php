@@ -81,21 +81,26 @@ class UW_Field extends UW_Module {
 
 						/* If there are resized versions of the image available, populate them under image object */
 						if (isset($row[$field]['image']) && ($config['aws']['bucket_img_resize'] === true)) {
-							if (isset($config['aws']['bucket_img_resize_xxsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxsmall_width'])) {
+							if (isset($config['aws']['bucket_img_resize_xxsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxsmall_width']))
 								$row[$field]['image']['xxsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxsmall_dir'] . '/' . $row[$field]['path'];
-							} else if (isset($config['aws']['bucket_img_resize_xsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xsmall_width'])) {
+
+							if (isset($config['aws']['bucket_img_resize_xsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xsmall_width']))
 								$row[$field]['image']['xsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xsmall_dir'] . '/' . $row[$field]['path'];
-							} else if (isset($config['aws']['bucket_img_resize_small_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_small_width'])) {
+
+							if (isset($config['aws']['bucket_img_resize_small_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_small_width']))
 								$row[$field]['image']['small'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_small_dir'] . '/' . $row[$field]['path'];
-							} else if (isset($config['aws']['bucket_img_resize_medium_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_medium_width'])) {
+
+							if (isset($config['aws']['bucket_img_resize_medium_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_medium_width']))
 								$row[$field]['image']['medium'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_medium_dir'] . '/' . $row[$field]['path'];
-							} else if (isset($config['aws']['bucket_img_resize_large_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_large_width'])) {
+
+							if (isset($config['aws']['bucket_img_resize_large_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_large_width']))
 								$row[$field]['image']['large'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_large_dir'] . '/' . $row[$field]['path'];
-							} else if (isset($config['aws']['bucket_img_resize_xlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xlarge_width'])) {
+
+							if (isset($config['aws']['bucket_img_resize_xlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xlarge_width']))
 								$row[$field]['image']['xlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xlarge_dir'] . '/' . $row[$field]['path'];
-							} else if (isset($config['aws']['bucket_img_resize_xxlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxlarge_width'])) {
+
+							if (isset($config['aws']['bucket_img_resize_xxlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxlarge_width']))
 								$row[$field]['image']['xxlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxlarge_dir'] . '/' . $row[$field]['path'];
-							}
 						}
 					}
 				} else {
