@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -294,10 +294,14 @@ class UW_Upload extends UW_Module {
 				/* Upload the file to S3 bucket */
 				if ($this->s3->upload($meta['path'], file_get_contents($tfile), $this->config['upload_file_encryption']) === false) {
 					/* Unlink the temporary file */
-					unlink($_FILES[$field]['tmp_name']);
+					unlink($tfile);
 
 					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
 				}
+
+				/* If this is an image file, create the resized image versions, if configured */
+				if (isset($meta['image']) && ($meta['image']['width'] > 0))
+					$this->_aws_s3_upload_resized_images($tfile, intval($meta['image']['width']), $meta['path'], $this->config['upload_file_encryption']);
 
 				/* Unlink the temporary file */
 				unlink($tfile);
@@ -311,6 +315,10 @@ class UW_Upload extends UW_Module {
 
 					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
 				}
+
+				/* If this is an image file, create the resized image versions, if configured */
+				if (isset($meta['image']) && ($meta['image']['width'] > 0))
+					$this->_aws_s3_upload_resized_images($_FILES[$field]['tmp_name'], intval($meta['image']['width']), $meta['path'], $this->config['upload_file_encryption']);
 
 				/* Unlink the temporary file */
 				unlink($_FILES[$field]['tmp_name']);
@@ -362,6 +370,59 @@ class UW_Upload extends UW_Module {
 
 			reset($objects);
 			rmdir($dir);
+		}
+	}
+
+	/* TODO: FIXME: Evaluate if this method should be migrated into the S3 module, or if makes more sense to keep it here */
+	private function _aws_s3_upload_resized_images($tfile, $width, $orig_s3_path, $encryption = false) {
+		/* Access global configuration */
+		global $config;
+
+		/* Check if image resize feature is enabled  */
+		if ($config['aws']['bucket_img_resize'] === true) {
+			/* Possible available versions */
+			$ver_list = array('xxsmall', 'xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge');
+
+			/* Load image resource */
+			if (($imgrc = imagecreatefromstring(file_get_contents($tfile))) === false) {
+				/* Unlink the temporary file */
+				unlink($tfile);
+
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_CREATE_IMG_RES_FILE . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+			}
+
+			/* Iterate over the possible available versions */
+			foreach ($ver_list as $ver) {
+				/* Scale image from original resource, if set */
+				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
+					/* Resize image */
+					if (($imgrc_small = imagescale($imgrc, $config['aws']['bucket_img_resize_' . $ver . '_width'])) === false) {
+						/* Unlink the temporary file */
+						unlink($tfile);
+
+						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Store new image size (if it's not a JPEG, it will be converted into this format) */
+					if (imagejpeg($imgrc_small, $tfile . '.' . $ver . '.jpg') === false) {
+						/* Unlink the temporary file */
+						unlink($tfile);
+
+						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Upload resized image into S3 bucket */
+					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver . '.jpg'), $encryption) === false) {
+						/* Unlink the temporary file */
+						unlink($tfile);
+
+						$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Unlink resized image file */
+					unlink($tfile . '.' . $ver . '.jpg');
+				}
+			}
 		}
 	}
 }

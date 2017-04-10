@@ -1,3 +1,9 @@
+v0.04f (2017-04-10):
+
+ - Improved S3 resized images support.
+ - Updated language files.
+
+
 v0.04e (2017-04-09):
 
  - Fixed session field name under filter module for admin and superuser filtering.
