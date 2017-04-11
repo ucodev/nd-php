@@ -1,3 +1,8 @@
+v0.04f4 (2017-04-11):
+
+ - Added support for file signature when uploaded via JSON encoded request.
+
+
 v0.04f3 (2017-04-11):
 
  - Added support for automatic resized image removal on drop requests.

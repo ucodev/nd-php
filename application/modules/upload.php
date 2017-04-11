@@ -152,6 +152,9 @@ class UW_Upload extends UW_Module {
 					/* Set size property based on file size */
 					$meta['size'] = filesize($tfile);
 
+					/* Compute the file signature */
+					$meta['hash'] = openssl_digest($tfile, 'sha256');
+
 					/* If file is an image, also set the image properties */
 					if (($img_props = getimagesize($tfile)) !== false) {
 						$meta['image'] = array();
