@@ -345,12 +345,18 @@ class UW_Upload extends UW_Module {
 				/* Remove the file from the S3 bucket */
 				if ($this->s3->drop($meta['path']) === false)
 					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Remove resized images, if any */
+				if (isset($meta['image']) && ($meta['image']['width'] > 0))
+					$this->_aws_s3_drop_resized_images($meta['image']['width'], $meta['path']);
 			} break;
 			default: $this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
 		}
 	}
 
 	private function _rrmdir($dir) {
+		/* TODO: FIXME: Add support for different drivers */
+
 		/* Sanity checks */
 		if (strpos($dir, '/..') || substr($dir, 0, 2) == '..')
 			return;
@@ -376,6 +382,8 @@ class UW_Upload extends UW_Module {
 
 	/* TODO: FIXME: Evaluate if this method should be migrated into the S3 module, or if makes more sense to keep it here */
 	private function _aws_s3_upload_resized_images($tfile, $width, $orig_s3_file_path, $encryption = false) {
+		/* NOTE: S3 module already loaded */
+
 		/* Access global configuration */
 		global $config;
 
@@ -475,6 +483,29 @@ class UW_Upload extends UW_Module {
 
 			/* Destroy original image resource */
 			imagedestroy($imgrc);
+		}
+	}
+
+	private function _aws_s3_drop_resized_images($width, $orig_s3_file_path) {
+		/* NOTE: S3 module already loaded */
+
+		/* Access global configuration */
+		global $config;
+
+		/* Check if image resize feature is enabled  */
+		if ($config['aws']['bucket_img_resize'] === true) {
+			/* Possible available versions */
+			$ver_list = array('xxsmall', 'xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge');
+
+			/* Iterate over the possible available versions */
+			foreach ($ver_list as $ver) {
+				/* Check if it's likely for a specific scaled image to exist and attempt to drop it */
+				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
+					/* Drop image */
+					if ($this->s3->drop($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path) === false)
+						error_log('upload.php: _aws_s3_drop_resized_images(): Unable to remove image from S3 bucket: ' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path);
+				}
+			}
 		}
 	}
 }

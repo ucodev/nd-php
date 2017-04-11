@@ -1,3 +1,8 @@
+v0.04f3 (2017-04-11):
+
+ - Added support for automatic resized image removal on drop requests.
+
+
 v0.04f2 (2017-04-11):
 
  - Minor fixes under ND core controller.
