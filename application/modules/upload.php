@@ -395,85 +395,26 @@ class UW_Upload extends UW_Module {
 			/* Possible available versions */
 			$ver_list = array('xxsmall', 'xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge');
 
-			/* Load image resource */
-			if (($imgrc = imagecreatefromstring(file_get_contents($tfile))) === false) {
-				/* Unlink the temporary file */
-				unlink($tfile);
-
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_CREATE_IMG_RES_FILE . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-			}
-
 			/* Iterate over the possible available versions */
 			foreach ($ver_list as $ver) {
-				/* Scale image from original resource, if set */
 				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
-					/* Resize image */
-					if (($imgrc_resized = imagescale($imgrc, $config['aws']['bucket_img_resize_' . $ver . '_width'])) === false) {
-						/* Unlink the temporary file */
-						unlink($tfile);
+					$resize_status = $this->image->resize(
+						/* orig */    $tfile,
+						/* dest */    $file . '.' . $ver . '.' . $this->image->file_extension($tfile),
+						/* width */   $config['aws']['bucket_img_resize_' . $ver . '_width'],
+						/* height */  -1,
+						/* quality */ $config['aws']['bucket_img_resize_quality'],
+						/* mode */    $config['aws']['bucket_img_resize_mode']
+					);
 
+					/* Check if resize succeeded */
+					if ($resize_status !== true)
 						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-					}
-
-					/* Get file extension */
-					$extension = end(explode('.', $orig_s3_file_path));
-
-					/* Convert the image file to match it's extension, if required */
-					switch (strtolower($extension)) {
-						case 'jpeg':
-						case 'jpg': {
-							/* Store new image size (if it's not a JPEG, it will be converted into this format) */
-							if (imagejpeg($imgrc_resized, $tfile . '.' . $ver . '.jpg') === false) {
-								/* Unlink the temporary file */
-								unlink($tfile);
-
-								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([JPG]' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-							}
-						} break;
-						case 'png': {
-							/* Store new image size (if it's not a PNG, it will be converted into this format) */
-							if (imagepng($imgrc_resized, $tfile . '.' . $ver . '.png') === false) {
-								/* Unlink the temporary file */
-								unlink($tfile);
-
-								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([PNG]' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-							}
-						} break;
-						case 'gif': {
-							/* Store new image size (if it's not a GIF, it will be converted into this format) */
-							if (imagegif($imgrc_resized, $tfile . '.' . $ver . '.gif') === false) {
-								/* Unlink the temporary file */
-								unlink($tfile);
-
-								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([GIF]' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-							}
-						} break;
-						case 'bmp': {
-							/* Store new image size (if it's not a BMP, it will be converted into this format) */
-							if (imagebmp($imgrc_resized, $tfile . '.' . $ver . '.bmp') === false) {
-								/* Unlink the temporary file */
-								unlink($tfile);
-
-								$this->response->code('500', NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE . ' ([BMP] ' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-							}
-						} break;
-						default: {
-							/* Unable to convert image format */
-
-							/* Unlink the temporary file */
-							unlink($tfile);
-
-							$this->response->code('500', NDPHP_LANG_MOD_INVALID_IMAGE_RESIZE_FORMAT . ' ([' . strtoupper($extension) . ']' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
-						}
-					}
-
-					/* Destroy image resource */
-					imagedestroy($imgrc_resized);
 
 					/* Upload resized image into S3 bucket */
-					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver . '.jpg'), $encryption) === false) {
+					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver . '.' . $this->image->file_extension($tfile)), $encryption) === false) {
 						/* Unlink the temporary file */
-						unlink($tfile . '.' . $ver . '.jpg');
+						unlink($tfile . '.' . $ver . '.' . $this->image->file_extension($tfile));
 						unlink($tfile);
 
 						$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
@@ -483,9 +424,6 @@ class UW_Upload extends UW_Module {
 					unlink($tfile . '.' . $ver . '.jpg');
 				}
 			}
-
-			/* Destroy original image resource */
-			imagedestroy($imgrc);
 		}
 	}
 
@@ -506,7 +444,7 @@ class UW_Upload extends UW_Module {
 				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
 					/* Drop image */
 					if ($this->s3->drop($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path) === false)
-						error_log('upload.php: _aws_s3_drop_resized_images(): Unable to remove image from S3 bucket: ' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path);
+						error_log(__FILE__ . ': ' . __FUNCTION__ . '(): Unable to remove image from S3 bucket: ' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path);
 				}
 			}
 		}

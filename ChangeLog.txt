@@ -1,3 +1,10 @@
+v0.04g (2017-04-14):
+
+ - Updated uWeb.
+ - Updated upload controller to make use of uWeb image extension features.
+ - Updated tracker.
+
+
 v0.04f4 (2017-04-11):
 
  - Added support for file signature when uploaded via JSON encoded request.
