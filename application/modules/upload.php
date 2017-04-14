@@ -400,7 +400,7 @@ class UW_Upload extends UW_Module {
 				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
 					$resize_status = $this->image->resize(
 						/* orig */    $tfile,
-						/* dest */    $file . '.' . $ver . '.' . $this->image->file_extension($tfile),
+						/* dest */    $tfile . '.' . $ver . '.' . $this->image->file_extension($tfile),
 						/* width */   $config['aws']['bucket_img_resize_' . $ver . '_width'],
 						/* height */  -1,
 						/* quality */ $config['aws']['bucket_img_resize_quality'],
