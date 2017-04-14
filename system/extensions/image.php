@@ -59,7 +59,7 @@ class UW_Image {
 	public function file_extension($filename) {
 		$a = explode('.', $filename);
 
-		if (!$a) return '';
+		if (count($a) <= 1) return '';
 
 		$ext = end($a);
 

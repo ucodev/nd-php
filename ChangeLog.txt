@@ -1,3 +1,9 @@
+v0.04g3 (2017-04-14):
+
+ - Updated uWeb.
+ - Removed extensions parsing from upload module on resized temporary images.
+
+
 v0.04g2 (2017-04-14):
 
  - Added image extension to autoload installation.

@@ -400,7 +400,7 @@ class UW_Upload extends UW_Module {
 				if (isset($config['aws']['bucket_img_resize_' . $ver . '_dir']) && isset($config['aws']['bucket_img_resize_' . $ver . '_width']) && ($width >= $config['aws']['bucket_img_resize_' . $ver . '_width'])) {
 					$resize_status = $this->image->resize(
 						/* orig */    $tfile,
-						/* dest */    $tfile . '.' . $ver . '.' . $this->image->file_extension($tfile),
+						/* dest */    $tfile . '.' . $ver,
 						/* width */   $config['aws']['bucket_img_resize_' . $ver . '_width'],
 						/* height */  -1,
 						/* quality */ $config['aws']['bucket_img_resize_quality'],
@@ -412,16 +412,16 @@ class UW_Upload extends UW_Module {
 						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
 
 					/* Upload resized image into S3 bucket */
-					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver . '.' . $this->image->file_extension($tfile)), $encryption) === false) {
+					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver), $encryption) === false) {
 						/* Unlink the temporary file */
-						unlink($tfile . '.' . $ver . '.' . $this->image->file_extension($tfile));
+						unlink($tfile . '.' . $ver);
 						unlink($tfile);
 
 						$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
 					}
 
 					/* Unlink resized image file */
-					unlink($tfile . '.' . $ver . '.jpg');
+					unlink($tfile . '.' . $ver);
 				}
 			}
 		}
