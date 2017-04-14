@@ -1,3 +1,8 @@
+v0.04g4 (2017-04-14):
+
+ - Unlink temporary image on resize failure.
+
+
 v0.04g3 (2017-04-14):
 
  - Updated uWeb.

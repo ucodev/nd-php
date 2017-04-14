@@ -408,12 +408,16 @@ class UW_Upload extends UW_Module {
 					);
 
 					/* Check if resize succeeded */
-					if ($resize_status !== true)
+					if ($resize_status !== true) {
+						/* Unlink temporary file */
+						unlink($tfile);
+
 						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+					}
 
 					/* Upload resized image into S3 bucket */
 					if ($this->s3->upload($config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_' . $ver . '_dir'] . '/' . $orig_s3_file_path, file_get_contents($tfile . '.' . $ver), $encryption) === false) {
-						/* Unlink the temporary file */
+						/* Unlink the temporary files */
 						unlink($tfile . '.' . $ver);
 						unlink($tfile);
 
