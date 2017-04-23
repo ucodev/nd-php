@@ -1,3 +1,13 @@
+v0.04h (2017-04-23):
+
+ - Fixed application model to avoid attempts to delete fields on custom objects.
+ - Authentication reply via JSON encoded requests now decodes user photo object (if any).
+ - Added extra username checks on register requests.
+ - Added support for width and height size check on core controllers.
+ - Added mandatory check for file image extension on upload requests.
+ - Updated language files.
+
+
 v0.04g4 (2017-04-14):
 
  - Unlink temporary image on resize failure.

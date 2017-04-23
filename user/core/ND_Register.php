@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@ class ND_Register extends UW_Controller {
 	protected $_word_false = NDPHP_LANG_MOD_WORD_FALSE;
 
 	private $nd_app_base_url = 'https://localhost/ndphp';
+	private $nd_username_safe_chars = "a-zA-Z0-9_-\.";
 	private $roles_regular_id = 4;	/* Regular user roles_id (for newly registered users) */
 	private $recaptcha_public_key = '6LxxxxxxAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 	private $recaptcha_private_key = '6LxxxxxxAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxx';
@@ -433,30 +434,34 @@ class ND_Register extends UW_Controller {
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_RECAPTCHA_VALUE, $this->_charset, !$this->request->is_ajax());
 		}
 
+		/* Validate username characters */
+		if (!preg_match('/^[' . $this->nd_username_safe_chars . ']+$/', $_POST['username']))
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_CHARS, $this->_charset, !$this->request->is_ajax());
+
 		/* Validate First Name */
 		if (isset($_POST['first_name']) && preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['first_name']) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate Last Name */
 		if (isset($_POST['last_name']) && preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['last_name']) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_LAST_NAME, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_LAST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate password */
 		if (strlen($_POST['password']) < 8)
-			$this->response->code('403', 'Password must have at least 8 characters', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', 'Password must have at least 8 characters', $this->_charset, !$this->request->is_ajax());
 
 		if (strlen($_POST['password']) > 32)
-			$this->response->code('403', 'Password cannot be greater than 32 characters', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', 'Password cannot be greater than 32 characters', $this->_charset, !$this->request->is_ajax());
 
 		if ($_POST['password'] != $_POST['password_check'])
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH, $this->_charset, !$this->request->is_ajax());
 
 		if (!isset($_POST['terms']) || ($_POST['terms'] != '1'))
-			$this->response->code('403', NDPHP_LANG_MOD_ATTN_READ_ACCEPT_TERMS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_ATTN_READ_ACCEPT_TERMS, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate username */
 		if (preg_match('/[a-zA-Z0-9_]{6,32}/', $_POST['username']) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_USERNAME, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id');
 		$this->db->from('users');
@@ -474,7 +479,7 @@ class ND_Register extends UW_Controller {
 		$query = $this->db->get();
 
 		if (!$query->num_rows())
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_COUNTRY, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_COUNTRY, $this->_charset, !$this->request->is_ajax());
 
 		$row = $query->row_array();
 
@@ -483,7 +488,7 @@ class ND_Register extends UW_Controller {
 
 		/* Validate VAT if country is a EU state and if company field was filled */
 		if (($row['eu_state'] == '1') && (strlen($_POST['vat']) < 10) && isset($_POST['company']) && (strlen($_POST['company']) >= 2))
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_INCOMPLETE_VAT_EU, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INFO_INCOMPLETE_VAT_EU, $this->_charset, !$this->request->is_ajax());
 
 		if ($this->register_confirm_vat_eu == 1) {
 			if (isset($_POST['company']) && (strlen($_POST['company']) >= 2) && ($row['eu_state'] == '1')) {
@@ -501,7 +506,7 @@ class ND_Register extends UW_Controller {
 
 		/* Validate email */
 		if (preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,16}$/', $_POST['email']) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_EMAIL, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_EMAIL, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id');
 		$this->db->from('users');
@@ -514,7 +519,7 @@ class ND_Register extends UW_Controller {
 		if ($this->register_confirm_phone == 1) {
 			/* Validate phone */
 			if (preg_match('/^\+\d{8,16}$/', $_POST['phone']) === false)
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_PHONE, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_PHONE, $this->_charset, !$this->request->is_ajax());
 
 			$query = $this->db->query('SELECT *,LENGTH(prefix) AS len FROM countries ORDER BY len DESC,id ASC');
 
@@ -530,7 +535,7 @@ class ND_Register extends UW_Controller {
 			}
 
 			if (!$valid_phone_prefix)
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_PHONE_PREFIX, $this->_charset, !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_PHONE_PREFIX, $this->_charset, !$this->request->is_ajax());
 
 			$this->db->select('id');
 			$this->db->from('users');

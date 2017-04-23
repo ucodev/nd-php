@@ -81,7 +81,8 @@ class UW_Upload extends UW_Module {
 				$meta['type'] = $value['type'];
 
 				/* Created time is optional */
-				if (isset($value['created'])) {
+				if (isset($value['created']) && $value['created']) {
+					/* TODO: FIXME: Check if created value matches a datetime type */
 					$meta['created'] = $value['created'];
 				} else {
 					$meta['created'] = date('Y-m-d H:i:s');
@@ -160,6 +161,23 @@ class UW_Upload extends UW_Module {
 						$meta['image'] = array();
 						$meta['image']['width'] = $img_props[0];
 						$meta['image']['height'] = $img_props[1];
+
+						/* Check image file extension */
+						if (!in_array($this->image->file_extension($meta['name']), $this->config['upload_file_image_extensions']))
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION . $this->image->file_extension($meta['name']), $this->config['default_charset'], !$this->request->is_ajax());
+
+						/* Check image size */
+						if ($meta['image']['width'] < $this->config['upload_file_image_width_min'])
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+						
+						if ($meta['image']['width'] > $this->config['upload_file_image_width_max'])
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+
+						if ($meta['image']['height'] < $this->config['upload_file_image_height_min'])
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
+
+						if ($meta['image']['height'] > $this->config['upload_file_image_height_max'])
+							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
 					}
 
 					/* Push file metadata into uploads array */
@@ -202,6 +220,23 @@ class UW_Upload extends UW_Module {
 					$meta['image'] = array();
 					$meta['image']['width'] = $img_props[0];
 					$meta['image']['height'] = $img_props[1];
+
+					/* Check image file extension */
+					if (!in_array($this->image->file_extension($meta['name']), $this->config['upload_file_image_extensions']))
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION . $this->image->file_extension($meta['name']), $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Check image size */
+					if ($meta['image']['width'] < $this->config['upload_file_image_width_min'])
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+					
+					if ($meta['image']['width'] > $this->config['upload_file_image_width_max'])
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+
+					if ($meta['image']['height'] < $this->config['upload_file_image_height_min'])
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
+
+					if ($meta['image']['height'] > $this->config['upload_file_image_height_max'])
+						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
 				$meta['created'] = date('Y-m-d H:i:s');

@@ -169,6 +169,14 @@ class Login extends UW_Controller {
 		if ($this->request->remote_addr() == 'Unspecified')
 			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_default_charset, !$this->request->is_ajax());
 
+		/* Check if $photo is json encoded */
+		if ($photo) {
+			$photo_obj = json_decode($photo, true);
+
+			if ($photo_obj !== NULL)
+				$photo = $photo_obj;
+		}
+
 		/* Get user's roles */
 		$this->db->select('roles.id,roles.is_admin,roles.is_superuser');
 		$this->db->from('users');

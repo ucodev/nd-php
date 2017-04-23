@@ -186,6 +186,12 @@ define('NDPHP_LANG_MOD_INVALID_SEARCH_CONDITION',   'Invalid search condition');
 define('NDPHP_LANG_MOD_INVALID_NULL_COMPARISION_REL','Invalid NULL comparision request on a multiple relationship field.');
 define('NDPHP_LANG_MOD_INVALID_CHARS_CTRL',		    'Invalid charaters on controller name.');
 define('NDPHP_LANG_MOD_INVALID_IMAGE_RESIZE_FORMAT','Invalid image format or extension. Only JPG, PNG, GIF and BMP are accepted for resize.');
+define('NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL', 'Image width too small: ');
+define('NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE', 'Image width too large: ');
+define('NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL', 'Image height too small: ');
+define('NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE', 'Image height too large: ');
+define('NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION','Invalid file image extension: ');
+define('NDPHP_LANG_MOD_INVALID_USERNAME_CHARS',     'Invalid characters found in username.');
 
 define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
 define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');

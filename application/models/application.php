@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -525,7 +525,9 @@ class UW_Application extends UW_Model {
 
 				/* TODO: Also drop _acl_* and _help_* references */
 			}
-		} else if ($obj['is_field']) {
+		} else if ($obj['is_field'] && !$this->_context_table_is_custom($obj['db_table'])) {
+			/* Only attempt to drop fields if this isn't a view (custom controller) */
+
 			if ($obj['type'] == 'dropdown') {
 				/* Only attempt to drop the foreign key if the table isn't a view (custom controller) */
 				if (!$this->_context_table_is_custom($this->_parse_field_foreign_table($obj['db_table_field']))) {
@@ -671,7 +673,32 @@ class UW_Application extends UW_Model {
 	}
 
 	private function _context_table_is_custom($table) {
-		return in_array($table, $this->_context_table_custom);
+		/* Check if there is a reference for this table in the current custom table context...
+		 * If there isn't, we need to check the model_objects table for it to make sure that
+		 * even if the custom object was deleted from the app model, we can track it's type
+		 * within the model_objects entry.
+		 */
+		if (!in_array($table, $this->_context_table_custom)) {
+			$this->db->select('type');
+			$this->db->from('model_objects');
+			$this->db->where('db_table', $table);
+			$this->db->where('is_table', true);
+			$this->db->where('type', 'custom');
+			$q = $this->db->get();
+
+			if ($q->num_rows()) {
+				/* Add this table to the current custom table context */
+				array_push($this->_context_table_custom, $table);
+
+				/* This is a custom table */
+				return true;
+			}
+		} else {
+			/* This is a custom table */
+			return true;
+		}
+
+		return false;
 	}
 
 

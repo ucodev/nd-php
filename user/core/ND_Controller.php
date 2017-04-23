@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04g4';
+	protected $_ndphp_version = '0.04h';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -521,6 +521,21 @@ class ND_Controller extends UW_Controller {
 	/* Upload max file size */
 	protected $_upload_file_max_size = 10485760; /* 10MiB by default */
 
+	/* Upload file image min width */
+	protected $_upload_file_image_width_min = 16;
+
+	/* Upload file image min height */
+	protected $_upload_file_image_height_min = 16;
+
+	/* Upload file image max width */
+	protected $_upload_file_image_width_max = 7680;
+
+	/* Upload file image max height */
+	protected $_upload_file_image_height_max = 7680;
+
+	/* Upload file image accepted extensions */
+	protected $_upload_file_image_extensions = array('jpg', 'jpeg', 'gif', 'png', 'ico', 'bmp', 'svg');
+
 	/* Regex to filter uploaded file name. All the characters not matching the following pattern will be replaced with '_' */
 	protected $_upload_file_name_filter = 'a-zA-Z0-9_\.';
 
@@ -867,6 +882,11 @@ class ND_Controller extends UW_Controller {
 		$this->config['upload_file_encryption']					= $this->_upload_file_encryption;
 		$this->config['upload_file_name_filter']				= $this->_upload_file_name_filter;
 		$this->config['upload_file_max_size']					= $this->_upload_file_max_size;
+		$this->config['upload_file_image_width_min'] 			= $this->_upload_file_image_width_min;
+		$this->config['upload_file_image_height_min'] 			= $this->_upload_file_image_height_min;
+		$this->config['upload_file_image_width_max'] 			= $this->_upload_file_image_width_max;
+		$this->config['upload_file_image_height_max'] 			= $this->_upload_file_image_height_max;
+		$this->config['upload_file_image_extensions'] 			= $this->_upload_file_image_extensions;
 		$this->config['upload_file_driver']						= $this->_upload_file_driver;
 
 		if (!$this->config['upload_file_driver']) {
