@@ -178,6 +178,9 @@ define('NDPHP_LANG_MOD_INVALID_POST_KEYS',			'Invalid keys found in POST data.')
 define('NDPHP_LANG_MOD_INVALID_VIEW_BASE_DIR_CHARS','Invalid characters found on views base directory path.');
 define('NDPHP_LANG_MOD_INVALID_SERVER_NAME',		'The specified URL host is not allowed.');
 define('NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT',	'Username must be at least 5 characters long.');
+define('NDPHP_LANG_MOD_INVALID_USERNAME_TOO_LONG',	'Username length cannot be greater than 32 characters.');
+define('NDPHP_LANG_MOD_INVALID_PASSWORD_TOO_SHORT',	'Password must be at least 8 characters long.');
+define('NDPHP_LANG_MOD_INVALID_PASSWORD_TOO_LONG',	'Password length cannot be greater than 32 characters.');
 define('NDPHP_LANG_MOD_INVALID_MAGIC_IDENTIFIER',	'Incorrect magic identifier.');
 define('NDPHP_LANG_MOD_INVALID_LIMIT_VALUE',		'Limit value must be greater than zero.');
 define('NDPHP_LANG_MOD_INVALID_OFFSET_VALUE',		'Offset value must be zero or greater.');

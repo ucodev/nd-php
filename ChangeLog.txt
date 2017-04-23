@@ -1,3 +1,9 @@
+v0.04h1 (2017-04-23):
+
+ - Minor fixes and improvements on the registration controller.
+ - Updated language files.
+
+
 v0.04h (2017-04-23):
 
  - Fixed application model to avoid attempts to delete fields on custom objects.

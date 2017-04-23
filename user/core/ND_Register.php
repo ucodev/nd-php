@@ -60,7 +60,7 @@ class ND_Register extends UW_Controller {
 	protected $_word_false = NDPHP_LANG_MOD_WORD_FALSE;
 
 	private $nd_app_base_url = 'https://localhost/ndphp';
-	private $nd_username_safe_chars = "a-zA-Z0-9_-\.";
+	private $nd_username_safe_chars = "a-zA-Z0-9_\-\.";
 	private $roles_regular_id = 4;	/* Regular user roles_id (for newly registered users) */
 	private $recaptcha_public_key = '6LxxxxxxAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 	private $recaptcha_private_key = '6LxxxxxxAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxx';
@@ -434,6 +434,13 @@ class ND_Register extends UW_Controller {
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_RECAPTCHA_VALUE, $this->_charset, !$this->request->is_ajax());
 		}
 
+		/* Validate username length */
+		if (strlen($_POST['username']) > 32)
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_LONG, $this->_charset, !$this->request->is_ajax());
+
+		if (strlen($_POST['username']) < 5)
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_TOO_SHORT, $this->_charset, !$this->request->is_ajax());
+
 		/* Validate username characters */
 		if (!preg_match('/^[' . $this->nd_username_safe_chars . ']+$/', $_POST['username']))
 			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_CHARS, $this->_charset, !$this->request->is_ajax());
@@ -448,10 +455,10 @@ class ND_Register extends UW_Controller {
 
 		/* Validate password */
 		if (strlen($_POST['password']) < 8)
-			$this->response->code('400', 'Password must have at least 8 characters', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_PASSWORD_TOO_SHORT, $this->_charset, !$this->request->is_ajax());
 
 		if (strlen($_POST['password']) > 32)
-			$this->response->code('400', 'Password cannot be greater than 32 characters', $this->_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_INVALID_PASSWORD_TOO_LONG, $this->_charset, !$this->request->is_ajax());
 
 		if ($_POST['password'] != $_POST['password_check'])
 			$this->response->code('400', NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH, $this->_charset, !$this->request->is_ajax());
@@ -459,10 +466,7 @@ class ND_Register extends UW_Controller {
 		if (!isset($_POST['terms']) || ($_POST['terms'] != '1'))
 			$this->response->code('400', NDPHP_LANG_MOD_ATTN_READ_ACCEPT_TERMS, $this->_charset, !$this->request->is_ajax());
 
-		/* Validate username */
-		if (preg_match('/[a-zA-Z0-9_]{6,32}/', $_POST['username']) === false)
-			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME, $this->_charset, !$this->request->is_ajax());
-
+		/* Check username availability */
 		$this->db->select('id');
 		$this->db->from('users');
 		$this->db->where('username', $_POST['username']);
