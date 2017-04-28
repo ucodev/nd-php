@@ -151,7 +151,7 @@ class UW_Search extends UW_Model {
 
 					case 'exact': {
 						/* 'exact' condition expects the context to be 'contains' */
-						if ($this->_context != 'contains') {
+						if ($this->_context != 'contains' && !isset($ndsl[$field]['contains'])) {
 							$this->_set_result_error("Unexpected condition '" . $cond . "' on field '" . $field . "'.");
 							return false;
 						}
@@ -161,7 +161,7 @@ class UW_Search extends UW_Model {
 
 					case 'diff': {
 						/* 'diff' condition expects the context to be 'contains' */
-						if ($this->_context != 'contains') {
+						if ($this->_context != 'contains' && !isset($ndsl[$field]['contains'])) {
 							$this->_set_result_error("Unexpected condition '" . $cond . "' on field '" . $field . "'.");
 							return false;
 						}
@@ -170,6 +170,10 @@ class UW_Search extends UW_Model {
 					} break;
 
 					case 'or': {
+						/* TODO: FIXME: Currently there's no precedence check or nested support for OR's, causing them to be evaluated in the same
+						 * order as they are decoded. Since JSON does not grant any particular order for it's contents (except for arrays), there's
+						 * also no ordering support for OR's.
+						 */
 						$nadv[$field . '_or'] = $value;
 					} break;
 

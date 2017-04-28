@@ -1102,10 +1102,12 @@ class ND_Register extends UW_Controller {
 		}
 
 		/* Decrement the remaning code count */
-		$this->db->where('id', $code_row['id']);
-		$this->db->update('codes', array(
-			'remaining' => ($code_row['remaining'] - 1)
-		));
+		if (isset($code_row['id']) && $code_row['id']) {
+			$this->db->where('id', $code_row['id']);
+			$this->db->update('codes', array(
+				'remaining' => ($code_row['remaining'] - 1)
+			));
+		}
 
 		/* Set the user registration code status to 'true' */
 		$this->db->where('id', $users_id);
