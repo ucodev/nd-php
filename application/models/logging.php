@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,37 @@ class UW_Logging extends UW_Model {
 	private $_in_transaction = false;
 	private $_transaction_id = NULL;
 
+	public function __construct() {
+		parent::__construct();
+
+		/* Access global configuration */
+		global $config;
+
+		/* Check if logging is enabled */
+		if (!isset($config['logging']['enabled']) || !$config['logging']['enabled']) {
+			$this->_logging_enabled = false;
+			return;
+		}
+
+		/* Setup logging object according to selected driver */
+		switch ($config['logging']['driver']) {
+			case 'database': {
+				/* If logging driver is 'database', set the database table where the logs will reside */
+				$this->_logging_table = $config['logging']['database']['table'];
+			} break;
+
+			case 'syslog': {
+				/* If logging driver is 'syslog', open a connection to the system logger */
+				openlog($config['logging']['syslog']['ident'], $config['logging']['syslog']['option'], $config['logging']['syslog']['facility']);
+			} break;
+
+			default: error_log(__FILE__ . ': ' . __FUNCTION__ . '(): No suitable logging driver was defined.');
+		}
+	}
+
 	public function log($op, $table, $field, $entry_id, $value_new, $value_old, $session_id, $user_id, $log = true) {
+		global $config;
+
 		/* If the log request is to do not perform the logging action or if the logging support is globally disabled, just return */
 		if (($log !== true) || ($this->_logging_enabled !== true))
 			return;
@@ -57,18 +87,55 @@ class UW_Logging extends UW_Model {
 		}
 
 		/* Insert the log entry into the database */
-		$this->db->insert($this->_logging_table, array(
-			'operation' => $op,
-			'_table' => $table,
-			'_field' => $field,
-			'entryid' => $entry_id,
-			'value_new' => $value_new,
-			'value_old' => $value_old,
-			'transaction' => $log_transaction_id,
-			'registered' => date('Y-m-d H:i:s'),
-			'sessions_id' => $session_id,
-			'users_id' => $user_id
-		));
+		if ($config['logging']['driver'] == 'database') {
+			$this->db->insert($this->_logging_table, array(
+				'operation' => $op,
+				'_table' => $table,
+				'_field' => $field,
+				'entryid' => $entry_id,
+				'value_new' => $value_new,
+				'value_old' => $value_old,
+				'transaction' => $log_transaction_id,
+				'registered' => date('Y-m-d H:i:s'),
+				'sessions_id' => $session_id,
+				'users_id' => $user_id
+			));
+		} else if ($config['logging']['driver'] == 'syslog') {
+			syslog(LOG_INFO,
+				/* Operation */
+				$config['logging']['driver']['field_map']['operation'] .
+					'=' . $op . $config['logging']['driver']['field_delim'] .
+				/* Object */
+				$config['logging']['driver']['field_map']['_table'] .
+					'=' . $table . $config['logging']['driver']['field_delim'] .
+				/* Property */
+				$config['logging']['driver']['field_map']['_field'] .
+					'=' . $field . $config['logging']['driver']['field_delim'] .
+				/* Entry */
+				$config['logging']['driver']['field_map']['entryid'] .
+					'=' . $entry_id . $config['logging']['driver']['field_delim'] .
+				/* New value */
+				$config['logging']['driver']['field_map']['value_new'] .
+					'=' . $value_new . $config['logging']['driver']['field_delim'] .
+				/* Old value */
+				$config['logging']['driver']['field_map']['value_old'] .
+					'=' . $value_old . $config['logging']['driver']['field_delim'] .
+				/* Transaction */
+				$config['logging']['driver']['field_map']['transaction'] .
+					'=' . $log_transaction_id . $config['logging']['driver']['field_delim'] .
+				/* Registered */
+				$config['logging']['driver']['field_map']['registered'] .
+					'=' . $registered . $config['logging']['driver']['field_delim'] .
+				/* Session ID */
+				$config['logging']['driver']['field_map']['sessions_id'] .
+					'=' . $session_id . $config['logging']['driver']['field_delim'] .
+				/* User ID */
+				$config['logging']['driver']['field_map']['users_id'] .
+					'=' . $user_id . $config['logging']['driver']['field_delim']
+			);
+		} else {
+			error_log(__FILE__ . ': ' . __FUNCTION__ . '(): No suitable logging driver was defined.');
+		}
 	}
 
 	public function trans_begin() {

@@ -182,6 +182,7 @@
 			"system/config/base.php",
 			"system/config/cache.php",
 			"system/config/index.php",
+			"system/config/logging.php",
 			"system/config/oer.php",
 			"system/core/index.php",
 			"system/core/uweb.php",
