@@ -125,9 +125,9 @@ class UW_Logging extends UW_Model {
 					'=' . $log_transaction_id . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Registered */
 				$config['logging']['driver']['syslog']['field_map']['registered'] .
-					'=' . $registered . $config['logging']['driver']['syslog']['field_delim'] .
+					'=' . date('Y-m-d H:i:s') . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Session ID */
-				$config['logging']['syslog']['driver']['field_map']['sessions_id'] .
+				$config['logging']['driver']['syslog']['field_map']['sessions_id'] .
 					'=' . $session_id . $config['logging']['driver']['syslog']['field_delim'] .
 				/* User ID */
 				$config['logging']['driver']['syslog']['field_map']['users_id'] .
