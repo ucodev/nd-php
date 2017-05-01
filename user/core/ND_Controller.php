@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04i';
+	protected $_ndphp_version = '0.04i1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -556,8 +556,8 @@ class ND_Controller extends UW_Controller {
 
 	/* Scheduler settings */
 	protected $_scheduler = array(
-		'type' => 'external', /* By default, scheduled entries will be evaluated and processed on every request.
-							   * If set to 'external', scheduled entries will only be processed when public scheduler_external method is invoked.
+		'type' => 'external', /* By default ('external'), scheduled entries will only be processed when public scheduler_external method is invoked.
+							   * If set to 'request', scheduled entries will be evaluated and processed on every request.
 							   * If set to 'threaded' will behave as 'request', but execution of scheduled entries are performed in a separate thread (requires PHP threading support).
 							   */
 	);

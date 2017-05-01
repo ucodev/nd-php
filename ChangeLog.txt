@@ -1,3 +1,8 @@
+v0.04i1 (2017-05-01):
+
+ - Improved logging configuration structure.
+
+
 v0.04i (2017-05-01):
 
  - Updated uWeb.

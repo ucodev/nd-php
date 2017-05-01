@@ -49,15 +49,15 @@ class UW_Logging extends UW_Model {
 		}
 
 		/* Setup logging object according to selected driver */
-		switch ($config['logging']['driver']) {
+		switch ($config['logging']['driver']['name']) {
 			case 'database': {
 				/* If logging driver is 'database', set the database table where the logs will reside */
-				$this->_logging_table = $config['logging']['database']['table'];
+				$this->_logging_table = $config['logging']['driver']['database']['table'];
 			} break;
 
 			case 'syslog': {
 				/* If logging driver is 'syslog', open a connection to the system logger */
-				openlog($config['logging']['syslog']['ident'], $config['logging']['syslog']['option'], $config['logging']['syslog']['facility']);
+				openlog($config['logging']['driver']['syslog']['ident'], $config['logging']['driver']['syslog']['option'], $config['logging']['driver']['syslog']['facility']);
 			} break;
 
 			default: error_log(__FILE__ . ': ' . __FUNCTION__ . '(): No suitable logging driver was defined.');
@@ -87,7 +87,7 @@ class UW_Logging extends UW_Model {
 		}
 
 		/* Insert the log entry into the database */
-		if ($config['logging']['driver'] == 'database') {
+		if ($config['logging']['driver']['name'] == 'database') {
 			$this->db->insert($this->_logging_table, array(
 				'operation' => $op,
 				'_table' => $table,
@@ -100,38 +100,54 @@ class UW_Logging extends UW_Model {
 				'sessions_id' => $session_id,
 				'users_id' => $user_id
 			));
-		} else if ($config['logging']['driver'] == 'syslog') {
+		} else if ($config['logging']['driver']['name'] == 'syslog') {
 			syslog(LOG_INFO,
 				/* Operation */
-				$config['logging']['driver']['field_map']['operation'] .
-					'=' . $op . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['operation'] .
+					'=' . $op . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Object */
-				$config['logging']['driver']['field_map']['_table'] .
-					'=' . $table . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['_table'] .
+					'=' . $table . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Property */
-				$config['logging']['driver']['field_map']['_field'] .
-					'=' . $field . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['_field'] .
+					'=' . $field . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Entry */
-				$config['logging']['driver']['field_map']['entryid'] .
-					'=' . $entry_id . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['entryid'] .
+					'=' . $entry_id . $config['logging']['driver']['syslog']['field_delim'] .
 				/* New value */
-				$config['logging']['driver']['field_map']['value_new'] .
-					'=' . $value_new . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['value_new'] .
+					'=' . $value_new . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Old value */
-				$config['logging']['driver']['field_map']['value_old'] .
-					'=' . $value_old . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['value_old'] .
+					'=' . $value_old . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Transaction */
-				$config['logging']['driver']['field_map']['transaction'] .
-					'=' . $log_transaction_id . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['transaction'] .
+					'=' . $log_transaction_id . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Registered */
-				$config['logging']['driver']['field_map']['registered'] .
-					'=' . $registered . $config['logging']['driver']['field_delim'] .
+				$config['logging']['driver']['syslog']['field_map']['registered'] .
+					'=' . $registered . $config['logging']['driver']['syslog']['field_delim'] .
 				/* Session ID */
-				$config['logging']['driver']['field_map']['sessions_id'] .
-					'=' . $session_id . $config['logging']['driver']['field_delim'] .
+				$config['logging']['syslog']['driver']['field_map']['sessions_id'] .
+					'=' . $session_id . $config['logging']['driver']['syslog']['field_delim'] .
 				/* User ID */
-				$config['logging']['driver']['field_map']['users_id'] .
-					'=' . $user_id . $config['logging']['driver']['field_delim']
+				$config['logging']['driver']['syslog']['field_map']['users_id'] .
+					'=' . $user_id . $config['logging']['driver']['syslog']['field_delim'] .
+				/* IP Address */
+				(
+					$config['logging']['driver']['syslog']['include_ip_address']
+					?
+					($config['logging']['driver']['syslog']['field_map']['ip_address'] . '=' . remote_addr() . $config['logging']['driver']['syslog']['field_delim'])
+					:
+					''
+				) .
+				/* User-Agent */
+				(
+					$config['logging']['driver']['syslog']['include_user_agent']
+					?
+					($config['logging']['driver']['syslog']['field_map']['user_agent'] . '=' . $_SERVER['HTTP_USER_AGENT'] . $config['logging']['driver']['syslog']['field_delim'])
+					:
+					''
+				)
 			);
 		} else {
 			error_log(__FILE__ . ': ' . __FUNCTION__ . '(): No suitable logging driver was defined.');

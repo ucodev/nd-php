@@ -4,18 +4,20 @@
 $logging['enabled'] = true;
 
 /* Database based logging */
-$logging['driver'] = 'database';
-$logging['database']['table'] = 'logging';
+$logging['driver']['name'] = 'database';
+$logging['driver']['database']['table'] = 'logging';
 
 /* Syslog based logging */
 /*
-$logging['driver'] = 'syslog';
+$logging['driver']['name'] = 'syslog';
 
-$logging['syslog']['ident'] = 'nd-php';
-$logging['syslog']['option'] = LOG_ODELAY | LOG_PID;
-$logging['syslog']['facility'] = LOG_LOCAL0;
-$logging['syslog']['field_delim'] = ';;; ';
-$logging['syslog']['field_map'] = array(
+$logging['driver']['syslog']['ident'] = 'nd-php';
+$logging['driver']['syslog']['option'] = LOG_ODELAY | LOG_PID;
+$logging['driver']['syslog']['facility'] = LOG_LOCAL0;
+$logging['driver']['syslog']['include_ip_address'] = true;
+$logging['driver']['syslog']['include_user_agent'] = true;
+$logging['driver']['syslog']['field_delim'] = ';;; ';
+$logging['driver']['syslog']['field_map'] = array(
         'operation' => 'operation',
         '_table' => 'object',
         '_field' => 'property',
@@ -25,6 +27,8 @@ $logging['syslog']['field_map'] = array(
         'transaction' => 'transaction',
         'registered' => 'registered',
         'sessions_id' => 'sessions_id',
-        'users_id' => 'users_id'
+        'users_id' => 'users_id',
+        'ip_address' => 'ip_address',
+        'user_agent' => 'user_agent'
     );
 */
