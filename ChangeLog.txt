@@ -1,3 +1,8 @@
+v0.04j3 (2017-05-08):
+
+ - Fixed default base URL retrieval under field module when loaded outside core controller inheritance.
+
+
 v0.04j2 (2017-05-08):
 
  - Fixed file mangling method under field module.

@@ -64,35 +64,38 @@ class UW_Field extends UW_Module {
 		if ($file === false)
 			return false;
 
+		/* Fetch base URL for uploaded files */
+		$upload_file_base_url = isset($this->config['upload_file_base_url']) ? $this->config['upload_file_base_url'] : $config['base']['default_upload_file_base_url'];
+
 		/* Craft the file location (URL) */
 		if ($file['driver'] == 'local' && $id !== NULL) {
-			$file['url'] = $this->config['upload_file_base_url'] . '/' . $file['path'] . '/' . $id;
+			$file['url'] = $upload_file_base_url . '/' . $file['path'] . '/' . $id;
 		} else if ($file['driver'] == 's3') {
 			/* Specific handles for AWS S3 buckets */
-			$file['url'] = $this->config['upload_file_base_url'] . '/' . $file['path'];
+			$file['url'] = $upload_file_base_url . '/' . $file['path'];
 
 			/* If there are resized versions of the image available, populate them under image object */
 			if (isset($file['image']) && ($config['aws']['bucket_img_resize'] === true)) {
 				if (isset($config['aws']['bucket_img_resize_xxsmall_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xxsmall_width']))
-					$file['image']['xxsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxsmall_dir'] . '/' . $file['path'];
+					$file['image']['xxsmall'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxsmall_dir'] . '/' . $file['path'];
 
 				if (isset($config['aws']['bucket_img_resize_xsmall_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xsmall_width']))
-					$file['image']['xsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xsmall_dir'] . '/' . $file['path'];
+					$file['image']['xsmall'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xsmall_dir'] . '/' . $file['path'];
 
 				if (isset($config['aws']['bucket_img_resize_small_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_small_width']))
-					$file['image']['small'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_small_dir'] . '/' . $file['path'];
+					$file['image']['small'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_small_dir'] . '/' . $file['path'];
 
 				if (isset($config['aws']['bucket_img_resize_medium_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_medium_width']))
-					$file['image']['medium'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_medium_dir'] . '/' . $file['path'];
+					$file['image']['medium'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_medium_dir'] . '/' . $file['path'];
 
 				if (isset($config['aws']['bucket_img_resize_large_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_large_width']))
-					$file['image']['large'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_large_dir'] . '/' . $file['path'];
+					$file['image']['large'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_large_dir'] . '/' . $file['path'];
 
 				if (isset($config['aws']['bucket_img_resize_xlarge_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xlarge_width']))
-					$file['image']['xlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xlarge_dir'] . '/' . $file['path'];
+					$file['image']['xlarge'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xlarge_dir'] . '/' . $file['path'];
 
 				if (isset($config['aws']['bucket_img_resize_xxlarge_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xxlarge_width']))
-					$file['image']['xxlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxlarge_dir'] . '/' . $file['path'];
+					$file['image']['xxlarge'] = $upload_file_base_url . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxlarge_dir'] . '/' . $file['path'];
 			}
 		}
 
