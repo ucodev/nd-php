@@ -174,9 +174,9 @@ class Login extends UW_Controller {
 
 		/* Check if $photo is json encoded */
 		if ($photo) {
-			$photo_obj = json_decode($photo, true);
+			$photo_obj = $this->field->mangle_file($photo, $user_id)
 
-			if ($photo_obj !== NULL)
+			if (($photo_obj !== false) && ($photo_obj !== NULL))
 				$photo = $photo_obj;
 		}
 
@@ -271,7 +271,7 @@ class Login extends UW_Controller {
 				'user_id' => $user_id,
 				'email' => $email,
 				'first_name' => $first_name,
-				'photo' => $this->field->mangle_file($photo, $user_id),
+				'photo' => $photo,
 				'timezone' => $timezone,
 				'database' => $database,
 				'roles' => $user_roles,

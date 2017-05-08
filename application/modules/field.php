@@ -67,7 +67,7 @@ class UW_Field extends UW_Module {
 		/* Craft the file location (URL) */
 		if ($file['driver'] == 'local' && $id !== NULL) {
 			$file['url'] = $this->config['upload_file_base_url'] . '/' . $file['path'] . '/' . $id;
-		} else if ($field['driver'] == 's3') {
+		} else if ($file['driver'] == 's3') {
 			/* Specific handles for AWS S3 buckets */
 			$file['url'] = $this->config['upload_file_base_url'] . '/' . $file['path'];
 
