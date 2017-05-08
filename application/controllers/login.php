@@ -116,6 +116,9 @@ class Login extends UW_Controller {
 		$this->_maintenance_enabled = $config['maintenance'];
 
 		/* NOTE: Maintenance mode verification is placed after session_setup() completes */
+
+		/* Load required modules */
+		$this->load->module('field');
 	}
 
 	public function login($referer = NULL) {
