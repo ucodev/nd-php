@@ -1,3 +1,12 @@
+v0.04j (2017-05-08):
+
+ - Fixed issues on core controller for distinct search queries.
+ - Fixed caching issues on security module.
+ - Register controller now uses the logging module.
+ - User session photo file entry now contains the URL property.
+ - New logging format for listing and result calls.
+
+
 v0.04i2 (2017-05-01):
 
  - Some fixes on logging interface.

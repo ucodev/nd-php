@@ -49,10 +49,57 @@ class UW_Field extends UW_Module {
 		$this->_init();
 	}
 
-	public function value_mangle($fields, $query, $id = NULL) {
+	public function mangle_datetime($value) {
+		return $this->timezone->convert($value, $this->config['default_timezone'], $this->config['session_data']['timezone']);
+	}
+
+	public function mangle_file($value, $id = NULL) {
 		/* Access global configuration */
 		global $config;
 
+		/* Decode JSON data */
+		$file = json_decode($value, true);
+
+		/* Check if we've successfully decoded the $value contents */
+		if ($file === false)
+			return false;
+
+		/* Craft the file location (URL) */
+		if ($file['driver'] == 'local' && $id !== NULL) {
+			$file['url'] = $this->config['upload_file_base_url'] . '/' . $file['path'] . '/' . $id;
+		} else if ($field['driver'] == 's3') {
+			/* Specific handles for AWS S3 buckets */
+			$file['url'] = $this->config['upload_file_base_url'] . '/' . $file['path'];
+
+			/* If there are resized versions of the image available, populate them under image object */
+			if (isset($file['image']) && ($config['aws']['bucket_img_resize'] === true)) {
+				if (isset($config['aws']['bucket_img_resize_xxsmall_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xxsmall_width']))
+					$file['image']['xxsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxsmall_dir'] . '/' . $file['path'];
+
+				if (isset($config['aws']['bucket_img_resize_xsmall_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xsmall_width']))
+					$file['image']['xsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xsmall_dir'] . '/' . $file['path'];
+
+				if (isset($config['aws']['bucket_img_resize_small_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_small_width']))
+					$file['image']['small'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_small_dir'] . '/' . $file['path'];
+
+				if (isset($config['aws']['bucket_img_resize_medium_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_medium_width']))
+					$file['image']['medium'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_medium_dir'] . '/' . $file['path'];
+
+				if (isset($config['aws']['bucket_img_resize_large_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_large_width']))
+					$file['image']['large'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_large_dir'] . '/' . $file['path'];
+
+				if (isset($config['aws']['bucket_img_resize_xlarge_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xlarge_width']))
+					$file['image']['xlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xlarge_dir'] . '/' . $file['path'];
+
+				if (isset($config['aws']['bucket_img_resize_xxlarge_width']) && ($file['image']['width'] >= $config['aws']['bucket_img_resize_xxlarge_width']))
+					$file['image']['xxlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxlarge_dir'] . '/' . $file['path'];
+			}
+		}
+
+		return $file;
+	}
+
+	public function value_mangle($fields, $query, $id = NULL) {
 		$result_mangled = array();
 
 		foreach ($query->result_array() as $data) {
@@ -60,48 +107,16 @@ class UW_Field extends UW_Module {
 			$row = array();
 
 			foreach ($data as $field => $value) {
-				if ($fields[$field]['type'] == 'datetime' && $value) {
-					/* NOTE: Currently, we only need to mangle datetime fields (to support user timezone) */
+				if (($fields[$field]['type'] == 'datetime') && $value) {
 					/* Convert data from database default timezone to user timezone */
-					$row[$field] = $this->timezone->convert($value, $this->config['default_timezone'], $this->config['session_data']['timezone']);
-				} else if ($fields[$field]['input_type'] == 'file' && $value) {
-					/* Decode JSON data */
-					$row[$field] = json_decode($value, true);
+					$row[$field] = $this->mangle_datetime($value);
+				} else if (($fields[$field]['input_type'] == 'file') && $value) {
+					/* Properly setup the file type */
+					$row[$field] = $this->mangle_file($value, isset($row['id']) ? $row['id'] : $id);
 
 					/* Check if we've successfully decoded the $value contents */
-					if ($row[$field] === false)
+					if ($row[$field] === false) {
 						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_FILE_METADATA, $this->config['default_charset'], !$this->request->is_ajax());
-
-					/* Craft the file location (URL) */
-					if ($row[$field]['driver'] == 'local' && (isset($row['id']) || $id !== NULL)) {
-						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['path'] . '/' . (isset($row['id']) ? $row['id'] : $id);
-					} else if ($row[$field]['driver'] == 's3') {
-						/* Specific handles for AWS S3 buckets */
-						$row[$field]['url'] = $this->config['upload_file_base_url'] . '/' . $row[$field]['path'];
-
-						/* If there are resized versions of the image available, populate them under image object */
-						if (isset($row[$field]['image']) && ($config['aws']['bucket_img_resize'] === true)) {
-							if (isset($config['aws']['bucket_img_resize_xxsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxsmall_width']))
-								$row[$field]['image']['xxsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxsmall_dir'] . '/' . $row[$field]['path'];
-
-							if (isset($config['aws']['bucket_img_resize_xsmall_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xsmall_width']))
-								$row[$field]['image']['xsmall'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xsmall_dir'] . '/' . $row[$field]['path'];
-
-							if (isset($config['aws']['bucket_img_resize_small_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_small_width']))
-								$row[$field]['image']['small'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_small_dir'] . '/' . $row[$field]['path'];
-
-							if (isset($config['aws']['bucket_img_resize_medium_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_medium_width']))
-								$row[$field]['image']['medium'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_medium_dir'] . '/' . $row[$field]['path'];
-
-							if (isset($config['aws']['bucket_img_resize_large_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_large_width']))
-								$row[$field]['image']['large'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_large_dir'] . '/' . $row[$field]['path'];
-
-							if (isset($config['aws']['bucket_img_resize_xlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xlarge_width']))
-								$row[$field]['image']['xlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xlarge_dir'] . '/' . $row[$field]['path'];
-
-							if (isset($config['aws']['bucket_img_resize_xxlarge_width']) && ($row[$field]['image']['width'] >= $config['aws']['bucket_img_resize_xxlarge_width']))
-								$row[$field]['image']['xxlarge'] = $this->config['upload_file_base_url'] . '/' . $config['aws']['bucket_img_resize_subdir'] . '/' . $config['aws']['bucket_img_resize_xxlarge_dir'] . '/' . $row[$field]['path'];
-						}
 					}
 				} else {
 					/* Just push the value without modification */

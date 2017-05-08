@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04i2';
+	protected $_ndphp_version = '0.04j';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1589,20 +1589,6 @@ class ND_Controller extends UW_Controller {
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_list_generic_enter($data, $field, $order, $page);
 
-		/* If logging is enabled, log this listing request */
-		$this->logging->log(
-			/* op         */ 'LIST',
-			/* table      */ $this->config['name'],
-			/* field      */ 'PAGE / FIELD / ORDER',
-			/* entry_id   */ ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_list']) + 1) . ' / ' . ($field ? $field : $this->config['table_field_order_list']) . ' / ' . ($order ? $order : $this->config['table_field_order_list_modifier'])) : ('0 / ' . ($field ? $field : $this->config['table_field_order_list']) . ' / ' . ($order ? $order : $this->config['table_field_order_list_modifier'])),
-			/* value_new  */ NULL,
-			/* value_old  */ NULL,
-			/* session_id */ $this->config['session_data']['sessions_id'],
-			/* user_id    */ $this->config['session_data']['user_id'],
-			/* log it?    */ $this->config['logging']
-		);
-
-
 		/* Setup charts if this isn't a REST JSON request */
 		if (!$this->request->is_json())
 			$this->_load_module('charts', true);
@@ -1761,6 +1747,40 @@ class ND_Controller extends UW_Controller {
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/list_generic_leave.php') as $plugin)
 			include($plugin);
+
+
+		/* If logging is enabled, log this listing request */
+		if ($this->request->is_json()) {
+			$this->logging->log(
+				/* op         */ 'LIST',
+				/* table      */ $this->config['name'],
+				/* field      */ 'LIMIT / OFFSET / ORDERBY / ORDERING',
+				/* entry_id   */ ($this->request->post_isset('_limit') ? $this->request->post('_limit') : $this->config['json_result_hard_limit']) . ' / ' .
+								 ($this->request->post_isset('_offset') ? $this->request->post('_offset') : '0') . ' / ' .
+								 $field . ' / ' .
+								 $order,
+				/* value_new  */ NULL,
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
+		} else {
+			$this->logging->log(
+				/* op         */ 'LIST',
+				/* table      */ $this->config['name'],
+				/* field      */ 'LIMIT / OFFSET / ORDERBY / ORDERING',
+				/* entry_id   */ $page . ' / ' .
+								 $this->config['table_pagination_rpp_list'] . ' / ' .
+								 $field . ' / ' .
+								 $order,
+				/* value_new  */ NULL,
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
+		}
 
 		/* Add pagination, if required */
 		if ($page >= 0) {
@@ -2415,19 +2435,6 @@ class ND_Controller extends UW_Controller {
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_result_generic_enter($data, $type, $result_query, $order_field, $order_type, $page);
-
-		/* If logging is enabled, log this search result request */
-		$this->logging->log(
-			/* op         */ 'RESULT',
-			/* table      */ $this->config['name'],
-			/* field      */ 'PAGE / FIELD / ORDER',
-			/* entry_id   */ ($page >= 0) ? ((($page / $this->config['table_pagination_rpp_result']) + 1) . ' / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])) : ('0 / ' . ($order_field ? $order_field : $this->config['table_field_order_result']) . ' / ' . ($order_type ? $order_type : $this->config['table_field_order_result_modifier'])),
-			/* value_new  */ (($type == "basic") ? $this->request->post('search_value') : (($type == "query") ? $result_query : json_encode($this->request->post(), JSON_PRETTY_PRINT))),
-			/* value_old  */ NULL,
-			/* session_id */ $this->config['session_data']['sessions_id'],
-			/* user_id    */ $this->config['session_data']['user_id'],
-			/* log it?    */ $this->config['logging']
-		);
 
 		/* Setup charts, if this isn't a REST JSON request */
 		if (!$this->request->is_json())
@@ -3263,11 +3270,15 @@ class ND_Controller extends UW_Controller {
 				/* Set the selected fields */
 				$selected = $this->request->post('fields_result');
 
+				/* Grant that even if there are no fields set, $selected is still an array */
+				if (!$selected)
+					$selected = array();
+
 				/* 'id' must always be present, unless this is a distinct call */
 				if ($this->request->post_isset('_distinct') && $this->request->post('_distinct')) {
 					/* Remove the 'id' field from $selected, otherwise distinct won't make sense */
 					$selected = array_diff($selected, array('id'));
-				} else if (!in_array($selected, 'id')) {
+				} else if (!in_array('id', $selected)) {
 					/* If distinct is not used, 'id' should always be shown */
 					array_push($selected, 'id');
 				}
@@ -3384,6 +3395,39 @@ class ND_Controller extends UW_Controller {
 		/* Load leave plugins */
 		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_leave.php') as $plugin)
 			include($plugin);
+
+		/* If logging is enabled, log this search result request */
+		if ($this->request->is_json()) {
+			$this->logging->log(
+				/* op         */ 'RESULT',
+				/* table      */ $this->config['name'],
+				/* field      */ 'LIMIT / OFFSET / ORDERBY / ORDERING',
+				/* entry_id   */ ($this->request->post_isset('_limit') ? $this->request->post('_limit') : $this->config['json_result_hard_limit']) . ' / ' .
+								 ($this->request->post_isset('_offset') ? $this->request->post('_offset') : '0') . ' / ' .
+								 $order_field . ' / ' .
+								 $order_type,
+				/* value_new  */ (($type == "basic") ? $this->request->post('search_value') : (($type == "query") ? $result_query : json_encode($this->request->post(), JSON_PRETTY_PRINT))),
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
+		} else {
+			$this->logging->log(
+				/* op         */ 'RESULT',
+				/* table      */ $this->config['name'],
+				/* field      */ 'LIMIT / OFFSET / ORDERBY / ORDERING',
+				/* entry_id   */ $page . ' / ' .
+								 $this->config['table_pagination_rpp_result'] . ' / ' .
+								 $order_field . ' / ' .
+								 $order_type,
+				/* value_new  */ (($type == "basic") ? $this->request->post('search_value') : (($type == "query") ? $result_query : json_encode($this->request->post(), JSON_PRETTY_PRINT))),
+				/* value_old  */ NULL,
+				/* session_id */ $this->config['session_data']['sessions_id'],
+				/* user_id    */ $this->config['session_data']['user_id'],
+				/* log it?    */ $this->config['logging']
+			);
+		}
 
 		/* Setup total items information, if required */
 		if ($page >= 0) {

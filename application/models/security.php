@@ -335,7 +335,7 @@ class UW_Security extends UW_Model {
 		/* Check if we're using an external cache mechanism and, if so, write data to it */
 		if ($this->cache->is_active()) {
 			$this->cache->set('s_cache_sec_users_admin', true);
-			$this->cache->set('d_cache_sec_users_admin', $users_superadmin);
+			$this->cache->set('d_cache_sec_users_admin', $users_admin);
 		}
 
 		return $users_admin;
@@ -372,7 +372,7 @@ class UW_Security extends UW_Model {
 		/* Check if we're using an external cache mechanism and, if so, write data to it */
 		if ($this->cache->is_active()) {
 			$this->cache->set('s_cache_sec_users_superuser', true);
-			$this->cache->set('d_cache_sec_users_superuser', $users_superadmin);
+			$this->cache->set('d_cache_sec_users_superuser', $users_superuser);
 		}
 
 		return $users_superuser;

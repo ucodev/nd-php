@@ -268,7 +268,7 @@ class Login extends UW_Controller {
 				'user_id' => $user_id,
 				'email' => $email,
 				'first_name' => $first_name,
-				'photo' => $photo,
+				'photo' => $this->field->mangle_file($photo, $user_id),
 				'timezone' => $timezone,
 				'database' => $database,
 				'roles' => $user_roles,

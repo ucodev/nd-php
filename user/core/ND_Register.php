@@ -410,15 +410,17 @@ class ND_Register extends UW_Controller {
 
 		/* If logging is enabled, log this registration request */
 		if ($this->_logging === true) {
-			$log_transaction_id = openssl_digest(openssl_random_pseudo_bytes(256), 'sha1');
-
-			$this->db->insert('logging', array(
-				'operation' => 'REGISTER',
-				'_table' => 'users',
-				'transaction' => $log_transaction_id,
-				'registered' => date('Y-m-d H:i:s'),
-				'users_id' => $users_id
-			));
+			$this->logging->log(
+				/* op         */ 'REGISTER',
+				/* table      */ 'users',
+				/* field      */ NULL,
+				/* entry_id   */ NULL,
+				/* value_new  */ NULL,
+				/* value_old  */ NULL,
+				/* session_id */ session_id(),
+				/* user_id    */ $users_id,
+				/* log it?    */ $this->_logging
+			);
 		}
 
 		/* Invoke post hook */
