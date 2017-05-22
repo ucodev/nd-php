@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04k';
+	protected $_ndphp_version = '0.04k1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2953,15 +2953,18 @@ class ND_Controller extends UW_Controller {
 							/* Do not enforce value component of the where clause... we need it raw */
 							$where_clause_enforce = 'name_only';
 						} else {
-							/* If the time field is empty, assume 00:00:00 */
-							if (!$this->request->post($field . '_time'))
-								$this->request->post_set($field . '_time', '00:00:00');
+							/* NOTE: Even if a time component isn't set (<field>_time), the timezone convertion will assume 00:00:00 for the time */
+
+							if ($this->request->post_isset($field . '_time')) {
+								$dt_value = $this->request->post($field) . ' ' . $this->request->post($field . '_time');
+							} else {
+								$dt_value = $this->request->post($field);
+							}
 
 							/* Otherwise just merge date and time fields */
-							$this->request->post_set($field, $this->timezone->convert($this->request->post($field) . ' ' . $this->request->post($field . '_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
+							$this->request->post_set($field, $this->timezone->convert($dt_value, $this->config['session_data']['timezone'], $this->config['default_timezone']));
 						}
 
-						$this->request->post_unset($field . '_time');
 						$this->request->post_unset($field . '_custom');
 					}
 
@@ -3054,14 +3057,17 @@ class ND_Controller extends UW_Controller {
 								/* Do not enforce value component of the where clause... we need it raw */
 								$where_clause_enforce = 'name_only';
 							} else {
-								/* If the time field is empty, assume 00:00:00 */
-								if (!$this->request->post($field . '_to_time'))
-									$this->request->post_set($field . '_to_time', '00:00:00');
+								/* NOTE: Even if a time component isn't set (<field>_time), the timezone convertion will assume 00:00:00 for the time */
 
-								$this->request->post_set($field . '_to', $this->timezone->convert($this->request->post($field . '_to') . ' ' . $this->request->post($field . '_to_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
+								if ($this->request->post_isset($field . '_to_time')) {
+									$dt_value_to = $this->request->post($field . '_to') . ' ' . $this->request->post($field . '_to_time');
+								} else {
+									$dt_value_to = $this->request->post($field . '_to');
+								}
+
+								$this->request->post_set($field . '_to', $this->timezone->convert($dt_value_to, $this->config['session_data']['timezone'], $this->config['default_timezone']));
 							}
 
-							$this->request->post_unset($field . '_to_time');
 							$this->request->post_unset($field . '_to_custom');
 						}
 
@@ -3996,10 +4002,16 @@ class ND_Controller extends UW_Controller {
 				$this->request->post_unset($field);
 			} else if ($ftypes[$field]['type'] == 'datetime') {
 				/* Datetime field types requires special processing in order to append
-				 * the 'time' component to the 'date'.
+				 * the 'time' component to the 'date' if the request contains a <field>_time property.
 				 */
-				$this->request->post_set($field, $this->timezone->convert($value . ' ' . $this->request->post($field . '_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
-				$this->request->post_unset($field . '_time');
+				if ($this->request->post_isset($field . '_time')) {
+					$dt_value = $value . ' ' . $this->request->post($field . '_time');
+					$this->request->post_unset($field . '_time');
+				} else {
+					$dt_value = $value;
+				}
+
+				$this->request->post_set($field, $this->timezone->convert($dt_value, $this->config['session_data']['timezone'], $this->config['default_timezone']));
 			}
 
 			/* Check if fields are empty */
@@ -4503,9 +4515,18 @@ class ND_Controller extends UW_Controller {
 			 * the 'time' component to the 'date'.
 			 */
 			if ($ftypes[$field]['type'] == 'datetime') {
-				$this->request->post_set($field, $this->timezone->convert($value . ' ' . $this->request->post($field . '_time'), $this->config['session_data']['timezone'], $this->config['default_timezone']));
-				$this->request->post_unset($field . '_time');
-				
+				/* Datetime field types requires special processing in order to append
+				 * the 'time' component to the 'date' if the request contains a <field>_time property.
+				 */
+				if ($this->request->post_isset($field . '_time')) {
+					$dt_value = $value . ' ' . $this->request->post($field . '_time');
+					$this->request->post_unset($field . '_time');
+				} else {
+					$dt_value = $value;
+				}
+
+				$this->request->post_set($field, $this->timezone->convert($dt_value, $this->config['session_data']['timezone'], $this->config['default_timezone']));
+
 				continue;
 			}
 

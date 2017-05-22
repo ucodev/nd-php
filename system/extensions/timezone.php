@@ -31,8 +31,8 @@ class UW_Timezone {
 	public function convert($datetime_value, $from, $to, $format = 'Y-m-d H:i:s') {
 		/* Initial validations */
 		if (!$datetime_value || !$from || !$to) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die('convert(): Invalid input data.');
+			header('HTTP/1.1 400 Bad Request');
+			die('Invalid datetime convertion parameters.');
 		}
 
 		/* Store the current configured timezone */
@@ -40,16 +40,21 @@ class UW_Timezone {
 
 		/* Set the current timezone to $from */
 		if (date_default_timezone_set($from) === false) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die('convert(): Unrecognized timezone: ' . $from);
+			header('HTTP/1.1 400 Bad Request');
+			die('Unrecognized timezone: ' . $from);
 		}
 
 		/* Process datetime value to be converted */
 		try {
-			$datetime = new DateTime($datetime_value);
+			$datetime = new DateTime($datetime_value, new DateTimeZone($from));
 		} catch (Exception $e) {
-			header('HTTP/1.1 500 Internal Server Error');
-			die('convert(): Unrecognized datetime value: ' . $datetime_value);
+			header('HTTP/1.1 400 Bad Request');
+			die('Unrecognized datetime value: ' . $datetime_value);
+		}
+
+		if (!$datetime) {
+			header('HTTP/1.1 400 Bad Request');
+			die('Unrecognized datetime value: ' . $datetime_value);
 		}
 
 		/* Create the new timezone instance */

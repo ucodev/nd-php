@@ -1,3 +1,9 @@
+v0.04k1 (2017-05-21):
+
+ - Updated uWeb.
+ - Optimized datetime field parsing and handling on insert, update and result operations.
+
+
 v0.04k (2017-05-20):
 
  - Decimal values are now returned as double type.
