@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,5 +32,6 @@
 
 
 function validate_email($email) {
-	return preg_match("/^[_a-z0-9-]+(\.[_a-z0-9+-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i", $email);
+	// return preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,16}$/', $_POST['email']);
+	return filter_var($email, FILTER_VALIDATE_EMAIL);
 }

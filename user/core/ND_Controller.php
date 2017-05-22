@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04k1';
+	protected $_ndphp_version = '0.04k2';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1231,7 +1231,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Check if we're under maintenance mode */
 		if ($config['maintenance'] && !$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('503', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Setup security settings for this user */
 		$this->_security_perms = $this->security->perm_get($this->_session_data['user_id']);

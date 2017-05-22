@@ -134,7 +134,7 @@ class ND_Register extends UW_Controller {
 
 		/* Check if we're under maintenance mode */
 		if ($config['maintenance'] && !$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('503', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
 
 		$this->nd_app_base_url = $config['base_url'];
 		$this->nd_mail_confirm_url = $config['base_url'] . '/index.php/register/confirm_email_hash/';
@@ -503,15 +503,15 @@ class ND_Register extends UW_Controller {
 				$vatinfo = json_decode($vat_json, true);
 
 				if (!$vatinfo || ($vatinfo == array()))
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_CONFIRM_VAT_EU, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('502', NDPHP_LANG_MOD_UNABLE_CONFIRM_VAT_EU, $this->_charset, !$this->request->is_ajax());
 
 				if ($vatinfo['valid'] !== true)
-					$this->response->code('403', NDPHP_LANG_MOD_INVALID_VAT_EU, $this->_charset, !$this->request->is_ajax());
+					$this->response->code('400', NDPHP_LANG_MOD_INVALID_VAT_EU, $this->_charset, !$this->request->is_ajax());
 			}
 		}
 
 		/* Validate email */
-		if (preg_match('/^[a-zA-Z0-9\._%\+\-]{1,255}@[a-zA-Z0-9\.\-]{1,255}\.[a-zA-Z]{2,16}$/', $_POST['email']) === false)
+		if (validate_email($_POST['email']) === false)
 			$this->response->code('400', NDPHP_LANG_MOD_INVALID_EMAIL, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id');

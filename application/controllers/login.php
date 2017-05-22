@@ -395,7 +395,7 @@ class Login extends UW_Controller {
 		}
 
 		/* Validade email address (regex) */		
-		if (validate_email($row['email']) == false)
+		if (validate_email($row['email']) === false)
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		/**** All sanity checks successfully passed ****/
@@ -405,7 +405,7 @@ class Login extends UW_Controller {
 
 		/* Check if we're under maintenance mode */
 		if ($this->_maintenance_enabled && !$this->security->im_admin())
-			$this->response->code('403', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('503', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_default_charset, !$this->request->is_ajax());
 
 		/* If logging is enabled, log this LOGIN entry */
 		$this->logging->log(

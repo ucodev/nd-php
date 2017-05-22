@@ -1,3 +1,10 @@
+v0.04k2 (2017-05-21):
+
+ - Normalized email validation on both register and login operations.
+ - Updated some status codes all around.
+ - 
+
+
 v0.04k1 (2017-05-21):
 
  - Updated uWeb.
