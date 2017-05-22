@@ -82,15 +82,14 @@ class UW_Upload extends UW_Module {
 
 				/* Created time is optional */
 				if (isset($value['created']) && $value['created']) {
-					/* TODO: FIXME: Check if created value matches a datetime type */
-					$meta['created'] = $value['created'];
+					$meta['created'] = $this->timezone->convert($value['created'], $this->config['session_data']['timezone'], $this->config['default_timezone'], DateTime::ATOM);
 				} else {
-					$meta['created'] = date('Y-m-d H:i:s');
+					$meta['created'] = date('Y-m-d\TH:i:sP');
 				}
 
 				/* Modified time is optional */
 				if (isset($value['created']) && isset($value['modified'])) {
-					$meta['modified'] = $value['modified'];
+					$meta['modified'] = $this->timezone->convert($value['modified'], $this->config['session_data']['timezone'], $this->config['default_timezone'], DateTime::ATOM);
 				} else {
 					$meta['modified'] = $meta['created'];
 				}
@@ -239,7 +238,7 @@ class UW_Upload extends UW_Module {
 						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
-				$meta['created'] = date('Y-m-d H:i:s');
+				$meta['created'] = date('Y-m-d\TH:i:sP');
 				$meta['modified'] = $meta['created'];
 
 				/* Compute file path based on the selected upload driver */
