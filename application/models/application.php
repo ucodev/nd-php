@@ -1402,14 +1402,18 @@ class UW_Application extends UW_Model {
 		}
 
 		/* Create a role translation table */
-		$this->db->select('id,role');
+		$this->db->select('id,role,is_admin,is_superuser');
 		$this->db->from('roles');
 		$q = $this->db->get();
 
 		$role_to_id = array();
+		$role_privs = array();
 
-		foreach ($q->result_array() as $row)
+		foreach ($q->result_array() as $row) {
 			$role_to_id[$row['role']] = $row['id'];
+			$role_privs[$row['role']]['is_admin'] = $row['is_admin'];
+			$role_privs[$row['role']]['is_superuser'] = $row['is_superuser'];
+		}
 
 		/* Create a role permission array */
 		$roles = array();
@@ -1538,14 +1542,45 @@ class UW_Application extends UW_Model {
 			}
 		}
 
-		/* If the menu is of type 'limited', add permission admin permissions for the fields 'users_id' */
+		/* If the menu is of type 'limited', add permissions for the fields 'users_id' based on privileged roles */
 		if ($menu['type'] == 'limited') {
+			/* Superadmin role will always have full privs for 'users_id' field */
 			$this->db->insert('_acl_rtcp', array(
 				'roles_id' => $role_to_id['ROLE_ADMIN'],
 				'_table' => $menu['db']['name'],
 				'_column' => 'users_id',
 				'permissions' => 'CRUS'
 			));
+
+			/* Check for admin and superuser roles, adding permissions to 'users_id' field based on the menu permissions */
+			foreach ($role_privs as $role => $role_priv) {
+				if ($role_priv['is_superuser'] || $role_priv['is_admin']) {
+					$role_perm = '';
+
+					if (in_array($role, $menu['permissions']['create']))
+						$role_perm .= 'C';
+
+					if (in_array($role, $menu['permissions']['read']))
+						$role_perm .= 'R';
+
+					if (in_array($role, $menu['permissions']['update']))
+						$role_perm .= 'U';
+
+					if (in_array($role, $menu['permissions']['read']))
+						$role_perm .= 'S'; /* NOTE: Search permission here is based on menu read permissions */
+
+					/* If there are no perms to be set, do not insert this entry */
+					if (!$role_perm)
+						continue;
+
+					$this->db->insert('_acl_rtcp', array(
+						'roles_id' => $role_to_id[$role],
+						'_table' => $menu['db']['name'],
+						'_column' => 'users_id',
+						'permissions' => $role_perm
+					));
+				}
+			}
 		}
 
 		/* Finally, insert the required permissions for 'id' field for each role */

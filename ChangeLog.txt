@@ -1,3 +1,13 @@
+v0.04k (2017-05-20):
+
+ - Decimal values are now returned as double type.
+ - ISO8601 is now the default output format for datetime fields for JSON REST requests.
+ - Application model will now automatically determine users_id permission on Limited controllers for admin and superuser roles.
+ - Updated base data model.
+ - Updated uWeb.
+ - Updated language files.
+
+
 v0.04j3 (2017-05-08):
 
  - Fixed default base URL retrieval under field module when loaded outside core controller inheritance.

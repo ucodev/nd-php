@@ -380,6 +380,7 @@ define('NDPHP_LANG_MOD_UNABLE_UPDATE_CURRENCY_RATES','Unable to update currencie
 define('NDPHP_LANG_MOD_UNABLE_CREATE_IMG_RES_FILE', 'Unable to create image resource from file.');
 define('NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES',       'Unable to scale image resource.');
 define('NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE','Unable to store a temporary resized image file.');
+define('NDPHP_LANG_MOD_UNABLE_PARSE_DATETIME_VALUE',  'Unable to parse datetime value: ');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');

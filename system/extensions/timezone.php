@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 26/04/2016
+ * Date: 21/05/2017
  * License: GPLv3
  */
 
@@ -10,7 +10,7 @@
  * This file is part of uweb.
  *
  * uWeb - uCodev Low Footprint Web Framework (https://github.com/ucodev/uweb)
- * Copyright (C) 2014-2016  Pedro A. Hortas
+ * Copyright (C) 2014-2017  Pedro A. Hortas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,6 @@ class UW_Timezone {
 			die('convert(): Invalid input data.');
 		}
 
-		if ($from == $to)
-			return $datetime_value;
-
 		/* Store the current configured timezone */
 		$default_timezone = date_default_timezone_get();
 
@@ -48,7 +45,12 @@ class UW_Timezone {
 		}
 
 		/* Process datetime value to be converted */
-		$datetime = new DateTime($datetime_value);
+		try {
+			$datetime = new DateTime($datetime_value);
+		} catch (Exception $e) {
+			header('HTTP/1.1 500 Internal Server Error');
+			die('convert(): Unrecognized datetime value: ' . $datetime_value);
+		}
 
 		/* Create the new timezone instance */
 		$to_timezone = new DateTimeZone($to);

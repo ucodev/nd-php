@@ -50,7 +50,19 @@ class UW_Field extends UW_Module {
 	}
 
 	public function mangle_datetime($value) {
-		return $this->timezone->convert($value, $this->config['default_timezone'], $this->config['session_data']['timezone']);
+		/* Default datetime format */
+		$format = 'Y-m-d H:i:s';
+
+		/* If this is a JSON request, convert the datetime format to ISO 8601 */
+		if ($this->request->is_json())
+			$format = DateTime::ATOM;
+
+		/* Convert from system default timezone to user session timezone */
+		return $this->timezone->convert($value, $this->config['default_timezone'], $this->config['session_data']['timezone'], $format);
+	}
+
+	public function mangle_decimal($value) {
+		return doubleval($value);
 	}
 
 	public function mangle_file($value, $id = NULL) {
@@ -113,6 +125,9 @@ class UW_Field extends UW_Module {
 				if (($fields[$field]['type'] == 'datetime') && $value) {
 					/* Convert data from database default timezone to user timezone */
 					$row[$field] = $this->mangle_datetime($value);
+				} else if (($fields[$field]['type'] == 'decimal') && ($value !== NULL)) {
+					/* Depending on the database driver, decimal formats may need to be converted from string to double */ 
+					$row[$field] = $this->mangle_decimal($value);
 				} else if (($fields[$field]['input_type'] == 'file') && $value) {
 					/* Properly setup the file type */
 					$row[$field] = $this->mangle_file($value, isset($row['id']) ? $row['id'] : $id);
