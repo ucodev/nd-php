@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04k3';
+	protected $_ndphp_version = '0.04k4';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4014,8 +4014,8 @@ class ND_Controller extends UW_Controller {
 				$this->request->post_set($field, $this->timezone->convert($dt_value, $this->config['session_data']['timezone'], $this->config['default_timezone']));
 			}
 
-			/* Check if fields are empty */
-			if (($this->request->post($field) == NULL) || (trim($this->request->post($field), ' \t') == '')) {
+			/* Check if fields are empty and unset them if so, but only if this isn't a REST call */
+			if (!$this->request->is_json() && (($this->request->post($field) == NULL) || (trim($this->request->post($field), ' \t') == ''))) {
 				/* 
 				 * Boolean fields (checkboxes) are set as 0 by default, using a hidden
 				 * field in the create view.
@@ -4034,7 +4034,7 @@ class ND_Controller extends UW_Controller {
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field)))
-					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 			}
 		}
 
@@ -4604,15 +4604,15 @@ class ND_Controller extends UW_Controller {
 				}
 			}
 
-			/* Set to NULL if empty */
-			if (trim($this->request->post($field), ' \t') == '') {
+			/* Set to NULL if empty, but only if this isn't a REST call */
+			if (!$this->request->is_json() && (trim($this->request->post($field), ' \t') == '')) {
 				$this->request->post_set($field, NULL);
 			}
 
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field))) {
-					$this->response->code('403', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 				}
 			}
 		}

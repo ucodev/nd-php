@@ -64,8 +64,8 @@ class UW_Upload extends UW_Module {
 		/* Check if the file is being uploaded via JSON encoded request */
 		if ($this->request->is_json()) {
 			foreach ($this->request->post() as $field => $value) {
-				/* Check if this is a file field... if not, ignore it */
-				if (substr($field, 0, 6) != '_file_')
+				/* Check if this is a file field... if not, ignore it. If it is, grant that its contents are not null */
+				if ((substr($field, 0, 6) != '_file_') || ($value === NULL))
 					continue;
 
 				/* Grant that all the required file properties are set */

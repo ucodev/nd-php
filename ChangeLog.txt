@@ -1,3 +1,10 @@
+v0.04k4 (2017-05-27):
+
+ - Updated some status codes all around.
+ - Insert and Update operations will now distinguish between NULL, zero and empty fields and accept them as valid values for JSON REST calls.
+ - File fields that are NULL, are now ignored by upload pre-processor.
+
+
 v0.04k3 (2017-05-21):
 
  - Created and modified times on upload module are now stored in ISO8601 format.
