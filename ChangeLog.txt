@@ -1,3 +1,8 @@
+v0.04l (2017-05-28):
+
+ - Minor optimizations on Application model.
+
+
 v0.04k5 (2017-05-28):
 
  - Improved role permission handling and setup on Application model.

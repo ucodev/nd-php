@@ -1458,17 +1458,14 @@ class UW_Application extends UW_Model {
 			}
 		}
 
-		/* Insert permissions into acl table */
+		/* Insert permissions into acl table for controller and 'id' field for each role */
 		foreach ($roles as $role_id => $perm) {
 			$this->db->insert('_acl_rtp', array(
 				'roles_id' => $role_id,
 				'_table' => $menu['db']['name'],
 				'permissions' => $perm
 			));
-		}
 
-		/* Insert the required permissions for 'id' field for each role */
-		foreach ($roles as $role_id => $perm) {
 			$this->db->insert('_acl_rtcp', array(
 				'roles_id' => $role_id,
 				'_table' => $menu['db']['name'],
