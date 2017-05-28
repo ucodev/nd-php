@@ -49,6 +49,10 @@ class UW_Field extends UW_Module {
 		$this->_init();
 	}
 
+	public function mangle_boolean($value) {
+		return !!$value;
+	}
+
 	public function mangle_datetime($value) {
 		/* Default datetime format */
 		$format = 'Y-m-d H:i:s';
@@ -122,7 +126,10 @@ class UW_Field extends UW_Module {
 			$row = array();
 
 			foreach ($data as $field => $value) {
-				if (($fields[$field]['type'] == 'datetime') && $value) {
+				if (($fields[$field]['input_type'] == 'checkbox') && ($value !== NULL)) {
+					/* Convert possible integer value into boolean type */
+					$row[$field] = $this->mangle_boolean($value);
+				} else if (($fields[$field]['type'] == 'datetime') && ($value !== NULL)) {
 					/* Convert data from database default timezone to user timezone */
 					$row[$field] = $this->mangle_datetime($value);
 				} else if (($fields[$field]['type'] == 'decimal') && ($value !== NULL)) {
