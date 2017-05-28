@@ -792,10 +792,10 @@ class UW_Get extends UW_Module {
 				$fields[$field['name']]['input_type'] = 'text';
 			} else if ($field['type'] == 'text') {
 				$fields[$field['name']]['input_type'] = 'textarea';
+			} else if (($field['type'] == 'tinyint') || ($field['type'] == 'bool') || ($field['max_length'] == 1)) { /* NOTE: boolean length check (1) must come before int and bigint type checks */
+				$fields[$field['name']]['input_type'] = 'checkbox';
 			} else if (($field['type'] == 'int') || ($field['type'] == 'bigint') || ($field['type'] == 'timestamp')) {
 				$fields[$field['name']]['input_type'] = 'number';
-			} else if (($field['type'] == 'tinyint') || ($field['type'] == 'bool') || ($field['max_length'] == 1)) {
-				$fields[$field['name']]['input_type'] = 'checkbox';
 			} else {
 				/* By default, we assume all unknown types as 'text' */
 				$fields[$field['name']]['input_type'] = 'text';
