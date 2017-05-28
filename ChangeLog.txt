@@ -1,3 +1,8 @@
+v0.04l2 (2017-05-28):
+
+ - Field types with max length equal to 1 are now considered boolean type.
+
+
 v0.04l1 (2017-05-28):
 
  - Boolean types are now correctly converted for JSON REST calls.
