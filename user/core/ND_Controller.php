@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04k4';
+	protected $_ndphp_version = '0.04k5';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1245,13 +1245,13 @@ class ND_Controller extends UW_Controller {
 			if (!$this->security->safe_names($GLOBALS['__controller'], $this->_security_safe_chars))
 				$this->response->code('500', NDPHP_LANG_MOD_INVALID_CHARS_CTRL, $this->_default_charset, !$this->request->is_ajax());
 
-			/* Disable prepared statements */
-			$this->db->stmt_disable();
-
 			/* Check if any required views for this controller were already created. If not, create them and
 			 * store this indication in the cache (if available)
 			 */
 			if (!$this->cache->get('s_cache_' . $GLOBALS['__controller'] . '_views_created')) {
+				/* Disable prepared statements */
+				$this->db->stmt_disable();
+
 				/* Create database view */
 				$this->db->query('CREATE OR REPLACE VIEW ' . $GLOBALS['__controller'] . ' AS ' . $this->_table_type_view_query);
 
@@ -1262,12 +1262,12 @@ class ND_Controller extends UW_Controller {
 					}
 				}
 
+				/* Re-enable prepared statements */
+				$this->db->stmt_enable();
+
 				/* Cache view creation status */
 				$this->cache->set('s_cache_' . $GLOBALS['__controller'] . '_views_created', true);
 			}
-
-			/* Re-enable prepared statements */
-			$this->db->stmt_enable();
 		}
 
 		/* Process charts */
@@ -3301,7 +3301,9 @@ class ND_Controller extends UW_Controller {
 			/* Apply result filter hook */
 			$hook_enter_return = $this->_hook_result_generic_filter($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);
 
-			$data['view']['result_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
+			/* Only create a result_query view value if this isn't a JSON request */
+			if (!$this->request->is_json())
+				$data['view']['result_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
 
 			/* Set the ordering */
 			$this->db->order_by($order_field, $order_type);
@@ -3317,8 +3319,10 @@ class ND_Controller extends UW_Controller {
 		 	 * 
 		 	 * FIXME: TODO: export query should be stored in user session and shall no be passed via URL
 		 	 *
+			 * NOTE 2: Only create an export_query view value if this isn't a JSON request
 		 	 */
-			$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
+			if (!$this->request->is_json())
+				$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
 
 
 			/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
@@ -3344,9 +3348,6 @@ class ND_Controller extends UW_Controller {
 				$this->db->limit($this->config['table_pagination_rpp_list'], $page);
 			}
 			
-			/* Get compiled select statement */
-			$result_query = $this->db->get_compiled_select_str(NULL, true, false);
-
 			/* Check if total number of matches is required to be computed.
 			 * If this isn't a REST JSON request, then total number of matches is always computed (for pagination),
 			 * otherwise, calculated total number of matches only if the REST JSON request explicitly asks for it.
@@ -3362,11 +3363,25 @@ class ND_Controller extends UW_Controller {
 				}
 			}
 
-			/* Force MySQL to count the total number of rows despite the LIMIT clause */
-			if ($totals)
-				$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
+			/* If this isn't a JSON request, use the compiled select statement...
+			 * TODO: FIXME: A little bit messy here... But view data will be removed in future versions, so no real need to refactor atm.
+			 */
+			if (!$this->request->is_json()) {
+				/* Get compiled select statement */
+				$result_query = $this->db->get_compiled_select_str(NULL, true, false);
+
+				if ($totals)
+					$result_query = 'SELECT SQL_CALC_FOUND_ROWS ' . substr($result_query, 7);
 			
-			$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->query($result_query));
+				$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->query($result_query));
+			} else {
+				/* If this is a JSON request, do not use the compiled query. Force prepared statments by default */
+
+				if ($totals)
+					$this->db->calc_found_rows();
+
+				$data['view']['result_array'] = $this->field->value_mangle($ftypes, $this->db->get());
+			}
 			
 			/* Get total rows count, if required. */
 			if ($totals) {

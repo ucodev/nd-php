@@ -1467,6 +1467,16 @@ class UW_Application extends UW_Model {
 			));
 		}
 
+		/* Insert the required permissions for 'id' field for each role */
+		foreach ($roles as $role_id => $perm) {
+			$this->db->insert('_acl_rtcp', array(
+				'roles_id' => $role_id,
+				'_table' => $menu['db']['name'],
+				'_column' => 'id',
+				'permissions' => 'CRUS'
+			));
+		}
+
 		/* Process menu fields' permissions */
 		foreach ($menu['fields'] as $field) {
 			if (!isset($field['permissions'])) {
@@ -1581,16 +1591,6 @@ class UW_Application extends UW_Model {
 					));
 				}
 			}
-		}
-
-		/* Finally, insert the required permissions for 'id' field for each role */
-		foreach ($roles as $role_id => $perm) {
-			$this->db->insert('_acl_rtcp', array(
-				'roles_id' => $role_id,
-				'_table' => $menu['db']['name'],
-				'_column' => 'id',
-				'permissions' => 'CRUS'
-			));
 		}
 
 		/* All good */
