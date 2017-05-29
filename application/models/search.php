@@ -243,6 +243,12 @@ class UW_Search extends UW_Model {
 							return false;
 						}
 
+						/* Check if array is empty */
+						if (empty($value)) {
+							$this->_set_result_error("Empty arrays are not allowed on condition '" . $cond . "' for field '" . $field . "'.");
+							return false;
+						}
+
 						/* Set the criteria value */
 						$nadv[$field] = $value;
 
