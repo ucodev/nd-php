@@ -1561,9 +1561,9 @@ class UW_Application extends UW_Model {
 
 			/* Check for admin and superuser roles, adding permissions to 'users_id' field based on the menu permissions */
 			foreach ($role_privs as $role => $role_priv) {
-				if ($role_priv['is_superuser'] || $role_priv['is_admin']) {
-					$role_perm = '';
+				$role_perm = '';
 
+				if ($role_priv['is_superuser'] || $role_priv['is_admin']) {
 					if (in_array($role, $menu['permissions']['create']))
 						$role_perm .= 'C';
 
@@ -1575,18 +1575,22 @@ class UW_Application extends UW_Model {
 
 					if (in_array($role, $menu['permissions']['read']))
 						$role_perm .= 'S'; /* NOTE: Search permission here is based on menu read permissions */
-
-					/* If there are no perms to be set, do not insert this entry */
-					if (!$role_perm)
-						continue;
-
-					$this->db->insert('_acl_rtcp', array(
-						'roles_id' => $role_to_id[$role],
-						'_table' => $menu['db']['name'],
-						'_column' => 'users_id',
-						'permissions' => $role_perm
-					));
+				} else {
+					/* For any other role that is not superadmin, admin or superuser, add read/search privileges if it can read the controller */
+					if (in_array($role, $menu['permissions']['read']))
+						$role_perm .= 'RS';
 				}
+
+				/* If there are no perms to be set, do not insert this entry */
+				if (!$role_perm)
+					continue;
+
+				$this->db->insert('_acl_rtcp', array(
+					'roles_id' => $role_to_id[$role],
+					'_table' => $menu['db']['name'],
+					'_column' => 'users_id',
+					'permissions' => $role_perm
+				));
 			}
 		}
 

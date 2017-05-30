@@ -1,3 +1,8 @@
+v0.04l5 (2017-05-30):
+
+ - Application model builder now also adds RS perms to users_id field under limited type controllers to non-admin, non-superuser roles.
+
+
 v0.04l4 (2017-05-29):
 
  - Check and reject empty arrays on NDSL queries for "in" and "not_in" criteria.
