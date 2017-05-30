@@ -68,6 +68,7 @@ define('NDPHP_LANG_MOD_ATTN_PHP_VERSION',			'PHP versions lesser than 5.6.0 are 
 define('NDPHP_LANG_MOD_ATTN_SCHED_NOT_EXTERNAL',	'The scheduler configuration is not set as external.');
 define('NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND',		'No session found.');
 define('NDPHP_LANG_MOD_ATTN_NO_CURRENCY_DEFAULT',	'No default currency was found.');
+define('NDPHP_LANG_MOD_ATTN_REAUTH_REQUIRED',       'Session expired. Re-authentication required.');
 
 define('NDPHP_LANG_MOD_CANNOT_LOAD_PREV_VIEW',		'Cannot load the previous view.');
 define('NDPHP_LANG_MOD_CANNOT_VERIFY_PASSWORD',		'Cannot verify password.');

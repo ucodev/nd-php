@@ -1,3 +1,10 @@
+v0.04l6 (2017-05-30):
+
+ - Proper re-authentication request message is now sent when session expires.
+ - Updating _file_ fields to NULL will now cause the file to be removed.
+ - Updated language files.
+
+
 v0.04l5 (2017-05-30):
 
  - Application model builder now also adds RS perms to users_id field under limited type controllers to non-admin, non-superuser roles.

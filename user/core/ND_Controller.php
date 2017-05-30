@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04l5';
+	protected $_ndphp_version = '0.04l6';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1189,8 +1189,9 @@ class ND_Controller extends UW_Controller {
 			} else {
 				/* User not logged in or session expired... we need to force re-authentication */
 
-				/* If this is an AJAX call, redirect to /login/ ... Otherwise set the referer URL */
-				if ($this->request->is_ajax()) {
+				if ($this->request->is_json()) { /* If this is a JSON REST call, reply unauthorized */
+					$this->response->code('401', NDPHP_LANG_MOD_ATTN_REAUTH_REQUIRED, $this->_default_charset, !$this->request->is_ajax());
+				} else if ($this->request->is_ajax()) { /* If this is an AJAX call, redirect to /login/ ... Otherwise set the referer URL */
 					die('<meta http-equiv="refresh" content="0; url=' . base_url() . 'index.php/login"><script type="text/javascript">window.location = "' . base_url() . 'index.php/login";</script>');
 				} else {
 					die('<meta http-equiv="refresh" content="0; url=' . base_url() . 'index.php/login/login/' . $this->ndphp->safe_b64encode(current_url()) . '"><script type="text/javascript">window.location = "' . base_url() . 'index.php/login/login/' . $this->ndphp->safe_b64encode(current_url()) . '";</script>');
@@ -4590,7 +4591,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Check if this is a file field that was requested to be removed */
 			if (substr($field, 0, 6) == '_file_') {
-				if ($this->request->post_isset($field . '_remove') && $this->request->post($field . '_remove')) {
+				if (($this->request->post_isset($field . '_remove') && $this->request->post($field . '_remove')) || ($this->request->post($field) === NULL)) {
 					/* Get file metadata */
 					$this->db->select($field);
 					$this->db->from($this->config['name']);

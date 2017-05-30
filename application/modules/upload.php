@@ -334,7 +334,7 @@ class UW_Upload extends UW_Module {
 					/* Unlink the temporary file */
 					unlink($tfile);
 
-					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
 				/* If this is an image file, create the resized image versions, if configured */
@@ -351,7 +351,7 @@ class UW_Upload extends UW_Module {
 					/* Unlink the temporary file */
 					unlink($_FILES[$field]['tmp_name']);
 
-					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
 				/* If this is an image file, create the resized image versions, if configured */
@@ -381,7 +381,7 @@ class UW_Upload extends UW_Module {
 
 				/* Remove the file from the S3 bucket */
 				if ($this->s3->drop($meta['path']) === false)
-					$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE, $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('502', NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE, $this->config['default_charset'], !$this->request->is_ajax());
 
 				/* Remove resized images, if any */
 				if (isset($meta['image']) && ($meta['image']['width'] > 0))
