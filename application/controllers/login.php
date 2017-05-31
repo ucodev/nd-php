@@ -361,7 +361,7 @@ class Login extends UW_Controller {
 			if (strlen($this->request->post('apikey')) != 40)
 				$this->response->code('400', NDPHP_LANG_MOD_INVALID_CREDENTIALS, $this->_default_charset, !$this->request->is_ajax());
 
-			if (preg_match('/^[a-fA-F0-9]+$/', $this->request->post('apikey')))
+			if (!preg_match('/^[a-fA-F0-9]+$/', $this->request->post('apikey')))
 				$this->response->code('400', NDPHP_LANG_MOD_INVALID_CREDENTIALS, $this->_default_charset, !$this->request->is_ajax());
 
 			/* Retrieve user information from database based on userid and apikey */

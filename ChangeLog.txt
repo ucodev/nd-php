@@ -1,3 +1,8 @@
+v0.04m2 (2017-05-31):
+
+ - Fixed incorrect regex validation return value.
+
+
 v0.04m1 (2017-05-31):
 
  - Minor validation improvements.
