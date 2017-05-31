@@ -1,3 +1,8 @@
+v0.04m1 (2017-05-31):
+
+ - Minor validation improvements.
+
+
 v0.04m (2017-05-31):
 
  - Empty multiple relationship fields on view_generic calls are now populated as empty array instead of omitted.

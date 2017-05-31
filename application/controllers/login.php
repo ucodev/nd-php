@@ -379,11 +379,13 @@ class Login extends UW_Controller {
 			/* Retrieve username information from database */
 			$this->db->where('username', $this->request->post('username'));
 			$query = $this->db->get($this->_table_users);
-			$row = $query->row_array();
 
 			/* Validade if user exists */
-			if (!$row)
+			if (!$query->num_rows())
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_default_charset, !$this->request->is_ajax());
+
+			/* Fetch user data */
+			$row = $query->row_array();
 
 			/* Check encryption algorithm */
 			if (substr($row['password'], 0, 7) == '$2y$10$') {
