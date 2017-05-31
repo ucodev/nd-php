@@ -174,7 +174,8 @@ class Update extends ND_Controller {
 
 			/** Stage 7: Remove unused files **/
 			foreach ($tracker[$from_version]['remove'] as $file) {
-				unlink(SYSTEM_BASE_DIR . '/' . $file);
+				if (file_exists(SYSTEM_BASE_DIR . '/' . $file))
+					unlink(SYSTEM_BASE_DIR . '/' . $file);
 			}
 
 			/** Stage 8: Replace files **/

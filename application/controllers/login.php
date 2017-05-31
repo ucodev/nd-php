@@ -166,7 +166,7 @@ class Login extends UW_Controller {
 	 */
 	private function session_setup($user_id = NULL, $username = NULL, $plain_password = NULL, $email = NULL, $first_name = NULL, $photo = NULL) {
 		/* Sanity checks */
-		if (!$user_id || !$username || !$plain_password || !$email)
+		if (!$user_id || !$username || !$email)
 			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_default_charset, !$this->request->is_ajax());
 
 		if ($this->request->remote_addr() == 'Unspecified')
@@ -241,22 +241,27 @@ class Login extends UW_Controller {
 			$database = $dbdata['default_database'];
 		}
 
-		/* Get user private key */
-		$this->db->select('privenckey');
-		$this->db->from('users');
-		$this->db->where('id', $user_id);
-		$query = $this->db->get();
+		/* Get user private key if the authentication was password based */
+		if ($plain_password !== NULL) {
+			$this->db->select('privenckey');
+			$this->db->from('users');
+			$this->db->where('id', $user_id);
+			$query = $this->db->get();
 
-		if (!$query->num_rows())
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_default_charset, !$this->request->is_ajax());
+			if (!$query->num_rows())
+				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FETCH_CRIT_DATA_DBMS, $this->_default_charset, !$this->request->is_ajax());
 
-		$pek_row = $query->row_array();
+			$pek_row = $query->row_array();
 
-		/* Decrypt the stored key with the user's plain password */
-		$privenckey = $this->encrypt->decrypt($pek_row['privenckey'], $plain_password, false);
+			/* Decrypt the stored key with the user's plain password */
+			$privenckey = $this->encrypt->decrypt($pek_row['privenckey'], $plain_password, false);
 
-		if (strlen($privenckey) != 256)
-			$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_default_charset, !$this->request->is_ajax());
+			if (strlen($privenckey) != 256)
+				$this->response->code('500', NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY, $this->_default_charset, !$this->request->is_ajax());
+		} else {
+			/* Authentication was based on API key or similar, causing the user be unable to access private/encrypted data */
+			$privenckey = NULL;
+		}
 
 		/* Regenerate user session */
 		$this->session->regenerate();
@@ -348,11 +353,31 @@ class Login extends UW_Controller {
 			include($plugin);
 
 		/* Check if this is an authentication based on api key */
-		if (!isset($_POST['username'])) {
-			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_default_charset, !$this->request->is_ajax());
-		} else {
-			/* Retrive username information from database */
-			$this->db->where('username', $_POST['username']);
+		if ($this->request->post_isset('apikey') && $this->request->post_isset('userid')) {
+			/* Pre-validate values */
+			if (intval($this->request->post('userid')) <= 0)
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_USER_ID, $this->_default_charset, !$this->request->is_ajax());
+
+			if (strlen($this->request->post('apikey')) != 40)
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_CREDENTIALS, $this->_default_charset, !$this->request->is_ajax());
+
+			if (preg_match('/^[a-fA-F0-9]+$/', $this->request->post('apikey')))
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_CREDENTIALS, $this->_default_charset, !$this->request->is_ajax());
+
+			/* Retrieve user information from database based on userid and apikey */
+			$this->db->where('id', intval($this->request->post('userid')));
+			$this->db->where('apikey', $this->request->post('apikey'));
+			$query = $this->db->get($this->_table_users);
+
+			/* Validade if user exists */
+			if (!$query->num_rows())
+				$this->response->code('403', NDPHP_LANG_MOD_INVALID_CREDENTIALS, $this->_default_charset, !$this->request->is_ajax());
+
+			/* Fetch user data */
+			$row = $query->row_array();
+		} else if ($this->request->post_isset('username') && $this->request->post_isset('password')) {
+			/* Retrieve username information from database */
+			$this->db->where('username', $this->request->post('username'));
 			$query = $this->db->get($this->_table_users);
 			$row = $query->row_array();
 
@@ -363,10 +388,10 @@ class Login extends UW_Controller {
 			/* Check encryption algorithm */
 			if (substr($row['password'], 0, 7) == '$2y$10$') {
 				/* Crypt Blowfish */
-				$passwd_digest = crypt($_POST['password'], substr($row['password'], 0, 29));
+				$passwd_digest = crypt($this->request->post('password'), substr($row['password'], 0, 29));
 			} else if (strlen($row['password']) == 128) {
 				/* SHA512 (deprecated... still here for backward compatibility) */
-				$passwd_digest = openssl_digest($_POST['password'], 'sha512');
+				$passwd_digest = openssl_digest($this->request->post('password'), 'sha512');
 			} else {
 				/* Unrecognized hash */
 				$this->response->code('403', NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
@@ -375,6 +400,8 @@ class Login extends UW_Controller {
 			/* Validade password */
 			if ($passwd_digest != $row['password'])
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_default_charset, !$this->request->is_ajax());
+		} else {
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Check if account is active */
@@ -401,7 +428,7 @@ class Login extends UW_Controller {
 		/**** All sanity checks successfully passed ****/
 
 		/* Setup user session */
-		$this->session_setup($row['id'], $row['username'], $_POST['password'], $row['email'], $row['first_name'], $row['_file_photo']);
+		$this->session_setup($row['id'], $row['username'], $this->request->post('password'), $row['email'], $row['first_name'], $row['_file_photo']);
 
 		/* Check if we're under maintenance mode */
 		if ($this->_maintenance_enabled && !$this->security->im_admin())
@@ -425,11 +452,11 @@ class Login extends UW_Controller {
 			include($plugin);
 
 		/* User is authenticated... redirecting to application contents */
-		if ($_POST['referer']) {
+		if ($this->request->post_isset('referer') && $this->request->post('referer')) {
 			/* TODO: FIXME: If the referer is the login page itself, we should ignore it and redirect to / instead...
 			 * Otherwise we'll have 2 consecutive logins and the session ID will be regenetared twice (waste of time and resources).
 			 */
-			redirect($this->ndphp->safe_b64decode($_POST['referer']), false, true); /* Full URL redirect */
+			redirect($this->ndphp->safe_b64decode($this->request->post('referer')), false, true); /* Full URL redirect */
 		} else {
 			if ($this->request->is_json()) {
 				$data['status'] = true;

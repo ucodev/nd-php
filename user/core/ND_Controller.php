@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04l6';
+	protected $_ndphp_version = '0.04m';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -5164,19 +5164,21 @@ class ND_Controller extends UW_Controller {
 				} else {
 					/* Query the database to retrieve the selected elements for this ID */
 					$this->db->select($meta['table'] . '.id AS id,' . $meta['table'] . '.' . $meta['rel_field'] . ' AS item');
-					//$this->db->from($this->config['name']);
 					$this->db->from($meta['rel_table']);
-					//$this->db->join($meta['rel_table'], $this->config['name'] . '.id = ' . $meta['rel_table'] . '.' . $this->config['name'] . '_id', 'left');
 					$this->db->join($meta['table'], $meta['table'] . '.id = ' . $meta['rel_table'] . '.' . $meta['table'] . '_id', 'left');
-					//$this->db->where($this->config['name'] . '.id', $id);
 					$this->db->where($meta['rel_table'] . '.' . $this->config['name'] . '_id', $id);
 					$this->db->having('`item` IS NOT NULL');
 				}
 
 				$query = $this->db->get();
 
-				if (!$query->num_rows())
+				/* Check if there are any entries */
+				if (!$query->num_rows()) {
+					/* Set multiple relationship field as empty array */
+					$data['view']['rel'][$field] = array();
+
 					continue;
+				}
 
 				foreach ($query->result_array() as $row) {
 					/* If any of the fields are NULL, skip the row. (FIXME: This is not required because we're using having()) */

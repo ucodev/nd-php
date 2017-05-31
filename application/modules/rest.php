@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,7 +162,7 @@ class UW_Rest extends UW_Module {
 		return json_encode($json_res);
 	}
 
-	public function json_delete($data) {
+	public function json_delete() {
 		$json_res['status'] = true;
 		$json_res['data']['deleted'] = true;
 

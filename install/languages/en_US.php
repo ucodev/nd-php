@@ -171,7 +171,7 @@ define('NDPHP_LANG_MOD_INVALID_PARAMETERS',			'Invalid parameters.');
 define('NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG',		'Invalid size. Too big.');
 define('NDPHP_LANG_MOD_INVALID_REQUEST',			'Invalid request.');
 define('NDPHP_LANG_MOD_INVALID_PRIV_ENC_KEY',		'Invalid private encryption key.');
-define('NDPHP_LANG_MOD_INVALID CREDENTIALS',		'Invalid credentials.');
+define('NDPHP_LANG_MOD_INVALID_CREDENTIALS',		'Invalid credentials.');
 define('NDPHP_LANG_MOD_INVALID_SEARCH_INTERVAL_FMT','Incorrect custom interval. Intervals format is:');
 define('NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN',	'The input pattern defined does not match the content of field');
 define('NDPHP_LANG_MOD_INVALID_TYPE_NOT_OBJ',		'Invalid type. The supplied parameter is not an object.');

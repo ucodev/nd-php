@@ -223,7 +223,7 @@ class UW_Field extends UW_Module {
 				/* Only push this field into the $select set if it is marked for selection (empty $selected, or present in $selected)...
 				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
 				 */
-				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
+				if ((!count($selected) && !in_array($field, $criteria_req)) || (count($selected) && in_array($field, $selected)))
 					array_push($select, $cc_fields . ' AS `' . $field . '`');
 			} else if ($meta['type'] == 'rel') {
 				/* If this is a multiple relationship field */
@@ -270,7 +270,7 @@ class UW_Field extends UW_Module {
 				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
 				 * Also, for REST JSON requests, the contatenation separator is always set to ','
 				 */
-				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
+				if ((!count($selected) && !in_array($field, $criteria_req)) || (count($selected) && in_array($field, $selected)))
 					array_push($select, 'GROUP_CONCAT(DISTINCT ' . $cc_fields . ($this->request->is_json() ? ' SEPARATOR \',\'' : ' SEPARATOR \'' . $this->config['rel_group_concat_sep'] . '\'') . ') AS `' . $field . '`');
 			} else {
 				/* Otherwise, just select the current table field */
@@ -278,7 +278,7 @@ class UW_Field extends UW_Module {
 				/* Only push this field into the $select set if it is marked for selection (empty $selected, or present in $selected)...
 				 * Fields beloging only to $criteria_req are only required to be resolved, not selected.
 				 */
-				if ((!count($selected) && !in_array($field, $criteria_req)) || in_array($field, $selected))
+				if ((!count($selected) && !in_array($field, $criteria_req)) || (count($selected) && in_array($field, $selected)))
 					array_push($select, '`' . $this->config['name'] . '`.`' . $field . '`');
 			}
 		}

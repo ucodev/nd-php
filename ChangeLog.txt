@@ -1,3 +1,10 @@
+v0.04m (2017-05-31):
+
+ - Empty multiple relationship fields on view_generic calls are now populated as empty array instead of omitted.
+ - Minor fixes around.
+ - Session authentication now fully supports userid and apikey based auth.
+
+
 v0.04l6 (2017-05-30):
 
  - Proper re-authentication request message is now sent when session expires.
