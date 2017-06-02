@@ -88,7 +88,7 @@ class UW_Upload extends UW_Module {
 				}
 
 				/* Modified time is optional */
-				if (isset($value['created']) && isset($value['modified'])) {
+				if (isset($value['created']) && isset($value['modified']) && $value['modified']) {
 					$meta['modified'] = $this->timezone->convert($value['modified'], $this->config['session_data']['timezone'], $this->config['default_timezone'], DateTime::ATOM);
 				} else {
 					$meta['modified'] = $meta['created'];

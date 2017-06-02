@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04m2';
+	protected $_ndphp_version = '0.04m3';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1034,7 +1034,6 @@ class ND_Controller extends UW_Controller {
 		if ($this->request->is_post() && count($this->request->post())) {
 			/* Set all $_POST keys to lowercase */
 			foreach ($this->request->post() as $key => $value) {
-				//echo('key: ' . $key . '<br />' . "\n");
 				$this->request->post_unset($key);
 				$this->request->post_set(strtolower($key), $value);
 			}
