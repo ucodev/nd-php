@@ -57,7 +57,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_tables')) {
-				return $this->cache->get('d_cache_tables');
+				$this->config['cache_tables'] = $this->cache->get('d_cache_tables');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_tables']))
+					return $this->config['cache_tables'];
 			}
 		}
 
@@ -97,7 +101,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_table_desc_' . $table)) {
-				return $this->cache->get('d_cache_table_desc_' . $table);
+				$this->config['cache_table_desc'][$table] = $this->cache->get('d_cache_table_desc_' . $table);
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_table_desc'][$table]))
+					return $this->config['cache_table_desc'][$table];
 			}
 		}
 
@@ -126,7 +134,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_table_fields_' . $table)) {
-				return $this->cache->get('d_cache_table_fields_' . $table);
+				$this->config['cache_table_fields'][$table] = $this->cache->get('d_cache_table_fields_' . $table);
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_table_fields'][$table]))
+					return $this->config['cache_table_fields'][$table];
 			}
 		}
 
@@ -159,7 +171,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_help_' . $table)) {
-				return $this->cache->get('d_cache_help_' . $table);
+				$this->config['cache_help'][$table] = $this->cache->get('d_cache_help_' . $table);
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_help'][$table]))
+					return $this->config['cache_help'][$table];
 			}
 		}
 
@@ -213,7 +229,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_build')) {
-				return $this->cache->get('d_cache_build');
+				$this->config['cache_build'] = $this->cache->get('d_cache_build');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_build']))
+					return $this->config['cache_build'];
 			}
 		}
 
@@ -260,7 +280,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_theme')) {
-				return $this->cache->get('d_cache_theme');
+				$this->config['cache_theme'] = $this->cache->get('d_cache_theme');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_theme']))
+					return $this->config['cache_theme'];
 			}
 		}
 
@@ -295,7 +319,11 @@ class UW_Get extends UW_Module {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_features')) {
-				return $this->cache->get('d_cache_features');
+				$this->config['cache_features'] = $this->cache->get('d_cache_features');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($this->config['cache_features']))
+					return $this->config['cache_features'];
 			}
 		}
 

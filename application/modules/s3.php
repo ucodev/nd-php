@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ class UW_S3 extends UW_Module {
 				'key' => $config['aws']['key'],
 				'secret' => $config['aws']['secret'],
 			],
+			'use_accelerate_endpoint' => (isset($config['aws']['use_accelerate_endpoint']) ? $config['aws']['use_accelerate_endpoint'] : false)
 		]);
 
 		/* Set default bucket */
@@ -110,6 +111,7 @@ class UW_S3 extends UW_Module {
 				]);
 			}
 		} catch (Exception $e) {
+			error_log(__FILE__ . ': ' . __FUNCTION__ . ': ' . __LINE__ . ': Failed to upload file \'' . $filename . '\' to S3 bucket: ' . $this->_bucket);
 			return false;
 		}
 
@@ -124,6 +126,7 @@ class UW_S3 extends UW_Module {
 				'Key' => ($this->_bucket_base_dir ? $this->_bucket_base_dir . '/' : '') . $filename
 			]);
 		} catch (Exception $e) {
+			error_log(__FILE__ . ': ' . __FUNCTION__ . ': ' . __LINE__ . ': Failed to download file \'' . $filename . '\' from S3 bucket: ' . $this->_bucket);
 			return false;
 		}
 
@@ -138,6 +141,7 @@ class UW_S3 extends UW_Module {
 				'Key' => ($this->_bucket_base_dir ? $this->_bucket_base_dir . '/' : '') . $filename
 			]);
 		} catch (Exception $e) {
+			error_log(__FILE__ . ': ' . __FUNCTION__ . ': ' . __LINE__ . ': Failed to remove file \'' . $filename . '\' from S3 bucket: ' . $this->_bucket);
 			return false;
 		}
 

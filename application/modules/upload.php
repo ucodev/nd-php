@@ -71,7 +71,7 @@ class UW_Upload extends UW_Module {
 				/* Grant that all the required file properties are set */
 				foreach (array('name', 'type') as $property) {
 					if (!isset($value[$property]))
-						$this->response->code('403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY . ': ' . $property, $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY . ': ' . $property, $this->config['default_charset']);
 				}
 
 				/* Set file metadata */
@@ -100,7 +100,7 @@ class UW_Upload extends UW_Module {
 
 				/* When no content is specified, the size propery must be explicit */
 				if (!isset($value['contents']) && !isset($value['size']))
-					$this->response->code('403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY_SIZE_NO_CONTENT, $this->config['default_charset'], !$this->request->is_ajax());
+					return array(false, '403', NDPHP_LANG_MOD_MISSING_FILE_PROPERTY_SIZE_NO_CONTENT);
 
 				/* Compute file path based on the selected upload driver */
 				switch ($meta['driver']) {
@@ -112,15 +112,15 @@ class UW_Upload extends UW_Module {
 				if (isset($value['contents'])) {
 					/* Content cannot be empty */
 					if (!$value['contents'])
-						$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_CONTENT, $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_CONTENT);
 
 					/* Is content is set, the enconding shall be explicit */
 					if (!isset($value['encoding']))
-						$this->response->code('403', NDPHP_LANG_MOD_MISSING_CONTENT_ENCODING, $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_MISSING_CONTENT_ENCODING);
 
 					/* Create a temporary file */
 					if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false)
-						$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE);
 
 					/* Decode the file contents, if required */
 					if ($value['encoding'] == 'base64') {
@@ -128,8 +128,10 @@ class UW_Upload extends UW_Module {
 						$fcontents = base64_decode($value['contents']);
 
 						/* Check if we've successfully decoded the contents */
-						if ($fcontents === false)
-							$this->response->code('403', NDPHP_LANG_MOD_UNABLE_DECODE_BASE64, $this->config['default_charset'], !$this->request->is_ajax());
+						if ($fcontents === false) {
+							unlink($tfile);
+							return array(false, '400', NDPHP_LANG_MOD_UNABLE_DECODE_BASE64);
+						}
 
 						/* Re-assign the decoded data */
 						$value['contents'] = $fcontents;
@@ -139,12 +141,20 @@ class UW_Upload extends UW_Module {
 					} else if ($value['encoding'] == 'plain') {
 						/* No action required */
 					} else {
-						$this->response->code('403', NDPHP_LANG_MOD_UNSUPPORTED_CONTENT_ENCODING, $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_UNSUPPORTED_CONTENT_ENCODING);
 					}
 
 					/* Store the contents of the uploaded file into the local temporary file */
-					if (file_put_contents($tfile, $value['contents']) === false)
-						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS, $this->config['default_charset'], !$this->request->is_ajax());
+					if (($wsize = file_put_contents($tfile, $value['contents'])) === false) {
+						unlink($tfile);
+						return array(false, '500', NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS);
+					}
+
+					/* Grant that all bytes were written */
+					if (($wsize != strlen($value['contents']))) {
+						unlink($tfile);
+						return array(false, '500', NDPHP_LANG_MOD_UNABLE_PUT_TEMP_FILE_CONTENTS);
+					}
 
 					/* Clear contents from value */
 					$value['contents'] = NULL;
@@ -163,20 +173,20 @@ class UW_Upload extends UW_Module {
 
 						/* Check image file extension */
 						if (!in_array($this->image->file_extension($meta['name']), $this->config['upload_file_image_extensions']))
-							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION . $this->image->file_extension($meta['name']), $this->config['default_charset'], !$this->request->is_ajax());
+							return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION . $this->image->file_extension($meta['name']));
 
 						/* Check image size */
 						if ($meta['image']['width'] < $this->config['upload_file_image_width_min'])
-							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+							return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL . $meta['image']['width']);
 						
 						if ($meta['image']['width'] > $this->config['upload_file_image_width_max'])
-							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+							return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE . $meta['image']['width']);
 
 						if ($meta['image']['height'] < $this->config['upload_file_image_height_min'])
-							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
+							return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL . $meta['image']['height']);
 
 						if ($meta['image']['height'] > $this->config['upload_file_image_height_max'])
-							$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
+							return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height']);
 					}
 
 					/* Push file metadata into uploads array */
@@ -222,20 +232,20 @@ class UW_Upload extends UW_Module {
 
 					/* Check image file extension */
 					if (!in_array($this->image->file_extension($meta['name']), $this->config['upload_file_image_extensions']))
-						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION . $this->image->file_extension($meta['name']), $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION . $this->image->file_extension($meta['name']));
 
 					/* Check image size */
 					if ($meta['image']['width'] < $this->config['upload_file_image_width_min'])
-						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_SMALL . $meta['image']['width']);
 					
 					if ($meta['image']['width'] > $this->config['upload_file_image_width_max'])
-						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE . $meta['image']['width'], $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_WIDTH_TOO_LARGE . $meta['image']['width']);
 
 					if ($meta['image']['height'] < $this->config['upload_file_image_height_min'])
-						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL . $meta['image']['height']);
 
 					if ($meta['image']['height'] > $this->config['upload_file_image_height_max'])
-						$this->response->code('400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height'], $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '400', NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE . $meta['image']['height']);
 				}
 
 				$meta['created'] = date('Y-m-d\TH:i:sP');
@@ -256,23 +266,29 @@ class UW_Upload extends UW_Module {
 		}
 
 		/* All good */
-		return $file_uploads;
+		return array(true, '201', $file_uploads);
 	}
 
 	public function process_file($table, $id, $file) {
 		$field = $file[0];
 		$meta = $file[1];
 
-		if (!isset($_FILES[$field]['error']) || is_array($_FILES[$field]['error']))
-			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS, $this->config['default_charset'], !$this->request->is_ajax());
+		if (!isset($_FILES[$field]['error']) || is_array($_FILES[$field]['error'])) {
+			unlink($_FILES[$field]['tmp_name']);
+			return array(false, '500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_PARAMETERS);
+		}
 
 		/* Grant that there are no errors */
-		if ($_FILES[$field]['error'] > 0)
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']), $this->config['default_charset'], !$this->request->is_ajax());
+		if ($_FILES[$field]['error'] > 0) {
+			unlink($_FILES[$field]['tmp_name']);
+			return array(false, '403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . error_upload_file($_FILES[$field]['error']));
+		}
 
 		/* Validate file size (This is a fallback for php settings) */
-		if ($_FILES[$field]['size'] > $this->config['upload_file_max_size'])
-			$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG, $this->config['default_charset'], !$this->request->is_ajax());
+		if ($_FILES[$field]['size'] > $this->config['upload_file_max_size']) {
+			unlink($_FILES[$field]['tmp_name']);
+			return array(false, '403', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_INVALID_SIZE_TOO_BIG);
+		}
 
 		/* Compute file hash */
 		$file_hash = openssl_digest($_FILES[$field]['name'], 'sha256');
@@ -283,31 +299,52 @@ class UW_Upload extends UW_Module {
 			$dest_path = SYSTEM_BASE_DIR . '/uploads/' . $this->config['session_data']['user_id'] . '/' . $table . '/' . $id . '/' . $field;
 
 			/* Create directory if it doesn't exist */
-			if (mkdir($dest_path, 0750, true) === false)
-				$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY, $this->config['default_charset'], !$this->request->is_ajax());
+			if (mkdir($dest_path, 0750, true) === false) {
+				unlink($_FILES[$field]['tmp_name']);
+				return array(false, '500', NDPHP_LANG_MOD_UNABLE_FILE_UPLOAD . ' "' . $_FILES[$field]['name'] . '": ' . NDPHP_LANG_MOD_UNABLE_CREATE_DIRECTORY);
+			}
 
 			/* Move file from temporary location */
 			if ($meta['from_json'] === false) {
 				/* The file was uploaded with multipart encoding, so move_uploaded_file() shall be used */
-				if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+				if (move_uploaded_file($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false) {
+					unlink($_FILES[$field]['tmp_name']);
+					return array(false, '403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"');
+				}
 			} else {
 				/* The file was uploaded via REST API (JSON encoded), so rename() shall be used
 				 * since this is a regular temporary file, created by the REST API upload handler.
 				 */
-				if (rename($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false)
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+				if (rename($_FILES[$field]['tmp_name'], $dest_path . '/' . $file_hash) === false) {
+					unlink($_FILES[$field]['tmp_name']);
+					return array(false, '403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"');
+				}
 			}
 
 			/* Encrypt file, if required */
 			if ($this->config['upload_file_encryption'] === true) {
 				/* FIXME: TODO: For limited type tables, we should use the user's private encryption key here */
 				$content_ciphered = $this->encrypt->encode(file_get_contents($dest_path . '/' . $file_hash));
-				if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false)
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
 
-				if (fwrite($fp, $content_ciphered) === false)
-					$this->response->code('500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"', $this->config['default_charset'], !$this->request->is_ajax());
+				/* Open destination file that will hold the encrypted data */
+				if (($fp = fopen($dest_path . '/' . $file_hash, 'w')) === false) {
+					unlink($_FILES[$field]['tmp_name']);
+					return array(false, '403', NDPHP_LANG_MOD_UNABLE_FILE_OPEN_WRITE . ' "' . $dest_path . '/' . $file_hash . '"');
+				}
+
+				/* Store encrypted content into file */
+				if (($wfile = fwrite($fp, $content_ciphered)) === false) {
+					unlink($_FILES[$field]['tmp_name']);
+					fclose($fp);
+					return array(false, '500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"');
+				}
+
+				/* Grant that all bytes were written */
+				if ($wfile != strlen($content_ciphered)) {
+					unlink($_FILES[$field]['tmp_name']);
+					fclose($fp);
+					return array(false, '500', NDPHP_LANG_MOD_UNABLE_FILE_WRITE . ' "' . $dest_path . '/' . $file_hash . '"');
+				}
 
 				fclose($fp);
 			}
@@ -318,15 +355,19 @@ class UW_Upload extends UW_Module {
 				/* The file was uploaded with multipart encoding, so move_uploaded_file() shall be used */
 
 				/* Create a temporary file name */
-				if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false)
-					$this->response->code('500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE, $this->config['default_charset'], !$this->request->is_ajax());
+				if (($tfile = tempnam(sys_get_temp_dir(), 'ndfile')) === false) {
+					/* Unlink the temporary file */
+					unlink($_FILES[$field]['tmp_name']);
+
+					return array(false, '500', NDPHP_LANG_MOD_FAILED_CREATE_TEMP_FILE);
+				}
 
 				/* Move the uploaded file into a well known temporary file */
 				if (move_uploaded_file($_FILES[$field]['tmp_name'], $tfile) === false) {
 					/* Unlink the temporary file */
 					unlink($_FILES[$field]['tmp_name']);
 
-					$this->response->code('403', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"', $this->config['default_charset'], !$this->request->is_ajax());
+					return array(false, '500', NDPHP_LANG_MOD_UNABLE_FILE_COPY . ' "' . $_FILES[$field]['name'] . '"');
 				}
 
 				/* Upload the file to S3 bucket */
@@ -334,12 +375,20 @@ class UW_Upload extends UW_Module {
 					/* Unlink the temporary file */
 					unlink($tfile);
 
-					$this->response->code('502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+					return array(false, '502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD);
 				}
 
 				/* If this is an image file, create the resized image versions, if configured */
-				if (isset($meta['image']) && ($meta['image']['width'] > 0))
-					$this->_aws_s3_upload_resized_images($tfile, intval($meta['image']['width']), $meta['path'], $this->config['upload_file_encryption']);
+				if (isset($meta['image']) && ($meta['image']['width'] > 0)) {
+					$s3_upload_status = $this->_aws_s3_upload_resized_images($tfile, intval($meta['image']['width']), $meta['path'], $this->config['upload_file_encryption']);
+
+					if ($s3_upload_status[0] !== true) {
+						/* Unlink the temporary file */
+						unlink($_FILES[$field]['tmp_name']);
+
+						return $s3_upload_status;
+					}
+				}
 
 				/* Unlink the temporary file */
 				unlink($tfile);
@@ -351,19 +400,33 @@ class UW_Upload extends UW_Module {
 					/* Unlink the temporary file */
 					unlink($_FILES[$field]['tmp_name']);
 
-					$this->response->code('502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD, $this->config['default_charset'], !$this->request->is_ajax());
+					return array(false, '502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD);
 				}
 
 				/* If this is an image file, create the resized image versions, if configured */
-				if (isset($meta['image']) && ($meta['image']['width'] > 0))
-					$this->_aws_s3_upload_resized_images($_FILES[$field]['tmp_name'], intval($meta['image']['width']), $meta['path'], $this->config['upload_file_encryption']);
+				if (isset($meta['image']) && ($meta['image']['width'] > 0)) {
+					$s3_upload_status = $this->_aws_s3_upload_resized_images($_FILES[$field]['tmp_name'], intval($meta['image']['width']), $meta['path'], $this->config['upload_file_encryption']);
+
+					if ($s3_upload_status[0] !== true) {
+						/* Unlink the temporary file */
+						unlink($_FILES[$field]['tmp_name']);
+
+						return $s3_upload_status;
+					}
+				}
 
 				/* Unlink the temporary file */
 				unlink($_FILES[$field]['tmp_name']);
 			}
 		} else {
-			$this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
+			/* Unlink the temporary file */
+			unlink($_FILES[$field]['tmp_name']);
+
+			return array(false, '403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER);
 		}
+
+		/* All good */
+		return array(true, '201', NULL);
 	}
 
 	public function remove_file($table, $id, $file) {
@@ -381,14 +444,16 @@ class UW_Upload extends UW_Module {
 
 				/* Remove the file from the S3 bucket */
 				if ($this->s3->drop($meta['path']) === false)
-					$this->response->code('502', NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE, $this->config['default_charset'], !$this->request->is_ajax());
+					return array(false, '502', NDPHP_LANG_MOD_FAILED_AWS_S3_REMOVE, $this->config['default_charset'], !$this->request->is_ajax());
 
 				/* Remove resized images, if any */
 				if (isset($meta['image']) && ($meta['image']['width'] > 0))
 					$this->_aws_s3_drop_resized_images($meta['image']['width'], $meta['path']);
 			} break;
-			default: $this->response->code('403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
+			default: return array(false, '403', NDPHP_LANG_MOD_ERROR_UPLOAD_NO_DRIVER, $this->config['default_charset'], !$this->request->is_ajax());
 		}
+
+		return array(true, '200', NULL);
 	}
 
 	private function _rrmdir($dir) {
@@ -446,7 +511,7 @@ class UW_Upload extends UW_Module {
 						/* Unlink temporary file */
 						unlink($tfile);
 
-						$this->response->code('500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '500', NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES . ' (' . $ver . ')');
 					}
 
 					/* Upload resized image into S3 bucket */
@@ -455,7 +520,7 @@ class UW_Upload extends UW_Module {
 						unlink($tfile . '.' . $ver);
 						unlink($tfile);
 
-						$this->response->code('500', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD . ' (' . $ver . ')', $this->config['default_charset'], !$this->request->is_ajax());
+						return array(false, '502', NDPHP_LANG_MOD_FAILED_AWS_S3_UPLOAD . ' (' . $ver . ')');
 					}
 
 					/* Unlink resized image file */
@@ -463,6 +528,8 @@ class UW_Upload extends UW_Module {
 				}
 			}
 		}
+
+		return array(true, '201', NULL);
 	}
 
 	private function _aws_s3_drop_resized_images($width, $orig_s3_file_path) {

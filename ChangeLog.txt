@@ -1,3 +1,16 @@
+v0.04n (2017-06-18):
+
+ - Added support for AWS S3 Accelerated Endpoint.
+ - Added error logs for failed S3 operations.
+ - Improved file upload handlers.
+ - Granted that file uploads do not break transactions.
+ - Updated uWeb.
+ - Enhanced security module.
+ - Added config option to disable ND plugins, on a per controller basis.
+ - Minor optimizations all around.
+ - Optimized caching mechanism.
+
+
 v0.04m3 (2017-06-02):
 
  - Minor fixes

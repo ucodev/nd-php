@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04m3';
+	protected $_ndphp_version = '0.04n';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -565,6 +565,9 @@ class ND_Controller extends UW_Controller {
 	/* Threading */
 	protected $_threading = false;
 
+	/* Plugins */
+	protected $_plugins_enabled = false; /* Set to true if there are ND-PHP plugins installed */
+
 	/* Caching */
 	protected $_cache_tables = array(); /* This array will be populated by _get_tables() method. */
 	protected $_cache_table_desc = array(); /* This array will be populated by _get_table_desc() method. */
@@ -936,6 +939,8 @@ class ND_Controller extends UW_Controller {
 
 		$this->config['threading']								= $this->_threading;
 
+		$this->config['plugins_enabled'] 						= $this->_plugins_enabled;
+
 		/* Context */
 		$this->config['context'] = array();
 		$this->config['context']['db'] = $this->db;
@@ -1001,8 +1006,10 @@ class ND_Controller extends UW_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Load pre plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_pre.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_pre.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Check if JSON replies should be enabled */
 		if ($json_replies || $this->request->is_json()) {
@@ -1273,15 +1280,19 @@ class ND_Controller extends UW_Controller {
 		/* Process charts */
 
 		/* Load charts plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/charts.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/charts.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Charts hook */
 		$this->_hook_charts();
 
 		/* Load post plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_post.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/construct_post.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Process scheduler entries if the scheduler is not set as external (which, in that case, will require a cron job) */
 		if ($this->_scheduler['type'] != 'external') {
@@ -1379,8 +1390,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/groups_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/groups_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Groups hook enter */
 		$hook_enter_return = $this->_hook_groups_generic_enter($data);
@@ -1506,8 +1519,10 @@ class ND_Controller extends UW_Controller {
 		$this->_hook_groups_generic_leave($data, $hook_enter_return);
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/groups_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/groups_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* All good */
 		return $data;
@@ -1546,6 +1561,12 @@ class ND_Controller extends UW_Controller {
 	}
 
 	protected function list_generic($field = NULL, $order = NULL, $page = 0) {
+		/* NOTE:
+		 *
+		 * - For REST JSON calls, only $data['view']['result_array'] and $data['view']['total_items'] are required to be filled-
+		 *
+		 */
+
 		/* Sanity checks */
 		/* TODO: FIXME: NOTE: Negative $page values are being used by groups to fetch the full list of records...
 		 * Before we grant that $page is equal or greater than 0, we need to redesigned the group handlers.
@@ -1583,57 +1604,47 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/list_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/list_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_list_generic_enter($data, $field, $order, $page);
 
-		/* Setup charts if this isn't a REST JSON request */
-		if (!$this->request->is_json())
+		/* Get view rendering data for non-JSON calls */
+		if (!$this->request->is_json()) {
+			/* Setup charts */
 			$this->_load_module('charts', true);
 
-		/* Get view title value */
-		$title = NULL;
+			/* Get view title value */
+			$title = NULL;
 
-		if (isset($this->config['menu_entries_aliases'][$this->config['name']])) {
-			$title = $this->config['menu_entries_aliases'][$this->config['name']] . $this->config['view_title_sep'] . NDPHP_LANG_MOD_OP_LIST;
-		} else {
-			$title = $this->config['viewhname'] . $this->config['view_title_sep'] . NDPHP_LANG_MOD_OP_LIST;
-		}
+			if (isset($this->config['menu_entries_aliases'][$this->config['name']])) {
+				$title = $this->config['menu_entries_aliases'][$this->config['name']] . $this->config['view_title_sep'] . NDPHP_LANG_MOD_OP_LIST;
+			} else {
+				$title = $this->config['viewhname'] . $this->config['view_title_sep'] . NDPHP_LANG_MOD_OP_LIST;
+			}
 
-		/* Get view description value */
-		$description = NDPHP_LANG_MOD_OP_LIST . " " . $this->config['viewhname'];
+			/* Get view description value */
+			$description = NDPHP_LANG_MOD_OP_LIST . " " . $this->config['viewhname'];
 
-		/* Setup basic view data */
-		$data = array_merge_recursive($data, $this->get->view_data_generic($title, $description));
+			/* Setup basic view data */
+			$data = array_merge_recursive($data, $this->get->view_data_generic($title, $description));
 
-		/* Setup specific view data */
-		$data['view']['links']['quick'] = $this->config['links_quick_modal_list'];
-		$data['view']['links']['submenu'] = $this->config['links_submenu_body_list'];
-		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('list', NDPHP_LANG_MOD_OP_LIST);
+			/* Setup specific view data */
+			$data['view']['links']['quick'] = $this->config['links_quick_modal_list'];
+			$data['view']['links']['submenu'] = $this->config['links_submenu_body_list'];
+			$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('list', NDPHP_LANG_MOD_OP_LIST);
 
-		if (!$this->request->is_json())
 			$data['config']['charts']['total'] = $this->charts->count_charts();
 
-		$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
-		$data['config']['render']['size'] = $this->config['view_image_file_rendering_size_list'];
-		$data['config']['render']['ext'] = $this->config['view_image_file_rendering_ext'];
+			$data['config']['render']['images'] = $this->config['view_image_file_rendering'];
+			$data['config']['render']['size'] = $this->config['view_image_file_rendering_size_list'];
+			$data['config']['render']['ext'] = $this->config['view_image_file_rendering_ext'];
 
-		$data['config']['choices_class'] = $this->config['rel_choice_table_row_class'];
+			$data['config']['choices_class'] = $this->config['rel_choice_table_row_class'];
 
-		/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
-		if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
-			/* Set the selected fields */
-			$selected = $this->request->post('_show');
-
-			/* 'id' must always be present */
-			if (!in_array($selected, 'id'))
-				array_push($selected, 'id');
-
-			/* Resolve fields */
-			$this->field->resolve($this->get->fields(NULL), $selected);
-		} else {
 			$data['view']['fields'] = $this->get->fields(NULL, $this->config['hide_fields_list']); /* $this->get->fields() uses a perm_read filter by default */
 
 			/* Resolve fields */
@@ -1641,15 +1652,31 @@ class ND_Controller extends UW_Controller {
 
 			/* Hidden fields */
 			$data['config']['hidden_fields'] = $this->config['hide_fields_list'];
-		}
 
-		/* Switch order on each call */
-		if ($order == "asc")
-			$data['config']['order'] = "desc";
-		else
-			$data['config']['order'] = "asc";
-		
-		$data['config']['order_by'] = $field;
+			/* Switch order on each call */
+			if ($order == "asc")
+				$data['config']['order'] = "desc";
+			else
+				$data['config']['order'] = "asc";
+			
+			$data['config']['order_by'] = $field;
+		} else {
+			/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
+			if (is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
+				/* Set the selected fields */
+				$selected = $this->request->post('_show');
+
+				/* 'id' must always be present */
+				if (!in_array($selected, 'id'))
+					array_push($selected, 'id');
+
+				/* Resolve fields */
+				$this->field->resolve($this->get->fields(NULL), $selected);
+			} else {
+				/* Use default controller settings for field resolve */
+				$this->field->resolve($this->get->fields(NULL, $this->config['hide_fields_list']));
+			}
+		}
 
 		/* Order the results as requested from the url segment ('asc' or 'desc') */
 		$this->db->order_by($field, $order);
@@ -1660,23 +1687,8 @@ class ND_Controller extends UW_Controller {
 		/* Filter table rows, if applicable */
 		$this->filter->table_row_apply();
 
-		/* 
-		 * Compress, encrypt and encode (base64) the last query to be passed to export
-		 * controller.
-		 * Also encode the result with rawurlencode()
-		 * 
-		 * The export query value is passed to the results view so it can be used by
-		 * other requests performed in the view, such as exports (to PDF, CSV, etc).
-		 *
-		 * Note that we need to get the export_query _BEFORE_ setting the LIMIT
-		 *
-		 * FIXME: TODO: export query should be stored in user session and shall no be passed via URL
-		 *
-		 */
-		$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
-
 		/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
-		if ($this->config['json_replies'] === true) {
+		if ($this->request->is_json()) {
 			/* Check if there is a limit and/or offset defined */
 			if ($this->request->post_isset('_limit')) {
 				/* Validate limit value (must be greater than zero */
@@ -1693,9 +1705,26 @@ class ND_Controller extends UW_Controller {
 				/* If no limit was explicitly set, use the default */
 				$this->db->limit($this->config['json_result_hard_limit']);
 			}
-		} else if ($page >= 0) {
-			/* Limit results to the number of rows per page (pagination) */
-			$this->db->limit($this->config['table_pagination_rpp_list'], $page);
+		} else {
+			/* 
+			* Compress, encrypt and encode (base64) the last query to be passed to export
+			* controller.
+			* Also encode the result with rawurlencode()
+			* 
+			* The export query value is passed to the results view so it can be used by
+			* other requests performed in the view, such as exports (to PDF, CSV, etc).
+			*
+			* Note that we need to get the export_query _BEFORE_ setting the LIMIT
+			*
+			* FIXME: TODO: export query should be stored in user session and shall no be passed via URL
+			*
+			*/
+			$data['view']['export_query'] = rawurlencode($this->ndphp->safe_b64encode($this->encrypt->encode(gzcompress($this->db->get_compiled_select_str(NULL, true, false), 9))));
+
+			if ($page >= 0) {
+				/* Limit results to the number of rows per page (pagination) */
+				$this->db->limit($this->config['table_pagination_rpp_list'], $page);
+			}
 		}
 
 		/* Hook filter: Apply filters, if any */
@@ -1725,29 +1754,45 @@ class ND_Controller extends UW_Controller {
 
 		/* Pagination */
 		if ($page >= 0) {
-			$pagcfg['page'] = ($page / $this->config['table_pagination_rpp_list']) + 1; // $page is actually the number of the first row of the page
-			$pagcfg['base_url'] = base_url() . 'index.php/' . $this->config['name'] . '/list_default/' . $field . '/' . $order . '/@ROW_NR@';
-			$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_list(event, \'' . $this->config['name'] . '\', \'' . $field . '\', \'' . $order . '\', \'@ROW_NR@\');';
-			/* Fetch found rows, if required */
-			if ($totals) {
-				$pagcfg['total_rows'] = $this->db->found_rows();
+			if ($this->request->is_json()) {
+				/* REST JSON calls only require total_items to be set */
+				$data['view']['total_items'] = $totals ? $this->db->found_rows() : 0;
 			} else {
-				$pagcfg['total_rows'] = 0;
+				$pagcfg['page'] = ($page / $this->config['table_pagination_rpp_list']) + 1; // $page is actually the number of the first row of the page
+				$pagcfg['base_url'] = base_url() . 'index.php/' . $this->config['name'] . '/list_default/' . $field . '/' . $order . '/@ROW_NR@';
+				$pagcfg['onclick'] = 'ndphp.ajax.load_data_ordered_list(event, \'' . $this->config['name'] . '\', \'' . $field . '\', \'' . $order . '\', \'@ROW_NR@\');';
+				/* Fetch found rows, if required */
+				if ($totals) {
+					$pagcfg['total_rows'] = $this->db->found_rows();
+				} else {
+					$pagcfg['total_rows'] = 0;
+				}
+				$pagcfg['per_page'] = $this->config['table_pagination_rpp_list'];
+
+				/* Initialize pagination */
+				$this->pagination->initialize($pagcfg);
+				$data['view']['links']['pagination'] = $this->pagination->create_links();
+				$data['view']['page'] = $page;
+
+				/* Set view data for pagination offsets and total items*/
+				$total_items_from = ($pagcfg['per_page'] * ($page / $pagcfg['per_page']));
+				$total_items_from += $pagcfg['total_rows'] ? 1 : 0;
+				$total_items_to = (($pagcfg['per_page'] * ($page / $pagcfg['per_page'])) + $pagcfg['per_page']);
+				$total_items_to = ($total_items_to <= $pagcfg['total_rows'] ? $total_items_to : $pagcfg['total_rows']);
+				$data['view']['total_items_from'] = $total_items_from;
+				$data['view']['total_items_to'] = $total_items_to;
+				$data['view']['total_items'] = $pagcfg['total_rows'];
 			}
-			$pagcfg['per_page'] = $this->config['table_pagination_rpp_list'];
-			
-			$this->pagination->initialize($pagcfg);
-			$data['view']['links']['pagination'] = $this->pagination->create_links();
-			$data['view']['page'] = $page;
 		}
 
 		/* Hook handler (leave) */
 		$this->_hook_list_generic_leave($data, $field, $order, $page, $hook_enter_return);
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/list_generic_leave.php') as $plugin)
-			include($plugin);
-
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/list_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* If logging is enabled, log this listing request */
 		if ($this->request->is_json()) {
@@ -1780,17 +1825,6 @@ class ND_Controller extends UW_Controller {
 				/* user_id    */ $this->config['session_data']['user_id'],
 				/* log it?    */ $this->config['logging']
 			);
-		}
-
-		/* Add pagination, if required */
-		if ($page >= 0) {
-			$total_items_from = ($pagcfg['per_page'] * ($page / $pagcfg['per_page']));
-			$total_items_from += $pagcfg['total_rows'] ? 1 : 0;
-			$total_items_to = (($pagcfg['per_page'] * ($page / $pagcfg['per_page'])) + $pagcfg['per_page']);
-			$total_items_to = ($total_items_to <= $pagcfg['total_rows'] ? $total_items_to : $pagcfg['total_rows']);
-			$data['view']['total_items_from'] = $total_items_from;
-			$data['view']['total_items_to'] = $total_items_to;
-			$data['view']['total_items'] = $pagcfg['total_rows'];
 		}
 
 		/* All good */
@@ -2327,8 +2361,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/search_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/search_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_search_generic_enter($data, $advanced);
@@ -2361,8 +2397,10 @@ class ND_Controller extends UW_Controller {
 		$this->_hook_search_generic_leave($data, $advanced, $hook_enter_return);
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/search_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/search_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* All good */
 		return $data;
@@ -2430,8 +2468,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_result_generic_enter($data, $type, $result_query, $order_field, $order_type, $page);
@@ -3414,8 +3454,10 @@ class ND_Controller extends UW_Controller {
 		$this->_hook_result_generic_leave($data, $type, $result_query, $order_field, $order_type, $page, $hook_enter_return);
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/result_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* If logging is enabled, log this search result request */
 		if ($this->request->is_json()) {
@@ -3613,8 +3655,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/export_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/export_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_export_enter($data, $export_query, $type);
@@ -3674,8 +3718,10 @@ class ND_Controller extends UW_Controller {
 		$data['config']['choices_class'] = $this->config['rel_choice_table_row_class'];
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/export_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/export_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (leave) */
 		$this->_hook_export_leave($data, $export_query, $type, $hook_enter_return);
@@ -3766,8 +3812,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/create_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/create_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_create_generic_enter($data);
@@ -3864,8 +3912,10 @@ class ND_Controller extends UW_Controller {
 		$data['config']['hidden_fields'] = $this->config['hide_fields_create'];
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/create_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/create_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (leave) */
 		$this->_hook_create_generic_leave($data, $hook_enter_return);
@@ -3963,14 +4013,21 @@ class ND_Controller extends UW_Controller {
 		$mixed_rels = array();
 
 		/* Load pre plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/insert_pre.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/insert_pre.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Pre-Insert hook */
 		$hook_pre_return = $this->_hook_insert_pre($this->request->post(), $ftypes);
 
 		/* Pre-process file uploads */
-		$file_uploads = $this->upload->pre_process();
+		$pre_process_status = $this->upload->pre_process();
+
+		if ($pre_process_status[0] !== true)
+			$this->response->code($pre_process_status[1], $pre_process_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+
+		$file_uploads = $pre_process_status[2];
 
 		/* Pre-process $_POST array */
 		foreach ($this->request->post() as $field => $value) {
@@ -4108,7 +4165,16 @@ class ND_Controller extends UW_Controller {
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
-			$this->upload->process_file($this->config['name'], $last_id, $file);
+			$upload_status = $this->upload->process_file($this->config['name'], $last_id, $file);
+
+			/* Check if upload succeeded */
+			if ($upload_status[0] !== true) {
+				$this->db->trans_rollback();
+
+				/* TODO: FIXME: Remove already uploaded files */
+
+				$this->response->code($upload_status[1], $upload_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+			}
 		}
 
 		/* Insert relationships, if any */
@@ -4164,8 +4230,10 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load post plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/insert_post.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/insert_post.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Post-Insert hook */
 		$this->_hook_insert_post($last_id, $this->request->post(), $ftypes, $hook_pre_return);
@@ -4204,8 +4272,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/edit_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/edit_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_edit_generic_enter($data, $id);
@@ -4357,8 +4427,10 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('edit', NDPHP_LANG_MOD_OP_EDIT, $id, ltrim($title_suffix, $this->config['view_title_append_sep']));
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/edit_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/edit_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (leave) */
 		$this->_hook_edit_generic_leave($data, $id, $hook_enter_return);
@@ -4483,17 +4555,24 @@ class ND_Controller extends UW_Controller {
 		$multiple_rels = array();
 
 		/* Load pre plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_pre.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_pre.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Pre-Update hook */
 		$hook_pre_return = $this->_hook_update_pre($this->request->post('id'), $this->request->post(), $ftypes);
 
+		/* Pre-process file uploads */
+		$pre_process_status = $this->upload->pre_process();
+
+		if ($pre_process_status[0] !== true)
+			$this->response->code($pre_process_status[1], $pre_process_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+
+		$file_uploads = $pre_process_status[2];
+
 		/* Initialize transaction */
 		$this->db->trans_begin();
-
-		/* Pre-process file uploads */
-		$file_uploads = $this->upload->pre_process();
 
 		/* Process multiple relationships and special fields first */
 		foreach ($this->request->post() as $field => $value) {
@@ -4599,7 +4678,14 @@ class ND_Controller extends UW_Controller {
 					$row = $q->row_array();
 
 					/* Remove the file from filesystem */
-					$this->upload->remove_file($this->config['name'], $this->request->post('id'), $row[$field]);
+					$remove_status = $this->upload->remove_file($this->config['name'], $this->request->post('id'), array($field, $row[$field]));
+
+					/* Check if file removal has succeeded */
+					if ($remove_status[0] !== true) {
+						$this->db->trans_rollback();
+
+						$this->response->code($remove_status[1], $remove_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+					}
 
 					/* Reset database field value */
 					$this->request->post_set($field, NULL);
@@ -4627,6 +4713,7 @@ class ND_Controller extends UW_Controller {
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field))) {
+					$this->db->trans_rollback();
 					$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 				}
 			}
@@ -4672,8 +4759,37 @@ class ND_Controller extends UW_Controller {
 
 		/* Process file uploads */
 		foreach ($file_uploads as $file) {
-			$this->upload->remove_file($this->config['name'], $this->request->post('id'), $file);
-			$this->upload->process_file($this->config['name'], $this->request->post('id'), $file);
+			/* Upload new file */
+			$upload_status = $this->upload->process_file($this->config['name'], $this->request->post('id'), $file);
+
+			/* Check if upload succeeded */
+			if ($upload_status[0] !== true) {
+				$this->db->trans_rollback();
+
+				/* TODO: FIXME: Already uploaded files cannot be rolled back with this implementation */
+
+				$this->response->code($upload_status[1], $upload_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+			}
+
+			/* Get current stored file metadata from database */
+			$this->db->select($file[0]);
+			$this->db->from($this->config['name']);
+			$this->db->where('id', $this->request->post('id'));
+			$q = $this->db->get();
+			$file_old = $q->row_array();
+
+			/* Attempt to remove old file, only if there's a path set */
+			if (isset($file_old[$file[0]]['path']) {
+				/* Remove older file */
+				$remove_status = $this->upload->remove_file($this->config['name'], $this->request->post('id'), array($file[0], $file_old[$file[0]]));
+
+				/* Check if file removal has succeeded */
+				if ($remove_status[0] !== true) {
+					$this->db->trans_rollback();
+
+					$this->response->code($remove_status[1], $remove_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+				}
+			}
 		}
 
 		/* Set the last inserted ID variable */
@@ -4715,8 +4831,10 @@ class ND_Controller extends UW_Controller {
 		}
 
 		/* Load post plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_post.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/update_post.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Post-Update hook */
 		$this->_hook_update_post($this->request->post('id'), $this->request->post(), $ftypes, $hook_pre_return);
@@ -4754,8 +4872,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/remove_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/remove_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_remove_generic_enter($data, $id);
@@ -4858,8 +4978,10 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('remove', NDPHP_LANG_MOD_OP_REMOVE, $id, ltrim($title_suffix, $this->config['view_title_append_sep']));
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/remove_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/remove_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (leave) */
 		$this->_hook_remove_generic_leave($data, $id, $hook_enter_return);
@@ -4974,8 +5096,10 @@ class ND_Controller extends UW_Controller {
 		$ftypes = $this->get->fields();
 
 		/* Load pre plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/delete_pre.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/delete_pre.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Pre-Delete hook */
 		$hook_pre_return = $this->_hook_delete_pre($this->request->post('id'), $this->request->post(), $ftypes);
@@ -4999,8 +5123,15 @@ class ND_Controller extends UW_Controller {
 		/* Remove uploaded files */
 		foreach ($row as $k => $v) {
 			if (substr($k, 0, 6) == '_file_') {
-				/* TODO: FIXME: Error checking missing */
-				$this->upload->remove_file($this->config['name'], $this->request->post('id'), array($k, json_decode($row[$k], true)));
+				/* Remove file */
+				$remove_status = $this->upload->remove_file($this->config['name'], $this->request->post('id'), array($k, json_decode($row[$k], true)));
+
+				/* Check if file removal has succeeded */
+				if ($remove_status[0] !== true) {
+					$this->db->trans_rollback();
+
+					$this->response->code($remove_status[1], $remove_status[2], $this->config['default_charset'], !$this->request->is_ajax());
+				}
 			}
 		}
 
@@ -5038,8 +5169,10 @@ class ND_Controller extends UW_Controller {
 		 */
 
 		/* Load post plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/delete_post.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/delete_post.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Post-Delete hook */
 		$this->_hook_delete_post($this->request->post('id'), $this->request->post(), $ftypes, $hook_pre_return);
@@ -5070,8 +5203,10 @@ class ND_Controller extends UW_Controller {
 		$data = array();
 
 		/* Load enter plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_enter.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_enter.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (enter) */
 		$hook_enter_return = $this->_hook_view_generic_enter($data, $id, $export);
@@ -5205,8 +5340,10 @@ class ND_Controller extends UW_Controller {
 		$data['view']['links']['breadcrumb'] = $this->get->view_breadcrumb('view', NDPHP_LANG_MOD_OP_VIEW, $id, ltrim($title_suffix, $this->config['view_title_append_sep']));
 
 		/* Load leave plugins */
-		foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_leave.php') as $plugin)
-			include($plugin);
+		if ($this->config['plugins_enabled']) {
+			foreach (glob(SYSTEM_BASE_DIR . '/plugins/*/view_generic_leave.php') as $plugin)
+				include($plugin);
+		}
 
 		/* Hook handler (leave) */
 		$this->_hook_view_generic_leave($data, $id, $export, $hook_enter_return);

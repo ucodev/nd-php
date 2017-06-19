@@ -161,47 +161,102 @@ class UW_Security extends UW_Model {
 		return true;
 	}
 
-	public function perm_get($user_id) {
-		/* Check if we're using an external cache mechanism and, if so, read data from it */
-		if ($this->cache->is_active()) {
-			if ($this->cache->get('s_cache_perms_user_' . $user_id)) {
-				return $this->cache->get('d_cache_perms_user_' . $user_id);
+	public function perm_get($id, $type = 'user') {
+		if ($type == 'user' || $type == 'limited') {
+			$user_id = $id;
+
+			/* Check if we're using an external cache mechanism and, if so, read data from it */
+			if ($this->cache->is_active()) {
+				if ($this->cache->get('s_cache_perms_user_' . $user_id)) {
+					$perms = $this->cache->get('d_cache_perms_user_' . $user_id);
+
+					/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+					if (is_array($perms))
+						return $perms;
+				}
 			}
-		}
 
-		/* Get table permissions */
-		$this->db->select('_acl_rtp._table AS perm_table,GROUP_CONCAT(DISTINCT _acl_rtp.permissions SEPARATOR \'\') AS perms', false);
-		$this->db->from('_acl_rtp');
-		$this->db->join('rel_users_roles', 'rel_users_roles.roles_id = _acl_rtp.roles_id', 'left');
-		$this->db->join('users', 'users.id = rel_users_roles.users_id');
-		$this->db->where('users.id', $user_id);
-		$this->db->group_by('_acl_rtp._table');
-		$query_table_perms = $this->db->get();
-		$table_perms = array();
-		foreach ($query_table_perms->result_array() as $table_perms_row) {
-			$table_perms[$table_perms_row['perm_table']] = $table_perms_row['perms'];
-		}
+			/* Get table permissions */
+			$this->db->select('_acl_rtp._table AS perm_table,GROUP_CONCAT(DISTINCT _acl_rtp.permissions SEPARATOR \'\') AS perms', false);
+			$this->db->from('_acl_rtp');
+			$this->db->join('rel_users_roles', 'rel_users_roles.roles_id = _acl_rtp.roles_id', 'left');
+			$this->db->join('users', 'users.id = rel_users_roles.users_id');
+			$this->db->where('users.id', $user_id);
+			$this->db->group_by('_acl_rtp._table');
+			$query_table_perms = $this->db->get();
+			$table_perms = array();
+			foreach ($query_table_perms->result_array() as $table_perms_row) {
+				$table_perms[$table_perms_row['perm_table']] = $table_perms_row['perms'];
+			}
 
-		/* Get table columns permissions */
-		$this->db->select('_acl_rtcp._table AS perm_table,_acl_rtcp._column AS perm_column,GROUP_CONCAT(DISTINCT _acl_rtcp.permissions SEPARATOR \'\') AS perms', false);
-		$this->db->from('_acl_rtcp');
-		$this->db->join('rel_users_roles', 'rel_users_roles.roles_id = _acl_rtcp.roles_id', 'left');
-		$this->db->join('users', 'users.id = rel_users_roles.users_id');
-		$this->db->where('users.id', $user_id);
-		$this->db->group_by(array('_acl_rtcp._column','_acl_rtcp._table'));
-		$query_table_col_perms = $this->db->get();
-		$table_col_perms = array();
-		foreach ($query_table_col_perms->result_array() as $table_col_perms_row) {
-			$table_col_perms[$table_col_perms_row['perm_table']][$table_col_perms_row['perm_column']] = $table_col_perms_row['perms'];
-		}
+			/* Get table columns permissions */
+			$this->db->select('_acl_rtcp._table AS perm_table,_acl_rtcp._column AS perm_column,GROUP_CONCAT(DISTINCT _acl_rtcp.permissions SEPARATOR \'\') AS perms', false);
+			$this->db->from('_acl_rtcp');
+			$this->db->join('rel_users_roles', 'rel_users_roles.roles_id = _acl_rtcp.roles_id', 'left');
+			$this->db->join('users', 'users.id = rel_users_roles.users_id');
+			$this->db->where('users.id', $user_id);
+			$this->db->group_by(array('_acl_rtcp._column','_acl_rtcp._table'));
+			$query_table_col_perms = $this->db->get();
+			$table_col_perms = array();
+			foreach ($query_table_col_perms->result_array() as $table_col_perms_row) {
+				$table_col_perms[$table_col_perms_row['perm_table']][$table_col_perms_row['perm_column']] = $table_col_perms_row['perms'];
+			}
 
-		$perms['table'] = $table_perms;
-		$perms['column'] = $table_col_perms;
+			$perms['table'] = $table_perms;
+			$perms['column'] = $table_col_perms;
 
-		/* Check if we're using an external cache mechanism and, if so, write data to it */
-		if ($this->cache->is_active()) {
-			$this->cache->set('s_cache_perms_user_' . $user_id, true);
-			$this->cache->set('d_cache_perms_user_' . $user_id, $perms);
+			/* Check if we're using an external cache mechanism and, if so, write data to it */
+			if ($this->cache->is_active()) {
+				$this->cache->set('s_cache_perms_user_' . $user_id, true);
+				$this->cache->set('d_cache_perms_user_' . $user_id, $perms);
+			}
+		} else if ($type == 'role') {
+			$role_id = $id;
+
+			/* Check if we're using an external cache mechanism and, if so, read data from it */
+			if ($this->cache->is_active()) {
+				if ($this->cache->get('s_cache_perms_role_' . $role_id)) {
+					$perms = $this->cache->get('d_cache_perms_role_' . $role_id);
+
+					/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+					if (is_array($perms))
+						return $perms;
+				}
+			}
+
+			/* Get table permissions */
+			$this->db->select('_acl_rtp._table AS perm_table,GROUP_CONCAT(DISTINCT _acl_rtp.permissions SEPARATOR \'\') AS perms', false);
+			$this->db->from('_acl_rtp');
+			$this->db->where('_acl_rtp.roles_id', $role_id);
+			$this->db->group_by('_acl_rtp._table');
+			$query_table_perms = $this->db->get();
+			$table_perms = array();
+			foreach ($query_table_perms->result_array() as $table_perms_row) {
+				$table_perms[$table_perms_row['perm_table']] = $table_perms_row['perms'];
+			}
+
+			/* Get table columns permissions */
+			$this->db->select('_acl_rtcp._table AS perm_table,_acl_rtcp._column AS perm_column,GROUP_CONCAT(DISTINCT _acl_rtcp.permissions SEPARATOR \'\') AS perms', false);
+			$this->db->from('_acl_rtcp');
+			$this->db->where('_acl_rtcp.roles_id', $role_id);
+			$this->db->group_by(array('_acl_rtcp._column','_acl_rtcp._table'));
+			$query_table_col_perms = $this->db->get();
+			$table_col_perms = array();
+			foreach ($query_table_col_perms->result_array() as $table_col_perms_row) {
+				$table_col_perms[$table_col_perms_row['perm_table']][$table_col_perms_row['perm_column']] = $table_col_perms_row['perms'];
+			}
+
+			$perms['table'] = $table_perms;
+			$perms['column'] = $table_col_perms;
+
+			/* Check if we're using an external cache mechanism and, if so, write data to it */
+			if ($this->cache->is_active()) {
+				$this->cache->set('s_cache_perms_role_' . $role_id, true);
+				$this->cache->set('d_cache_perms_role_' . $role_id, $perms);
+			}
+		} else {
+			error_log(__FILE__ . ': ' . __LINE__ . ': ' . __FUNCTION__ . '(): Invalid value supplied for $type.');
+			return false;
 		}
 
 		return $perms;
@@ -275,7 +330,11 @@ class UW_Security extends UW_Model {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_sec_users_superadmin')) {
-				return $this->cache->get('d_cache_sec_users_superadmin');
+				$users_superadmin = $this->cache->get('d_cache_sec_users_superadmin');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($users_superadmin))
+					return $users_superadmin;
 			}
 		}
 
@@ -311,7 +370,11 @@ class UW_Security extends UW_Model {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_sec_users_admin')) {
-				return $this->cache->get('d_cache_sec_users_admin');
+				$users_admin = $this->cache->get('d_cache_sec_users_admin');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($users_admin))
+					return $users_admin;
 			}
 		}
 
@@ -347,7 +410,11 @@ class UW_Security extends UW_Model {
 		/* Check if we're using an external cache mechanism and, if so, read data from it */
 		if ($this->cache->is_active()) {
 			if ($this->cache->get('s_cache_sec_users_superuser')) {
-				return $this->cache->get('d_cache_sec_users_superuser');
+				$users_superuser = $this->cache->get('d_cache_sec_users_superuser');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($users_superuser))
+					return $users_superuser;
 			}
 		}
 

@@ -6,6 +6,7 @@ $aws['secret'] = '';
 $aws['version'] = 'latest'; /* '2012-10-17' */
 $aws['region'] = 'ap-southeast-1';
 $aws['default_bucket'] = 'default'; /* TODO: rename this key to bucket_default */
+$aws['use_accelerate_endpoint'] = false;
 $aws['bucket_base_dir'] = 'content';
 $aws['bucket_img_resize'] = false;
 $aws['bucket_img_resize_mode'] = 'sinc';

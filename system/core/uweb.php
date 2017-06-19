@@ -2,7 +2,7 @@
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
- * Date: 28/01/2017
+ * Date: 17/06/2017
  * License: GPLv3
  */
 
@@ -1985,13 +1985,17 @@ class UW_Database extends UW_Base {
 
 			if ($data) {
 				if (!$this->_stmt->execute($data)) {
+					$err_info = $this->_stmt->errorInfo();
+					error_log('query(): Failed to execute prepared statement: ' . $err_info[0] . ': ' . $err_info[1] . ': ' . $err_info[2]);
 					header('HTTP/1.1 500 Internal Server Error');
-					die('query(): Failed to execute prepared statement.');
+					die('query(): Failed to execute prepared statement: ' . $err_info[0] . ': ' . $err_info[1] . ': ' . $err_info[2]);
 				}
 			} else {
 				if (!$this->_stmt->execute()) {
+					$err_info = $this->_stmt->errorInfo();
+					error_log('query(): Failed to execute prepared statement: ' . $err_info[0] . ': ' . $err_info[1] . ': ' . $err_info[2]);
 					header('HTTP/1.1 500 Internal Server Error');
-					die('query(): Failed to execute prepared statement.');
+					die('query(): Failed to execute prepared statement: ' . $err_info[0] . ': ' . $err_info[1] . ': ' . $err_info[2]);
 				}
 			}
 		} else {
