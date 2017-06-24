@@ -766,7 +766,7 @@ class UW_Get extends UW_Module {
 					}
 
 					/* Apply any applicable filters */
-					$this->filter->table_row_apply($table);
+					$this->filter->table_row_apply($table, $this->security->perm_read);
 
 					/* We need to use the value_mangle() method here to grant that options values are mangled
 					*
@@ -900,7 +900,7 @@ class UW_Get extends UW_Module {
 					}
 
 					/* Apply any applicable filters */
-					$this->filter->table_row_apply($rel);
+					$this->filter->table_row_apply($rel, $this->security->perm_read);
 
 					/* We need to use the value_mangle() method here to grant that options values are mangled
 					*
@@ -1078,7 +1078,7 @@ class UW_Get extends UW_Module {
 				$this->db->from($rel);
 
 				/* Filter the rows based on access configuration parameters */
-				$this->filter->table_row_apply($rel);
+				$this->filter->table_row_apply($rel, $this->security->perm_read);
 
 				/* We need to use _field_value_mangle() here to grant that relationship values are mangled
 				*

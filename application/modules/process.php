@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ class UW_Process extends UW_Module {
 							$mixed_field_table_name = substr($mixed_field, 0, -3);
         	
 							/* Grant that the user has privileges to access the foreign table item */
-							if (!$this->filter->table_row_perm($mixed_field_val_id, $mixed_field_table_name)) {
+							if (!$this->filter->table_row_perm($mixed_field_val_id, $mixed_field_table_name, $this->security->perm_read)) {
 								$this->db->trans_rollback();
 								$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 							}
@@ -131,7 +131,7 @@ class UW_Process extends UW_Module {
 						$this->db->distinct();	/* NOTE: Not required since the key we're looking for must be UNIQUE. */
 						$this->db->from($ftname);
 						$this->db->where('id', strstr($mixed_rels[$mixed_table][$mixed_id][$ftname . '_id'], '_', true));
-						$this->filter->table_row_apply($ftname);
+						$this->filter->table_row_apply($ftname, $this->security->perm_read);
         	
 						$query_mixed = $this->db->get();
         	
