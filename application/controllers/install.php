@@ -196,7 +196,7 @@ class Install extends UW_Controller {
 		/* Check if the framework is already installed */
 		if (($fp = @fopen(SYSTEM_BASE_DIR . '/install/' . $this->_inst_ctl_file, 'r')) !== false) {
 			@fclose($fp);
-			$this->response->code('403', NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('409', NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE, $this->_default_charset, !$this->request->is_ajax());
 		}
 	}
 

@@ -80,6 +80,11 @@ class Roles extends ND_Controller {
 		if ($this->request->post_isset('is_superuser') && !$this->security->im_admin())
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
+		if ($this->request->post_isset('rel_users_roles')) {
+			/* User role assignement shall be performed via /users controller */
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
+		}
+
 		return $hook_pre_return;
 	}
 
@@ -97,6 +102,11 @@ class Roles extends ND_Controller {
 		/* Only administrators can change is_superuser field */
 		if ($this->request->post_isset('is_superuser') && !$this->security->im_admin())
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
+
+		if ($this->request->post_isset('rel_users_roles')) {
+			/* User role assignement shall be performed via /users controller */
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
+		}
 
 		return $hook_pre_return;
 	}

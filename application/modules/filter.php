@@ -49,45 +49,89 @@ class UW_Filter extends UW_Module {
 		$this->_init();
 	}
 
-	public function table_row_apply($table = NULL) {
+	public function table_row_apply($table = NULL, $req_perm = NULL) {
 		$this->load->module('get');
 
 		/* Superadmin users do not have row filters applied */
 		if ($this->security->im_superadmin())
 			return;
 
+		/* Grant that $req_perm is set to a meaningful permission request value */
+		if ($req_perm === NULL)
+			$this->response->code('500', 'Invalid value set in the requested permission parameter.', $this->config['default_charset'], !$this->request->is_ajax());
+
 		if ($this->config['table_row_filtering'] === true) {
 			$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
 
 			foreach ($this->config['table_row_filtering_config'] as $key => $value) {
 				if (in_array($key, $field_list)) {
+					$fallback = true; /* Always fallback to default filter, unless other filters are applied meanwhile */
+
 					/* If this is a filter based on user ID, grant that the special privileges regarding superadmin, admin and superuser are applied */
 					if ($this->config['table_row_filtering_config'][$key] == 'user_id') {
 						if ($this->security->im_admin()) {
 							/* Admin users cannot access rows owned by superadmins */
 							$exclude_users_id = $this->security->users_superadmin();
 
-							if (count($exclude_users_id))
-								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+							/* Deny access by default */
+							$grant_access = false;
+
+							/* Check individual role access until a role that can access this table with the requested perm is found. */
+							foreach (array_merge($this->security->my_admin_roles(), $this->security->my_superuser_roles()) as $role_id) {
+								$sec_perms_role = $this->security->perm_get($role_id, 'role');
+
+								if ($this->security->perm_check($sec_perms_role, $req_perm, $table)) {
+									$grant_access = true;
+									break;
+								}
+							}
+
+							/* Check if this operation can be performed for the selected row in this table, based on the combined role permissions */
+							if ($grant_access === true) {
+								$fallback = false;
+
+								if (count($exclude_users_id))
+									$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+							}
 						} else if ($this->security->im_superuser()) {
 							/* Superuser users cannot access rows owned by superadmins nor admins */
 							$exclude_users_id = array_merge($this->security->users_superadmin(), $this->security->users_admin());
 
-							if (count($exclude_users_id))
-								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
-						} else {
-							/* All other users can only access rows that they own */
-							$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+							/* Deny access by default */
+							$grant_access = false;
+
+							/* Check individual role access until a role that can access this table with the requested perm is found. */
+							foreach ($this->security->my_superuser_roles() as $role_id) {
+								$sec_perms_role = $this->security->perm_get($role_id, 'role');
+
+								if ($this->security->perm_check($sec_perms_role, $req_perm, $table)) {
+									$grant_access = true;
+									break;
+								}
+							}
+
+							/* Check if this operation can be performed for the selected row in this table, based on the combined role permissions */
+							if ($grant_access === true) {
+								$fallback = false;
+
+								if (count($exclude_users_id))
+									$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+							}
 						}
-					} else {
+					}
+
+					/* Check if fallback filter must be applied */
+					if ($fallback === true) {
+						/* All other users can only access rows that they own */
 						$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
 					}
+					
 				}
 			}
 		}
 	}
 
-	public function table_row_perm($id = false, $table = NULL, $id_field = 'id') {
+	public function table_row_perm($id = false, $table = NULL, $req_perm = NULL, $id_field = 'id') {
 		$this->load->module('get');
 
 		/* Superuser users do not have row filters applied */
@@ -97,11 +141,17 @@ class UW_Filter extends UW_Module {
 		if ($id === false)
 			return false;
 
+		/* Grant that $req_perm is set to a meaningful permission request value */
+		if ($req_perm === NULL)
+			$this->response->code('500', 'Invalid value set in the requested permission parameter.', $this->config['default_charset'], !$this->request->is_ajax());
+
 		if ($this->config['table_row_filtering'] === true) {
 			$field_list = $this->get->table_fields($table ? $table : $this->config['name']);
 
 			foreach ($this->config['table_row_filtering_config'] as $key => $value) {
 				if (in_array($key, $field_list)) {
+					$fallback = true; /* Always fallback to default filter, unless other filters are applied meanwhile */
+
 					$this->db->select($key);
 					$this->db->from($table ? $table : $this->config['name']);
 					$this->db->where(($table ? $table : $this->config['name']) . '.' . $id_field, $id);
@@ -112,19 +162,56 @@ class UW_Filter extends UW_Module {
 							/* Admin users cannot access rows owned by superadmins */
 							$exclude_users_id = $this->security->users_superadmin();
 
-							if (count($exclude_users_id))
-								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+							/* Deny access by default */
+							$grant_access = false;
+
+							/* Check individual role access until a role that can access this table with the requested perm is found. */
+							foreach (array_merge($this->security->my_admin_roles(), $this->security->my_superuser_roles()) as $role_id) {
+								$sec_perms_role = $this->security->perm_get($role_id, 'role');
+
+								if ($this->security->perm_check($sec_perms_role, $req_perm, $table)) {
+									$grant_access = true;
+									break;
+								}
+							}
+
+							/* Check if this operation can be performed for the selected row in this table, based on the combined role permissions */
+							if ($grant_access === true) {
+								$fallback = false;
+
+								if (count($exclude_users_id))
+									$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+							}
 						} else if ($this->security->im_superuser()) {
 							/* Superuser users cannot access rows owned by superadmins nor admins */
 							$exclude_users_id = array_merge($this->security->users_superadmin(), $this->security->users_admin());
 
-							if (count($exclude_users_id))
-								$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
-						} else {
-							/* All other users can only access rows that they own */
-							$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
+							/* Deny access by default */
+							$grant_access = false;
+
+							/* Check individual role access until a role that can access this table with the requested perm is found. */
+							foreach ($this->security->my_superuser_roles() as $role_id) {
+								$sec_perms_role = $this->security->perm_get($role_id, 'role');
+
+								if ($this->security->perm_check($sec_perms_role, $req_perm, $table)) {
+									$grant_access = true;
+									break;
+								}
+							}
+
+							/* Check if this operation can be performed for the selected row in this table, based on the combined role permissions */
+							if ($grant_access === true) {
+								$fallback = false;
+
+								if (count($exclude_users_id))
+									$this->db->where_not_in(($table ? $table : $this->config['name']) . '.' . $key, $exclude_users_id);
+							}
 						}
-					} else {
+					}
+
+					/* Check if fallback filter must be applied */
+					if ($fallback === true) {
+						/* All other users can only access rows that they own */
 						$this->db->where(($table ? $table : $this->config['name']) . '.' . $key, $this->config['session_data'][$this->config['table_row_filtering_config'][$key]]);
 					}
 

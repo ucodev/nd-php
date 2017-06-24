@@ -1,3 +1,13 @@
+v0.04o (2017-06-24):
+
+ - Added default values under registration controller.
+ - Updated base model to include four generic string and four generic boolean fields into user model.
+ - User role assignments are now allowed only inside users controller.
+ - Default authentication mechanism now also supports user email authentication.
+ - Enforced admin and superuser role based perm check on object access for limited controller types.
+ - Increased default result count limit to 1000 entries for JSON queries.
+
+
 v0.04n (2017-06-18):
 
  - Added support for AWS S3 Accelerated Endpoint.

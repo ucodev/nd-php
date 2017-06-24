@@ -62,6 +62,10 @@ class ND_Register extends UW_Controller {
 	private $nd_app_base_url = 'https://localhost/ndphp';
 	private $nd_username_safe_chars = "a-zA-Z0-9_\-\.";
 	private $roles_regular_id = 4;	/* Regular user roles_id (for newly registered users) */
+	private $default_countries_id = 242; /* None */
+	private $default_currencies_id = 1;
+	private $default_timezones_id = 1;
+	private $default_genders_id = 3;
 	private $recaptcha_public_key = '6LxxxxxxAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 	private $recaptcha_private_key = '6LxxxxxxAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 	private $nd_sms_from = 'ndphp';
@@ -478,6 +482,11 @@ class ND_Register extends UW_Controller {
 			$this->response->code('409', NDPHP_LANG_MOD_INFO_TAKEN_USERNAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate country */
+		if (!isset($_POST['countries_id'])) {
+			/* If countries_id is not set, assume the default countries_id */
+			$_POST['countries_id'] = $this->default_countries_id;
+		}
+
 		$this->db->select('id,code,eu_state');
 		$this->db->from('countries');
 		$this->db->where('id', intval($_POST['countries_id']));
@@ -590,16 +599,25 @@ class ND_Register extends UW_Controller {
 		$userdata['subscription_change_date'] = date('Y-m-d H:i:s');
 		$userdata['subscription_renew_date'] = date('Y-m-d', strtotime("+1 month"));
 
-		$userdata['countries_id'] = $_POST['countries_id']; /* TODO: FIXME: needs validation */
+		$userdata['countries_id'] = $_POST['countries_id']; /* TODO: FIXME: needs validation. UPDATE: Already validated at the beginning of this call */
 
-		if (isset($_POST['timezones_id']))
+		if (isset($_POST['timezones_id'])) {
 			$userdata['timezones_id'] = intval($_POST['timezones_id']); /* TODO: FIXME: needs validation */
+		} else {
+			$userdata['timezones_id'] = $this->default_timezones_id;
+		}
 
-		if (isset($_POST['currencies_id']))
+		if (isset($_POST['currencies_id'])) {
 			$userdata['currencies_id'] = intval($_POST['currencies_id']); /* TODO: FIXME: needs validation */
+		} else {
+			$userdata['currencies_id'] = $this->default_currencies_id;
+		}
 
-		if (isset($_POST['genders_id']))
+		if (isset($_POST['genders_id'])) {
 			$userdata['genders_id'] = intval($_POST['genders_id']); /* TODO: FIXME: needs validation */
+		} else {
+			$userdata['genders_id'] = $this->default_genders_id;
+		}
 
 		if (isset($_POST['website']))
 			$userdata['website'] = $_POST['website'];

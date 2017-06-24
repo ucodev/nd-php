@@ -376,8 +376,8 @@ class Login extends UW_Controller {
 			/* Fetch user data */
 			$row = $query->row_array();
 		} else if ($this->request->post_isset('username') && $this->request->post_isset('password')) {
-			/* Retrieve username information from database */
-			$this->db->where('username', $this->request->post('username'));
+			/* Retrieve user information from database based on username or email */
+			$this->db->where((strpos($this->request->post('username'), '@') === false) ? 'username' : 'email', $this->request->post('username'));
 			$query = $this->db->get($this->_table_users);
 
 			/* Validade if user exists */

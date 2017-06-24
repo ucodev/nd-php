@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04n';
+	protected $_ndphp_version = '0.04o';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -552,7 +552,7 @@ class ND_Controller extends UW_Controller {
 	protected $_json_replies = false;
 
 	/* JSON REST API listing / result hard limits */
-	protected $_json_result_hard_limit = 500;
+	protected $_json_result_hard_limit = 1000;
 
 	/* Scheduler settings */
 	protected $_scheduler = array(
@@ -1685,7 +1685,7 @@ class ND_Controller extends UW_Controller {
 		$this->db->from($this->config['name']);
 
 		/* Filter table rows, if applicable */
-		$this->filter->table_row_apply();
+		$this->filter->table_row_apply($this->config['name'], $this->security->perm_read);
 
 		/* If this is a REST call, do not limit the results unless it is explicitly requested (default is to display all) */
 		if ($this->request->is_json()) {
@@ -3307,7 +3307,7 @@ class ND_Controller extends UW_Controller {
 			/* This is not a recall */
 
 			/* Filter table rows, if applicable */
-			$this->filter->table_row_apply();
+			$this->filter->table_row_apply($this->config['name'], $this->security->perm_read);
 
 			/* REST calls using that set '_show' key are able to determine which fields will be present in the list results */
 			if (($this->config['json_replies'] === true)) { // && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
@@ -3941,7 +3941,7 @@ class ND_Controller extends UW_Controller {
 			$this->load->database($this->config['default_database']);
 			$this->db->where($field_name, $field_data);
 
-			if (!$this->filter->table_row_perm($field_data, $this->config['name'], $field_name))
+			if (!$this->filter->table_row_perm($field_data, $this->config['name'], $this->security->perm_create, $field_name))
 				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 			$this->db->from($this->config['name']);
@@ -4099,7 +4099,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Grant that foreign table id is eligible to be inserted */
 			if (substr($field, -3) == '_id') {
-				if (!$this->filter->table_row_perm($value, substr($field, 0, -3)))
+				if (!$this->filter->table_row_perm($value, substr($field, 0, -3), $this->security->perm_read))
 					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #2', $this->config['default_charset'], !$this->request->is_ajax());
 			}
 
@@ -4207,7 +4207,7 @@ class ND_Controller extends UW_Controller {
 					if (!$rel_id) /* Ignore the None (hidden) value */
 						continue;
 
-					if (!$this->filter->table_row_perm($rel_id, $rel_table)) {
+					if (!$this->filter->table_row_perm($rel_id, $rel_table, $this->security->perm_read)) {
 						$this->db->trans_rollback();
 						$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED . ' #3', $this->config['default_charset'], !$this->request->is_ajax());
 					}
@@ -4265,7 +4265,7 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($id))
+		if (!$this->filter->table_row_perm($id, $this->config['name'], $this->security->perm_update))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Initialize $data */
@@ -4392,7 +4392,7 @@ class ND_Controller extends UW_Controller {
 			$schema->where('IS_NULLABLE', 'NO');
 			$query = $schema->get();
 			$schema->close();
-			
+
 			$data['view']['required'] = array();
 			foreach ($query->result_array() as $row) {
 				array_push($data['view']['required'], $row['COLUMN_NAME']);
@@ -4442,7 +4442,7 @@ class ND_Controller extends UW_Controller {
 	public function edit_mixed_rel_count($foreign_table = '', $foreign_id) {
 		$this->load->database($this->config['default_database']);
 
-		if (!$this->filter->table_row_perm($foreign_id, $foreign_table))
+		if (!$this->filter->table_row_perm($foreign_id, $foreign_table, $this->security->perm_read))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
@@ -4470,7 +4470,7 @@ class ND_Controller extends UW_Controller {
 		if ($foreign_table != '') {
 			$this->load->database($this->config['default_database']);
 
-			if (!$this->filter->table_row_perm($foreign_id, $foreign_table))
+			if (!$this->filter->table_row_perm($foreign_id, $foreign_table, $this->security->perm_read))
 				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 			$this->db->from('mixed_' . $foreign_table . '_' . $this->config['name']);
@@ -4542,7 +4542,7 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($this->request->post('id')))
+		if (!$this->filter->table_row_perm($this->request->post('id'), $this->config['name'], $this->security->perm_update))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Set/Update the value of the specified field. (JSON REST API) */
@@ -4699,7 +4699,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Grant that foreign table id is eligible to be updated */
 			if (substr($field, -3) == '_id') {
-				if (!$this->filter->table_row_perm($value, substr($field, 0, -3))) {
+				if (!$this->filter->table_row_perm($value, substr($field, 0, -3), $this->security->perm_read)) {
 					$this->db->trans_rollback();
 					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 				}
@@ -4813,7 +4813,7 @@ class ND_Controller extends UW_Controller {
 				if (!$rel_id) /* Ignore the None (hidden) value */
 					continue;
 
-				if (!$this->filter->table_row_perm($rel_id, $rel_field['rel_table'])) {
+				if (!$this->filter->table_row_perm($rel_id, $rel_field['rel_table'], $this->security->perm_read)) {
 					$this->db->trans_rollback();
 					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 				}
@@ -4865,7 +4865,7 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_delete, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($id))
+		if (!$this->filter->table_row_perm($id, $this->config['name'], $this->security->perm_delete))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Initialize $data */
@@ -4992,7 +4992,7 @@ class ND_Controller extends UW_Controller {
 	public function remove_mixed_rel_count($foreign_table = '', $foreign_id) {
 		$this->load->database($this->config['default_database']);
 
-		if (!$this->filter->table_row_perm($foreign_id, $foreign_table))
+		if (!$this->filter->table_row_perm($foreign_id, $foreign_table, $this->security->perm_read))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
@@ -5020,7 +5020,7 @@ class ND_Controller extends UW_Controller {
 		if ($foreign_table != '') {
 			$this->load->database($this->config['default_database']);
 
-			if (!$this->filter->table_row_perm($foreign_id, $foreign_table))
+			if (!$this->filter->table_row_perm($foreign_id, $foreign_table, $this->security->perm_read))
 				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 			$this->db->from('mixed_' . $foreign_table . '_' . $this->config['name']);
@@ -5090,7 +5090,7 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_delete, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($this->request->post('id')))
+		if (!$this->filter->table_row_perm($this->request->post('id'), $this->config['name'], $this->security->perm_delete))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$ftypes = $this->get->fields();
@@ -5196,7 +5196,7 @@ class ND_Controller extends UW_Controller {
 		if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $this->config['name']))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
-		if (!$this->filter->table_row_perm($id))
+		if (!$this->filter->table_row_perm($id, $this->config['name'], $this->security->perm_read))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Initialize $data */
@@ -5355,7 +5355,7 @@ class ND_Controller extends UW_Controller {
 	public function view_mixed_rel_count($foreign_table = '', $foreign_id) {
 		$this->load->database($this->config['default_database']);
 
-		if (!$this->filter->table_row_perm($foreign_id, $foreign_table))
+		if (!$this->filter->table_row_perm($foreign_id, $foreign_table, $this->security->perm_read))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 		$this->db->select('COUNT(`' . str_replace('`', '', $foreign_table) . '_id`) AS `total`', false);
@@ -5384,7 +5384,7 @@ class ND_Controller extends UW_Controller {
 		if ($foreign_table != '') {
 			$this->load->database($this->config['default_database']);
 
-			if (!$this->filter->table_row_perm($foreign_id, $foreign_table))
+			if (!$this->filter->table_row_perm($foreign_id, $foreign_table, $this->security->perm_read))
 				$this->response->code('403', NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED, $this->config['default_charset'], !$this->request->is_ajax());
 
 			$this->db->from('mixed_' . $foreign_table . '_' . $this->config['name']);

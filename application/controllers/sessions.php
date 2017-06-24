@@ -38,8 +38,8 @@ class Sessions extends ND_Controller {
 		/* Initialize controller */
 		$this->_init(get_class(), true);
 
-		/* Grant that only ROLE_ADMIN is able to access this controller */
-		if (!$this->security->im_admin())
+		/* Grant that only ROLE_ADMIN (superadmin) is able to access this controller */
+		if (!$this->security->im_superadmin())
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 	

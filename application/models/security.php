@@ -162,7 +162,7 @@ class UW_Security extends UW_Model {
 	}
 
 	public function perm_get($id, $type = 'user') {
-		if ($type == 'user' || $type == 'limited') {
+		if ($type == 'user') {
 			$user_id = $id;
 
 			/* Check if we're using an external cache mechanism and, if so, read data from it */
@@ -324,6 +324,84 @@ class UW_Security extends UW_Model {
 		return true;
 	}
 
+	public function roles_superadmin() {
+		return array(1);
+	}
+
+	public function roles_admin() {
+		/* Fetch an array of role id's with the is_admin flag set */
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_sec_roles_admin')) {
+				$roles_admin = $this->cache->get('d_cache_sec_roles_admin');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($roles_admin))
+					return $roles_admin;
+			}
+		}
+
+		$this->db->select('id');
+		$this->db->from('roles');
+		$this->db->where('is_admin', true);
+		$this->db->where('id >', 1);
+		$q = $this->db->get();
+
+		if (!$q->num_rows())
+			return array();
+		
+		$roles_admin = array();
+
+		foreach ($q->result_array() as $row)
+			array_push($roles_admin, $row['id']);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_sec_roles_admin', true);
+			$this->cache->set('d_cache_sec_roles_admin', $roles_admin);
+		}
+		
+		return $roles_admin;
+	}
+
+	public function roles_superuser() {
+		/* Fetch an array of role id's with the is_superuser flag set */
+
+		/* Check if we're using an external cache mechanism and, if so, read data from it */
+		if ($this->cache->is_active()) {
+			if ($this->cache->get('s_cache_sec_roles_superuser')) {
+				$roles_superuser = $this->cache->get('d_cache_sec_roles_superuser');
+
+				/* Grant that the cached data is still a valid entry, otherwise we need to fetch everything again */
+				if (is_array($roles_superuser))
+					return $roles_superuser;
+			}
+		}
+
+		$this->db->select('id');
+		$this->db->from('roles');
+		$this->db->where('is_superuser', true);
+		$this->db->where('id >', 1);
+		$q = $this->db->get();
+
+		if (!$q->num_rows())
+			return array();
+		
+		$roles_superuser = array();
+
+		foreach ($q->result_array() as $row)
+			array_push($roles_superuser, $row['id']);
+
+		/* Check if we're using an external cache mechanism and, if so, write data to it */
+		if ($this->cache->is_active()) {
+			$this->cache->set('s_cache_sec_roles_superuser', true);
+			$this->cache->set('d_cache_sec_roles_superuser', $roles_superuser);
+		}
+		
+		return $roles_superuser;
+	}
+
 	public function users_superadmin() {
 		/* Fetch an array of user id's' with ROLE_ADMIN */
 
@@ -472,5 +550,17 @@ class UW_Security extends UW_Model {
 
 	public function im_superuser() {
 		return $this->session->userdata('is_superuser');
+	}
+
+	public function my_superadmin_roles() {
+		return array_intersect($this->session->userdata('roles'), $this->roles_superadmin());
+	}
+
+	public function my_admin_roles() {
+		return array_intersect($this->session->userdata('roles'), $this->roles_admin());
+	}
+
+	public function my_superuser_roles() {
+		return array_intersect($this->session->userdata('roles'), $this->roles_superuser());
 	}
 }
