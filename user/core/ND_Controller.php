@@ -1670,11 +1670,17 @@ class ND_Controller extends UW_Controller {
 				if (!in_array($selected, 'id'))
 					array_push($selected, 'id');
 
+				/* Fetch fields */
+				$data['view']['fields'] = $this->get->fields(NULL);
+
 				/* Resolve fields */
-				$this->field->resolve($this->get->fields(NULL), $selected);
+				$this->field->resolve($data['view']['fields'], $selected);
 			} else {
+				/* Fetch fields */
+				$data['view']['fields'] = $this->get->fields(NULL, $this->config['hide_fields_list']);
+
 				/* Use default controller settings for field resolve */
-				$this->field->resolve($this->get->fields(NULL, $this->config['hide_fields_list']));
+				$this->field->resolve($data['view']['fields']);
 			}
 		}
 

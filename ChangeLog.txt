@@ -1,3 +1,8 @@
+v0.04o2 (2017-06-25):
+
+ - Fixed value mangling issues with REST JSON listing requests.
+
+
 v0.04o1 (2017-06-25):
 
  - Fixed parse error.
