@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04o';
+	protected $_ndphp_version = '0.04o1';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4779,7 +4779,7 @@ class ND_Controller extends UW_Controller {
 			$file_old = $q->row_array();
 
 			/* Attempt to remove old file, only if there's a path set */
-			if (isset($file_old[$file[0]]['path']) {
+			if (isset($file_old[$file[0]]['path'])) {
 				/* Remove older file */
 				$remove_status = $this->upload->remove_file($this->config['name'], $this->request->post('id'), array($file[0], $file_old[$file[0]]));
 
