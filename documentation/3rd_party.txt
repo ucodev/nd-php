@@ -27,9 +27,8 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
  22.	Miu Icons		(Custom, See below)
  23.	TimeZoneDB		(CC BY 3.0)
  24.	zone.tab		(Public Domain)
- 25.	reCAPTCHA		(MIT)
- 26.	uWeb			(GPLv3)
- 27.	uWAT			(GPLv3)
+ 25.	uWeb			(GPLv3)
+ 26.	uWAT			(GPLv3)
 
 
 
@@ -400,20 +399,7 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-25. reCAPTCHA
-=========================
-
-  Author:	Mike Crawford and Ben Maurer
-
-  URLs:		http://recaptcha.net
-
-  License:	MIT
-
-=========================
-
-
-=========================
-26. uWeb
+25. uWeb
 =========================
 
   Author:	Pedro A. Hortas
@@ -426,7 +412,7 @@ The list of 3rd party projects, frameworks, libraries, content or tools used by 
 
 
 =========================
-27. uWAT
+26. uWAT
 =========================
 
   Author:	Pedro A. Hortas

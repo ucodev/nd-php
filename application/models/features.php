@@ -37,17 +37,10 @@ class UW_Features extends UW_Model {
 	private $_features_translate = array(
 		'FEATURE_ACCESSIBILITY' => 'accessibility',
 		'FEATURE_MULTI_USER' =>  'multi_user',
-		'FEATURE_USER_SUBSCRIPTIONS' => 'user_subscription_types',
 		'FEATURE_USER_CREDIT' => 'user_credit_control',
-		'FEATURE_USER_NOTIFICATIONS' => 'user_notifications',
 		'FEATURE_USER_REGISTRATION' => 'user_registration',
 		'FEATURE_USER_RECOVERY' => 'user_recovery',
-		'FEATURE_REGISTER_CONFIRM_VAT_EU' => 'register_confirm_vat_eu',
-		'FEATURE_REGISTER_RECAPTCHA' => 'register_with_recaptcha',
-		'FEATURE_REGISTER_CONFIRM_EMAIL' => 'register_confirm_email',
-		'FEATURE_REGISTER_CONFIRM_PHONE' => 'register_confirm_phone',
-		'FEATURE_SYSTEM_MEMCACHED' => 'system_memcached',
-		'FEATURE_SYSTEM_SHARDING' => 'system_sharding'
+		'FEATURE_SYSTEM_MEMCACHED' => 'system_memcached'
 	);
 
 	public function get_features() {
@@ -56,17 +49,10 @@ class UW_Features extends UW_Model {
 		/* Assume all features disabled by default */
 		$features['accessibility'] = false;
 		$features['multi_user'] = false;
-		$features['user_subscription_types'] = false;
 		$features['user_credit_control'] = false;
-		$features['user_notifications'] = false;
 		$features['user_registration'] = false;
 		$features['user_recovery'] = false;
-		$features['register_confirm_vat_eu'] = false;
-		$features['register_with_recaptcha'] = false;
-		$features['register_confirm_email'] = false;
-		$features['register_confirm_phone'] = false;
 		$features['system_memcached'] = false;
-		$features['system_sharding'] = false;
 
 		/* Fetch enabled features from database based on the currently active configuration */
 		$this->db->select('features.feature AS feature');

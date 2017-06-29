@@ -156,29 +156,6 @@
 							</script>
 						</td>
 					<?php endif; ?>
-					<?php if ($config['features']['user_subscription_types'] === true): ?>
-						<td class="session_info">
-							<strong><span id="subscription_plan"></span></strong> [<a href="javascript:void(0);" onclick="ndphp.ajax.load_subscription_upgrade(event, '<?=filter_html_js_str(base_url(), $config['charset'])?>index.php/subscription_types/subscriptions_form_upgrade_ajax');"><?=filter_html(NDPHP_LANG_MOD_LINK_UPGRADE, $config['charset'])?></a>]&nbsp;&nbsp; 
-							<script type="text/javascript">
-								ndphp.ajax.get_user_subscription();
-							</script>
-						</td>
-					<?php endif; ?>
-					<?php if ($config['features']['user_notifications'] === true): ?>
-						<td class="session_info">
-							<span id="user_notifications" class="user_notifications">
-								<a href="javascript:void(0);" title="<?=filter_html(NDPHP_LANG_MOD_MENU_NOTIFICATIONS_NAME, $config['charset'])?>" onclick="ndphp.ajax.load_body_menu(event, '<?=filter_html_js_str('notifications', $config['charset'])?>', '<?=filter_html_js_str('notifications', $config['charset'])?>');" >
-									<img class="user_notifications_icon" alt="<?=filter_html(NDPHP_LANG_MOD_MENU_NOTIFICATIONS_NAME, $config['charset'])?> - <?=filter_html($session['username'], $config['charset'])?>" src="<?=filter_html(static_images_url(), $config['charset'])?>/themes/<?=filter_html($config['theme']['name'], $config['charset'])?>/icons/notification.png" />
-								</a>
-								<span id="user_notifications_total" class="user_notifications_total" style="display: none;">0</span>
-							</span>&nbsp;&nbsp;
-							<script type="text/javascript">
-								ndphp.ajax.get_user_notification_count();
-
-								setInterval(ndphp.ajax.get_user_notification_count, 10000);
-							</script>
-						</td>
-					<?php endif; ?>
 					<?php if ($config['features']['multi_user'] === true): ?>
 						<td class="session_info">
 							<span class="session_info_user_name">

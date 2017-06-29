@@ -31,22 +31,22 @@
  */
 
 
-define('NDPHP_LANG_MOD_ACCESS_FORBIDDEN',			'Forbidden.');
-define('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED',	'Permission Denied.');
-define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only admin users are allowed to access this resource.');
-define('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN',		'Only ROLE_ADMIN is allowed to access this resource.');
-define('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE',		'Account is not active.');
-define('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED',			'Account is locked.');
-define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		'Account is expired.');
-define('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL',	'Your account email is not valid.');
-define('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM',	'Either the requested file does not exist or access to the file was denied.');
-define('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE',	'Either the requested search does not exist or there are no permissions to delete it.');
-define('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER',         'Only master nodes can perform this operation.');
-define('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE',          'Only slave nodes can perform this operation.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_FORBIDDEN))          define('NDPHP_LANG_MOD_ACCESS_FORBIDDEN',			'Forbidden.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED))  define('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED',	'Permission Denied.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN))         define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only admin users are allowed to access this resource.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN))    define('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN',		'Only ROLE_ADMIN is allowed to access this resource.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE))      define('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE',		'Account is not active.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED))        define('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED',			'Account is locked.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED))       define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		'Account is expired.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL)) define('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL',	'Your account email is not valid.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM)) define('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM','Either the requested file does not exist or access to the file was denied.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE)) define('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE','Either the requested search does not exist or there are no permissions to delete it.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ONLY_MASTER))        define('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER',         'Only master nodes can perform this operation.');
+if (!defined(NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE))         define('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE',          'Only slave nodes can perform this operation.');
 
-define('NDPHP_LANG_MOD_ACTION_FORWARD',				'Forward');
-define('NDPHP_LANG_MOD_ACTION_REFRESH',				'Refresh');
-define('NDPHP_LANG_MOD_ACTION_BACK',				'Back');
+if (!defined(NDPHP_LANG_MOD_ACTION_FORWARD))            define('NDPHP_LANG_MOD_ACTION_FORWARD',				'Forward');
+if (!defined(NDPHP_LANG_MOD_ACTION_REFRESH))            define('NDPHP_LANG_MOD_ACTION_REFRESH',				'Refresh');
+if (!defined(NDPHP_LANG_MOD_ACTION_BACK))               define('NDPHP_LANG_MOD_ACTION_BACK',				'Back');
 
 define('NDPHP_LANG_MOD_ATTN_VALIDATE_VALUES',		'Please validate the inserted values and try again.');
 define('NDPHP_LANG_MOD_ATTN_SUBMIT_REQUIRED_FIELDS','Please fill the required fields before submit.');
@@ -85,9 +85,6 @@ define('NDPHP_LANG_MOD_CANNOT_LOAD_MENU',			'Cannot load menu.');
 define('NDPHP_LANG_MOD_CANNOT_CLONE_ITEM',			'Cannot clone item.');
 define('NDPHP_LANG_MOD_CANNOT_INSERT_ITEM',			'Cannot insert item.');
 define('NDPHP_LANG_MOD_CANNOT_ROLLBACK_NON_UPDATE', 'Cannot rollback transactions from operations other than UPDATE.');
-define('NDPHP_LANG_MOD_CANNOT_DOWNGRADE_SUBSCRIPTION','You cannot downgrade your current subscription through this menu.');
-define('NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCRIPTION','Cannot perform Subscription Upgrade.');
-define('NDPHP_LANG_MOD_CANNOT_UPGRADE_SUBSCR_CREDIT','Insufficient credits to perform Subscription Upgrade.');
 define('NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_USER',	'Cannot delete the admin user.');
 define('NDPHP_LANG_MOD_CANNOT_OP_VIEW_TYPE_CTRL',	'VIEW table type controllers cannot perform the operation');
 define('NDPHP_LANG_MOD_CANNOT_DISPLAY_LIST',		'Cannot display list.');
@@ -153,8 +150,6 @@ define('NDPHP_LANG_MOD_INVALID_USER_ID',			'Invalid User ID');
 define('NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD',	'Invalid username or password.');
 define('NDPHP_LANG_MOD_INVALID_POST_DATA',			'Invalid POST data.');
 define('NDPHP_LANG_MOD_INVALID_DATA_FOUND',			'Found invalid data');
-define('NDPHP_LANG_MOD_INVALID_SUBSCRIPTION_TYPE',	'Invalid subscription type.');
-define('NDPHP_LANG_MOD_INVALID_RECAPTCHA_VALUE',	'Invalid reCAPTCHA value.');
 define('NDPHP_LANG_MOD_INVALID_FIRST_NAME',			'Invalid First Name.');
 define('NDPHP_LANG_MOD_INVALID_LAST_NAME',			'Invalid Last Name.');
 define('NDPHP_LANG_MOD_INVALID_USERNAME',			'Invalid username.');
@@ -199,28 +194,26 @@ define('NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE', 'Image height too large:
 define('NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION','Invalid file image extension: ');
 define('NDPHP_LANG_MOD_INVALID_USERNAME_CHARS',     'Invalid characters found in username.');
 
-define('NDPHP_LANG_MOD_INFO_LOADING',				'Loading...');
-define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		'Authenticating...');
-define('NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE',		'You are disabling the only currently active configuration. Please enable some other configuration before disabling this one.');
-define('NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE',	'You are trying to delete an active configuration, which is not allowed.');
-define('NDPHP_LANG_MOD_INFO_ENTRY_CHANGED',			'The entry contents have been changed. You need to force the operation to override this check.');
-define('NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY',		'The transaction is already marked as rolled back');
-define('NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE',	'User credit update');
-define('NDPHP_LANG_MOD_INFO_PAYMENT_UPDATE',		'Payment update');
-define('NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH',		'Passwords don\'t match.');
-define('NDPHP_LANG_MOD_INFO_TAKEN_USERNAME',		'Username already taken.');
-define('NDPHP_LANG_MOD_INFO_INCOMPLETE_VAT_EU',		'Incomplete EU VAT number. If you want to leave VAT blank, you also need to leave the Company field blank.');
-define('NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED',		'Email already registered.');
-define('NDPHP_LANG_MOD_INFO_PHONE_REGISTERED',		'Phone already registered.');
-define('NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION',	'This operation will rollback the Transaction');
-define('NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES',		'Transaction Changes Summary');
-define('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE',			'NOTE: New Values will be replaced by Old Values');
-define('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE',		'I\'ve read and accept the');
-define('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE',		'System is up to date.');
-define('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE',	'Installation already complete.');
-define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',		'Entry not found.');
-define('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED',    'Controllers were deployed. Build: ');
-define('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED',      'ACLs applied. Build: ');
+if (!defined(NDPHP_LANG_MOD_INFO_LOADING))          define('NDPHP_LANG_MOD_INFO_LOADING',                   'Loading...');
+if (!defined(NDPHP_LANG_MOD_INFO_AUTHENTICATING))   define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		    'Authenticating...');
+if (!defined(NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE))  define('NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE',		    'You are disabling the only currently active configuration. Please enable some other configuration before disabling this one.');
+if (!defined(NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE)) define('NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE',	'You are trying to delete an active configuration, which is not allowed.');
+if (!defined(NDPHP_LANG_MOD_INFO_ENTRY_CHANGED))    define('NDPHP_LANG_MOD_INFO_ENTRY_CHANGED',			    'The entry contents have been changed. You need to force the operation to override this check.');
+if (!defined(NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY)) define('NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY',		    'The transaction is already marked as rolled back');
+if (!defined(NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE)) define('NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE',	    'User credit update');
+if (!defined(NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH)) define('NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH',		'Passwords don\'t match.');
+if (!defined(NDPHP_LANG_MOD_INFO_TAKEN_USERNAME))   define('NDPHP_LANG_MOD_INFO_TAKEN_USERNAME',		    'Username already taken.');
+if (!defined(NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED)) define('NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED',		    'Email already registered.');
+if (!defined(NDPHP_LANG_MOD_INFO_PHONE_REGISTERED)) define('NDPHP_LANG_MOD_INFO_PHONE_REGISTERED',		    'Phone already registered.');
+if (!defined(NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION)) define('NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION',	'This operation will rollback the Transaction');
+if (!defined(NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES)) define('NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES',		    'Transaction Changes Summary');
+if (!defined(NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE))    define('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE',			    'NOTE: New Values will be replaced by Old Values');
+if (!defined(NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE))  define('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE',		    'I\'ve read and accept the');
+if (!defined(NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE)) define('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE',		'System is up to date.');
+if (!defined(NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE)) define('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE',	'Installation already complete.');
+if (!defined(NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND))  define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',		    'Entry not found.');
+if (!defined(NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED)) define('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED',      'Controllers were deployed. Build: ');
+if (!defined(NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED)) define('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED',          'ACLs applied. Build: ');
 
 define('NDPHP_LANG_MOD_LINK_ADD_FUNDS',				'Add funds');
 define('NDPHP_LANG_MOD_LINK_HOME',					'Home');
@@ -482,8 +475,6 @@ define('NDPHP_LANG_MOD_COMMON_VAT_NUMBER',			'VAT Number');
 define('NDPHP_LANG_MOD_COMMON_POSTCODE',			'Post / ZIP');
 define('NDPHP_LANG_MOD_COMMON_ADDR_LINE1',			'Address Line 1');
 define('NDPHP_LANG_MOD_COMMON_ADDR_LINE2',			'Address Line 2');
-define('NDPHP_LANG_MOD_COMMON_SUBSCR_CHANGE_DATE',	'Subscription Change Date');
-define('NDPHP_LANG_MOD_COMMON_SUBSCR_RENEW_DATE',	'Subscription Renew Date');
 define('NDPHP_LANG_MOD_COMMON_EMAIL_CONFIRMED',		'Email Confirmed');
 define('NDPHP_LANG_MOD_COMMON_PHONE_CONFIRMED',		'Phone Confirmed');
 define('NDPHP_LANG_MOD_COMMON_DATE_CONFIRMED',		'Date Confirmed');
@@ -497,7 +488,6 @@ define('NDPHP_LANG_MOD_COMMON_ACCT_REST_VIEW_CNTR',	'Acct REST VIEW Counter');
 define('NDPHP_LANG_MOD_COMMON_ACCT_REST_DELETE_CNTR','Acct REST DELETE Counter');
 define('NDPHP_LANG_MOD_COMMON_ACCT_REST_UPDATE_CNTR','Acct REST UPDATE Counter');
 define('NDPHP_LANG_MOD_COMMON_ACCT_REST_INSERT_CNTR','Acct REST INSERT Counter');
-define('NDPHP_LANG_MOD_COMMON_SUBSCRIPTION',		'Subscription');
 define('NDPHP_LANG_MOD_COMMON_DESCRIPTION',			'Description');
 define('NDPHP_LANG_MOD_COMMON_SEARCH_NAME',			'Search Name');
 define('NDPHP_LANG_MOD_COMMON_CRUD_TITLE_FIELD_NAME','Field');
@@ -580,8 +570,6 @@ define('NDPHP_LANG_MOD_COMMON_DASHBOARD',			'Dashboard');
 define('NDPHP_LANG_MOD_COMMON_NOTIFICATION',		'Notification');
 define('NDPHP_LANG_MOD_COMMON_URL',					'URL');
 define('NDPHP_LANG_MOD_COMMON_SEEN',				'Seen');
-define('NDPHP_LANG_MOD_COMMON_NOTIFY_ALL',			'Notify All');
-define('NDPHP_LANG_MOD_COMMON_NOTIFY_WHEN',			'Notify When');
 define('NDPHP_LANG_MOD_COMMON_PLACEHOLDER_REPEAT_PASSWORD', '(Repeat password)');
 define('NDPHP_LANG_MOD_COMMON_TOGGLE_NAVIGATION',	'Toggle navigation');
 define('NDPHP_LANG_MOD_COMMON_GENDER',				'Gender');
@@ -627,38 +615,22 @@ define('NDPHP_LANG_MOD_MENU_COUNTRIES_NAME',		'Countries');
 define('NDPHP_LANG_MOD_MENU_COUNTRIES_DESC',		'Countries');
 define('NDPHP_LANG_MOD_MENU_CURRENCIES_NAME',		'Currencies');
 define('NDPHP_LANG_MOD_MENU_CURRENCIES_DESC',		'Currencies');
-define('NDPHP_LANG_MOD_MENU_DBMS_NAME',				'Databases');
-define('NDPHP_LANG_MOD_MENU_DBMS_DESC',				'Databases');
 define('NDPHP_LANG_MOD_MENU_DOCUMENTATION_NAME',	'Documentation');
 define('NDPHP_LANG_MOD_MENU_DOCUMENTATION_DESC',	'Documentation');
 define('NDPHP_LANG_MOD_MENU_FEATURES_NAME',			'Features');
 define('NDPHP_LANG_MOD_MENU_FEATURES_DESC',			'Features');
 define('NDPHP_LANG_MOD_MENU_GENDERS_NAME',			'Genders');
 define('NDPHP_LANG_MOD_MENU_GENDERS_DESC',			'Genders');
-define('NDPHP_LANG_MOD_MENU_ITEMS_NAME',			'Items');
-define('NDPHP_LANG_MOD_MENU_ITEMS_DESC',			'Items');
 define('NDPHP_LANG_MOD_MENU_LOGGING_NAME',			'Logging');
 define('NDPHP_LANG_MOD_MENU_LOGGING_DESC',			'Logging');
 define('NDPHP_LANG_MOD_MENU_MONTHS_NAME',			'Months');
 define('NDPHP_LANG_MOD_MENU_MONTHS_DESC',			'Months');
-define('NDPHP_LANG_MOD_MENU_NOTIFICATIONS_NAME',	'Notifications');
-define('NDPHP_LANG_MOD_MENU_NOTIFICATIONS_DESC',	'Notifications');
-define('NDPHP_LANG_MOD_MENU_PAYMENT_ACTIONS_NAME',	'Payment Actions');
-define('NDPHP_LANG_MOD_MENU_PAYMENT_ACTIONS_DESC',	'Payment Actions');
-define('NDPHP_LANG_MOD_MENU_PAYMENT_STATUS_NAME',	'Payment Status');
-define('NDPHP_LANG_MOD_MENU_PAYMENT_STATUS_DESC',	'Payment Status');
-define('NDPHP_LANG_MOD_MENU_PAYMENT_TYPES_NAME',	'Payment Types');
-define('NDPHP_LANG_MOD_MENU_PAYMENT_TYPES_DESC',	'Payment Types');
-define('NDPHP_LANG_MOD_MENU_PAYMENTS_NAME',			'Payments');
-define('NDPHP_LANG_MOD_MENU_PAYMENTS_DESC',			'Payments');
 define('NDPHP_LANG_MOD_MENU_ROLES_NAME',			'Roles');
 define('NDPHP_LANG_MOD_MENU_ROLES_DESC',			'Roles');
 define('NDPHP_LANG_MOD_MENU_SCHEDULER_NAME',		'Scheduler');
 define('NDPHP_LANG_MOD_MENU_SCHEDULER_DESC',		'Scheduler');
 define('NDPHP_LANG_MOD_MENU_SESSIONS_NAME',			'Sessions');
 define('NDPHP_LANG_MOD_MENU_SESSIONS_DESC',			'Sessions');
-define('NDPHP_LANG_MOD_MENU_SUBSCRIPTION_TYPES_NAME','Subscription Types');
-define('NDPHP_LANG_MOD_MENU_SUBSCRIPTION_TYPES_DESC','Subscription Types');
 define('NDPHP_LANG_MOD_MENU_SYSTEM_NAME',			'System');
 define('NDPHP_LANG_MOD_MENU_SYSTEM_DESC',			'System');
 define('NDPHP_LANG_MOD_MENU_THEMES_NAME',			'Themes');
@@ -669,10 +641,6 @@ define('NDPHP_LANG_MOD_MENU_THEMES_ANIM_ORDERING_NAME','Ordering Animations');
 define('NDPHP_LANG_MOD_MENU_THEMES_ANIM_ORDERING_DESC','Ordering Animations');
 define('NDPHP_LANG_MOD_MENU_TIMEZONES_NAME',		'Timezones');
 define('NDPHP_LANG_MOD_MENU_TIMEZONES_DESC',		'Timezones');
-define('NDPHP_LANG_MOD_MENU_TRANSACTION_HISTORY_NAME','Transaction History');
-define('NDPHP_LANG_MOD_MENU_TRANSACTION_HISTORY_DESC','Transaction History');
-define('NDPHP_LANG_MOD_MENU_TRANSACTION_TYPES_NAME','Transaction Types');
-define('NDPHP_LANG_MOD_MENU_TRANSACTION_TYPES_DESC','Transaction Types');
 define('NDPHP_LANG_MOD_MENU_USERS_NAME',			'Users');
 define('NDPHP_LANG_MOD_MENU_USERS_DESC',			'Users');
 define('NDPHP_LANG_MOD_MENU_WEEKDAYS_NAME',			'Weekdays');
@@ -756,47 +724,6 @@ define('NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_DATABASE','Unable to setup database'
 define('NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_USER',	'Unable to setup user');
 define('NDPHP_LANG_MOD_INSTALL_UNABLE_SETUP_APP',	'Unable to setup application');
 
-define('NDPHP_LANG_MOD_PAYMENT_TAX_RATE',			'Tax Rate');
-define('NDPHP_LANG_MOD_PAYMENT_PAYMENT_FEE',		'Payment Fee');
-define('NDPHP_LANG_MOD_PAYMENT_TOTAL_TAX',			'Total Tax');
-define('NDPHP_LANG_MOD_PAYMENT_STATUS_DESCRIPTION',	'Status Description');
-define('NDPHP_LANG_MOD_PAYMENT_ITEM_PRICE',			'Item Price');
-define('NDPHP_LANG_MOD_PAYMENT_ITEM_QUANTITY',		'Item Quantity');
-define('NDPHP_LANG_MOD_PAYMENT_ITEM_DESCRIPTION',	'Item Description');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_EMAIL',		'Payer Email');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_FIRST_NAME',	'Payer First Name');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_LAST_NAME',	'Payer Last Name');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_NAME',	'Payer Address Name');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_COUNTRY',	'Payer Address Country');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_CITY',	'Payer Address City');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_STREET',	'Payer Address Street');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_ZIP',		'Payer Address ZIP');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_STATE',	'Payer Address State');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_ADDR_STATUS',	'Payer Address Status');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_STATUS',		'Payer Status');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_RESID_COUNTRY','Payer Residence Country');
-define('NDPHP_LANG_MOD_PAYMENT_PAYER_PAYMENT_DATE', 'Payer Payment Date');
-define('NDPHP_LANG_MOD_PAYMENT_TYPE',				'Payment Type');
-define('NDPHP_LANG_MOD_PAYMENT_STATUS',				'Payment Status');
-define('NDPHP_LANG_MOD_PAYMENT_ACTION',				'Payment Action');
-define('NDPHP_LANG_MOD_PAYMENT_INVALID_AMMOUNT',	'Invalid payment ammount.');
-define('NDPHP_LANG_MOD_PAYMENT_UNABLE_ID_USER',		'Unable to identify user from the referred payment.');
-define('NDPHP_LANG_MOD_PAYMENT_CREDIT_AMMOUNT',		'Credit Ammount');
-define('NDPHP_LANG_MOD_PAYMENT_PAYPAL_TITLE',		'Paypal Payment');
-define('NDPHP_LANG_MOD_PAYMENT_PAYPAL_TAX_APPLY',	'Paypal taxes will apply.');
-define('NDPHP_LANG_MOD_PAYMENT_NO_VAT_IF',			'VAT will not be charged if');
-define('NDPHP_LANG_MOD_PAYMENT_NO_VAT_COND_1',		'Your billing address is outside the EU');
-define('NDPHP_LANG_MOD_PAYMENT_NO_VAT_COND_2',		'You\'re a VAT registered company in a EU country.');
-define('NDPHP_LANG_MOD_PAYMENT_CONTACT_OTHER_METHOD','For other payment methods, please contact the Billing Dept.');
-define('NDPHP_LANG_MOD_PAYMENT_SUBMIT',				'Submit Payment');
-define('NDPHP_LANG_MOD_PAYMENT_CANCELLED',			'Your payment was cancelled.');
-define('NDPHP_LANG_MOD_PAYMENT_YOUR_OF',			'Your payment of');
-define('NDPHP_LANG_MOD_PAYMENT_IDENTIFIED_BY_TXID',	'identified by Transaction ID');
-define('NDPHP_LANG_MOD_PAYMENT_SUCCESSFUL_PROCESSED','was successfully processed');
-define('NDPHP_LANG_MOD_PAYMENT_HOW_PAYPAL_WORKS',	'How PayPal works');
-define('NDPHP_LANG_MOD_PAYMENT_PAYPAL_IPN_SUCCESS',	'Payment successful');
-define('NDPHP_LANG_MOD_PAYMENT_PAYPAL_IPN_CANCEL',	'Payment cancelled');
-
 define('NDPHP_LANG_MOD_REGISTER_USER_ACCT_IS_NOW',	'User account is now');
 define('NDPHP_LANG_MOD_REGISTER_CHECK_MOBILE_INBOX','Please check your mobile inbox and confirm your mobile phone number in order to activate your account.');
 define('NDPHP_LANG_MOD_REGISTER_CHECK_EMAIL_INBOX',	'Please check your mailbox and confirm your email address in order to activate your account.');
@@ -815,12 +742,6 @@ define('NDPHP_LANG_MOD_RECOVER_FIRST_NAME',			'First Name');
 define('NDPHP_LANG_MOD_RECOVER_LAST_NAME',			'Last Name');
 define('NDPHP_LANG_MOD_RECOVER_COUNTRY',			'Country');
 
-define('NDPHP_LANG_MOD_SUBSCRIPTION_UPGRADE',		'Subscription Upgrade');
-define('NDPHP_LANG_MOD_SUBSCRIPTION_UPGRADE_SUCCESS','Your account was successfully upgraded to');
-define('NDPHP_LANG_MOD_SUBSCRIPTION_CHOOSE_NEW',	'Choose a new subscription');
-define('NDPHP_LANG_MOD_SUBSCRIPTION_DEBT_PREFIX',	'An amount of');
-define('NDPHP_LANG_MOD_SUBSCRIPTION_DEBT_SUFFIX',	'was subtracted from your account balance.');
-
 define('NDPHP_LANG_MOD_TABS_TITLE_LISTING',			'Listing');
 define('NDPHP_LANG_MOD_TABS_TITLE_CHARTS',			'Charts');
 define('NDPHP_LANG_MOD_TABS_TITLE_SEARCH_ADVANCED',	'Advanced Search');
@@ -829,7 +750,6 @@ define('NDPHP_LANG_MOD_TABS_TITLE_GROUPS',			'Groups');
 define('NDPHP_LANG_MOD_TABS_TITLE_MAIN_GENERIC',	'General');
 define('NDPHP_LANG_MOD_TABS_TITLE_MAIN_CHARTS',		'Charts');
 
-define('NDPHP_LANG_MOD_SEP_USER_SUBSCRIPTION',		'Subscription');
 define('NDPHP_LANG_MOD_SEP_USER_PERSONAL',			'Personal');
 define('NDPHP_LANG_MOD_SEP_USER_REGISTER',			'Register');
 define('NDPHP_LANG_MOD_SEP_USER_CREDIT',			'Credit');
@@ -839,7 +759,6 @@ define('NDPHP_LANG_MOD_SEP_USER_ACCOUNTING',		'Accounting');
 define('NDPHP_LANG_MOD_SEP_USER_GENERIC',			'Generic');
 define('NDPHP_LANG_MOD_SEP_CONFIGURATION_PROJECT',	'Project');
 define('NDPHP_LANG_MOD_SEP_CONFIGURATION_FEATURES',	'Features');
-
 
 define('NDPHP_LANG_MOD_BUTTON_SEARCH',				'Search Button');
 
@@ -966,8 +885,6 @@ define('NDPHP_LANG_MOD_HELP_CONFIGURATION_SMTP_SSL',			'Enable SSL on SMTP commu
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_SMTP_TLS',			'Enable TLS on SMTP communications. Cannot be used along with SSL.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_MEMCACHED_SERVER',	'The Memcached server IP address or Host name.');
 define('NDPHP_LANG_MOD_HELP_CONFIGURATION_MEMCACHED_PORT',		'The remote Memcached server port.');
-define('NDPHP_LANG_MOD_HELP_CONFIGURATION_RECAPTCHA_PRIV_KEY',	'The private key of the reCAPTCHA service.');
-define('NDPHP_LANG_MOD_HELP_CONFIGURATION_RECAPTCHA_PUB_KEY',	'The public key of the reCAPTCHA service.');
 
 define('NDPHP_LANG_MOD_HELP_COUNTRIES_COUNTRY',					'The country name.');
 define('NDPHP_LANG_MOD_HELP_COUNTRIES_CODE',					'The country short code.');
@@ -984,15 +901,6 @@ define('NDPHP_LANG_MOD_HELP_CURRENCIES_RATE',					'The currency rate.');
 define('NDPHP_LANG_MOD_HELP_CURRENCIES_UPDATED',				'Last time the currency rate was updated.');
 define('NDPHP_LANG_MOD_HELP_CURRENCIES_DEFAULT',				'Whether this is the default currency.');
 
-define('NDPHP_LANG_MOD_HELP_DBMS_ALIAS',						'The alias for the database name. This is the value used by load routines.');
-define('NDPHP_LANG_MOD_HELP_DBMS_NAME',							'The real database name.');
-define('NDPHP_LANG_MOD_HELP_DBMS_HOST',							'The database server hostname or IP address. Defaults to 127.0.0.1.');
-define('NDPHP_LANG_MOD_HELP_DBMS_PORT',							'The remote database server port. Defaults to 3306.');
-define('NDPHP_LANG_MOD_HELP_DBMS_USERNAME',						'The database username.');
-define('NDPHP_LANG_MOD_HELP_DBMS_PASSWORD',						'The database password.');
-define('NDPHP_LANG_MOD_HELP_DBMS_CHARSET',						'The default database charset. Defaults to utf8.');
-define('NDPHP_LANG_MOD_HELP_DBMS_STRICT',						'Whether strict mode should be used.');
-
 define('NDPHP_LANG_MOD_HELP_DOCUMENTATION_REVISION',			'The documentation revision.');
 define('NDPHP_LANG_MOD_HELP_DOCUMENTATION_CHANGED',				'Last time the documentation was changed.');
 define('NDPHP_LANG_MOD_HELP_DOCUMENTATION_DESCRIPTION',			'The long description for this documentation entry.');
@@ -1001,10 +909,6 @@ define('NDPHP_LANG_MOD_HELP_FEATURES_FEATURE',					'The feature identifier. Must
 define('NDPHP_LANG_MOD_HELP_FEATURES_DESCRIPTION',				'The long description for this feature.');
 
 define('NDPHP_LANG_MOD_HELP_GENDERS_GENDER',					'The gender long name.');
-
-define('NDPHP_LANG_MOD_HELP_ITEMS_ITEM',						'The item short name.');
-define('NDPHP_LANG_MOD_HELP_ITEMS_DESCRIPTION',					'The long description for this item.');
-define('NDPHP_LANG_MOD_HELP_ITEMS_PRICE',						'The item price as a decimal value.');
 
 define('NDPHP_LANG_MOD_HELP_LOGGING_OPERATION',					'The operation type that generated this log entry.');
 define('NDPHP_LANG_MOD_HELP_LOGGING_TABLE',						'The table (or controller name) to which this log entry belongs.');
@@ -1020,56 +924,6 @@ define('NDPHP_LANG_MOD_HELP_LOGGING_USERS_ID',					'The user that generated this
 
 define('NDPHP_LANG_MOD_HELP_MONTHS_MONTH',						'The month of the year in alphanumeric format.');
 define('NDPHP_LANG_MOD_HELP_MONTHS_NUMBER',						'The month of the year in numeric format (1 to 12).');
-
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_NOTIFICATION',		'The notification title.');
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_DESCRIPTION',			'The long description of the notification.');
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_URL',					'An optional notification URL');
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_SEEN',				'True if this notification was seen by the user.');
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_ALL',					'Notify all users.');
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_WHEN',				'When this notification will take place. A future time value is advised. Using current or past time values will cause the notification to be automatically marked as seen.');
-define('NDPHP_LANG_MOD_HELP_NOTIFICATIONS_USERS_ID',			'The user to which this notification belongs.');
-
-define('NDPHP_LANG_MOD_HELP_PAYMENT_ACTIONS_PAYMENT_ACTION',	'Short name for the payment action.');
-define('NDPHP_LANG_MOD_HELP_PAYMENT_ACTIONS_DESCRIPTION',		'The long description for the payment action.');
-
-define('NDPHP_LANG_MOD_HELP_PAYMENT_STATUS_PAYMENT_STATUS',		'Short name for the payment status.');
-define('NDPHP_LANG_MOD_HELP_PAYMENT_STATUS_DESCRIPTION',		'The long description for the payment status.');
-
-define('NDPHP_LANG_MOD_HELP_PAYMENT_TYPES_PAYMENT_TYPE',		'Short name for the payment type.');
-define('NDPHP_LANG_MOD_HELP_PAYMENT_TYPES_TRANSACTION_FEE_PERCENTAGE',	'The percentual value that will be added to the payment net value, as transaction fee.');
-define('NDPHP_LANG_MOD_HELP_PAYMENT_TYPES_TRANSACTION_MIN_AMMOUNT',		'The minimum value acceptable to consider a transaction valid.');
-define('NDPHP_LANG_MOD_HELP_PAYMENT_TYPES_TRANSACTION_MAX_AMMOUNT',		'The maximum value acceptalbe to consider a transaction valid.');
-define('NDPHP_LANG_MOD_HELP_PAYMENT_TYPES_DESCRIPTION',			'The long description for the payment type.');
-
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_TXNID',					'The transaction unique identifier.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYMENT_TYPES_ID',			'The payment type.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_AMOUNT',					'The payment net amount.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_TAX_RATE',					'The base tax rate applied to the net amount.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYMENT_FEE',				'The fee associated to this payment.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_TOTAL_TAX',				'The sum of all taxes.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYMENT_STATUS_ID',		'The status for this payment.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_STATUS_DESC',				'The long description for the payment status.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_ITEMS_ID',					'The item associated to this payment.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_ITEM_PRICE',				'The unit price associated to the item.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_ITEM_QUANTITY',			'The quatity of items.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_ITEM_DESCRIPTION',			'The long description for the item.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_CREATED',					'When this payment entry was generated.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_UPDATED',					'The last time this payment entry was updated (payment status change).');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_USERS_ID',					'The user that generated this payment entry.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYMENT_ACTIONS_ID',		'The last payment action taken.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_EMAIL',				'Email address of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_FIRST_NAME',			'First real name of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_LAST_NAME',			'Last real name of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_NAME',		'Short name for the billing address of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_COUNTRY',	'Billing country of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_CITY',		'Billing city name of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_STREET',		'Billing street name of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_ZIP',		'Billing ZIP or Postcode of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_STATE',		'Billing state of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_ADDRESS_STATUS',		'Status of the billing address (Eg: Confirmed).');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_STATUS',				'Status of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_RESIDENCE_COUNTRY',	'Country for the main residence of the payer.');
-define('NDPHP_LANG_MOD_HELP_PAYMENTS_PAYER_PAYMENT_DATE',		'When the payer performed the payment.');
 
 define('NDPHP_LANG_MOD_HELP_ROLES_ROLE',						'Short name for the role. Must be capitablized.');
 define('NDPHP_LANG_MOD_HELP_ROLES_DESCRIPTION',					'The long description for the role.');
@@ -1093,11 +947,6 @@ define('NDPHP_LANG_MOD_HELP_SESSION_START_TIME',				'When this session come live
 define('NDPHP_LANG_MOD_HELP_SESSION_LAST_LOGIN',				'The last time someone logged in into this session.');
 define('NDPHP_LANG_MOD_HELP_SESSION_USERS_ID',					'The user associated to this session.');
 
-define('NDPHP_LANG_MOD_HELP_SUBSCRIPTION_TYPES_SUBSCRIPTION_TYPE',	'Short name for the subscription type.');
-define('NDPHP_LANG_MOD_HELP_SUBSCRIPTION_TYPES_DESCRIPTION',	'The long description for the subscription type.');
-define('NDPHP_LANG_MOD_HELP_SUBSCRIPTION_TYPES_PRICE',			'The periodic cost of this subscription type.');
-define('NDPHP_LANG_MOD_HELP_SUBSCRIPTION_TYPES_API_EXTENDED',	'Whether this subscription type gives access to extended API features.');
-
 define('NDPHP_LANG_MOD_HELP_THEMES_THEME',						'Short name for the theme.');
 define('NDPHP_LANG_MOD_HELP_THEMES_DESCRIPTION',				'The long description for the theme.');
 define('NDPHP_LANG_MOD_HELP_THEMES_ANIMATION_DEFAULT_DELAY',	'The client side delay for default animations.');
@@ -1117,15 +966,6 @@ define('NDPHP_LANG_MOD_HELP_TIMEZONES_UTC',						'The base UTC offset in hours. 
 define('NDPHP_LANG_MOD_HELP_TIMEZONES_UTC_DST',					'The Day Light Saving UTC offset in hours. Positive and negative values are accepted.');
 define('NDPHP_LANG_MOD_HELP_TIMEZONES_COORDINATES',				'The location coordinates to which this timezone refers to.');
 
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_HISTORY_TRANSACTION_DATE',	'When this transaction took place.');
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_HISTORY_TRANSACTION_TYPES_ID',	'The type of this transaction.');
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_HISTORY_AMOUNT',		'The transaction amount.');
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_HISTORY_DESCRIPTION',	'The long description for this transaction.');
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_HISTORY_USERS_ID',		'The user that performed this transaction.');
-
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_TYPES_TRANSACTION_TYPE',	'Short name for the transaction type.');
-define('NDPHP_LANG_MOD_HELP_TRANSACTION_TYPES_DESCRIPTION',		'The long description for the transaction type.');
-
 define('NDPHP_LANG_MOD_HELP_USERS_USERNAME',					'The username of the user. This is the value used for authentication. This value is not part of REST API authorization.');
 define('NDPHP_LANG_MOD_HELP_USERS_PASSWORD',					'The user passsword used for web authentication. This value is not part of REST API authorization.');
 define('NDPHP_LANG_MOD_HELP_USERS_FILE_PHOTO',					'The user avatar. File type and extension must be on of PNG, GIF, JPG, BMP or SVG');
@@ -1133,9 +973,6 @@ define('NDPHP_LANG_MOD_HELP_USERS_EMAIL',						'Primary email address of the use
 define('NDPHP_LANG_MOD_HELP_USERS_PHONE',						'Primary phone number of the user.');
 define('NDPHP_LANG_MOD_HELP_USERS_ACTIVE',						'When set to true, this user account is active.');
 define('NDPHP_LANG_MOD_HELP_USERS_LOCKED',						'When set to true, this user account is locked. The user won\'t be able to login even if the account is active.');
-define('NDPHP_LANG_MOD_HELP_USERS_SUBSCRIPTION_TYPES_ID',		'The user subscription.');
-define('NDPHP_LANG_MOD_HELP_USERS_SUBSCRIPTION_CHANGE_DATE',	'The last time the user changed his/her subscription.');
-define('NDPHP_LANG_MOD_HELP_USERS_SUBSCRIPTION_RENEW_DATE',		'The next time that user account will be billed for subscription renewal.');
 define('NDPHP_LANG_MOD_HELP_USERS_FIRST_NAME',					'First real name of the user.');
 define('NDPHP_LANG_MOD_HELP_USERS_LAST_NAME',					'Last real name of the user.');
 define('NDPHP_LANG_MOD_HELP_USERS_GENDERS_ID',					'The user\'s gender.');
@@ -1170,7 +1007,6 @@ define('NDPHP_LANG_MOD_HELP_USERS_ACCT_REST_VIEW',				'Counter for the number of
 define('NDPHP_LANG_MOD_HELP_USERS_ACCT_REST_DELETE',			'Counter for the number of DELETE operations performed via REST API.');
 define('NDPHP_LANG_MOD_HELP_USERS_ACCT_REST_UPDATE',			'Counter for the number of UPDATE operations performed via REST API.');
 define('NDPHP_LANG_MOD_HELP_USERS_ACCT_REST_INSERT',			'Counter for the number of INSERT operations performed via REST API.');
-define('NDPHP_LANG_MOD_HELP_USERS_DBMS_ID',						'When sharding features are enabled, this is the database where the user data will be fetched from and stored to.');
 
 define('NDPHP_LANG_MOD_HELP_WEEKDAYS_WEEKDAY',					'The weekday value in alphanumeric format.');
 define('NDPHP_LANG_MOD_HELP_WEEKDAYS_NUMBER',					'The weekday value in numeric format (1 is Sunday, 7 is Saturday).');

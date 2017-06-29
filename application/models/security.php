@@ -263,10 +263,6 @@ class UW_Security extends UW_Model {
 	}
 
 	public function perm_check($security_perms, $reqperm, $table, $column = NULL) {
-			/* Magic controller refers to a special temporary table, so it will always have full permissions */
-			if ($table == 'magic')
-				return true;
-
 	        /* Check if we're validating column or table permissions */
 	        if (!$column) {
 	                /* Validate table permissions */

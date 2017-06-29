@@ -196,9 +196,6 @@ class Configuration extends ND_Controller {
 		'_separator_memcached' => 'Memcached',
 		'memcached_server' => NDPHP_LANG_MOD_COMMON_MEMCACHED_SERVER,
 		'memcached_port' => NDPHP_LANG_MOD_COMMON_MEMCACHED_PORT,
-		'_separator_recaptcha' => 'reCAPTCHA',
-		'recaptcha_priv_key' => 'reCAPTCHA ' . NDPHP_LANG_MOD_COMMON_PRIV_KEY,
-		'recaptcha_pub_key' => 'reCAPTCHA ' . NDPHP_LANG_MOD_COMMON_PUB_KEY
 	);
 
 	protected $_rel_table_fields_config = array(

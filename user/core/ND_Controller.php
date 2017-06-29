@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04p1';
+	protected $_ndphp_version = '0.5a';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -3765,9 +3765,12 @@ class ND_Controller extends UW_Controller {
 
 				fwrite($csv_fp, $this->config['csv_delim'] . ucfirst(mb_convert_encoding($data['view']['fields'][$field]['viewname'], $this->config['csv_to_encoding'], $this->config['csv_from_encoding'])) . $this->config['csv_delim'] . $this->config['csv_sep']);
 			endforeach;
-			
+
+			/* Position over the last written char, which is a field separator, and it should be overwritten */
+			fseek($csv_fp, -1, SEEK_CUR);
+
 			/* Add new line for csv body */
-			fwrite($csv_fp, "\n");
+			fwrite($csv_fp, "\r\n");
 
 			/* Write field values */
 			foreach ($data['view']['result_array'] as $row):
@@ -3781,9 +3784,12 @@ class ND_Controller extends UW_Controller {
 						fwrite($csv_fp, $this->config['csv_delim'] . mb_convert_encoding($value, $this->config['csv_to_encoding'], $this->config['csv_from_encoding']) . $this->config['csv_delim'] . $this->config['csv_sep']);
 					}
 				endforeach;
-				
+
+				/* Position over the last written char, which is a field separator, and it should be overwritten */
+				fseek($csv_fp, -1, SEEK_CUR);
+
 				/* Add new line for next element */
-				fwrite($csv_fp, "\n");
+				fwrite($csv_fp, "\r\n");
 			endforeach;
 			
 			/* Close CSV file */

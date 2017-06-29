@@ -40,7 +40,7 @@ CREATE TABLE `_acl_rtcp` (
 
 LOCK TABLES `_acl_rtcp` WRITE;
 /*!40000 ALTER TABLE `_acl_rtcp` DISABLE KEYS */;
-INSERT INTO `_acl_rtcp` VALUES (4589,4,'countries','id','RS'),(4590,4,'countries','country','RS'),(4591,4,'payment_types','id','R'),(4592,4,'payment_types','payment_type','R'),(4593,4,'payments','id','RS'),(4594,4,'payments','payment_types_id','RS'),(4595,4,'payments','amount','RS'),(4596,4,'payments','tax_rate','RS'),(4597,4,'payments','total_tax','RS'),(4598,4,'payments','payment_status_id','RS'),(4599,4,'payments','items_id','RS'),(4600,4,'payments','item_price','RS'),(4601,4,'payments','item_quantity','RS'),(4602,4,'payments','item_description','RS'),(4604,4,'subscription_types','id','RS'),(4605,4,'subscription_types','subscription_type','RS'),(4606,4,'subscription_types','description','RS'),(4607,4,'transaction_history','id','RS'),(4608,4,'transaction_history','transaction_date','RS'),(4609,4,'transaction_history','transaction_types_id','RS'),(4610,4,'transaction_history','ammount','RS'),(4611,4,'transaction_history','description','RS'),(4612,4,'transaction_types','id','R'),(4613,4,'transaction_types','transaction_type','R'),(4614,4,'transaction_types','description','R'),(4615,4,'users','id','R'),(4616,4,'users','username','R'),(4617,4,'users','password','RU'),(4618,4,'users','timezones_id','RU'),(4619,4,'users','subscription_types_id','R'),(4620,4,'users','subscription_change_date','R'),(4621,4,'users','subscription_renew_date','R'),(4622,4,'users','email','R'),(4623,4,'users','phone','RU'),(4624,4,'users','company','RU'),(4625,4,'users','address_line1','RU'),(4626,4,'users','address_line2','RU'),(4627,4,'users','city','RU'),(4628,4,'users','postcode','RU'),(4629,4,'users','vat','RU'),(4630,4,'users','last_login','R'),(4631,4,'users','countries_id','RU'),(4632,4,'users','first_name','RU'),(4633,4,'users','last_name','RU'),(4634,4,'users','credit','R'),(4635,4,'users','apikey','R'),(13134,1,'builder','id','CRUS'),(13135,1,'builder','build','CRUS'),(13136,1,'builder','created','CRUS'),(13137,1,'charts_config','id','CRUS'),(13138,1,'charts_config','title','CRUS'),(13139,1,'charts_config','controller','CRUS'),(13140,1,'charts_config','charts_types_id','CRUS'),(13141,1,'charts_config','charts_geometry_id','CRUS'),(13142,1,'charts_config','fields','CRUS'),(13143,1,'charts_config','abscissa','CRUS'),(13144,1,'charts_config','foreign_table','CRUS'),(13145,1,'charts_config','field','CRUS'),(13146,1,'charts_config','field_legend','CRUS'),(13147,1,'charts_config','field_total','CRUS'),(13148,1,'charts_config','import_ctrl','CRUS'),(13149,1,'charts_config','chartid','CRUS'),(13150,1,'charts_config','field_ts','CRUS'),(13151,1,'charts_config','start_ts','CRUS'),(13152,1,'charts_config','end_ts','CRUS'),(13153,1,'charts_geometry','id','RS'),(13154,1,'charts_geometry','chart_geometry','RS'),(13155,1,'charts_geometry','description','RS'),(13156,1,'charts_types','id','RS'),(13157,1,'charts_types','chart_type','RS'),(13158,1,'charts_types','description','RS'),(13159,1,'configuration','id','CRUS'),(13160,1,'configuration','configuration','CRUS'),(13161,1,'configuration','base_url','CRUS'),(13162,1,'configuration','page_rows','CRUS'),(13163,1,'configuration','temporary_directory','CRUS'),(13164,1,'configuration','themes_id','CRUS'),(13165,1,'configuration','timezones_id','CRUS'),(13166,1,'configuration','roles_id','CRUS'),(13167,1,'configuration','maintenance','CRUS'),(13168,1,'configuration','active','CRUS'),(13169,1,'configuration','_separator_project','CRU'),(13170,1,'configuration','project_name','CRUS'),(13171,1,'configuration','project_version','CRUS'),(13172,1,'configuration','project_date','CRUS'),(13173,1,'configuration','tagline','CRUS'),(13174,1,'configuration','description','CRUS'),(13175,1,'configuration','author','CRUS'),(13176,1,'configuration','_separator_smtp','CRU'),(13177,1,'configuration','smtp_username','CRUS'),(13178,1,'configuration','smtp_password','CRUS'),(13179,1,'configuration','smtp_server','CRUS'),(13180,1,'configuration','smtp_port','CRUS'),(13181,1,'configuration','smtp_ssl','CRUS'),(13182,1,'configuration','smtp_tls','CRUS'),(13183,1,'configuration','_separator_memcached','CRU'),(13184,1,'configuration','memcached_server','CRUS'),(13185,1,'configuration','memcached_port','CRUS'),(13186,1,'configuration','_separator_recaptcha','CRU'),(13187,1,'configuration','recaptcha_priv_key','CRUS'),(13188,1,'configuration','recaptcha_pub_key','CRUS'),(13189,1,'configuration','rel_configuration_features','CRUS'),(13190,1,'countries','id','CRUS'),(13191,1,'countries','country','CRUS'),(13192,1,'countries','code','CRUS'),(13193,1,'countries','prefix','CRUS'),(13194,1,'countries','eu_state','CRUS'),(13195,1,'countries','vat_rate','CRUS'),(13196,1,'dbms','id','CRUS'),(13197,1,'dbms','alias','CRUS'),(13198,1,'dbms','name','CRUS'),(13199,1,'dbms','host','CRUS'),(13200,1,'dbms','port','CRUS'),(13201,1,'dbms','username','CRUS'),(13202,1,'dbms','password','CRUS'),(13203,1,'dbms','charset','CRUS'),(13204,1,'dbms','persistent','CRUS'),(13205,1,'dbms','strict','CRUS'),(13206,1,'documentation','id','RS'),(13207,1,'documentation','revision','RS'),(13208,1,'documentation','changed','RS'),(13209,1,'documentation','description','RS'),(13210,1,'features','id','CRUS'),(13211,1,'features','feature','CRUS'),(13212,1,'features','description','CRUS'),(13213,1,'features','rel_configuration_features','CRUS'),(13214,1,'items','id','CRUS'),(13215,1,'items','item','CRUS'),(13216,1,'items','description','CRUS'),(13217,1,'items','price','CRUS'),(13218,1,'logging','id','RS'),(13219,1,'logging','operation','RS'),(13220,1,'logging','_table','RS'),(13221,1,'logging','_field','RS'),(13222,1,'logging','entryid','RS'),(13223,1,'logging','value_old','RS'),(13224,1,'logging','value_new','RS'),(13225,1,'logging','transaction','RS'),(13226,1,'logging','registered','RS'),(13227,1,'logging','sessions_id','RS'),(13228,1,'logging','users_id','RS'),(13229,1,'months','id','RUS'),(13230,1,'months','month','RUS'),(13231,1,'months','number','RS'),(13232,1,'notifications','id','CRUS'),(13233,1,'notifications','notification','CRUS'),(13234,1,'notifications','description','CRUS'),(13235,1,'notifications','url','CRUS'),(13236,1,'notifications','seen','CRUS'),(13237,1,'notifications','all','CRUS'),(13238,1,'notifications','users_id','CRUS'),(13239,1,'payment_actions','id','CRUS'),(13240,1,'payment_actions','payment_action','CRUS'),(13241,1,'payment_actions','description','CRUS'),(13242,1,'payment_status','id','CRUS'),(13243,1,'payment_status','payment_status','CRUS'),(13244,1,'payment_status','description','CRUS'),(13245,1,'payment_types','id','CRUS'),(13246,1,'payment_types','payment_type','CRUS'),(13247,1,'payment_types','transaction_fee_percentage','CRUS'),(13248,1,'payment_types','transaction_fee_fixed','CRUS'),(13249,1,'payment_types','transaction_min_amount','CRUS'),(13250,1,'payment_types','transaction_max_amount','CRUS'),(13251,1,'payment_types','description','CRUS'),(13252,1,'payments','id','CRUS'),(13253,1,'payments','txnid','CRUS'),(13254,1,'payments','payment_types_id','CRUS'),(13255,1,'payments','amount','CRUS'),(13256,1,'payments','tax_rate','CRUS'),(13257,1,'payments','payment_fee','CRUS'),(13258,1,'payments','total_tax','CRUS'),(13259,1,'payments','payment_status_id','CRUS'),(13260,1,'payments','status_desc','CRUS'),(13261,1,'payments','items_id','CRUS'),(13262,1,'payments','item_price','CRUS'),(13263,1,'payments','item_quantity','CRUS'),(13264,1,'payments','item_description','CRUS'),(13265,1,'payments','created','CRUS'),(13266,1,'payments','updated','CRUS'),(13267,1,'payments','users_id','CRUS'),(13268,1,'payments','payment_actions_id','CRUS'),(13269,1,'payments','payer_email','CRUS'),(13270,1,'payments','payer_first_name','CRUS'),(13271,1,'payments','payer_last_name','CRUS'),(13272,1,'payments','payer_address_name','CRUS'),(13273,1,'payments','payer_address_country','CRUS'),(13274,1,'payments','payer_address_city','CRUS'),(13275,1,'payments','payer_address_street','CRUS'),(13276,1,'payments','payer_address_zip','CRUS'),(13277,1,'payments','payer_address_state','CRUS'),(13278,1,'payments','payer_address_status','CRUS'),(13279,1,'payments','payer_status','CRUS'),(13280,1,'payments','payer_residence_country','CRUS'),(13281,1,'payments','payer_payment_date','CRUS'),(13282,1,'roles','id','CRUS'),(13283,1,'roles','role','CRUS'),(13284,1,'roles','description','CRUS'),(13285,1,'roles','rel_users_roles','CRUS'),(13286,1,'scheduler','id','CRUS'),(13287,1,'scheduler','entry_name','CRUS'),(13288,1,'scheduler','description','CRUS'),(13289,1,'scheduler','url','CRUS'),(13290,1,'scheduler','period','CRUS'),(13291,1,'scheduler','active','CRUS'),(13292,1,'scheduler','registered','RS'),(13293,1,'scheduler','last_run','RS'),(13294,1,'scheduler','next_run','CRUS'),(13295,1,'scheduler','output','RS'),(13296,1,'sessions','id','RS'),(13297,1,'sessions','session','RS'),(13298,1,'sessions','ip_address','RS'),(13299,1,'sessions','user_agent','RS'),(13300,1,'sessions','start_time','RS'),(13301,1,'sessions','last_login','RS'),(13302,1,'sessions','users_id','RS'),(13303,1,'subscription_types','id','CRUS'),(13304,1,'subscription_types','subscription_type','CRUS'),(13305,1,'subscription_types','description','CRUS'),(13306,1,'subscription_types','price','CRUS'),(13307,1,'subscription_types','api_extended','CRUS'),(13308,1,'themes','id','CRUS'),(13309,1,'themes','theme','CRUS'),(13310,1,'themes','description','CRUS'),(13311,1,'themes','animation_default_delay','CRUS'),(13312,1,'themes','animation_ordering_delay','CRUS'),(13313,1,'themes','themes_animations_default_id','CRUS'),(13314,1,'themes','themes_animations_ordering_id','CRUS'),(13315,1,'themes_animations_default','id','CRUS'),(13316,1,'themes_animations_default','animation','CRUS'),(13317,1,'themes_animations_default','description','CRUS'),(13318,1,'themes_animations_ordering','id','CRUS'),(13319,1,'themes_animations_ordering','animation','CRUS'),(13320,1,'themes_animations_ordering','description','CRUS'),(13321,1,'timezones','id','CRUS'),(13322,1,'timezones','timezone','CRUS'),(13323,1,'timezones','countries_id','CRUS'),(13324,1,'timezones','utc','CRUS'),(13325,1,'timezones','utc_dst','CRUS'),(13326,1,'timezones','coordinates','CRUS'),(13327,1,'transaction_history','id','CRUS'),(13328,1,'transaction_history','transaction_date','CRUS'),(13329,1,'transaction_history','transaction_types_id','CRUS'),(13330,1,'transaction_history','ammount','CRUS'),(13331,1,'transaction_history','description','CRUS'),(13332,1,'transaction_history','users_id','CRUS'),(13333,1,'transaction_types','id','CRUS'),(13334,1,'transaction_types','transaction_type','CRUS'),(13335,1,'transaction_types','description','CRUS'),(13336,1,'users','id','CRUS'),(13337,1,'users','username','CRUS'),(13338,1,'users','password','CRUS'),(13339,1,'users','_file_photo','CRU'),(13340,1,'users','email','CRUS'),(13341,1,'users','phone','CRUS'),(13342,1,'users','active','CRUS'),(13343,1,'users','locked','CRUS'),(13344,1,'users','_separator_subscription','CRU'),(13345,1,'users','subscription_types_id','CRUS'),(13346,1,'users','subscription_change_date','CRUS'),(13347,1,'users','subscription_renew_date','CRUS'),(13348,1,'users','_separator_personal','CRU'),(13349,1,'users','first_name','CRUS'),(13350,1,'users','last_name','CRUS'),(13351,1,'users','countries_id','CRUS'),(13352,1,'users','timezones_id','CRUS'),(13353,1,'users','company','CRUS'),(13354,1,'users','address_line1','CRUS'),(13355,1,'users','address_line2','CRUS'),(13356,1,'users','city','CRUS'),(13357,1,'users','postcode','CRUS'),(13358,1,'users','vat','CRUS'),(13359,1,'users','_separator_register','CRU'),(13360,1,'users','expire','CRUS'),(13361,1,'users','registered','CRUS'),(13362,1,'users','last_login','CRUS'),(13363,1,'users','confirm_email_hash','CRUS'),(13364,1,'users','confirm_phone_token','CRUS'),(13365,1,'users','email_confirmed','CRUS'),(13366,1,'users','phone_confirmed','CRUS'),(13367,1,'users','date_confirmed','CRUS'),(13368,1,'users','_separator_credit','CRU'),(13369,1,'users','credit','CRUS'),(13370,1,'users','allow_negative','CRUS'),(13371,1,'users','_separator_api','CRU'),(13372,1,'users','apikey','CRUS'),(13373,1,'users','_separator_accounting','R'),(13374,1,'users','acct_last_reset','R'),(13375,1,'users','acct_rest_list','R'),(13376,1,'users','acct_rest_result','R'),(13377,1,'users','acct_rest_view','R'),(13378,1,'users','acct_rest_delete','R'),(13379,1,'users','acct_rest_update','R'),(13380,1,'users','acct_rest_insert','R'),(13381,1,'users','_separator_sharding','CRU'),(13382,1,'users','dbms_id','CRUS'),(13383,1,'users','rel_users_roles','CRUS'),(13384,1,'weekdays','id','RUS'),(13385,1,'weekdays','weekday','RUS'),(13386,1,'weekdays','number','RS'),(13387,1,'configuration','support_email','CRUS'),(13388,1,'currencies','id','CRUS'),(13389,1,'currencies','currency','CRUS'),(13390,1,'currencies','code','CRUS'),(13391,1,'currencies','sign','CRUS'),(13392,1,'currencies','sign_position','CRUS'),(13393,1,'currencies','rate','CRUS'),(13394,1,'currencies','updated','CRUS'),(13395,1,'currencies','default','CRUS'),(13396,1,'genders','id','RUS'),(13397,1,'genders','gender','RUS'),(13398,1,'users','currencies_id','CRUS'),(13399,1,'users','genders_id','CRUS'),(13400,1,'users','birthdate','CRUS'),(13401,1,'users','brand','CRUS'),(13402,1,'users','website','CRUS'),(13403,1,'users','about','CRUS'),(13404,1,'countries','currencies_id','CRUS'),(13405,1,'users','_separator_generic','CRU'),(13406,1,'users','generic_counter_1','CRUS'),(13407,1,'users','generic_counter_2','CRUS'),(13408,1,'users','generic_counter_3','CRUS'),(13409,1,'users','generic_counter_4','CRUS'),(13410,1,'users','generic_text_1','CRUS'),(13411,1,'users','generic_text_2','CRUS'),(13412,1,'users','generic_text_3','CRUS'),(13413,1,'users','generic_text_4','CRUS'),(13414,1,'users','generic_datetime_1','CRUS'),(13415,1,'users','generic_datetime_2','CRUS'),(13416,1,'users','generic_datetime_3','CRUS'),(13417,1,'users','generic_datetime_4','CRUS'),(13418,1,'codes','id','CRUS'),(13419,1,'codes','code','CRUS'),(13420,1,'codes','remaining','CRUS'),(13421,1,'codes','valid_from','CRUS'),(13422,1,'codes','valid_to','CRUS'),(13423,1,'codes','roles_id','CRUS'),(13424,1,'codes_types','id','CRUS'),(13425,1,'codes_types','code_type','CRUS'),(13426,1,'codes_types','description','CRUS'),(13427,1,'codes_types','codes_types_id','CRUS'),(13428,1,'notifications','when','CRUS'),(13429,1,'users','registration_code','CRUS'),(13430,1,'users','registration_code_status','CRUS'),(13431,1,'roles','is_admin','CRUS'),(13432,1,'roles','is_superuser','CRUS'),(13433,4,'users','registered','CRUS'),(13434,1,'users','generic_string_1','CRUS'),(13435,1,'users','generic_string_2','CRUS'),(13436,1,'users','generic_string_3','CRUS'),(13437,1,'users','generic_string_4','CRUS'),(13438,4,'users','generic_string_1','CRUS'),(13439,4,'users','generic_string_2','CRUS'),(13440,4,'users','generic_string_3','CRUS'),(13441,4,'users','generic_string_4','CRUS'),(13442,1,'users','generic_boolean_1','CRUS'),(13443,1,'users','generic_boolean_2','CRUS'),(13444,1,'users','generic_boolean_3','CRUS'),(13445,1,'users','generic_boolean_4','CRUS'),(13446,4,'users','generic_boolean_1','CRUS'),(13447,4,'users','generic_boolean_2','CRUS'),(13448,4,'users','generic_boolean_3','CRUS'),(13449,4,'users','generic_boolean_4','CRUS');
+INSERT INTO `_acl_rtcp` VALUES (4589,4,'countries','id','RS'),(4590,4,'countries','country','RS'),(4591,4,'payment_types','id','R'),(4592,4,'payment_types','payment_type','R'),(4593,4,'payments','id','RS'),(4594,4,'payments','payment_types_id','RS'),(4595,4,'payments','amount','RS'),(4596,4,'payments','tax_rate','RS'),(4597,4,'payments','total_tax','RS'),(4598,4,'payments','payment_status_id','RS'),(4599,4,'payments','items_id','RS'),(4600,4,'payments','item_price','RS'),(4601,4,'payments','item_quantity','RS'),(4602,4,'payments','item_description','RS'),(4604,4,'subscription_types','id','RS'),(4605,4,'subscription_types','subscription_type','RS'),(4606,4,'subscription_types','description','RS'),(4607,4,'transaction_history','id','RS'),(4608,4,'transaction_history','transaction_date','RS'),(4609,4,'transaction_history','transaction_types_id','RS'),(4610,4,'transaction_history','ammount','RS'),(4611,4,'transaction_history','description','RS'),(4612,4,'transaction_types','id','R'),(4613,4,'transaction_types','transaction_type','R'),(4614,4,'transaction_types','description','R'),(4615,4,'users','id','R'),(4616,4,'users','username','R'),(4617,4,'users','password','RU'),(4618,4,'users','timezones_id','RU'),(4619,4,'users','subscription_types_id','R'),(4620,4,'users','subscription_change_date','R'),(4621,4,'users','subscription_renew_date','R'),(4622,4,'users','email','R'),(4623,4,'users','phone','RU'),(4624,4,'users','company','RU'),(4625,4,'users','address_line1','RU'),(4626,4,'users','address_line2','RU'),(4627,4,'users','city','RU'),(4628,4,'users','postcode','RU'),(4629,4,'users','vat','RU'),(4630,4,'users','last_login','R'),(4631,4,'users','countries_id','RU'),(4632,4,'users','first_name','RU'),(4633,4,'users','last_name','RU'),(4634,4,'users','credit','R'),(4635,4,'users','apikey','R'),(13134,1,'builder','id','CRUS'),(13135,1,'builder','build','CRUS'),(13136,1,'builder','created','CRUS'),(13137,1,'charts_config','id','CRUS'),(13138,1,'charts_config','title','CRUS'),(13139,1,'charts_config','controller','CRUS'),(13140,1,'charts_config','charts_types_id','CRUS'),(13141,1,'charts_config','charts_geometry_id','CRUS'),(13142,1,'charts_config','fields','CRUS'),(13143,1,'charts_config','abscissa','CRUS'),(13144,1,'charts_config','foreign_table','CRUS'),(13145,1,'charts_config','field','CRUS'),(13146,1,'charts_config','field_legend','CRUS'),(13147,1,'charts_config','field_total','CRUS'),(13148,1,'charts_config','import_ctrl','CRUS'),(13149,1,'charts_config','chartid','CRUS'),(13150,1,'charts_config','field_ts','CRUS'),(13151,1,'charts_config','start_ts','CRUS'),(13152,1,'charts_config','end_ts','CRUS'),(13153,1,'charts_geometry','id','RS'),(13154,1,'charts_geometry','chart_geometry','RS'),(13155,1,'charts_geometry','description','RS'),(13156,1,'charts_types','id','RS'),(13157,1,'charts_types','chart_type','RS'),(13158,1,'charts_types','description','RS'),(13159,1,'configuration','id','CRUS'),(13160,1,'configuration','configuration','CRUS'),(13161,1,'configuration','base_url','CRUS'),(13162,1,'configuration','page_rows','CRUS'),(13163,1,'configuration','temporary_directory','CRUS'),(13164,1,'configuration','themes_id','CRUS'),(13165,1,'configuration','timezones_id','CRUS'),(13166,1,'configuration','roles_id','CRUS'),(13167,1,'configuration','maintenance','CRUS'),(13168,1,'configuration','active','CRUS'),(13169,1,'configuration','_separator_project','CRU'),(13170,1,'configuration','project_name','CRUS'),(13171,1,'configuration','project_version','CRUS'),(13172,1,'configuration','project_date','CRUS'),(13173,1,'configuration','tagline','CRUS'),(13174,1,'configuration','description','CRUS'),(13175,1,'configuration','author','CRUS'),(13176,1,'configuration','_separator_smtp','CRU'),(13177,1,'configuration','smtp_username','CRUS'),(13178,1,'configuration','smtp_password','CRUS'),(13179,1,'configuration','smtp_server','CRUS'),(13180,1,'configuration','smtp_port','CRUS'),(13181,1,'configuration','smtp_ssl','CRUS'),(13182,1,'configuration','smtp_tls','CRUS'),(13183,1,'configuration','_separator_memcached','CRU'),(13184,1,'configuration','memcached_server','CRUS'),(13185,1,'configuration','memcached_port','CRUS'),(13189,1,'configuration','rel_configuration_features','CRUS'),(13190,1,'countries','id','CRUS'),(13191,1,'countries','country','CRUS'),(13192,1,'countries','code','CRUS'),(13193,1,'countries','prefix','CRUS'),(13194,1,'countries','eu_state','CRUS'),(13195,1,'countries','vat_rate','CRUS'),(13206,1,'documentation','id','RS'),(13207,1,'documentation','revision','RS'),(13208,1,'documentation','changed','RS'),(13209,1,'documentation','description','RS'),(13210,1,'features','id','CRUS'),(13211,1,'features','feature','CRUS'),(13212,1,'features','description','CRUS'),(13213,1,'features','rel_configuration_features','CRUS'),(13218,1,'logging','id','RS'),(13219,1,'logging','operation','RS'),(13220,1,'logging','_table','RS'),(13221,1,'logging','_field','RS'),(13222,1,'logging','entryid','RS'),(13223,1,'logging','value_old','RS'),(13224,1,'logging','value_new','RS'),(13225,1,'logging','transaction','RS'),(13226,1,'logging','registered','RS'),(13227,1,'logging','sessions_id','RS'),(13228,1,'logging','users_id','RS'),(13229,1,'months','id','RUS'),(13230,1,'months','month','RUS'),(13231,1,'months','number','RS'),(13282,1,'roles','id','CRUS'),(13283,1,'roles','role','CRUS'),(13284,1,'roles','description','CRUS'),(13285,1,'roles','rel_users_roles','CRUS'),(13286,1,'scheduler','id','CRUS'),(13287,1,'scheduler','entry_name','CRUS'),(13288,1,'scheduler','description','CRUS'),(13289,1,'scheduler','url','CRUS'),(13290,1,'scheduler','period','CRUS'),(13291,1,'scheduler','active','CRUS'),(13292,1,'scheduler','registered','RS'),(13293,1,'scheduler','last_run','RS'),(13294,1,'scheduler','next_run','CRUS'),(13295,1,'scheduler','output','RS'),(13296,1,'sessions','id','RS'),(13297,1,'sessions','session','RS'),(13298,1,'sessions','ip_address','RS'),(13299,1,'sessions','user_agent','RS'),(13300,1,'sessions','start_time','RS'),(13301,1,'sessions','last_login','RS'),(13302,1,'sessions','users_id','RS'),(13308,1,'themes','id','CRUS'),(13309,1,'themes','theme','CRUS'),(13310,1,'themes','description','CRUS'),(13311,1,'themes','animation_default_delay','CRUS'),(13312,1,'themes','animation_ordering_delay','CRUS'),(13313,1,'themes','themes_animations_default_id','CRUS'),(13314,1,'themes','themes_animations_ordering_id','CRUS'),(13315,1,'themes_animations_default','id','CRUS'),(13316,1,'themes_animations_default','animation','CRUS'),(13317,1,'themes_animations_default','description','CRUS'),(13318,1,'themes_animations_ordering','id','CRUS'),(13319,1,'themes_animations_ordering','animation','CRUS'),(13320,1,'themes_animations_ordering','description','CRUS'),(13321,1,'timezones','id','CRUS'),(13322,1,'timezones','timezone','CRUS'),(13323,1,'timezones','countries_id','CRUS'),(13324,1,'timezones','utc','CRUS'),(13325,1,'timezones','utc_dst','CRUS'),(13326,1,'timezones','coordinates','CRUS'),(13336,1,'users','id','CRUS'),(13337,1,'users','username','CRUS'),(13338,1,'users','password','CRUS'),(13339,1,'users','_file_photo','CRU'),(13340,1,'users','email','CRUS'),(13341,1,'users','phone','CRUS'),(13342,1,'users','active','CRUS'),(13343,1,'users','locked','CRUS'),(13348,1,'users','_separator_personal','CRU'),(13349,1,'users','first_name','CRUS'),(13350,1,'users','last_name','CRUS'),(13351,1,'users','countries_id','CRUS'),(13352,1,'users','timezones_id','CRUS'),(13353,1,'users','company','CRUS'),(13354,1,'users','address_line1','CRUS'),(13355,1,'users','address_line2','CRUS'),(13356,1,'users','city','CRUS'),(13357,1,'users','postcode','CRUS'),(13358,1,'users','vat','CRUS'),(13359,1,'users','_separator_register','CRU'),(13360,1,'users','expire','CRUS'),(13361,1,'users','registered','CRUS'),(13362,1,'users','last_login','CRUS'),(13363,1,'users','confirm_email_hash','CRUS'),(13364,1,'users','confirm_phone_token','CRUS'),(13365,1,'users','email_confirmed','CRUS'),(13366,1,'users','phone_confirmed','CRUS'),(13367,1,'users','date_confirmed','CRUS'),(13368,1,'users','_separator_credit','CRU'),(13369,1,'users','credit','CRUS'),(13370,1,'users','allow_negative','CRUS'),(13371,1,'users','_separator_api','CRU'),(13372,1,'users','apikey','CRUS'),(13373,1,'users','_separator_accounting','R'),(13374,1,'users','acct_last_reset','R'),(13375,1,'users','acct_rest_list','R'),(13376,1,'users','acct_rest_result','R'),(13377,1,'users','acct_rest_view','R'),(13378,1,'users','acct_rest_delete','R'),(13379,1,'users','acct_rest_update','R'),(13380,1,'users','acct_rest_insert','R'),(13381,1,'users','_separator_sharding','CRU'),(13382,1,'users','dbms_id','CRUS'),(13383,1,'users','rel_users_roles','CRUS'),(13384,1,'weekdays','id','RUS'),(13385,1,'weekdays','weekday','RUS'),(13386,1,'weekdays','number','RS'),(13387,1,'configuration','support_email','CRUS'),(13388,1,'currencies','id','CRUS'),(13389,1,'currencies','currency','CRUS'),(13390,1,'currencies','code','CRUS'),(13391,1,'currencies','sign','CRUS'),(13392,1,'currencies','sign_position','CRUS'),(13393,1,'currencies','rate','CRUS'),(13394,1,'currencies','updated','CRUS'),(13395,1,'currencies','default','CRUS'),(13396,1,'genders','id','RUS'),(13397,1,'genders','gender','RUS'),(13398,1,'users','currencies_id','CRUS'),(13399,1,'users','genders_id','CRUS'),(13400,1,'users','birthdate','CRUS'),(13401,1,'users','brand','CRUS'),(13402,1,'users','website','CRUS'),(13403,1,'users','about','CRUS'),(13404,1,'countries','currencies_id','CRUS'),(13405,1,'users','_separator_generic','CRU'),(13406,1,'users','generic_counter_1','CRUS'),(13407,1,'users','generic_counter_2','CRUS'),(13408,1,'users','generic_counter_3','CRUS'),(13409,1,'users','generic_counter_4','CRUS'),(13410,1,'users','generic_text_1','CRUS'),(13411,1,'users','generic_text_2','CRUS'),(13412,1,'users','generic_text_3','CRUS'),(13413,1,'users','generic_text_4','CRUS'),(13414,1,'users','generic_datetime_1','CRUS'),(13415,1,'users','generic_datetime_2','CRUS'),(13416,1,'users','generic_datetime_3','CRUS'),(13417,1,'users','generic_datetime_4','CRUS'),(13418,1,'codes','id','CRUS'),(13419,1,'codes','code','CRUS'),(13420,1,'codes','remaining','CRUS'),(13421,1,'codes','valid_from','CRUS'),(13422,1,'codes','valid_to','CRUS'),(13423,1,'codes','roles_id','CRUS'),(13424,1,'codes_types','id','CRUS'),(13425,1,'codes_types','code_type','CRUS'),(13426,1,'codes_types','description','CRUS'),(13427,1,'codes_types','codes_types_id','CRUS'),(13428,1,'notifications','when','CRUS'),(13429,1,'users','registration_code','CRUS'),(13430,1,'users','registration_code_status','CRUS'),(13431,1,'roles','is_admin','CRUS'),(13432,1,'roles','is_superuser','CRUS'),(13433,4,'users','registered','CRUS'),(13434,1,'users','generic_string_1','CRUS'),(13435,1,'users','generic_string_2','CRUS'),(13436,1,'users','generic_string_3','CRUS'),(13437,1,'users','generic_string_4','CRUS'),(13438,4,'users','generic_string_1','CRUS'),(13439,4,'users','generic_string_2','CRUS'),(13440,4,'users','generic_string_3','CRUS'),(13441,4,'users','generic_string_4','CRUS'),(13442,1,'users','generic_boolean_1','CRUS'),(13443,1,'users','generic_boolean_2','CRUS'),(13444,1,'users','generic_boolean_3','CRUS'),(13445,1,'users','generic_boolean_4','CRUS'),(13446,4,'users','generic_boolean_1','CRUS'),(13447,4,'users','generic_boolean_2','CRUS'),(13448,4,'users','generic_boolean_3','CRUS'),(13449,4,'users','generic_boolean_4','CRUS');
 /*!40000 ALTER TABLE `_acl_rtcp` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -68,7 +68,7 @@ CREATE TABLE `_acl_rtp` (
 
 LOCK TABLES `_acl_rtp` WRITE;
 /*!40000 ALTER TABLE `_acl_rtp` DISABLE KEYS */;
-INSERT INTO `_acl_rtp` VALUES (1049,4,'countries','R'),(1050,4,'payment_types','R'),(1051,4,'payments','R'),(1053,4,'subscription_types','R'),(1054,4,'transaction_history','R'),(1055,4,'transaction_types','R'),(1057,4,'users','RU'),(2884,1,'builder','CRUD'),(2885,1,'charts_config','CRUD'),(2886,1,'charts_geometry','R'),(2887,1,'charts_types','R'),(2888,1,'configuration','CRUD'),(2889,1,'countries','CRUD'),(2890,1,'dbms','CRUD'),(2891,1,'documentation','R'),(2892,1,'features','CRU'),(2893,1,'items','CRUD'),(2894,1,'logging','R'),(2895,1,'months','RU'),(2896,1,'notifications','CRUD'),(2897,1,'payment_actions','CRUD'),(2898,1,'payment_status','CRUD'),(2899,1,'payment_types','CRUD'),(2900,1,'payments','CRUD'),(2901,1,'roles','CRUD'),(2902,1,'scheduler','CRUD'),(2903,1,'sessions','R'),(2904,1,'subscription_types','CRUD'),(2905,1,'themes','CRUD'),(2906,1,'themes_animations_default','CRU'),(2907,1,'themes_animations_ordering','CRU'),(2908,1,'timezones','CRUD'),(2909,1,'transaction_history','CRUD'),(2910,1,'transaction_types','CRUD'),(2911,1,'users','CRUD'),(2912,1,'weekdays','RU'),(2913,1,'currencies','CRUD'),(2914,1,'genders','RU'),(2915,1,'codes','CRUD'),(2916,1,'codes_types','CRUD');
+INSERT INTO `_acl_rtp` VALUES (1049,4,'countries','R'),(1057,4,'users','RU'),(2884,1,'builder','CRUD'),(2885,1,'charts_config','CRUD'),(2886,1,'charts_geometry','R'),(2887,1,'charts_types','R'),(2888,1,'configuration','CRUD'),(2889,1,'countries','CRUD'),(2891,1,'documentation','R'),(2892,1,'features','CRU'),(2894,1,'logging','R'),(2895,1,'months','RU'),(2901,1,'roles','CRUD'),(2902,1,'scheduler','CRUD'),(2903,1,'sessions','R'),(2905,1,'themes','CRUD'),(2906,1,'themes_animations_default','CRU'),(2907,1,'themes_animations_ordering','CRU'),(2908,1,'timezones','CRUD'),(2911,1,'users','CRUD'),(2912,1,'weekdays','RU'),(2913,1,'currencies','CRUD'),(2914,1,'genders','RU'),(2915,1,'codes','CRUD'),(2916,1,'codes_types','CRUD');
 /*!40000 ALTER TABLE `_acl_rtp` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -343,10 +343,7 @@ CREATE TABLE `configuration` (
   `smtp_tls` tinyint(1) NOT NULL DEFAULT '0',
   `_separator_memcached` tinyint(1) DEFAULT NULL,
   `memcached_server` varchar(255) NOT NULL DEFAULT '127.0.0.1',
-  `memcached_port` int(11) NOT NULL DEFAULT '11211',
-  `_separator_recaptcha` tinyint(1) DEFAULT NULL,
-  `recaptcha_priv_key` varchar(256) DEFAULT NULL,
-  `recaptcha_pub_key` varchar(256) DEFAULT NULL,
+  `memcached_port` int(11) NOT NULL DEFAULT '11211'
   PRIMARY KEY (`id`),
   KEY `timezones_id` (`timezones_id`),
   KEY `themes_id` (`themes_id`),
@@ -432,39 +429,6 @@ INSERT INTO `currencies` VALUES (1,'United States Dollar','USD','$','L',1.000000
 UNLOCK TABLES;
 
 --
--- Table structure for table `dbms`
---
-
-DROP TABLE IF EXISTS `dbms`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `dbms` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `alias` varchar(64) NOT NULL,
-  `name` varchar(64) NOT NULL,
-  `host` varchar(255) NOT NULL DEFAULT '127.0.0.1',
-  `port` int(11) NOT NULL DEFAULT '3306',
-  `username` varchar(128) NOT NULL,
-  `password` varchar(128) NOT NULL,
-  `charset` varchar(32) DEFAULT 'utf8',
-  `persistent` tinyint(1) DEFAULT '1',
-  `strict` tinyint(1) DEFAULT '1',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `alias` (`alias`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `dbms`
---
-
-LOCK TABLES `dbms` WRITE;
-/*!40000 ALTER TABLE `dbms` DISABLE KEYS */;
-INSERT INTO `dbms` VALUES (1,'default','ndphp','127.0.0.1',3306,'ndphp_username','ndphp_password','utf8',1,1);
-/*!40000 ALTER TABLE `dbms` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `documentation`
 --
 
@@ -512,7 +476,7 @@ CREATE TABLE `features` (
 
 LOCK TABLES `features` WRITE;
 /*!40000 ALTER TABLE `features` DISABLE KEYS */;
-INSERT INTO `features` VALUES (1,'FEATURE_ACCESSIBILITY','Enable accessibility support.'),(2,'FEATURE_MULTI_USER','Multi-user support.'),(3,'FEATURE_USER_SUBSCRIPTIONS','Enable user subscription types.'),(4,'FEATURE_USER_CREDIT','Enable user credit control.'),(5,'FEATURE_USER_NOTIFICATIONS','Enable user notifications support.'),(6,'FEATURE_USER_REGISTRATION','Enable user registration support.'),(7,'FEATURE_USER_RECOVERY','Enable user credential recovery support.'),(8,'FEATURE_REGISTER_CONFIRM_VAT_EU','Confirm EU VAT on user registration.'),(9,'FEATURE_REGISTER_RECAPTCHA','Enable reCAPTCHA support on user registration.'),(10,'FEATURE_REGISTER_CONFIRM_EMAIL','Confirm email address on user registration (sends a confirmation email).'),(11,'FEATURE_REGISTER_CONFIRM_PHONE','Confirm the phone number on user registration (sends a confirmation sms).'),(12,'FEATURE_SYSTEM_MEMCACHED','Enable support for memcached.'),(13,'FEATURE_SYSTEM_SHARDING','Enable database sharding support.');
+INSERT INTO `features` VALUES (1,'FEATURE_ACCESSIBILITY','Enable accessibility support.'),(2,'FEATURE_MULTI_USER','Multi-user support.'),(4,'FEATURE_USER_CREDIT','Enable user credit control.'),(6,'FEATURE_USER_REGISTRATION','Enable user registration support.'),(7,'FEATURE_USER_RECOVERY','Enable user credential recovery support.'),(12,'FEATURE_SYSTEM_MEMCACHED','Enable support for memcached.');
 /*!40000 ALTER TABLE `features` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -539,32 +503,6 @@ LOCK TABLES `genders` WRITE;
 /*!40000 ALTER TABLE `genders` DISABLE KEYS */;
 INSERT INTO `genders` VALUES (1,'Female'),(2,'Male'),(3,'Unspecified');
 /*!40000 ALTER TABLE `genders` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `items`
---
-
-DROP TABLE IF EXISTS `items`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `items` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `item` varchar(30) NOT NULL,
-  `description` varchar(60) NOT NULL,
-  `price` decimal(7,4) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `items`
---
-
-LOCK TABLES `items` WRITE;
-/*!40000 ALTER TABLE `items` DISABLE KEYS */;
-INSERT INTO `items` VALUES (1,'Paypal Credit','Paypal Credit',1.0000);
-/*!40000 ALTER TABLE `items` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -654,176 +592,6 @@ LOCK TABLES `months` WRITE;
 /*!40000 ALTER TABLE `months` DISABLE KEYS */;
 INSERT INTO `months` VALUES (1,'January',1),(2,'February',2),(3,'March',3),(4,'April',4),(5,'May',5),(6,'June',6),(7,'July',7),(8,'August',8),(9,'September',9),(10,'October',10),(11,'November',11),(12,'December',12);
 /*!40000 ALTER TABLE `months` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `months`
---
-
-DROP TABLE IF EXISTS `notifications`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `notifications` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `notification` varchar(255) NOT NULL,
-  `description` varchar(512) NOT NULL,
-  `url` varchar(2048) DEFAULT NULL,
-  `seen` tinyint(1) DEFAULT '0',
-  `all` tinyint(1) DEFAULT '0',
-  `when` datetime NOT NULL,
-  `users_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `users_id` (`users_id`),
-  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `notifications`
---
-
-LOCK TABLES `notifications` WRITE;
-/*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
-/*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `payment_actions`
---
-
-DROP TABLE IF EXISTS `payment_actions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `payment_actions` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `payment_action` varchar(16) NOT NULL,
-  `description` varchar(128) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `payment_actions`
---
-
-LOCK TABLES `payment_actions` WRITE;
-/*!40000 ALTER TABLE `payment_actions` DISABLE KEYS */;
-INSERT INTO `payment_actions` VALUES (1,'Pending','Post-payment action pending'),(2,'Processed','Post-payment action processed'),(3,'Failed','Post-payment action failed');
-/*!40000 ALTER TABLE `payment_actions` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `payment_status`
---
-
-DROP TABLE IF EXISTS `payment_status`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `payment_status` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `payment_status` varchar(16) NOT NULL,
-  `description` varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `payment_status`
---
-
-LOCK TABLES `payment_status` WRITE;
-/*!40000 ALTER TABLE `payment_status` DISABLE KEYS */;
-INSERT INTO `payment_status` VALUES (1,'Pending','Payment pending'),(2,'Success','Payment successful'),(3,'Failed','Payment failed'),(4,'Fraudulent','Fraudulent payment'),(5,'Invalid','Invalid payment');
-/*!40000 ALTER TABLE `payment_status` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `payment_types`
---
-
-DROP TABLE IF EXISTS `payment_types`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `payment_types` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `payment_type` varchar(32) NOT NULL,
-  `transaction_fee_percentage` decimal(10,6) NOT NULL DEFAULT '0.000000',
-  `transaction_fee_fixed` decimal(10,6) NOT NULL DEFAULT '0.000000',
-  `transaction_min_amount` decimal(10,6) NOT NULL DEFAULT '10.000000',
-  `transaction_max_amount` decimal(10,6) NOT NULL DEFAULT '0.000000',
-  `description` varchar(128) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `payment_type` (`payment_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `payment_types`
---
-
-LOCK TABLES `payment_types` WRITE;
-/*!40000 ALTER TABLE `payment_types` DISABLE KEYS */;
-INSERT INTO `payment_types` VALUES (1,'Paypal',3.400000,0.350000,10.000000,2500.000000,'Paypal Payment');
-/*!40000 ALTER TABLE `payment_types` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `payments`
---
-
-DROP TABLE IF EXISTS `payments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `payments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `txnid` varchar(20) NOT NULL,
-  `payment_types_id` int(11) NOT NULL,
-  `amount` decimal(10,6) NOT NULL,
-  `tax_rate` decimal(10,6) DEFAULT '0.000000',
-  `payment_fee` decimal(10,6) DEFAULT '0.000000',
-  `total_tax` decimal(10,6) DEFAULT '0.000000',
-  `payment_status_id` int(11) NOT NULL DEFAULT '1',
-  `status_desc` varchar(30) DEFAULT NULL,
-  `items_id` int(11) NOT NULL,
-  `item_price` decimal(10,6) DEFAULT '0.000000',
-  `item_quantity` int(11) NOT NULL DEFAULT '1',
-  `item_description` varchar(60) DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `updated` datetime DEFAULT NULL,
-  `users_id` int(11) NOT NULL,
-  `payment_actions_id` int(11) NOT NULL DEFAULT '1',
-  `payer_email` varchar(256) DEFAULT NULL,
-  `payer_first_name` varchar(64) DEFAULT NULL,
-  `payer_last_name` varchar(64) DEFAULT NULL,
-  `payer_address_name` varchar(128) DEFAULT NULL,
-  `payer_address_country` varchar(32) DEFAULT NULL,
-  `payer_address_city` varchar(64) DEFAULT NULL,
-  `payer_address_street` varchar(256) DEFAULT NULL,
-  `payer_address_zip` varchar(32) DEFAULT NULL,
-  `payer_address_state` varchar(32) DEFAULT NULL,
-  `payer_address_status` varchar(16) DEFAULT NULL,
-  `payer_status` varchar(16) DEFAULT NULL,
-  `payer_residence_country` varchar(32) DEFAULT NULL,
-  `payer_payment_date` varchar(32) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `payment_types_id` (`payment_types_id`),
-  KEY `payment_status_id` (`payment_status_id`),
-  KEY `payment_actions_id` (`payment_actions_id`),
-  KEY `users_id` (`users_id`),
-  CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`payment_types_id`) REFERENCES `payment_types` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`payment_status_id`) REFERENCES `payment_status` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `payments_ibfk_3` FOREIGN KEY (`payment_actions_id`) REFERENCES `payment_actions` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `payments_ibfk_4` FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `payments`
---
-
-LOCK TABLES `payments` WRITE;
-/*!40000 ALTER TABLE `payments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `payments` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -976,33 +744,6 @@ INSERT INTO `sessions` VALUES (0,'REST','-','-','2016-01-01 00:00:00','2016-01-0
 UNLOCK TABLES;
 
 --
--- Table structure for table `subscription_types`
---
-
-DROP TABLE IF EXISTS `subscription_types`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `subscription_types` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `subscription_type` varchar(16) NOT NULL,
-  `description` varchar(1024) DEFAULT NULL,
-  `price` decimal(10,6) NOT NULL,
-  `api_extended` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `subscription_types`
---
-
-LOCK TABLES `subscription_types` WRITE;
-/*!40000 ALTER TABLE `subscription_types` DISABLE KEYS */;
-INSERT INTO `subscription_types` VALUES (1,'Standard','The Standard Subscription Plan - Free',0.000000,0),(2,'Plus','The Plus Subscription Plan - From 9.90 EUR/month',9.000000,0),(3,'Business','The Business Subscription Plan - From 29.90 EUR/month',29.000000,1),(4,'Enterprise','The Enterprise Subscription Plan - From 99.90 EUR/month',99.000000,1);
-/*!40000 ALTER TABLE `subscription_types` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `themes`
 --
 
@@ -1114,62 +855,6 @@ INSERT INTO `timezones` VALUES (1,'Africa/Abidjan',80,'+00:00','+00:00','+0519-0
 UNLOCK TABLES;
 
 --
--- Table structure for table `transaction_history`
---
-
-DROP TABLE IF EXISTS `transaction_history`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `transaction_history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `transaction_date` datetime NOT NULL,
-  `transaction_types_id` int(11) NOT NULL DEFAULT '1',
-  `ammount` decimal(10,6) NOT NULL DEFAULT '1000.000000',
-  `description` varchar(64) NOT NULL,
-  `users_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `transaction_types_id` (`transaction_types_id`),
-  KEY `users_id` (`users_id`),
-  CONSTRAINT `transaction_history_ibfk_1` FOREIGN KEY (`transaction_types_id`) REFERENCES `transaction_types` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `transaction_history_ibfk_2` FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `transaction_history`
---
-
-LOCK TABLES `transaction_history` WRITE;
-/*!40000 ALTER TABLE `transaction_history` DISABLE KEYS */;
-/*!40000 ALTER TABLE `transaction_history` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `transaction_types`
---
-
-DROP TABLE IF EXISTS `transaction_types`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `transaction_types` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `transaction_type` varchar(32) NOT NULL,
-  `description` varchar(128) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `transaction_types`
---
-
-LOCK TABLES `transaction_types` WRITE;
-/*!40000 ALTER TABLE `transaction_types` DISABLE KEYS */;
-INSERT INTO `transaction_types` VALUES (1,'Debit','The transaction was a debit'),(2,'Credit','The transaction was a credit');
-/*!40000 ALTER TABLE `transaction_types` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `users`
 --
 
@@ -1185,10 +870,6 @@ CREATE TABLE `users` (
   `phone` varchar(16) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '0',
   `locked` tinyint(1) NOT NULL DEFAULT '1',
-  `_separator_subscription` tinyint(1) DEFAULT NULL,
-  `subscription_types_id` int(11) NOT NULL DEFAULT '1',
-  `subscription_change_date` datetime DEFAULT NULL,
-  `subscription_renew_date` date DEFAULT NULL,
   `_separator_personal` tinyint(1) DEFAULT NULL,
   `first_name` varchar(32) DEFAULT NULL,
   `last_name` varchar(32) DEFAULT NULL,
@@ -1228,8 +909,6 @@ CREATE TABLE `users` (
   `acct_rest_delete` int(11) DEFAULT '0',
   `acct_rest_update` int(11) DEFAULT '0',
   `acct_rest_insert` int(11) DEFAULT '0',
-  `_separator_sharding` tinyint(1) DEFAULT NULL,
-  `dbms_id` int(11) NOT NULL DEFAULT '1',
   `_separator_generic` tinyint(1) DEFAULT NULL,
   `generic_counter_1` int(11) DEFAULT '0',
   `generic_counter_2` int(11) DEFAULT '0',
@@ -1259,18 +938,14 @@ CREATE TABLE `users` (
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `phone` (`phone`),
-  KEY `subscription_types_id` (`subscription_types_id`),
   KEY `genders_id` (`genders_id`),
   KEY `countries_id` (`countries_id`),
   KEY `currencies_id` (`currencies_id`),
   KEY `timezones_id` (`timezones_id`),
-  KEY `dbms_id` (`dbms_id`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`subscription_types_id`) REFERENCES `subscription_types` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `users_ibfk_2` FOREIGN KEY (`genders_id`) REFERENCES `genders` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `users_ibfk_3` FOREIGN KEY (`countries_id`) REFERENCES `countries` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `users_ibfk_4` FOREIGN KEY (`currencies_id`) REFERENCES `currencies` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `users_ibfk_5` FOREIGN KEY (`timezones_id`) REFERENCES `timezones` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `users_ibfk_6` FOREIGN KEY (`dbms_id`) REFERENCES `dbms` (`id`) ON DELETE CASCADE
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`genders_id`) REFERENCES `genders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `users_ibfk_2` FOREIGN KEY (`countries_id`) REFERENCES `countries` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `users_ibfk_3` FOREIGN KEY (`currencies_id`) REFERENCES `currencies` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `users_ibfk_4` FOREIGN KEY (`timezones_id`) REFERENCES `timezones` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

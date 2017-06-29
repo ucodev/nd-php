@@ -434,9 +434,6 @@ class Users extends ND_Controller {
 		'phone' => NDPHP_LANG_MOD_COMMON_PHONE,
 		'active' => NDPHP_LANG_MOD_COMMON_ACTIVE,
 		'locked' => NDPHP_LANG_MOD_COMMON_LOCKED,
-		'_separator_subscription' => NDPHP_LANG_MOD_SEP_USER_SUBSCRIPTION,
-		'subscription_change_date' => NDPHP_LANG_MOD_COMMON_SUBSCR_CHANGE_DATE,
-		'subscription_renew_date' => NDPHP_LANG_MOD_COMMON_SUBSCR_RENEW_DATE,
 		'_separator_personal' => NDPHP_LANG_MOD_SEP_USER_PERSONAL,
 		'first_name' => NDPHP_LANG_MOD_COMMON_FIRST_NAME,
 		'last_name' => NDPHP_LANG_MOD_COMMON_LAST_NAME,
@@ -494,7 +491,6 @@ class Users extends ND_Controller {
 		'genders' => array(NDPHP_LANG_MOD_COMMON_GENDER, NULL, array(1), array('id', 'asc'), NULL),
 		'countries' => array(NDPHP_LANG_MOD_COMMON_COUNTRY, NULL, array(1), array('id', 'asc'), NULL),
 		'currencies' => array(NDPHP_LANG_MOD_COMMON_CURRENCY, NULL, array(1), array('id', 'asc'), NULL),
-		'dbms' => array(NDPHP_LANG_MOD_COMMON_DATABASE_ALIAS, NULL, array(1), array('id', 'asc'), NULL),
 		'roles' => array(NDPHP_LANG_MOD_SEP_USER_ROLES, NULL, array(1), array('id', 'asc'), NULL)
 	);
 
@@ -505,18 +501,6 @@ class Users extends ND_Controller {
 			unset($data['view']['fields']['_separator_credit']);
 			unset($data['view']['fields']['credit']);
 			unset($data['view']['fields']['allow_negative']);
-		}
-
-		if (!$data['config']['features']['user_subscription_types']) {
-			unset($data['view']['fields']['_separator_subscription']);
-			unset($data['view']['fields']['subscription_types_id']);
-			unset($data['view']['fields']['subscription_change_date']);
-			unset($data['view']['fields']['subscription_renew_date']);
-		}
-
-		if (!$data['config']['features']['system_sharding']) {
-			unset($data['view']['fields']['_separator_sharding']);
-			unset($data['view']['fields']['dbms_id']);
 		}
 	}
 

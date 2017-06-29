@@ -1,3 +1,9 @@
+v0.5a (2017-06-29):
+
+ - Major cleanup and small fixes around.
+ - Updated tracker.
+
+
 v0.04p1 (2017-06-29):
 
  - Minor improvements all on IDE Builder.
