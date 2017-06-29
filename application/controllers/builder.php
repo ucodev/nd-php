@@ -224,11 +224,7 @@ class Builder extends ND_Controller {
 	}
 
 	public function commit_controllers() {
-		global $config;
-
-		/* Check if we are a slave node */
-		if (!isset($config['base']['type']) || ($config['base']['type'] != 'slave'))
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE, $this->config['default_charset'], !$this->request->is_ajax());
+		/* Both master and slave nodes can recreate their controllers */
 
 		/* Read JSON data */
 		$json_raw = file_get_contents('php://input');

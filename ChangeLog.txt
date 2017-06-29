@@ -1,3 +1,8 @@
+v0.04p1 (2017-06-29):
+
+ - Minor improvements all on IDE Builder.
+
+
 v0.04p (2017-06-29):
 
  - Base URL settings are no longer retrieved from configuration controller.

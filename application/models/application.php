@@ -2414,17 +2414,12 @@ class UW_Application extends UW_Model {
 	public function apply_acls($app_model = NULL) {
 		/* Pre-process application model, validating and computing required information before processing changes */
 		if ($this->_pre_process_model($app_model) !== true) {
-			error_log('deploy_controllers(): _pre_process_model(): Failed.');
+			error_log('apply_acls(): _pre_process_model(): Failed.');
 			return false;
 		}
 
-		/* Pre-compute some data */
-		$this->_app_compute_pre($app_model);
-
 		/* Process each available menu */
 		foreach ($app_model['menus'] as $menu) {
-
-
 			/* Recreate ACLs */
 			if (!$this->_process_menu_acl_recreate($menu)) {
 				error_log('apply_acls(): _process_menu_acl_recreate(\'' . $menu['name'] . '\'): Failed.');
