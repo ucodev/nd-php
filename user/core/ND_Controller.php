@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a2';
+	protected $_ndphp_version = '0.5a3';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1080,12 +1080,11 @@ class ND_Controller extends UW_Controller {
 				 */
 
 				/* Query the database */
-				$this->db->select('users.id AS user_id,users.username AS username,users.first_name AS first_name,users.email AS email,users.privenckey AS privenckey, rel_users_roles.roles_id AS roles_id,timezones.timezone AS timezone,dbms.alias AS default_database,roles.is_superuser,roles.is_admin');
+				$this->db->select('users.id AS user_id,users.username AS username,users.first_name AS first_name,users.email AS email,users.privenckey AS privenckey, rel_users_roles.roles_id AS roles_id,timezones.timezone AS timezone,roles.is_superuser,roles.is_admin');
 				$this->db->from('users');
 				$this->db->join('rel_users_roles', 'rel_users_roles.users_id = users.id', 'left');
 				$this->db->join('roles', 'rel_users_roles.roles_id = roles.id', 'left');
 				$this->db->join('timezones', 'users.timezones_id = timezones.id', 'left');
-				$this->db->join('dbms', 'users.dbms_id = dbms.id', 'left');
 				$this->db->where('users.id', $json_req['_userid']);
 				$this->db->where('users.apikey', $json_req['_apikey']);
 
@@ -1133,7 +1132,7 @@ class ND_Controller extends UW_Controller {
 						'first_name' => $row['first_name'],
 						'photo' => NULL,
 						'timezone' => $row['timezone'],
-						'database' => $row['default_database'],
+						'database' => $this->_default_database,
 						'roles' => $user_roles,
 						'is_admin' => $user_admin,
 						'is_superuser' => $user_superuser,
@@ -1228,7 +1227,6 @@ class ND_Controller extends UW_Controller {
 
 
 		/* Set default database */
-		$this->_default_database = $this->_session_data['database'];
 		$this->load->database($this->_default_database);
 
 		/* Set default locale (in the format xx_XX.CHARSET (eg: en_US.UTF-8) */

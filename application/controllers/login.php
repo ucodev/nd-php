@@ -231,17 +231,6 @@ class Login extends UW_Controller {
 		/* Get user database */
 		$database = $this->_default_database;
 
-		$this->db->select('dbms.alias AS default_database');
-		$this->db->from('users');
-		$this->db->join('dbms', 'users.dbms_id = dbms.id', 'left');
-		$this->db->where('users.id', $user_id);
-		$query = $this->db->get();
-
-		if ($query->num_rows()) {
-			$dbdata = $query->row_array();
-			$database = $dbdata['default_database'];
-		}
-
 		/* Get user private key if the authentication was password based */
 		if ($plain_password !== NULL) {
 			$this->db->select('privenckey');

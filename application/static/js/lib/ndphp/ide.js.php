@@ -105,7 +105,6 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         case 'configuration':
         case 'countries':
         case 'currencies':
-        case 'dbms':
         case 'documentation':
         case 'features':
         case 'files':
@@ -113,19 +112,10 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         case 'home':
         case 'install':
         case 'genders':
-        case 'items':
         case 'logging':
         case 'login':
-        case 'magic':
         case 'model_objects':
         case 'months':
-        case 'notifications':
-        case 'payment_actions':
-        case 'payment_status':
-        case 'payment_types':
-        case 'payments':
-        case 'paypal':
-        case 'paypal_ipn':
         case 'register':
         case 'roles':
         case 'saved_searches':
@@ -136,8 +126,6 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         case 'themes_animations_default':
         case 'themes_animations_ordering':
         case 'timezones':
-        case 'transaction_history':
-        case 'transaction_types':
         case 'update':
         case 'weekdays':
         case 'users': alert('Reserved menu name used on menu "' + menu['title'] + '/' + menu['name'] + '"'); return false;
