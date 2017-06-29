@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -691,7 +691,7 @@ ndphp.ide.dialog_show = function(obj, type) {
     });
 };
 
-ndphp.ide.build = function(check, save, build) {
+ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls) {
     var application = {};
     var validated = true; /* Assume model as valid... This may be changed during validation checks... */
 
@@ -981,19 +981,57 @@ ndphp.ide.build = function(check, save, build) {
                 alert(xhr.responseText);
             }
         });
+    } else if (commit_ctrls == true) {
+        /* Convert application object to JSON and submit it to application builder */
+        jQuery.ajax({
+            type: "POST",
+            data: JSON.stringify(application),
+            url:  "<?=base_url()?>index.php/builder/commit_controllers",
+            success: function(data) {
+                ndphp.ui.ready();
+                alert(data);
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                ndphp.ui.ready();
+                alert(xhr.responseText);
+            }
+        });
+    } else if (apply_acls == true) {
+        /* Convert application object to JSON and submit it to application builder */
+        jQuery.ajax({
+            type: "POST",
+            data: JSON.stringify(application),
+            url:  "<?=base_url()?>index.php/builder/apply_acls",
+            success: function(data) {
+                ndphp.ui.ready();
+                alert(data);
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                ndphp.ui.ready();
+                alert(xhr.responseText);
+            }
+        });
     } else {
         alert('Requested operation is invalid.');
     }
 };
 
 ndphp.ide.save = function() {
-    ndphp.ide.build(true /* check */, true /* save */, false /* build */);
+    ndphp.ide.build(true /* check */, true /* save */, false /* build */, false /* commit_ctrls */, false /* apply_acls */);
 }
 
 ndphp.ide.check = function() {
-    ndphp.ide.build(true /* check */, false /* save */, false /* build */);
+    ndphp.ide.build(true /* check */, false /* save */, false /* build */, false /* commit_ctrls */, false /* apply_acls */);
 };
 
 ndphp.ide.deploy = function() {
-    ndphp.ide.build(true /* check */, true /* save */, true /* build */);
+    ndphp.ide.build(true /* check */, true /* save */, true /* build */, false /* commit_ctrls */, false /* apply_acls */);
+}
+
+ndphp.ide.commit_ctrls = function() {
+    ndphp.ide.build(false /* check */, false /* save */, false /* build */, true /* commit_ctrls */, false /* apply_acls */);
+}
+
+ndphp.ide.apply_acls = function() {
+    ndphp.ide.build(false /* check */, false /* save */, false /* build */, false /* commit_ctrls */, true /* apply_acls */);
 }

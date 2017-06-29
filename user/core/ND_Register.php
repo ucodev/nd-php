@@ -127,7 +127,7 @@ class ND_Register extends UW_Controller {
 		/* Load configuration */
 		$config = $this->configuration->get();
 
-		$this->_base_url = $config['base_url'];
+		$this->_base_url = base_url();
 		$this->_author = $config['author'];
 		$this->_project_name = $config['project_name'];
 		$this->_tagline = $config['tagline'];
@@ -140,9 +140,9 @@ class ND_Register extends UW_Controller {
 		if ($config['maintenance'] && !$this->security->im_admin())
 			$this->response->code('503', NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE, $this->_charset, !$this->request->is_ajax());
 
-		$this->nd_app_base_url = $config['base_url'];
-		$this->nd_mail_confirm_url = $config['base_url'] . '/index.php/register/confirm_email_hash/';
-		$this->nd_sms_confirm_url = $config['base_url'] . '/index.php/register/confirm_sms_form/';
+		$this->nd_app_base_url = base_url();
+		$this->nd_mail_confirm_url = base_url() . '/index.php/register/confirm_email_hash/';
+		$this->nd_sms_confirm_url = base_url() . '/index.php/register/confirm_sms_form/';
 
 		$this->nd_mail_smtp_user = $config['smtp_username'];
 		$this->nd_mail_smtp_pass = $config['smtp_password'];

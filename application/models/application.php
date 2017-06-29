@@ -1986,7 +1986,7 @@ class UW_Application extends UW_Model {
 	}
 
 	private function _process_menus($menus) {
-		/* Remove deleted objects */
+		/* Process each available menu */
 		foreach ($menus as $menu) {
 			/* If the menu object exists, process changes */
 			if ($this->_object_exists($menu['obj_id'])) {
@@ -2013,22 +2013,27 @@ class UW_Application extends UW_Model {
 				error_log('_process_menus(): _process_menu_type_conversions(\'' . $menu['name'] . '\'): Failed.');
 			}
 
-			/* Always recreate the help data, acl and controllers */
+			/** Always recreate the help data, acl and controllers **/
+
+			/* Recreate help data */
 			if (!$this->_process_menu_help_recreate($menu)) {
 				error_log('_process_menus(): _process_menu_help_recreate(\'' . $menu['name'] . '\'): Failed.');
 				return false;
 			}
 
+			/* Recreate ACLs */
 			if (!$this->_process_menu_acl_recreate($menu)) {
 				error_log('_process_menus(): _process_menu_acl_recreate(\'' . $menu['name'] . '\'): Failed.');
 				return false;
 			}
 
+			/* Recreate controllers */
 			if (!$this->_process_menu_controller_recreate($menu)) {
 				error_log('_process_menus(): _process_menu_controller_recreate(\'' . $menu['name'] . '\'): Failed.');
 				return false;
 			}
 
+			/* Recreate icons */
 			if (!$this->_process_menu_icon_recreate($menu)) {
 				error_log('_process_menus(): _process_menu_icon_recreate(\'' . $menu['name'] . '\'): Failed.');
 				return false;
@@ -2294,13 +2299,13 @@ class UW_Application extends UW_Model {
 
 		/* No model, no fun :() */
 		if ($app_model === NULL) {
-			error_log('process_model(): $application_model is NULL');
+			error_log('deploy_model(): $application_model is NULL');
 			return false;
 		}
 
 		/* Pre-process application model, validating and computing required information before processing changes */
 		if ($this->_pre_process_model($app_model) !== true) {
-			error_log('process_model(): _pre_process_model(): Failed.');
+			error_log('deploy_model(): _pre_process_model(): Failed.');
 			return false;
 		}
 
@@ -2369,5 +2374,65 @@ class UW_Application extends UW_Model {
 		/* TODO: Create the application model based on database structure and controller data */
 
 		return $model;
+	}
+
+	public function commit_controllers($app_model = NULL) {
+		/* Pre-process application model, validating and computing required information before processing changes */
+		if ($this->_pre_process_model($app_model) !== true) {
+			error_log('deploy_controllers(): _pre_process_model(): Failed.');
+			return false;
+		}
+
+		/* Pre-compute some data */
+		$this->_app_compute_pre($app_model);
+
+		/* Process each available menu */
+		foreach ($app_model['menus'] as $menu) {
+			/* Recreate help data */
+			if (!$this->_process_menu_help_recreate($menu)) {
+				error_log('deploy_controllers(): _process_menu_help_recreate(\'' . $menu['name'] . '\'): Failed.');
+				return false;
+			}
+
+			/* Recreate controllers */
+			if (!$this->_process_menu_controller_recreate($menu)) {
+				error_log('deploy_controllers(): _process_menu_controller_recreate(\'' . $menu['name'] . '\'): Failed.');
+				return false;
+			}
+
+			/* Recreate icons */
+			if (!$this->_process_menu_icon_recreate($menu)) {
+				error_log('deploy_controllers(): _process_menu_icon_recreate(\'' . $menu['name'] . '\'): Failed.');
+				return false;
+			}
+		}
+
+		/* All good */
+		return $app_model;
+	}
+
+	public function apply_acls($app_model = NULL) {
+		/* Pre-process application model, validating and computing required information before processing changes */
+		if ($this->_pre_process_model($app_model) !== true) {
+			error_log('deploy_controllers(): _pre_process_model(): Failed.');
+			return false;
+		}
+
+		/* Pre-compute some data */
+		$this->_app_compute_pre($app_model);
+
+		/* Process each available menu */
+		foreach ($app_model['menus'] as $menu) {
+
+
+			/* Recreate ACLs */
+			if (!$this->_process_menu_acl_recreate($menu)) {
+				error_log('apply_acls(): _process_menu_acl_recreate(\'' . $menu['name'] . '\'): Failed.');
+				return false;
+			}
+		}
+
+		/* All good */
+		return $app_model;
 	}
 }

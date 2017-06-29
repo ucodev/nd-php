@@ -434,6 +434,9 @@
 				<input type="button" class="button_action" onClick="ndphp.ide.check();" value="Check" />
 				<input type="button" class="button_action" onClick="ndphp.ide.save();" value="Save" />
 				<input type="button" class="button_action" onClick="ndphp.ide.deploy();" value="Deploy" />
+				&nbsp;
+				<input type="button" class="button_action" onClick="ndphp.ide.commit_ctrls();" value="Commit CTRLs" />
+				<input type="button" class="button_action" onClick="ndphp.ide.apply_acls();" value="Apply ACLs" />
 			</div>
 		</fieldset>
 	</div>

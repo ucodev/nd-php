@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class UW_Configuration extends UW_Model {
 		}
 
 		/* Fetch the current configuration from database */
-		$this->db->select('base_url,support_email,themes.theme AS theme,' .
+		$this->db->select('support_email,themes.theme AS theme,' .
 			'project_name,tagline,configuration.description,author,' .
 			'timezones.timezone AS timezone,page_rows,' .
 			'temporary_directory,smtp_username,smtp_password,' .

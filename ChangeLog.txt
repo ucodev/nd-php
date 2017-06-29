@@ -1,3 +1,12 @@
+v0.04p (2017-06-29):
+
+ - Base URL settings are no longer retrieved from configuration controller.
+ - Cookie Domain segments are now correctly evaluated.
+ - IDE Builder now supports Commit Controllers and Apply ACLs operations.
+ - Added support for nd-php master/slave nodes.
+ - Updated language file.
+
+
 v0.04o2 (2017-06-25):
 
  - Fixed value mangling issues with REST JSON listing requests.

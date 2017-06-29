@@ -84,12 +84,14 @@ class Builder extends ND_Controller {
 	/** Custom functions **/
 
 	public function ide() {
+		global $config;
+
 		/* Fetch all available roles */
 		$this->db->select('role');
 		$this->db->from('roles');
 		$query = $this->db->get();
 
-		$data = $this->get->view_data_generic('ND PHP Framework - Builder IDE', 'Builder IDE');
+		$data = $this->get->view_data_generic('ND PHP Framework - Builder IDE (' . $config['base']['type'] . ')', 'Builder IDE (' . $config['base']['type'] . ')');
 
 		/* Setup view data: Load available menu icons */
 		$data['view']['menu_icons'] = array();
@@ -121,6 +123,12 @@ class Builder extends ND_Controller {
 	}
 
 	public function save_model() {
+		global $config;
+
+		/* Check if we are a master node */
+		if (!isset($config['base']['type']) || ($config['base']['type'] != 'master'))
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_MASTER, $this->config['default_charset'], !$this->request->is_ajax());
+
 		/* Read JSON data */
 		$json_raw = file_get_contents('php://input');
 
@@ -141,10 +149,16 @@ class Builder extends ND_Controller {
 			$this->db->trans_commit();
 		}
 
-		$this->response->output('Saved.');
+		$this->response->output(ucfirst(NDPHP_LANG_MOD_WORD_SAVED));
 	}
 
 	public function deploy_model() {
+		global $config;
+
+		/* Check if we are a master node */
+		if (!isset($config['base']['type']) || ($config['base']['type'] != 'master'))
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_MASTER, $this->config['default_charset'], !$this->request->is_ajax());
+
 		/* Read JSON data */
 		$json_raw = file_get_contents('php://input');
 
@@ -207,6 +221,92 @@ class Builder extends ND_Controller {
 
 		/* XXX: Debug */
 		$this->response->output(ucfirst(NDPHP_LANG_MOD_WORD_BUILD) . ' ' . $build_current . ' ' . NDPHP_LANG_MOD_SUCCESS_DEPLOY_ON . ' ' . date('Y-m-d H:i:s') . '.');
+	}
+
+	public function commit_controllers() {
+		global $config;
+
+		/* Check if we are a slave node */
+		if (!isset($config['base']['type']) || ($config['base']['type'] != 'slave'))
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Read JSON data */
+		$json_raw = file_get_contents('php://input');
+
+		if (($application = json_decode($json_raw, true)) === NULL)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Clear cache if it is active */
+		if ($this->cache->is_active())
+			$this->cache->flush();
+
+		/* Process the application model, but only deploy the controllers (no database changes will be performed) */
+		if ($this->application->commit_controllers($application) === false)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_COMMIT_CONTROLLERS, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Re-clear cache if it is active (just to make sure) */
+		if ($this->cache->is_active())
+			$this->cache->flush();
+
+		/* Retrieve build number */
+		$this->db->select('build');
+		$this->db->from('builder');
+		$this->db->order_by('build', 'desc');
+		$this->db->limit(1);
+		$q = $this->db->get();
+
+		/* Check if there are any builds present */
+		if (!$q->num_rows())
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_GET_CURRENT_BUILD, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Store current build data */
+		$build_current = $q->row_array()['build'];
+
+		/* All good */
+		$this->response->output(NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED . $build_current, $this->config['default_charset'], !$this->request->is_ajax());
+	}
+
+	public function apply_acls() {
+		global $config;
+
+		/* Check if we are a master node */
+		if (!isset($config['base']['type']) || ($config['base']['type'] != 'master'))
+			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_MASTER, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Read JSON data */
+		$json_raw = file_get_contents('php://input');
+
+		if (($application = json_decode($json_raw, true)) === NULL)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_DECODE_DATA_JSON, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Clear cache if it is active */
+		if ($this->cache->is_active())
+			$this->cache->flush();
+
+		/* Process the application model, but only apply ACLs (no data model will be modified nor controllers updated) */
+		if ($this->application->apply_acls($application) === false)
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_APPLY_ACLS, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Re-clear cache if it is active (just to make sure) */
+		if ($this->cache->is_active())
+			$this->cache->flush();
+
+		/* Retrieve build number */
+		$this->db->select('build');
+		$this->db->from('builder');
+		$this->db->order_by('build', 'desc');
+		$this->db->limit(1);
+		$q = $this->db->get();
+
+		/* Check if there are any builds present */
+		if (!$q->num_rows())
+			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_GET_CURRENT_BUILD, $this->config['default_charset'], !$this->request->is_ajax());
+
+		/* Store current build data */
+		$build_current = $q->row_array()['build'];
+
+		/* All good */
+		$this->response->output(NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED . $build_current, $this->config['default_charset'], !$this->request->is_ajax());
 	}
 
 	public function view_model($mode = 'output') {

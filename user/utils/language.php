@@ -41,6 +41,8 @@ define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		'Account is expired.');
 define('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL',	'Your account email is not valid.');
 define('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM',	'Either the requested file does not exist or access to the file was denied.');
 define('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE',	'Either the requested search does not exist or there are no permissions to delete it.');
+define('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER',         'Only master nodes can perform this operation.');
+define('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE',          'Only slave nodes can perform this operation.');
 
 define('NDPHP_LANG_MOD_ACTION_FORWARD',				'Forward');
 define('NDPHP_LANG_MOD_ACTION_REFRESH',				'Refresh');
@@ -217,6 +219,8 @@ define('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE',		'I\'ve read and accept the');
 define('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE',		'System is up to date.');
 define('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE',	'Installation already complete.');
 define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',		'Entry not found.');
+define('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED',    'Controllers were deployed. Build: ');
+define('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED',      'ACLs applied. Build: ');
 
 define('NDPHP_LANG_MOD_LINK_ADD_FUNDS',				'Add funds');
 define('NDPHP_LANG_MOD_LINK_HOME',					'Home');
@@ -382,6 +386,9 @@ define('NDPHP_LANG_MOD_UNABLE_CREATE_IMG_RES_FILE', 'Unable to create image reso
 define('NDPHP_LANG_MOD_UNABLE_SCALE_IMG_RES',       'Unable to scale image resource.');
 define('NDPHP_LANG_MOD_UNABLE_STORE_RESIZED_IMG_FILE','Unable to store a temporary resized image file.');
 define('NDPHP_LANG_MOD_UNABLE_PARSE_DATETIME_VALUE',  'Unable to parse datetime value: ');
+define('NDPHP_LANG_MOD_UNABLE_GET_CURRENT_BUILD',   'Unable to retrieve current build information.');
+define('NDPHP_LANG_MOD_UNABLE_APPLY_ACLS',          'Unable to apply ACLs.');
+define('NDPHP_LANG_MOD_UNABLE_COMMIT_CONTROLLERS',  'Unable to commit controllers.');
 
 define('NDPHP_LANG_MOD_UNSUPPORTED_RESULT_NO_ID',	'Currently there is no support for results without Id field. Please enable the Id field in the results section and try again.');
 define('NDPHP_LANG_MOD_UNSUPPORTED_EXPORT_VIEW_CSV','CSV export on views is currently unsupported.');
@@ -411,6 +418,7 @@ define('NDPHP_LANG_MOD_WORD_COLUMN',				'column'); /* row column */
 define('NDPHP_LANG_MOD_WORD_MONTH',					'month'); /* every month */
 define('NDPHP_LANG_MOD_WORD_SELECT',				'select'); /* select from a select box */
 define('NDPHP_LANG_MOD_WORD_RECOVER',				'recover'); /* recover credentials */
+define('NDPHP_LANG_MOD_WORD_SAVED',                 'saved');
 
 define('NDPHP_LANG_MOD_CONJ_AND_THE',				'and the');
 define('NDPHP_LANG_MOD_CONJ_OR_THE',				'or the');

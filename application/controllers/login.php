@@ -80,7 +80,8 @@ class Login extends UW_Controller {
 		parent::__construct();
 
 		/* Grant that the configured cookie domain matches the server name */
-		if (current_config()['session']['cookie_domain'] != $_SERVER['SERVER_NAME'])
+		$cookie_domain = current_config()['session']['cookie_domain'];
+		if (substr($_SERVER['SERVER_NAME'], -strlen($cookie_domain)) !== $cookie_domain)
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
 
 		/* POST data handlers */

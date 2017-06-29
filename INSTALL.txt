@@ -11,7 +11,7 @@ Basic instructions to install the ND PHP Framework
 
   # apt-get install php php-mcrypt php-gd php-curl php-memcached \
                     php-mbstring php-xml php-mysql php-aws-sdk \
-                    libapache2-mod-php
+                    libapache2-mod-php php-imagick
 
   (NOTE: For pure Debian distros, you may need to use 'php5' prefix instead of
          'php'. For instance: apt-get install php5 php5-mcrypt ...)

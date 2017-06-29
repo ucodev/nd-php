@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.04o1';
+	protected $_ndphp_version = '0.04p';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1002,7 +1002,8 @@ class ND_Controller extends UW_Controller {
 		parent::__construct();
 
 		/* Grant that the configured cookie domain matches the server name */
-		if (current_config()['session']['cookie_domain'] != $_SERVER['SERVER_NAME'])
+		$cookie_domain = current_config()['session']['cookie_domain'];
+		if (substr($_SERVER['SERVER_NAME'], -strlen($cookie_domain)) !== $cookie_domain)
 			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Load pre plugins */
@@ -1208,7 +1209,7 @@ class ND_Controller extends UW_Controller {
 		/* Load configuration */
 		$config = $this->configuration->get();
 
-		$this->_base_url = $config['base_url'];
+		$this->_base_url = base_url();
 		$this->_support_email = $config['support_email'];
 		$this->_project_author = $config['author'];
 		$this->_project_name = $config['project_name'];
