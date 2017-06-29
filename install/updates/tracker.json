@@ -187,7 +187,7 @@
 			"user/modules/dummy.php",
 			"user/utils/core.php",
 			"user/utils/language.php",
-			"user/utils/security_perms.php",
+			"user/utils/security_perm.php",
 			"user/utils/validate.php",
 			"user/index.php",
 			"VERSION"

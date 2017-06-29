@@ -1,3 +1,8 @@
+v0.5a1 (2017-06-29):
+
+ - Updated tracker.
+
+
 v0.5a (2017-06-29):
 
  - Major cleanup and small fixes around.
