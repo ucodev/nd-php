@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a3';
+	protected $_ndphp_version = '0.5a4';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -2767,7 +2767,7 @@ class ND_Controller extends UW_Controller {
 
 				/* Check permissions */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_search, $this->config['name'], $field))
-					continue;
+					$this->response->code('403', NDPHP_LANG_MOD_ACCESS_SEARCH_FIELD . $field, $this->config['default_charset'], !$this->request->is_ajax());
 
 				/* Check if this is a logical OR condition */
 				if ($this->request->post_isset($field . '_or') && $this->request->post($field . '_or')) {

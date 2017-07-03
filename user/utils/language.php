@@ -31,22 +31,23 @@
  */
 
 
-if (!defined('NDPHP_LANG_MOD_ACCESS_FORBIDDEN'))          define('NDPHP_LANG_MOD_ACCESS_FORBIDDEN',			'Forbidden.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED'))  define('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED',	'Permission Denied.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN'))         define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only admin users are allowed to access this resource.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN'))    define('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN',		'Only ROLE_ADMIN is allowed to access this resource.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE'))      define('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE',		'Account is not active.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED'))        define('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED',			'Account is locked.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED'))       define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		'Account is expired.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL')) define('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL',	'Your account email is not valid.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM')) define('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM','Either the requested file does not exist or access to the file was denied.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE')) define('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE','Either the requested search does not exist or there are no permissions to delete it.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER'))        define('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER',         'Only master nodes can perform this operation.');
-if (!defined('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE'))         define('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE',          'Only slave nodes can perform this operation.');
+defined('NDPHP_LANG_MOD_ACCESS_FORBIDDEN')              || define('NDPHP_LANG_MOD_ACCESS_FORBIDDEN',			'Forbidden.');
+defined('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED')      || define('NDPHP_LANG_MOD_ACCESS_PERMISSION_DENIED',	'Permission Denied.');
+defined('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN')             || define('NDPHP_LANG_MOD_ACCESS_ONLY_ADMIN',			'Only admin users are allowed to access this resource.');
+defined('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN')        || define('NDPHP_LANG_MOD_ACCESS_ONLY_SUPERADMIN',		'Only ROLE_ADMIN is allowed to access this resource.');
+defined('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE')          || define('NDPHP_LANG_MOD_ACCESS_ACCT_INACTIVE',	    'Account is not active.');
+defined('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED')            || define('NDPHP_LANG_MOD_ACCESS_ACCT_LOCKED',			'Account is locked.');
+defined('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED')           || define('NDPHP_LANG_MOD_ACCESS_ACCT_EXPIRED',		    'Account is expired.');
+defined('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL')     || define('NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL',	'Your account email is not valid.');
+defined('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM')    || define('NDPHP_LANG_MOD_ACCESS_FILE_ACCESS_OR_PERM',  'Either the requested file does not exist or access to the file was denied.');
+defined('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE')    || define('NDPHP_LANG_MOD_ACCESS_SAVED_SEARCH_DELETE',  'Either the requested search does not exist or there are no permissions to delete it.');
+defined('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER')            || define('NDPHP_LANG_MOD_ACCESS_ONLY_MASTER',          'Only master nodes can perform this operation.');
+defined('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE')             || define('NDPHP_LANG_MOD_ACCESS_ONLY_SLAVE',           'Only slave nodes can perform this operation.');
+defined('NDPHP_LANG_MOD_ACCESS_SEARCH_FIELD')           || define('NDPHP_LANG_MOD_ACCESS_SEARCH_FIELD',         'No permissions to search for field: ');
 
-if (!defined('NDPHP_LANG_MOD_ACTION_FORWARD'))            define('NDPHP_LANG_MOD_ACTION_FORWARD',				'Forward');
-if (!defined('NDPHP_LANG_MOD_ACTION_REFRESH'))            define('NDPHP_LANG_MOD_ACTION_REFRESH',				'Refresh');
-if (!defined('NDPHP_LANG_MOD_ACTION_BACK'))               define('NDPHP_LANG_MOD_ACTION_BACK',				'Back');
+defined('NDPHP_LANG_MOD_ACTION_FORWARD')                || define('NDPHP_LANG_MOD_ACTION_FORWARD',              'Forward');
+defined('NDPHP_LANG_MOD_ACTION_REFRESH')                || define('NDPHP_LANG_MOD_ACTION_REFRESH',              'Refresh');
+defined('NDPHP_LANG_MOD_ACTION_BACK')                   || define('NDPHP_LANG_MOD_ACTION_BACK',                 'Back');
 
 define('NDPHP_LANG_MOD_ATTN_VALIDATE_VALUES',		'Please validate the inserted values and try again.');
 define('NDPHP_LANG_MOD_ATTN_SUBMIT_REQUIRED_FIELDS','Please fill the required fields before submit.');
@@ -194,26 +195,26 @@ define('NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE', 'Image height too large:
 define('NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION','Invalid file image extension: ');
 define('NDPHP_LANG_MOD_INVALID_USERNAME_CHARS',     'Invalid characters found in username.');
 
-if (!defined('NDPHP_LANG_MOD_INFO_LOADING'))          define('NDPHP_LANG_MOD_INFO_LOADING',                   'Loading...');
-if (!defined('NDPHP_LANG_MOD_INFO_AUTHENTICATING'))   define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',		    'Authenticating...');
-if (!defined('NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE'))  define('NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE',		    'You are disabling the only currently active configuration. Please enable some other configuration before disabling this one.');
-if (!defined('NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE')) define('NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE',	'You are trying to delete an active configuration, which is not allowed.');
-if (!defined('NDPHP_LANG_MOD_INFO_ENTRY_CHANGED'))    define('NDPHP_LANG_MOD_INFO_ENTRY_CHANGED',			    'The entry contents have been changed. You need to force the operation to override this check.');
-if (!defined('NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY')) define('NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY',		    'The transaction is already marked as rolled back');
-if (!defined('NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE')) define('NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE',	    'User credit update');
-if (!defined('NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH')) define('NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH',		'Passwords don\'t match.');
-if (!defined('NDPHP_LANG_MOD_INFO_TAKEN_USERNAME'))   define('NDPHP_LANG_MOD_INFO_TAKEN_USERNAME',		    'Username already taken.');
-if (!defined('NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED')) define('NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED',		    'Email already registered.');
-if (!defined('NDPHP_LANG_MOD_INFO_PHONE_REGISTERED')) define('NDPHP_LANG_MOD_INFO_PHONE_REGISTERED',		    'Phone already registered.');
-if (!defined('NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION')) define('NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION',	'This operation will rollback the Transaction');
-if (!defined('NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES')) define('NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES',		    'Transaction Changes Summary');
-if (!defined('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE'))    define('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE',			    'NOTE: New Values will be replaced by Old Values');
-if (!defined('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE'))  define('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE',		    'I\'ve read and accept the');
-if (!defined('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE')) define('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE',		'System is up to date.');
-if (!defined('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE')) define('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE',	'Installation already complete.');
-if (!defined('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND'))  define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',		    'Entry not found.');
-if (!defined('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED')) define('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED',      'Controllers were deployed. Build: ');
-if (!defined('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED')) define('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED',          'ACLs applied. Build: ');
+defined('NDPHP_LANG_MOD_INFO_LOADING')                  || define('NDPHP_LANG_MOD_INFO_LOADING',                'Loading...');
+defined('NDPHP_LANG_MOD_INFO_AUTHENTICATING')           || define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',         'Authenticating...');
+defined('NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE')          || define('NDPHP_LANG_MOD_INFO_CONFIG_INACTIVE',        'You are disabling the only currently active configuration. Please enable some other configuration before disabling this one.');
+defined('NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE')     || define('NDPHP_LANG_MOD_INFO_CONFIG_DELETE_ACTIVE',   'You are trying to delete an active configuration, which is not allowed.');
+defined('NDPHP_LANG_MOD_INFO_ENTRY_CHANGED')            || define('NDPHP_LANG_MOD_INFO_ENTRY_CHANGED',          'The entry contents have been changed. You need to force the operation to override this check.');
+defined('NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY')         || define('NDPHP_LANG_MOD_INFO_ROLLBACK_ALREADY',       'The transaction is already marked as rolled back');
+defined('NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE')       || define('NDPHP_LANG_MOD_INFO_USER_CREDIT_UPDATE',     'User credit update');
+defined('NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH')        || define('NDPHP_LANG_MOD_INFO_PASSWORD_NO_MATCH',      'Passwords don\'t match.');
+defined('NDPHP_LANG_MOD_INFO_TAKEN_USERNAME')           || define('NDPHP_LANG_MOD_INFO_TAKEN_USERNAME',         'Username already taken.');
+defined('NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED')         || define('NDPHP_LANG_MOD_INFO_EMAIL_REGISTERED',       'Email already registered.');
+defined('NDPHP_LANG_MOD_INFO_PHONE_REGISTERED')         || define('NDPHP_LANG_MOD_INFO_PHONE_REGISTERED',       'Phone already registered.');
+defined('NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION')     || define('NDPHP_LANG_MOD_INFO_ROLLBACK_TRANSACTION',   'This operation will rollback the Transaction');
+defined('NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES')         || define('NDPHP_LANG_MOD_INFO_ROLLBACK_CHANGES',       'Transaction Changes Summary');
+defined('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE')            || define('NDPHP_LANG_MOD_INFO_ROLLBACK_NOTE',          'NOTE: New Values will be replaced by Old Values');
+defined('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE')          || define('NDPHP_LANG_MOD_INFO_READ_ACCEPT_THE',        'I\'ve read and accept the');
+defined('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE')        || define('NDPHP_LANG_MOD_INFO_SYSTEM_UP_TO_DATE',      'System is up to date.');
+defined('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE')     || define('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE',   'Installation already complete.');
+defined('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND')          || define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',        'Entry not found.');
+defined('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED')       || define('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED',     'Controllers were deployed. Build: ');
+defined('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED')         || define('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED',       'ACLs applied. Build: ');
 
 define('NDPHP_LANG_MOD_LINK_ADD_FUNDS',				'Add funds');
 define('NDPHP_LANG_MOD_LINK_HOME',					'Home');
