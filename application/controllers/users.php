@@ -216,7 +216,7 @@ class Users extends ND_Controller {
 					/* As stated, if the deciphered private encryption key doesn't seem right, we won't allow the password
 					 * to be changed.
 					 */
-					$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS .': ' . strlen($privenckey), $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('401', NDPHP_LANG_MOD_ATTN_INSUFFICIENT_CREDS . ': ' . strlen($privenckey), $this->config['default_charset'], !$this->request->is_ajax());
 				}
 
 				/* Re-encrypt the user private encryption key with the new password */
@@ -482,7 +482,6 @@ class Users extends ND_Controller {
 		'generic_datetime_2' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_2,
 		'generic_datetime_3' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_3,
 		'generic_datetime_4' => NDPHP_LANG_MOD_COMMON_GENERIC_DATETIME_4,
-		'_separator_sharding' => NDPHP_LANG_MOD_COMMON_SHARDING
 	);
 
 	protected $_rel_table_fields_config = array(

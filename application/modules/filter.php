@@ -228,6 +228,13 @@ class UW_Filter extends UW_Module {
 	}
 
 	public function table_row_get($table = NULL) {
+		/* NOTE:
+		 *
+		 * This routine is used only by ND_Controller.php insert() method. In the event that more methods in the future will call this routine,
+		 * grant that the security permission checking is configured properly as currently it's only evaluating the create permission.
+		 *
+		 */
+
 		$this->load->module('get');
 
 		/* Evaluates if there's a table row filter to be applied. If so, an assoc array is created for each configured filtering key */
@@ -239,7 +246,14 @@ class UW_Filter extends UW_Module {
 
 			foreach ($this->config['table_row_filtering_config'] as $key => $value) {
 				if (in_array($key, $field_list)) {
-					$res[$key] = $this->config['session_data'][$value];
+					if ($this->request->post_isset($key) &&
+					   ($this->security->im_superadmin() || $this->security->im_admin() || $this->security->im_superuser()) &&
+						$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $table ? $table : $this->config['name'], $key))
+					{
+						$res[$key] = $this->request->post($key);
+					} else {
+						$res[$key] = $this->config['session_data'][$value];
+					}
 				}
 			}
 		}

@@ -453,6 +453,7 @@ class Login extends UW_Controller {
 			if ($this->request->is_json()) {
 				$data['status'] = true;
 				$data['data']['user_id'] = intval($row['id']);
+				$data['data']['username'] = $row['username'];
 				$data['data']['session_id'] = $this->session->userdata('sessions_id');
 				$data['data']['timezone'] = $this->session->userdata('timezone');
 				$data['data']['photo'] = $this->session->userdata('photo');

@@ -39,7 +39,7 @@
  * - Droping a non-instantiated pool object over an instantiated object of the same family shall change the latest type/title (with confirmation dialog).
  * - [DONE] Download button to export ndmodel (application model in JSON format)
  * - Download button to export nddata (table dump in JSON format)
- * - Import button to import ndmodel (application model in JSON format)
+ * - [DONE] Import button to import ndmodel (application model in JSON format)
  * - Import button to import nddata (table dump in JSON format)
  * - [IN PROGRESS] A lot of javascript validations are missing:
  *  * Multiple relationship field objects shall be replicated to the foreign table, or ignored from the foreign table if the user replicated them (Choose one...)
@@ -47,7 +47,7 @@
  * - IDE Builder view should contain a link to open the webapp (in a new tab).
  * * Add context-menu insert options on Controller code edition (to insert templates for hooks, charts, etc.).
  * * When a table is renamed containing _file_* fields and is referenced as mixed, the uploads/ directory must be changed to keep the integrity of uploaded files links.
- * * When sharding is enabled, all the databases need to be updated, not just the default database.
+ * * [DISCARDED] When sharding is enabled, all the databases need to be updated, not just the default database.
  *
  * FIXME:
  *

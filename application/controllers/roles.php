@@ -77,7 +77,7 @@ class Roles extends ND_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_ADMIN_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Only administrators can change is_superuser field */
-		if ($this->request->post_isset('is_superuser') && !$this->security->im_admin())
+		if ($this->request->post_isset('is_superuser') && !$this->security->im_superadmin() && !$this->security->im_admin())
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		if ($this->request->post_isset('rel_users_roles')) {
@@ -100,7 +100,7 @@ class Roles extends ND_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_ADMIN_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Only administrators can change is_superuser field */
-		if ($this->request->post_isset('is_superuser') && !$this->security->im_admin())
+		if ($this->request->post_isset('is_superuser') && !$this->security->im_superadmin() && !$this->security->im_admin())
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_SET_IS_SUPERUSER_FIELD, $this->config['default_charset'], !$this->request->is_ajax());
 
 		if ($this->request->post_isset('rel_users_roles')) {
@@ -135,7 +135,7 @@ class Roles extends ND_Controller {
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_ADMIN_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
 		
 		/* Only administrators can delete is_superuser roles */
-		if ($row['is_superuser'] && !$this->security->im_admin())
+		if ($row['is_superuser'] && !$this->security->im_superadmin() && !$this->security->im_admin())
 			$this->response->code('403', NDPHP_LANG_MOD_CANNOT_DELETE_SUPERUSER_ROLES, $this->config['default_charset'], !$this->request->is_ajax());
 		
 		return $hook_pre_return;

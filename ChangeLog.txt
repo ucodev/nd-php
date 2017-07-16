@@ -1,3 +1,11 @@
+v0.5a5 (2017-07-16):
+
+ - Role assignment checks were too restrictive.
+ - Limited typed controllers now allow superuser, admin and superadmin roles to override default values from session properties being assigned to filtering fields.
+ - Authentication responses for REST JSON calls now also include the username field in the data structure.
+ - Minor cleanup.
+
+
 v0.5a4 (2017-07-02):
 
  - Insufficient permissions to search specific fields now cause result requests to explicitly fail (instead of discarding the search).
