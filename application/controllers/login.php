@@ -82,7 +82,7 @@ class Login extends UW_Controller {
 		/* Grant that the configured cookie domain matches the server name */
 		$cookie_domain = current_config()['session']['cookie_domain'];
 		if (substr($_SERVER['SERVER_NAME'], -strlen($cookie_domain)) !== $cookie_domain)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
 
 		/* POST data handlers */
 		if (count($_POST)) {
@@ -94,7 +94,7 @@ class Login extends UW_Controller {
 
 			/* Grant that $_POST keys are safe, if any */
 			if (count($_POST) && !$this->security->safe_keys($_POST, $this->_security_safe_chars))
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		$this->_viewhname = get_class();
@@ -168,10 +168,10 @@ class Login extends UW_Controller {
 	private function session_setup($user_id = NULL, $username = NULL, $plain_password = NULL, $email = NULL, $first_name = NULL, $photo = NULL) {
 		/* Sanity checks */
 		if (!$user_id || !$username || !$email)
-			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('400', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_default_charset, !$this->request->is_ajax());
 
 		if ($this->request->remote_addr() == 'Unspecified')
-			$this->response->code('403', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('400', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Check if $photo is json encoded */
 		if ($photo) {
@@ -393,7 +393,7 @@ class Login extends UW_Controller {
 			if ($passwd_digest != $row['password'])
 				$this->response->code('403', NDPHP_LANG_MOD_INVALID_USER_OR_PASSWORD, $this->_default_charset, !$this->request->is_ajax());
 		} else {
-			$this->response->code('403', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('400', NDPHP_LANG_MOD_MISSING_AUTH_METHOD, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* Check if account is active */
@@ -415,7 +415,7 @@ class Login extends UW_Controller {
 
 		/* Validade email address (regex) */		
 		if (validate_email($row['email']) === false)
-			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('422', NDPHP_LANG_MOD_ACCESS_ACCT_INVALID_EMAIL . ' ' . NDPHP_LANG_MOD_ATTN_CONTACT_SUPPORT, $this->_default_charset, !$this->request->is_ajax());
 
 		/**** All sanity checks successfully passed ****/
 

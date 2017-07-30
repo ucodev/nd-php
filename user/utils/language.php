@@ -231,6 +231,7 @@ define('NDPHP_LANG_MOD_MGMT_UNDER_MAINTENANCE',		'We\'re under Maintenance. Plea
 define('NDPHP_LANG_MOD_MISSING_SEARCH_CRITERIA',	'No search criteria was selected.');
 define('NDPHP_LANG_MOD_MISSING_SEARCH_FIELD', 		'One or more search fields are empty.');
 define('NDPHP_LANG_MOD_MISSING_REQUIRED_FIELDS',	'Required fields missing.');
+define('NDPHP_LANG_MOD_MISSING_REQUIRED_FIELD',     'Required field missing: ');
 define('NDPHP_LANG_MOD_MISSING_REMOTE_ADDRESS',		'No remote address specified.');
 define('NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS',		'Missing required arguments.');
 define('NDPHP_LANG_MOD_MISSING_AUTH_METHOD',		'No authentication method provided.');

@@ -1,3 +1,10 @@
+v0.5a7 (2017-07-30):
+
+ - Some fixes in update procedure.
+ - Updated some status codes around.
+ - Updated language files.
+
+
 v0.5a6 (2017-07-30):
 
  - Minor cleanup.

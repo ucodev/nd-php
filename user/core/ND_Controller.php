@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a6';
+	protected $_ndphp_version = '0.5a7';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1004,7 +1004,7 @@ class ND_Controller extends UW_Controller {
 		/* Grant that the configured cookie domain matches the server name */
 		$cookie_domain = current_config()['session']['cookie_domain'];
 		if (substr($_SERVER['SERVER_NAME'], -strlen($cookie_domain)) !== $cookie_domain)
-			$this->response->code('403', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_SERVER_NAME, $this->_default_charset, !$this->request->is_ajax());
 
 		/* Load pre plugins */
 		if ($this->config['plugins_enabled']) {
@@ -1048,7 +1048,7 @@ class ND_Controller extends UW_Controller {
 
 			/* Grant that $_POST keys are safe, if any */
 			if (count($this->request->post()) && !$this->security->safe_keys($this->request->post(), $this->_security_safe_chars))
-				$this->response->code('403', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
+				$this->response->code('400', NDPHP_LANG_MOD_INVALID_POST_KEYS, $this->_default_charset, !$this->request->is_ajax());
 		}
 
 		/* If we need to instantiate this controller to fetch controller specific configurtions, we should do so
@@ -4560,7 +4560,7 @@ class ND_Controller extends UW_Controller {
 		$this->edit($id, true, false, true, true);
 	}
 
-	public function update($id = 0, $field = NULL, $field_value = NULL, $retbool = false) {
+	public function update($id = NULL, $field = NULL, $field_value = NULL, $retbool = false) {
 		$this->_load_module('upload', true);
 
 		/* NOTE: If $retbool is true, a boolean true value is returned on success (on failure, die() will always be called) */
@@ -4568,8 +4568,12 @@ class ND_Controller extends UW_Controller {
 		$log_removed_fields = array(); /* Keep track of unset fields from POST data that still need to be logged */
 
 		/* If an 'id' value was passed as function parameter, use it to replace/assign the actual $_POST['id'] (Used by JSON REST API) */
-		if ($id)
+		if ($id !== NULL)
 			$this->request->post_set('id', $id);
+
+		/* Grant that 'id' field is set */
+		if (!$this->request->post_isset('id'))
+			$this->response->code('403', NDPHP_LANG_MOD_MISSING_REQUIRED_FIELD . ' id', $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Check if this is a view table type */
 		if ($this->config['table_type_view'])
@@ -4720,6 +4724,10 @@ class ND_Controller extends UW_Controller {
 		foreach ($this->request->post() as $field => $value) {
 			/* Security check */
 			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], $field)) {
+				/* Ignore 'id' field, as it cannot be unset since it will be used during the rest of the update() procedure */
+				if ($field == 'id')
+					continue;
+
 				/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
 				if ($this->request->is_json()) {
 					$this->db->trans_rollback();
@@ -4727,10 +4735,7 @@ class ND_Controller extends UW_Controller {
 				}
 
 				/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
-
-				/* We cannot unset the 'id' field for obvious reasons (reasons: see all the code below belonging to update()) */
-				if ($field != 'id')
-					$this->request->post_unset($field);
+				$this->request->post_unset($field);
 
 				continue;
 			}

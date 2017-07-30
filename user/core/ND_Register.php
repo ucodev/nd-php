@@ -60,7 +60,7 @@ class ND_Register extends UW_Controller {
 	private $roles_regular_id = 4;	/* Regular user roles_id (for newly registered users) */
 	private $default_countries_id = 242; /* None */
 	private $default_currencies_id = 1;
-	private $default_timezones_id = 1;
+	private $default_timezones_id = 383;
 	private $default_genders_id = 3;
 
 
@@ -239,15 +239,15 @@ class ND_Register extends UW_Controller {
 
 		/* Validate username characters */
 		if (!preg_match('/^[' . $this->nd_username_safe_chars . ']+$/', $_POST['username']))
-			$this->response->code('400', NDPHP_LANG_MOD_INVALID_USERNAME_CHARS, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('422', NDPHP_LANG_MOD_INVALID_USERNAME_CHARS, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate First Name */
 		if (isset($_POST['first_name']) && preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['first_name']) === false)
-			$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('422', NDPHP_LANG_MOD_INVALID_FIRST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate Last Name */
 		if (isset($_POST['last_name']) && preg_match("/^[^\ \<\>\%\'\\\"\.\,\;\:\~\^\`\{\[\]\}\?\!\#\&\/\(\)\=\|\\\*\+\-\_\@]+$/", $_POST['last_name']) === false)
-			$this->response->code('400', NDPHP_LANG_MOD_INVALID_LAST_NAME, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('422', NDPHP_LANG_MOD_INVALID_LAST_NAME, $this->_charset, !$this->request->is_ajax());
 
 		/* Validate password */
 		if (strlen($_POST['password']) < 8)
@@ -294,7 +294,7 @@ class ND_Register extends UW_Controller {
 
 		/* Validate email */
 		if (validate_email($_POST['email']) === false)
-			$this->response->code('400', NDPHP_LANG_MOD_INVALID_EMAIL, $this->_charset, !$this->request->is_ajax());
+			$this->response->code('422', NDPHP_LANG_MOD_INVALID_EMAIL, $this->_charset, !$this->request->is_ajax());
 
 		$this->db->select('id');
 		$this->db->from('users');
