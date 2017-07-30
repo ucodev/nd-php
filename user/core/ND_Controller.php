@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a5';
+	protected $_ndphp_version = '0.5a6';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4057,6 +4057,11 @@ class ND_Controller extends UW_Controller {
 
 				/* Security Check: Check CREATE permissions for this particular entry (table:mixed_<t1>_<ft2>) */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $this->config['name'], 'mixed_' . $this->config['name'] . '_' . $mixed_field[0])) {
+					/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+					if ($this->request->is_json())
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_INSERT_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+
+					/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 					$this->request->post_unset($field);
 					continue;
 				}
@@ -4072,6 +4077,11 @@ class ND_Controller extends UW_Controller {
 
 			/* Security check */
 			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $this->config['name'], $field)) {
+				/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+				if ($this->request->is_json())
+					$this->response->code('403', NDPHP_LANG_MOD_CANNOT_INSERT_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+
+				/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 				$this->request->post_unset($field);
 				continue;
 			}
@@ -4117,7 +4127,7 @@ class ND_Controller extends UW_Controller {
 			/* If an input pattern was defined for this field, grant that it matches the field value */
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field)))
-					$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('422', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 			}
 		}
 
@@ -4195,12 +4205,28 @@ class ND_Controller extends UW_Controller {
 				$rel_table = array_pop(array_diff($this->get->multiple_rel_table_names($table, $this->config['name']), array($this->config['name'])));
 
 				/* Security Permissions Check */
-				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $rel_table))
+				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $rel_table)) {
+					/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+					if ($this->request->is_json()) {
+						$this->db->trans_rollback();
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_READ_FOREIGN_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 					continue;
+				}
 
 				/* TODO: FIXME: Already checked earlier on multiple relationship pre-processing... Does it make sense to keep this here? */
-				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $this->config['name'], $table))
+				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_create, $this->config['name'], $table)) {
+					/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+					if ($this->request->is_json()) {
+						$this->db->trans_rollback();
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_INSERT_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 					continue;
+				}
 
 				/* TODO: FIXME: Check CREATE permissions for this particular entry (table:rel_<t1>_<ft2>)
 				 * [This is already checked on the pre-processing routines... Do we need to recheck here?]
@@ -4602,6 +4628,13 @@ class ND_Controller extends UW_Controller {
 
 				/* Security Check: Check UPDATE permissions for this particular entry (table:mixed_<t1>_<ft2>) */
 				if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], 'mixed_' . $this->config['name'] . '_' . $mixed_field[0])) {
+					/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+					if ($this->request->is_json()) {
+						$this->db->trans_rollback();
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_UPDATE_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+					}
+
+					/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 					$this->request->post_unset($field);
 					continue;
 				}
@@ -4646,12 +4679,28 @@ class ND_Controller extends UW_Controller {
 			$rel_table = array_pop(array_diff($this->get->multiple_rel_table_names($table, $this->config['name']), array($this->config['name'])));
 
 			/* Security Permissions Check (READ) -- We must be able to read the foreign table... */
-			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $rel_table))
+			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_read, $rel_table)) {
+				/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+				if ($this->request->is_json()) {
+					$this->db->trans_rollback();
+					$this->response->code('403', NDPHP_LANG_MOD_CANNOT_READ_FOREIGN_NO_PRIV . $rel_table, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+
+				/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 				continue;
+			}
 
 			/* Security Permissions Check (UPDATE) -- We must be able to update the multiple relationship table */
-			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], $field))
+			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], $field)) {
+				/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+				if ($this->request->is_json()) {
+					$this->db->trans_rollback();
+					$this->response->code('403', NDPHP_LANG_MOD_CANNOT_UPDATE_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+
+				/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
 				continue;
+			}
 
 			/* Add multiple relationship data to $multiple_rels array to be processed later
 			 * (TODO: the following procedure should be consolidated into a _rel_process_post_field() method)
@@ -4671,6 +4720,14 @@ class ND_Controller extends UW_Controller {
 		foreach ($this->request->post() as $field => $value) {
 			/* Security check */
 			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], $field)) {
+				/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
+				if ($this->request->is_json()) {
+					$this->db->trans_rollback();
+					$this->response->code('403', NDPHP_LANG_MOD_CANNOT_UPDATE_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+				}
+
+				/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
+
 				/* We cannot unset the 'id' field for obvious reasons (reasons: see all the code below belonging to update()) */
 				if ($field != 'id')
 					$this->request->post_unset($field);
@@ -4725,7 +4782,7 @@ class ND_Controller extends UW_Controller {
 			if ($ftypes[$field]['input_pattern']) {
 				if (!preg_match('/^' . $ftypes[$field]['input_pattern'] . '$/u', $this->request->post($field))) {
 					$this->db->trans_rollback();
-					$this->response->code('400', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
+					$this->response->code('422', NDPHP_LANG_MOD_INVALID_FIELD_DATA_PATTERN . ' \'' . $field . '\'', $this->config['default_charset'], !$this->request->is_ajax());
 				}
 			}
 		}

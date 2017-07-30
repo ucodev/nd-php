@@ -121,7 +121,6 @@ ndphp.ide.ide_integrity_check_menu = function(menu, menu_array) {
         case 'saved_searches':
         case 'scheduler':
         case 'sessions':
-        case 'subscription_types':
         case 'themes':
         case 'themes_animations_default':
         case 'themes_animations_ordering':

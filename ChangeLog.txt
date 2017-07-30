@@ -1,3 +1,12 @@
+v0.5a6 (2017-07-30):
+
+ - Minor cleanup.
+ - Check compatibility for model deploy based on PHP SAPI information.
+ - Updated language files.
+ - Updated some status codes around.
+ - REST JSON requests for update and insert will now return 403 for unaccessible/non-permitted fields (previous behaviour was to unset fields).
+
+
 v0.5a5 (2017-07-16):
 
  - Role assignment checks were too restrictive.

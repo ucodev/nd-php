@@ -155,6 +155,13 @@ class Builder extends ND_Controller {
 	public function deploy_model() {
 		global $config;
 
+		/* Since PHP-FPM may have limited script execution time that cannot be overriden by this script, we only allow deploys
+		 * if the PHP_SAPI identifier matches one of the configured values under user/config/base.php for long operations.
+		 */
+
+		if (!in_array(php_sapi_name(), $config['base']['sapi_long_request']))
+			$this->response->code('500', NDPHP_LANG_MOD_INFO_UNSUPPORTED_SAPI . php_sapi_name(), $this->config['default_charset'], !$this->request->is_ajax());
+
 		/* Check if we are a master node */
 		if (!isset($config['base']['type']) || ($config['base']['type'] != 'master'))
 			$this->response->code('403', NDPHP_LANG_MOD_ACCESS_ONLY_MASTER, $this->config['default_charset'], !$this->request->is_ajax());

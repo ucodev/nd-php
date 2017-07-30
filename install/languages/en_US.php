@@ -109,6 +109,9 @@ define('NDPHP_LANG_MOD_CANNOT_USERS_MANAGE_SUPERUSER_ROLES','Only admin users ca
 define('NDPHP_LANG_MOD_CANNOT_USERS_DELETE_ROLE_ADMIN','Only ROLE_ADMIN (superadmin) can delete users with superadmin role (ROLE_ADMIN).');
 define('NDPHP_LANG_MOD_CANNOT_USERS_DELETE_ADMIN_ROLES','Only ROLE_ADMIN (superadmin) can delete users with admin roles.');
 define('NDPHP_LANG_MOD_CANNOT_USERS_DELETE_SUPERUSER_ROLES','Only admin users can delete users with superuser roles.');
+define('NDPHP_LANG_MOD_CANNOT_INSERT_FIELD_NO_PRIV',    'Insufficient privileges to insert field: ');
+define('NDPHP_LANG_MOD_CANNOT_UPDATE_FIELD_NO_PRIV',    'Insufficient privileges to modify field: ');
+define('NDPHP_LANG_MOD_CANNOT_READ_FOREIGN_NO_PRIV',    'Insufficient privileges to read foreign object: ');
 
 define('NDPHP_LANG_MOD_DISABLED_MULTI_USER',		'Multi-user support is not enabled.');
 define('NDPHP_LANG_MOD_DISABLED_USER_REGISTER',		'User registration disabled.');
@@ -215,6 +218,7 @@ defined('NDPHP_LANG_MOD_INFO_INSTALL_ALREADY_DONE')     || define('NDPHP_LANG_MO
 defined('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND')          || define('NDPHP_LANG_MOD_INFO_ENTRY_NOT_FOUND',        'Entry not found.');
 defined('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED')       || define('NDPHP_LANG_MOD_INFO_IDE_CTRLS_DEPLOYED',     'Controllers were deployed. Build: ');
 defined('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED')         || define('NDPHP_LANG_MOD_INFO_IDE_ACLS_APPLIED',       'ACLs applied. Build: ');
+defined('NDPHP_LANG_MOD_INFO_UNSUPPORTED_SAPI')         || define('NDPHP_LANG_MOD_INFO_UNSUPPORTED_SAPI',       'The requested operation cannot be performed with the current PHP SAPI configuration: ');
 
 define('NDPHP_LANG_MOD_LINK_ADD_FUNDS',				'Add funds');
 define('NDPHP_LANG_MOD_LINK_HOME',					'Home');
