@@ -1,3 +1,9 @@
+v0.5a8 (2017-07-30):
+
+ - Updated tracker.
+ - Ignore permission checking on update method for the already evaluated table row perms already.
+
+
 v0.5a7 (2017-07-30):
 
  - Some fixes in update procedure.

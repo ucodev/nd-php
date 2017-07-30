@@ -196,7 +196,6 @@
 			"application/controllers/dbms.php",
 			"application/controllers/items.php",
 			"application/controllers/magic.php",
-			"application/controllers/notifications.php",
 			"application/controllers/payment_actions.php",
 			"application/controllers/payment_status.php",
 			"application/controllers/payment_types.php",

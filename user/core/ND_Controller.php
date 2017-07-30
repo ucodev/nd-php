@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a7';
+	protected $_ndphp_version = '0.5a8';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4726,6 +4726,10 @@ class ND_Controller extends UW_Controller {
 			if (!$this->security->perm_check($this->config['security_perms'], $this->security->perm_update, $this->config['name'], $field)) {
 				/* Ignore 'id' field, as it cannot be unset since it will be used during the rest of the update() procedure */
 				if ($field == 'id')
+					continue;
+
+				/* If the current field is part of the table row filtering configuration, ignore it as it was already validated by table_row_perm() at the beggining of this function */
+				if (array_key_exists($field, $this->config['table_row_filtering_config']))
 					continue;
 
 				/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
