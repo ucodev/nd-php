@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a8';
+	protected $_ndphp_version = '0.5a9';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -4209,7 +4209,7 @@ class ND_Controller extends UW_Controller {
 					/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
 					if ($this->request->is_json()) {
 						$this->db->trans_rollback();
-						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_READ_FOREIGN_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_READ_FOREIGN_NO_PRIV . $rel_table, $this->config['default_charset'], !$this->request->is_ajax());
 					}
 
 					/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */
@@ -4221,7 +4221,7 @@ class ND_Controller extends UW_Controller {
 					/* REST JSON requests do not silently ignore unaccessible/non-permitted fields. A forbidden indication must be raised. */
 					if ($this->request->is_json()) {
 						$this->db->trans_rollback();
-						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_INSERT_FIELD_NO_PRIV . $field, $this->config['default_charset'], !$this->request->is_ajax());
+						$this->response->code('403', NDPHP_LANG_MOD_CANNOT_INSERT_FIELD_NO_PRIV . $table, $this->config['default_charset'], !$this->request->is_ajax());
 					}
 
 					/* Other type of requests will unset the unaccessible/non-permitted field and keep processing the remaining */

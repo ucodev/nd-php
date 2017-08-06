@@ -62,6 +62,7 @@ class ND_Register extends UW_Controller {
 	private $default_currencies_id = 1;
 	private $default_timezones_id = 383;
 	private $default_genders_id = 3;
+	private $external_confirm = true; /* If the accounts are confirmed by an external module or service, preventing date_confirmed from being updated by this controller  */
 
 
 	protected function _get_theme() {
@@ -652,7 +653,10 @@ class ND_Register extends UW_Controller {
 
 		$userdata['active'] = 1;
 		$userdata['locked'] = 0;
-		$userdata['date_confirmed'] = date('Y-m-d H:i:s');
+
+		if (!$this->external_confirm)
+			$userdata['date_confirmed'] = date('Y-m-d H:i:s');
+
 		$userdata['expire'] = (date('Y') + 1) . '-' . date('m-d H:i:s'); // 1 year active before re-confirmation. FIXME: TODO: This shall be increased
 
 		$this->db->trans_begin();

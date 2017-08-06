@@ -1,3 +1,9 @@
+v0.5a9 (2017-08-06):
+
+ - Minor fixes on error messages under insert method.
+ - Updated uWeb.
+
+
 v0.5a8 (2017-07-30):
 
  - Updated tracker.
