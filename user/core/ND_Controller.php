@@ -123,7 +123,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5a9';
+	protected $_ndphp_version = '0.5b';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -387,6 +387,7 @@ class ND_Controller extends UW_Controller {
 	protected $_csv_delim = "\""; /* Default string delimiter */
 	protected $_csv_from_encoding = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	protected $_csv_to_encoding   = NDPHP_LANG_MOD_DEFAULT_CHARSET;
+	protected $_csv_bom = "\xef\xbb\xbf"; /* UTF-8 byte order mask */
 
 	/* Main tab name for CRUD views */
 	protected $_view_crud_main_tab_name = NDPHP_LANG_MOD_TABS_TITLE_MAIN_GENERIC;
@@ -856,6 +857,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['csv_delim']								= $this->_csv_delim;
 		$this->config['csv_from_encoding']						= $this->_csv_from_encoding;
 		$this->config['csv_to_encoding']						= $this->_csv_to_encoding;
+		$this->config['csv_bom']								= $this->_csv_bom;
 
 		$this->config['view_crud_main_tab_name']				= $this->_view_crud_main_tab_name;
 		$this->config['view_crud_charts_tab_name']				= $this->_view_crud_charts_tab_name;
@@ -2563,9 +2565,9 @@ class ND_Controller extends UW_Controller {
 		} else if (($this->config['json_replies'] === true) && is_array($this->request->post('_show')) && count($this->request->post('_show'))) {
 			/* REST calls with '_show' modifier set are allowed to set the fields to be shown in the result */
 
-			/* FIXME: Avoid using 2 calls to $this->get->fields() ... Use an unfiltered $this->get->fields() and generate two filtered lists from it */
+			/* Get field types and store them in two different objects, as they will be processed separately */
 			$ftypes = $this->get->fields(NULL);
-			$ftypes_result = $this->get->fields(NULL);
+			$ftypes_result = $ftypes;
 
 			/* Hidden fields */
 			$data['config']['hidden_fields'] = array();
@@ -3754,6 +3756,9 @@ class ND_Controller extends UW_Controller {
 
 			/* Open CSV file */
 			$csv_fp = fopen($csv_filename, 'a+');
+
+			if (isset($this->config['csv_bom']) && $this->config['csv_bom'])
+				fwrite($csv_fp, $this->config['csv_bom']);
 			
 			/* Write field names on csv header */
 			$row = array_values($data['view']['result_array'])[0];

@@ -71,6 +71,11 @@ class UW_Response extends UW_Module {
 		'415' => array('Unsupported Media Type', 'The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.'),
 		'416' => array('Requested Range Not Satisfiable', 'A Range request-header field was present on the request but the server is unable to fulfill it.'),
 		'417' => array('Expectation Failed', 'The expectation given in an Expect request-header field could not be met by this server.'),
+		'422' => array('Unprocessable Entity', 'The request was well-formed but was unable to be followed due to semantic errors.'),
+		'423' => array('Locked', 'The source or destination resource of a method is locked.'),
+		'424' => array('Failed Dependency', 'The method could not be performed on the resource because the requested action depended on another action and that action failed'),
+		'428' => array('Precondition Required', 'This request is required to be conditional; try using "If-Match".'),
+		'429' => array('Too Many Requests', 'The amount of requests performed by the client exceeded the server limit.'),
 		/* Server Error 5xx */
 		'500' => array('Internal Server Error', 'The server encountered an unexpected condition which prevented it from fulfilling the request.'),
 		'501' => array('Not Implemented', 'The server does not support the functionality required to fulfill the request.'),
@@ -85,7 +90,7 @@ class UW_Response extends UW_Module {
 	}
 
 	public function code($code, $content = NULL, $charset = 'UTF-8', $template = true, $protocol = 'HTTP/1.1') {
-		if ((intval($code) >= 400 && intval($code) <= 417) || (intval($code) >= 500 && intval($code) <= 505)) {
+		if ((intval($code) >= 400 && intval($code) <= 429) || (intval($code) >= 500 && intval($code) <= 505)) {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
 
 			/* If the peer accepts JSON encoded responses, we'll go for it */

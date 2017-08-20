@@ -1,3 +1,10 @@
+v0.5b (2017-08-20):
+
+ - Fixed minor issues.
+ - Minor optimizations.
+ - Updated status code list for response module.
+
+
 v0.5a9 (2017-08-06):
 
  - Minor fixes on error messages under insert method.

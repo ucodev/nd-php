@@ -2228,7 +2228,7 @@ class UW_Application extends UW_Model {
 				$app_model['menus'][$i]['fields'][$j]['db']['is_unique'] = $this->_field_is_unique($app_model['menus'][$i]['fields'][$j]);
 
 				/* FIXME: TODO: Set the default value */
-				if (isset($app_model['menus'][$i]['fields'][$j]['properties']['default_value']) && $app_model['menus'][$i]['fields'][$j]['properties']['default_value']) {
+				if (isset($app_model['menus'][$i]['fields'][$j]['properties']['default_value']) && ($app_model['menus'][$i]['fields'][$j]['properties']['default_value'] !== NULL)) {
 					$app_model['menus'][$i]['fields'][$j]['db']['default'] = $app_model['menus'][$i]['fields'][$j]['properties']['default_value'];
 
 					/* If the field isn't of type integer, the default value must be quoted */

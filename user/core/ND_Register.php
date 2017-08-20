@@ -362,7 +362,7 @@ class ND_Register extends UW_Controller {
 		if (isset($_POST['code']))
 			$userdata['registration_code'] = $_POST['code'];
 
-		$userdata['active'] = 1;
+		$userdata['active'] = 0;
 		$userdata['locked'] = 0;
 
 		/* TODO: FIXME: This should be configurable */
@@ -536,6 +536,7 @@ class ND_Register extends UW_Controller {
 		$userdata['users_id'] = $users_id;
 		$userdata['acct_last_reset'] = date('Y-m-d H:i:s');
 		$userdata['expire'] = '2030-12-31 23:59:59';
+		$userdata['active'] = 1;
 
 		$this->db->trans_begin();
 

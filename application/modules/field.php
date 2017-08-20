@@ -168,6 +168,11 @@ class UW_Field extends UW_Module {
 
 			/* Check if we already have a set of previously selected fields */
 			if ($selected) {
+				if (!is_array($criteria_req)) {
+					error_log(__FILE__ . ':' . __LINE__ . ':' . __FUNCTION__ . ': $criteria_req is not of array type. Setting it to empty array.');
+					$criteria_req = array();
+				}
+
 				/* If we already have a set of selected fields, do not resolve fields that
 				 * do not belong to this set and are not required to be resolved (not in $criteria_req).
 				 */
