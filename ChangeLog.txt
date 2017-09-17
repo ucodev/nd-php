@@ -1,3 +1,9 @@
+v0.5b1 (2017-09-17):
+
+ - Corrected expired/non-existent session status codes from Forbidden to Unauthorized.
+ - Granted that global configuration setting for sssh custom handlers are enabled before relying on them.
+
+
 v0.5b (2017-08-20):
 
  - Fixed minor issues.

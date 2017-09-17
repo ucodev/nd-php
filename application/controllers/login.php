@@ -166,6 +166,9 @@ class Login extends UW_Controller {
 	 * and ND_Users hooks (when user data is updated, session data must be refreshed).
 	 */
 	private function session_setup($user_id = NULL, $username = NULL, $plain_password = NULL, $email = NULL, $first_name = NULL, $photo = NULL) {
+		/* Retrieve global configuration */
+		global $config;
+
 		/* Sanity checks */
 		if (!$user_id || !$username || !$email)
 			$this->response->code('400', 'session_setup(): ' . NDPHP_LANG_MOD_MISSING_REQUIRED_ARGS, $this->_default_charset, !$this->request->is_ajax());
@@ -287,30 +290,39 @@ class Login extends UW_Controller {
 		$this->db->where('id', $user_id);
 		$this->db->update('users', $userdata);
 
-		/* Check if this session already exists on sessions table */
-		$this->db->select('id,session');
-		$this->db->from('sessions');
-		$this->db->where('session', session_id());
-		$q = $this->db->get();
-
-		$sessions_id = NULL; /* The'id' field value on sessions table... will be populated if there are results */
-
-		if ($q->num_rows()) {
-			/* Session already exists, so we just need to update it */
+		if ($config['session']['sssh_db_enabled'] === true) {
+			/* Check if this session already exists on sessions table */
+			$this->db->select('id,session');
+			$this->db->from('sessions');
 			$this->db->where('session', session_id());
-			$this->db->update('sessions', array(
-				'ip_address' => $this->request->remote_addr(),
-				'user_agent' => $this->request->header('User-Agent') ? $this->request->header('User-Agent') : 'Unspecified',
-				'last_login' => date('Y-m-d H:i:s'),
-				'users_id' => $user_id
-			));
+			$q = $this->db->get();
 
-			/* Update $sessions_id */
-			$row = $q->row_array();
-			$sessions_id = $row['id'];
+			$sessions_id = NULL; /* The'id' field value on sessions table... will be populated if there are results */
+
+			if ($q->num_rows()) {
+				/* Session already exists, so we just need to update it */
+				$this->db->where('session', session_id());
+				$this->db->update('sessions', array(
+					'ip_address' => $this->request->remote_addr(),
+					'user_agent' => $this->request->header('User-Agent') ? $this->request->header('User-Agent') : 'Unspecified',
+					'last_login' => date('Y-m-d H:i:s'),
+					'users_id' => $user_id
+				));
+
+				/* Update $sessions_id */
+				$row = $q->row_array();
+				$sessions_id = $row['id'];
+			} else {
+				/* The session doesn't exist... Unauthorized */
+				$this->response->code('401', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_default_charset, !$this->request->is_ajax());
+			}
 		} else {
-			/* The session doesn't exist... Unauthorized */
-			$this->response->code('401', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_default_charset, !$this->request->is_ajax());
+			$sessions_id = session_id();
+
+			if (!$sessions_id) {
+				/* The session doesn't exist... Unauthorized */
+				$this->response->code('401', NDPHP_LANG_MOD_ATTN_NO_SESSION_FOUND, $this->_default_charset, !$this->request->is_ajax());
+			}
 		}
 
 		/* Commit transaction if everything is fine. */

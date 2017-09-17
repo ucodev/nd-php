@@ -615,7 +615,7 @@ class ND_Register extends UW_Controller {
 
 		/* Set the user registration code status to 'true' */
 		$this->db->where('id', $users_id);
-		$this->db->where('users', array(
+		$this->db->update('users', array(
 			'registration_code_status' => true
 		));
 
