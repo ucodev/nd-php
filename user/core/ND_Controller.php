@@ -122,7 +122,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.5b1';
+	protected $_ndphp_version = '0.5b2';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -1002,9 +1002,6 @@ class ND_Controller extends UW_Controller {
 	public function __construct($session_enable = true, $json_replies = false) {
 		parent::__construct();
 
-		/* Retrieve global configuration */
-		global $config;
-
 		/* Grant that the configured cookie domain matches the server name */
 		$cookie_domain = current_config()['session']['cookie_domain'];
 		if (substr($_SERVER['SERVER_NAME'], -strlen($cookie_domain)) !== $cookie_domain)
@@ -1157,7 +1154,7 @@ class ND_Controller extends UW_Controller {
 				$this->db->where('id', $user_id);
 				$this->db->update('users', $userdata);
 
-				if ($config['session']['sssh_db_enabled'] === true) {
+				if (current_config()['session']['sssh_db_enabled'] === true) {
 					/* Check if this session already exists on sessions table */
 					$this->db->select('id,session');
 					$this->db->from('sessions');

@@ -290,7 +290,7 @@ class Login extends UW_Controller {
 		$this->db->where('id', $user_id);
 		$this->db->update('users', $userdata);
 
-		if ($config['session']['sssh_db_enabled'] === true) {
+		if (current_config()['session']['sssh_db_enabled'] === true) {
 			/* Check if this session already exists on sessions table */
 			$this->db->select('id,session');
 			$this->db->from('sessions');
