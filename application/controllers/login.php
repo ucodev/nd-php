@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -278,7 +278,7 @@ class Login extends UW_Controller {
 				'privenckey' => bin2hex($privenckey),
 				'logged_in' => true,
 				'sessions_id' => 0, /* Will be set when session table is queried */
-				'_apicall' => (strstr($this->request->header('Accept'), 'application/json') !== false)
+				'_apicall' => (strstr($this->request->header('accept'), 'application/json') !== false)
 			)
 		);
 
@@ -474,7 +474,7 @@ class Login extends UW_Controller {
 				$data['data']['is_superuser'] = $this->session->userdata('is_superuser');
 				$data['data']['apikey'] = $row['apikey'];
 
-				$this->response->header('Content-Type', 'application/json');
+				$this->response->header('content-type', 'application/json');
 				$this->response->output(json_encode($data));
 			} else {
 				redirect('/');
@@ -509,7 +509,7 @@ class Login extends UW_Controller {
 			/* Reply with JSON data */
 			$data['status'] = true;
 			$data['data']['logout'] = true;
-			$this->response->header('Content-Type', 'application/json');
+			$this->response->header('content-type', 'application/json');
 			$this->response->output(json_encode($data));
 		} else {
 			/* Otherwise redirect to base URL */

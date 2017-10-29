@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
@@ -31,7 +31,7 @@ class UW_Timezone {
 	public function convert($datetime_value, $from, $to, $format = 'Y-m-d H:i:s') {
 		/* Initial validations */
 		if (!$datetime_value || !$from || !$to) {
-			header('HTTP/1.1 400 Bad Request');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 400');
 			die('Invalid datetime convertion parameters.');
 		}
 
@@ -40,7 +40,7 @@ class UW_Timezone {
 
 		/* Set the current timezone to $from */
 		if (date_default_timezone_set($from) === false) {
-			header('HTTP/1.1 400 Bad Request');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 400');
 			die('Unrecognized timezone: ' . $from);
 		}
 
@@ -48,12 +48,12 @@ class UW_Timezone {
 		try {
 			$datetime = new DateTime($datetime_value, new DateTimeZone($from));
 		} catch (Exception $e) {
-			header('HTTP/1.1 400 Bad Request');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 400');
 			die('Unrecognized datetime value: ' . $datetime_value);
 		}
 
 		if (!$datetime) {
-			header('HTTP/1.1 400 Bad Request');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 400');
 			die('Unrecognized datetime value: ' . $datetime_value);
 		}
 

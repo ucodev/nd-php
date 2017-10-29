@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -151,9 +151,10 @@ class UW_Rest extends UW_Module {
 		return json_encode($json_res);
 	}
 
-	public function json_update() {
+	public function json_update($changed_fields) {
 		$json_res['status'] = true;
 		$json_res['data']['updated'] = true;
+		$json_res['data']['changed'] = $changed_fields;
 
 		/* Update accounting counters if accounting is enabled */
 		if ($this->config['accounting'])

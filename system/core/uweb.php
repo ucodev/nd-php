@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
@@ -331,7 +331,7 @@ class UW_Session extends UW_Base {
 
 		/* Check if we can use sessions */
 		if (session_status() == PHP_SESSION_DISABLED) {
-			header("HTTP/1.1 403 Forbbiden");
+			header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 			die("PHP Sessions are disabled.");
 		}
 
@@ -340,7 +340,7 @@ class UW_Session extends UW_Base {
 			$sssh = new UW_SessionHandlerDb($db, $cache);
 
 			if (session_set_save_handler($sssh, true) === false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('Unable to set session handler interface.');
 			}
 		}
@@ -379,7 +379,7 @@ class UW_Session extends UW_Base {
 
 			$this->_session_data_serialize(false, true); /* Close the session, without starting it */
 		} else {
-			header("HTTP/1.1 500 Internal Server Error");
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die("set_userdata(): First argument should be an array when no value is specified on second argument.");
 		}
 	}
@@ -591,7 +591,7 @@ class UW_Database extends UW_Base {
 		$q = explode('?', $query);
 
 		if ((count($q) - 1) != count($data)) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('_query_aggregate_args(): Query and Data counts do not match.');
 		}
 
@@ -626,7 +626,7 @@ class UW_Database extends UW_Base {
 
 	public function select($fields = NULL, $enforce = true) {
 		if (!$fields) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('select(): No fields selected.');
 		}
 
@@ -645,7 +645,7 @@ class UW_Database extends UW_Base {
 			/* $field_parsed shall not contain any comments */
 			foreach ($field_parsed as $field) {
 				if ($this->_has_special($field)) {
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('select(): Enforced select() shall not contain any comments nor special characters.');
 				}
 			}
@@ -686,7 +686,7 @@ class UW_Database extends UW_Base {
 
 	public function from($table = NULL, $enforce = true) {
 		if (!$table) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('from(): No table specified.');
 		}
 
@@ -696,7 +696,7 @@ class UW_Database extends UW_Base {
 
 			/* $table shall not contain any whitespaces nor comments */
 			if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('select(): Enforced select() shall not contain any comments');
 			}
 
@@ -710,7 +710,7 @@ class UW_Database extends UW_Base {
 
 	public function join($table = NULL, $on = NULL, $type = 'INNER', $enforce = true) {
 		if (!$table || !$on) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('join(): Missing required arguments.');
 		}
 
@@ -720,7 +720,7 @@ class UW_Database extends UW_Base {
 		$type = strtoupper($type);
 
 		if ($type != "INNER" && $type != "LEFT" && $type != "RIGHT") {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('join(): $type must be one of INNER, LEFT or RIGHT.');
 		}
 
@@ -731,14 +731,14 @@ class UW_Database extends UW_Base {
 
 			/* $table shall not contain any whitespaces nor comments */
 			if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('join(): Enforced join() shall not contain any comments nor whitespaces on $table name.');
 			}
 
 			/* $on shall not contain any comments */
 			/* FIXME: TODO: Strip '`' from $on and analyze each component, setting '`' as required . Also check '.' */
 			if ($this->_has_special($on)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('join(): Enforced join() shall not contain any comments on $on clause.');
 			}
 
@@ -753,17 +753,17 @@ class UW_Database extends UW_Base {
 	public function where($field_cond = NULL, $value = NULL, $enforce = true, $or = false, $in = false, $like = false, $not = false, $is_null = false, $is_not_null = false, $between = false) {
 		/* Sanity checks */
 		if ($in && $like) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('where(): IN and LIKE are mutual exclusive.');
 		}
 
 		if ($not && !$in && !$like) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('where(): NOT only accepted when IN or LIKE are used.');
 		}
 
 		if (!$field_cond) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('where(): No fields were specified.');
 		}
 
@@ -787,7 +787,7 @@ class UW_Database extends UW_Base {
 					$raw_value = true;
 				} break;
 				default: {
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('where(): Invalid value for $enforce (only boolean true, boolean false, string \'raw\' and string \'name_only\' are accepted).');
 				}
 			}
@@ -800,7 +800,7 @@ class UW_Database extends UW_Base {
 
 			/* ... and grant that there aren't any other undesired characters */
 			if ($this->_has_special($field_cond)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('where(): Field names cannot contain comments nor special charaters when enfoce is used.');
 			}
 
@@ -820,7 +820,7 @@ class UW_Database extends UW_Base {
 			} else if ($is_not_null && strpos($field_cond, ' ') === false) {
 				$this->_q_where .= ' IS NOT NULL ';
 			} else {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('where(): For NULL comparations, use is_null(), is_not_null(), or_is_null() and or_is_not_null() functions and do not use any comparators on first parameter.');
 			}
 
@@ -962,7 +962,7 @@ class UW_Database extends UW_Base {
 
 	public function group_by($fields, $enforce = true) {
 		if (!$fields) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('group_by(): No fields were specified.');
 		}
 
@@ -973,7 +973,7 @@ class UW_Database extends UW_Base {
 
 				/* Grant that there aren't any comments to block */
 				if ($this->_has_special($fields)) {
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('group_by(): Enforced function shall not contain comments in it.');
 				}
 
@@ -998,7 +998,7 @@ class UW_Database extends UW_Base {
 				/* Grant that there aren't any comments to block */
 				foreach ($fields as $field) {
 					if ($this->_has_special($field)) {
-						header('HTTP/1.1 500 Internal Server Error');
+						header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 						die('group_by(): Enforced function shall not contain comments in it.');
 					}
 				}
@@ -1018,7 +1018,7 @@ class UW_Database extends UW_Base {
 				$this->_q_group_by = ' GROUP BY ' . implode(',', $fields);
 			}
 		} else {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('group_by(): Invalid argument type.');
 		}
 
@@ -1027,7 +1027,7 @@ class UW_Database extends UW_Base {
 
 	public function having($fields_cond, $value = null, $enforce = true, $or = false) {
 		if (!$fields_cond) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('having(): No fields were specified.');
 		}
 
@@ -1043,7 +1043,7 @@ class UW_Database extends UW_Base {
 
 						/* Check if there are any comments to block */
 						if ($this->_has_special($fields_cond)) {
-							header('HTTP/1.1 500 Internal Server Error');
+							header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 							die('having(): Enforced function shall not contain comments in it.');
 						}
 
@@ -1059,7 +1059,7 @@ class UW_Database extends UW_Base {
 						/* Check if there are any comments to block */
 						if ($enforce) {
 							if ($this->_has_special($fields_cond)) {
-								header('HTTP/1.1 500 Internal Server Error');
+								header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 								die('having(): Enforced function shall not contain comments in it.');
 							}
 						}
@@ -1083,7 +1083,7 @@ class UW_Database extends UW_Base {
 					$k = str_replace('`', '', $k);
 
 					if ($this->_has_special($k)) {
-						header('HTTP/1.1 500 Internal Server Error');
+						header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 						die('having(): Enforced function shall not contain comments in it.');
 					}
 				}
@@ -1128,7 +1128,7 @@ class UW_Database extends UW_Base {
 
 	public function order_by($field, $order = 'ASC', $enforce = true) {
 		if (!$field) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('order_by(): No fields were specified.');
 		}
 
@@ -1136,7 +1136,7 @@ class UW_Database extends UW_Base {
 
 		/* Validate $order */
 		if ($order != 'ASC' && $order != 'DESC') {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('order_by(): $order shall only assume ASC or DESC.');
 		}
 
@@ -1153,7 +1153,7 @@ class UW_Database extends UW_Base {
 			$field = str_replace('`', '', $field);
 
 			if ($this->_has_special($field)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('order_by(): Enforced function shall not contain comments in it.');
 			}
 			$this->_q_order_by .= ' ' . $this->_table_field_enforce($field) . ' ' . $order;
@@ -1168,7 +1168,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate fields */
 			if ($this->_has_special($limit) || $this->_has_special($offset)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('limit(): Enforced function shall not contain comments in it.');
 			}
 		}
@@ -1190,7 +1190,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table name */
 			if ($this->_has_special($table)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_exists(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1209,7 +1209,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table names */
 			if ($this->_has_special($table) || $this->_has_special($new_table)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_rename(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1225,13 +1225,13 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($first_column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_create(): Enforced function shall not contain comments in it.');
 			}
 
 			/* Validate column type */
 			if (!preg_match('/^([a-zA-Z]+|[a-zA-Z]+\([0-9\,\.]+\))$/i', $column_type)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_create(): Invalid format for column type.');
 			}
 
@@ -1246,7 +1246,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table name */
 			if ($this->_has_special($table)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_drop(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1272,7 +1272,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_exists(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1292,25 +1292,25 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_create(): Enforced function shall not contain comments in it.');
 			}
 
 			/* Validate column type */
 			if (!preg_match('/^([a-zA-Z]+|[a-zA-Z]+\([0-9\,\.]+\))$/i', $type)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_create(): Invalid format for column type.');
 			}
 
 			/* Validate default value */
 			if ($default[0] != '\'') { /* If the default value isn't a quoted string ... */
 				if ($this->_has_special($default)) { /* ... and contains special characters in it ... */
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('table_column_create(): Default value isn\'t a quoted string but contains special characters on it.');
 				}
 			} else { /* If the default value is a quoted string ... */
 				if (substr($default[0], -1) != '\'') { /* ... and it does not end with a quote ... */
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('table_column_create(): Default value starts with a quote, indicating it\'s a quoted string, but it lacks a quote as its last character.');
 				}
 
@@ -1332,7 +1332,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_drop(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1347,25 +1347,25 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column) || $this->_has_special($new_column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_change(): Enforced function shall not contain comments in it.');
 			}
 
 			/* Validate column type */
 			if (!preg_match('/^([a-zA-Z]+|[a-zA-Z]+\([0-9\,\.]+\))$/i', $type)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_change(): Invalid format for column type.');
 			}
 
 			/* Validate default value */
 			if ($default[0] != '\'') { /* If the default value isn't a quoted string ... */
 				if ($this->_has_special($default)) { /* ... and contains special characters in it ... */
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('table_column_change(): Default value isn\'t a quoted string but contains special characters on it.');
 				}
 			} else { /* If the default value is a quoted string ... */
 				if (substr($default[0], -1) != '\'') { /* ... and it does not end with a quote ... */
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('table_column_change(): Default value starts with a quote, indicating it\'s a quoted string, but it lacks a quote as its last character.');
 				}
 
@@ -1388,7 +1388,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_unique_add(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1403,12 +1403,12 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_unique_drop(): Enforced function shall not contain comments in it.');
 			}
 
 			if ($if_exists_from_table !== NULL && $this->_has_special($if_exists_from_table)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_column_unique_drop(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1434,7 +1434,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column) || $this->_has_special($foreign_table) || $this->_has_special($foreign_column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_key_column_foreign_add(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1451,12 +1451,12 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* Validate table and column names */
 			if ($this->_has_special($table) || $this->_has_special($column)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_key_column_foreign_drop(): Enforced function shall not contain comments in it.');
 			}
 
 			if ($index_name !== NULL && $this->_has_special($index_name)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('table_key_column_foreign_drop(): Enforced function shall not contain comments in it.');
 			}
 
@@ -1517,7 +1517,7 @@ class UW_Database extends UW_Base {
 
 			/* FROM */
 			if (!$this->_q_from) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('get_compiled_select(): No argument supplied ($table) and no from() was called.');
 			} else {
 				$query .= ' ' . $this->_q_from . ' ';
@@ -1552,7 +1552,7 @@ class UW_Database extends UW_Base {
 			/* $table shall not contain any whitespaces nor comments */
 			if ($enforce) {
 				if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('get_compiled_select(): Enforced functions shall not contain any comments in their protected arguments.');
 				}
 
@@ -1604,7 +1604,7 @@ class UW_Database extends UW_Base {
 		if ($enforce) {
 			/* $table shall not contain any whitespaces nor comments */
 			if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('get_where(): Enforced functions shall not contain any comments in their protected arguments.');
 			}
 
@@ -1657,19 +1657,19 @@ class UW_Database extends UW_Base {
 
 	public function insert($table, $kv, $enforce = true) {
 		if (!$table) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('insert(): No table was specified.');
 		}
 
 		if (!$kv) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('insert(): No K/V pairs were specified.');
 		}
 
 		if ($enforce) {
 			/* $table shall not contain any whitespaces nor comments */
 			if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('insert(): Enforced functions shall not contain any comments in their protected arguments.');
 			}
 		}
@@ -1686,7 +1686,7 @@ class UW_Database extends UW_Base {
 		/* Iterate k/v */
 		foreach ($kv as $k => $v) {
 			if ($enforce && $this->_has_special($k)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('insert(): Enforced functions shall not contain any comments in their protected arguments (K/V).');
 			}
 
@@ -1706,19 +1706,19 @@ class UW_Database extends UW_Base {
 
 	public function update($table, $kv, $enforce = true) {
 		if (!$table) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('update(): No table was specified.');
 		}
 
 		if (!$kv) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('update(): No K/V pairs were specified.');
 		}
 
 		if ($enforce) {
 			/* $table shall not contain any whitespaces nor comments */
 			if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('update(): Enforced functions shall not contain any comments in their protected arguments.');
 			}
 		}
@@ -1733,7 +1733,7 @@ class UW_Database extends UW_Base {
 
 		foreach ($kv as $k => $v) {
 			if ($enforce && $this->_has_special($k)) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('update(): Enforced functions shall not contain any comments in their protected arguments (K/V).');
 			}
 
@@ -1758,14 +1758,14 @@ class UW_Database extends UW_Base {
 
 	public function delete($table, $fields_cond = NULL, $enforce = true) {
 		if (!$table) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('delete(): No table was specified.');
 		}
 
 		if ($enforce) {
 			/* $table shall not contain any whitespaces nor comments */
 			if ($this->_has_special($table) || strpos($table, ' ') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('delete(): Enforced functions shall not contain any comments in their protected arguments.');
 			}
 		}
@@ -1851,7 +1851,7 @@ class UW_Database extends UW_Base {
 			} catch (PDOException $e) {
 				/* Something went wrong ... */
 				error_log('Database connection error (dbname: ' . $config['database'][$dbalias]['name'] . '): ' . $e);
-				header('HTTP/1.1 503 Service Unavailable');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 503');
 				die('Unable to connect to database.');
 			}
 		}
@@ -1962,7 +1962,7 @@ class UW_Database extends UW_Base {
 
 	public function query($query, $data = NULL) {
 		if (!$query) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			$this->trans_rollback(); /* Will attempt to rollback transaction, if we are inside a transaction */
 			die('query(): No query was specified.');
 		}
@@ -1975,13 +1975,13 @@ class UW_Database extends UW_Base {
 				
 				if (!$this->_stmt) {
 					error_log('$this->db->query(): PDOStatement::prepare(): Failed.');
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					$this->trans_rollback(); /* Will attempt to rollback transaction, if we are inside a transaction */
 					die('query(): PDOStatement::prepare(): Failed.');
 				}
 			} catch (PDOException $e) {
 				error_log('$this->db->query(): PDOStatement::prepare(): ' . $e);
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				$this->trans_rollback(); /* Will attempt to rollback transaction, if we are inside a transaction */
 				die('query(): PDOStatement::prepare(): Failed.');
 			}
@@ -1993,13 +1993,13 @@ class UW_Database extends UW_Base {
 
 					switch ($err_info[0]) {
 						case '23000': {
-							header('HTTP/1.1 409 Conflict');
+							header($_SERVER['SERVER_PROTOCOL'] . ' 409');
 							$this->trans_rollback(); /* Will attempt to rollback transaction, if we are inside a transaction */
 							die($err_info[2]);
 						} break;
 
 						default: {
-							header('HTTP/1.1 500 Internal Server Error');
+							header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 						}
 					}
 					
@@ -2013,13 +2013,13 @@ class UW_Database extends UW_Base {
 
 					switch ($err_info[0]) {
 						case '23000': {
-							header('HTTP/1.1 409 Conflict');
+							header($_SERVER['SERVER_PROTOCOL'] . ' 409');
 							$this->trans_rollback(); /* Will attempt to rollback transaction, if we are inside a transaction */
 							die($err_info[2]);
 						} break;
 
 						default: {
-							header('HTTP/1.1 500 Internal Server Error');
+							header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 						}
 					}
 
@@ -2030,7 +2030,7 @@ class UW_Database extends UW_Base {
 		} else {
 			/* Execute query without prepared statement allocation */
 			if (!($this->_stmt = $this->_db[$this->_cur_db]->query($this->_query_aggregate_args($query, $data)))) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				$this->trans_rollback(); /* Will attempt to rollback transaction, if we are inside a transaction */
 				die('query(): Failed to execute query.');
 			}
@@ -2145,7 +2145,7 @@ class UW_Database extends UW_Base {
 		global $config;
 
 		if ($config['database'][$this->_cur_db]['driver'] != 'mysql') {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('dump() is only available on database connectinos relying on mysql driver.');
 		}
 
@@ -2277,7 +2277,7 @@ class UW_View extends UW_Base {
 			foreach ($data as $k => $v) {
 				/* NOTE: This is only effective for string type values. Any other object won't be checked */
 				if (gettype($v) == "string" && strpos(str_replace(' ', '', strtolower($v)), '<script') !== false) {
-					header('HTTP/1.1 500 Internal Server Error');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 					die('load(): Unable to load views with <script> tags on their $data strings when $enforce is set to true (default).');
 				}
 			}
@@ -2293,7 +2293,7 @@ class UW_View extends UW_Base {
 		/* Validate filename */
 		if ($enforce) {
 			if (strpos($file, '../') !== false) {
-				header('HTTP/1.1 500 Internal Server Error');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 				die('load(): Unable to load view files with \'../\' string on their names.');
 			}
 		}

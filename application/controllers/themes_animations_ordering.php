@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -51,4 +51,3 @@ class Themes_animations_ordering extends ND_Controller {
 
 	/** Custom functions **/
 }
-

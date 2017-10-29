@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -87,11 +87,11 @@ class Files extends ND_Controller {
 
 			/* Fetch and set the mime type and dump the file contents */
 			$file_info = new finfo(FILEINFO_MIME);
-			$this->response->header('Content-Type', $file_info->buffer($file_contents));
+			$this->response->header('content-type', $file_info->buffer($file_contents));
 			
 			/* Check if we need to set the content disposition as attachment (aka save file instead of browser display) */
 			if ($download == 'yes')
-				$this->response->header('Content-Disposition', 'attachment; filename=' . $filename);
+				$this->response->header('content-disposition', 'attachment; filename=' . $filename);
 
 			/* Dump file contents */
 			$this->response->output($file_contents);

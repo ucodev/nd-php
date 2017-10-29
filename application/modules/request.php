@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -169,7 +169,7 @@ class UW_Request extends UW_Module {
 	}
 
 	public function is_json() {
-		if (strstr($this->header('Accept'), 'application/json') !== false)
+		if (strstr($this->header('accept'), 'application/json') !== false)
 			return true;
 
 		return $this->json() !== NULL;
@@ -187,13 +187,15 @@ class UW_Request extends UW_Module {
 			if (substr($header, 0, 5) != 'HTTP_')
 				continue;
 
-			$this->_headers[ucwords(strtolower(str_replace('_', '-', substr($header, 5))), '-')] = $value;
+			$this->_headers[strtolower(str_replace('_', '-', substr($header, 5)))] = $value;
 		}
 
 		return $this->_headers;
 	}
 
 	public function header($header) {
+		$header = strtolower($header);
+
 		$this->headers();
 
 		if (isset($this->_headers[$header]))

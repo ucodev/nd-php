@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -86,16 +86,21 @@ class UW_Response extends UW_Module {
 	);
 
 	public function header($key, $value, $replace = true) {
+		$key = strtolower($key);
+
 		header($key . ': ' . $value, $replace);
 	}
 
-	public function code($code, $content = NULL, $charset = 'UTF-8', $template = true, $protocol = 'HTTP/1.1') {
+	public function code($code, $content = NULL, $charset = 'UTF-8', $template = true, $protocol = NULL) {
+		if ($protocol === NULL)
+			$protocol = $_SERVER['SERVER_PROTOCOL'];
+
 		if ((intval($code) >= 400 && intval($code) <= 429) || (intval($code) >= 500 && intval($code) <= 505)) {
 			header($protocol . ' ' . $code . ' ' . $this->_code_name_desc[$code][0]);
 
 			/* If the peer accepts JSON encoded responses, we'll go for it */
 			if (strstr($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
-				$this->header('Content-Type', 'application/json');
+				$this->header('content-type', 'application/json');
 				$data['status'] = false;
 				$data['code'] = $code;
 				$data['content'] = $content;
@@ -129,9 +134,9 @@ class UW_Response extends UW_Module {
 	}
 
 	public function download($data, $filename = 'download.txt', $content_type = 'text/plain', $charset = NDPHP_LANG_MOD_DEFAULT_CHARSET, $content_encoding = NDPHP_LANG_MOD_DEFAULT_CHARSET) {
-		$this->header('Content-Encoding', $content_encoding);
-		$this->header('Content-Type', $content_type . '; charset=' . $charset);
-		$this->header('Content-Disposition', 'attachment; filename=' . $filename);
+		$this->header('content-encoding', $content_encoding);
+		$this->header('content-type', $content_type . '; charset=' . $charset);
+		$this->header('content-disposition', 'attachment; filename=' . $filename);
 		$this->output($data);
 	}
 }

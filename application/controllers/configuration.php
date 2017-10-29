@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -247,7 +247,7 @@ class Configuration extends ND_Controller {
 
 		/* Craft user/config/cache.php contents */
 		$cache_config =
-			'<?php if (!defined(\'FROM_BASE\')) { header(\'HTTP/1.1 403 Forbidden\'); die(\'Invalid requested path.\'); }' . "\n" .
+			'<?php if (!defined(\'FROM_BASE\')) { header($_SERVER[\'SERVER_PROTOCOL\'] . \' 403\'); die(\'Invalid requested path.\'); }' . "\n" .
 			'' . "\n" .
 			'/* Cache settings */' . "\n" .
 			'$cache[\'driver\'] = \'memcached\';' . "\n" .
@@ -333,8 +333,8 @@ class Configuration extends ND_Controller {
 		unlink($filename_db_dump); /* Delete the .sql file */
 
 		/* Deliver backup as file download */
-		$this->response->header('Content-Type', 'application/x-gzip');
-		$this->response->header('Content-Disposition', 'attachment; filename=' . end(explode('/', $filename_project)) . '.gz');
+		$this->response->header('content-type', 'application/x-gzip');
+		$this->response->header('content-disposition', 'attachment; filename=' . end(explode('/', $filename_project)) . '.gz');
 
 		readfile($filename_project . '.gz');
 

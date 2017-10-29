@@ -1,4 +1,4 @@
-<?php header('Content-Type: text/css'); ?>
+<?php header('content-type: text/css'); ?>
 
 /*
  * This file is part of ND PHP Framework.

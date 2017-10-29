@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -1754,7 +1754,7 @@ class UW_Charts extends UW_Module {
 		$nodata_msg = NDPHP_LANG_MOD_EMPTY_DATA;
 
 		/* Set content type header */
-		$this->response->header('Content-Type', 'image/png');
+		$this->response->header('content-type', 'image/png');
 
 		/* Create canvas */
 		$nodata_img = imagecreate($this->config['charts_canvas_width'], $this->config['charts_canvas_height']);

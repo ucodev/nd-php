@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /* Author: Pedro A. Hortas
  * Email: pah@ucodev.org
@@ -46,7 +46,7 @@ $__path_dir = '';
 
 /* Grant URI match the acceptable regex */
 if (!preg_match($config['base']['acceptable_uri_regex'], $_SERVER['REQUEST_URI'])) {
-	header('HTTP/1.1 403 Forbidden');
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 	die('URI contains invalid characters.');
 }
 
@@ -69,7 +69,7 @@ if (($__a_count >= 1) && $__uri[$__a_koffset + 1]) {
 	$__controller = strtolower($__uri[$__a_koffset + 1]);
 
 	if (!preg_match('/^[a-z0-9_]+$/', $__controller)) {
-		header('HTTP/1.1 403 Forbidden');
+		header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 		die('Controller name contains invalid characters.');
 	}
 }
@@ -79,7 +79,7 @@ if (($__a_count >= 2) && $__uri[$__a_koffset + 2]) {
 	$__function = strtolower($__uri[$__a_koffset + 2]);
 
 	if (!preg_match('/^[a-z0-9_]+$/', $__function)) {
-		header('HTTP/1.1 403 Forbidden');
+		header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 		die('Function name contains invalid characters.');
 	}
 }
@@ -114,7 +114,7 @@ if ($__controller) {
 			foreach ($__args as $__arg) {
 				/* Check for .. on all arguments to avoid ../ paths */
 				if (strstr($__arg, '..')) {
-					header('HTTP/1.1 403 Forbidden');
+					header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 					die('Static path contains ../ references, which are invalid.');
 				}
 
@@ -135,7 +135,7 @@ if ($__controller) {
 	} else {
 		/* This is a real controller */
 		if (!file_exists('application/controllers/' . $__controller . '.php')) {
-			header('HTTP/1.1 404 Not Found');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 404');
 			die('No such controller: ' . $__controller);
 		} else {
 			include('application/controllers/' . $__controller . '.php');
@@ -147,7 +147,7 @@ if ($__controller) {
 		if (!$__function) {
 			$__function = 'index';
 		} else if ($__function == '__construct') {
-			header('HTTP/1.1 403 Forbidden');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 			die('Calling __construct() methods directly from HTTP requests is not allowed.');
 		}
 
@@ -164,7 +164,7 @@ if ($__controller) {
 		eval('$__r_->' . $__function . '(' . $__args_list . ');');
 	}
 } else {
-	header('HTTP/1.1 400 Bad Request');
+	header($_SERVER['SERVER_PROTOCOL'] . ' 400');
 	die('No controller defined in the request. Nothing to process.<br />');
 }
 

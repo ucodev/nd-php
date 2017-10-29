@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -405,12 +405,12 @@ class ND_Register extends UW_Controller {
 			if ($res === true) {
 				$this->user_active_process($users_id);
 
-				if (strstr($this->request->header('Accept'), 'application/json') !== false) {
+				if (strstr($this->request->header('accept'), 'application/json') !== false) {
 					$data['status'] = true;
 					$data['data']['user_id'] = $users_id;
 					$data['data']['registered'] = true;
 
-					$this->response->header('Content-Type', 'application/json');
+					$this->response->header('content-type', 'application/json');
 					$this->response->output(json_encode($data));
 				} else {
 					/* This should be a view */
@@ -469,7 +469,7 @@ class ND_Register extends UW_Controller {
 			$res = recaptcha_check_answer($this->recaptcha_private_key, $_SERVER['REMOTE_ADDR'], $_POST['recaptcha_challenge_field'], $_POST['recaptcha_response_field']);
 
 			if (!$res->is_valid) {
-				header('HTTP/1.1 403 Forbidden');
+				header($_SERVER['SERVER_PROTOCOL'] . ' 403');
 				die(NDPHP_LANG_MOD_INVALID_RECAPTCHA_VALUE);
 			}
 		}

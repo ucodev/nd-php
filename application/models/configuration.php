@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -55,7 +55,7 @@ class UW_Configuration extends UW_Model {
 
 		/* If there isn't any active configuration, we cannot proceed... */
 		if (!$query->num_rows()) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die('UW_Configuration::get(): ' . NDPHP_LANG_MOD_CANNOT_FIND_ACTIVE_CONFIG);
 		}
 

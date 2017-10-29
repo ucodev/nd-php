@@ -1,4 +1,4 @@
-<?php if (!defined('FROM_BASE')) { header('HTTP/1.1 403 Forbidden'); die('Invalid requested path.'); }
+<?php if (!defined('FROM_BASE')) { header($_SERVER['SERVER_PROTOCOL'] . ' 403'); die('Invalid requested path.'); }
 
 /*
  * This file is part of ND PHP Framework.
@@ -956,7 +956,7 @@ class ND_Controller extends UW_Controller {
 
 		/* Grant that there are no special characters on module name */
 		if (!preg_match('/^[a-zA-Z0-9\_]+$/i', $name)) {
-			header('HTTP/1.1 500 Internal Server Error');
+			header($_SERVER['SERVER_PROTOCOL'] . ' 500');
 			die(NDPHP_LANG_MOD_INVALID_CTRL_NAME . ': ' . $name);
 		}
 
@@ -4933,7 +4933,7 @@ class ND_Controller extends UW_Controller {
 			return true;
 		} else {
 			if ($this->config['json_replies'] === true) {
-				$this->response->output($this->rest->json_update());
+				$this->response->output($this->rest->json_update($changed_fields));
 				return;
 			} else if ($this->request->is_ajax()) {
 				$this->response->output($this->request->post('id'));
