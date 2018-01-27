@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2018  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -282,8 +282,8 @@ ndphp.ide.ide_integrity_check_field = function(menu, field, field_array) {
             } break;
             case 'File':
             case 'Text': {
-                if (field['constraints']['unique'] && parseInt(field['properties']['len']) > 767) {
-                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" has a UNIQUE constraint set and its length must be less than or equal to 767.');
+                if ((field['constraints']['unique'] || field['constraints']['index']) && parseInt(field['properties']['len']) > 767) {
+                    alert('Field "' + field['title'] + '/' + field['name'] + '" from menu "' + menu['title'] + '/' + menu['name'] + '" has a UNIQUE or INDEX constraint set and its length must be less than or equal to 767.');
                     return false;
                 } else if (parseInt(field['properties']['len']) > 65532) {
                     /* Fields of type Text with sizes greater than 65532 will be converted to textarea (dbms type: text) */
@@ -678,7 +678,7 @@ ndphp.ide.dialog_show = function(obj, type) {
     });
 };
 
-ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls) {
+ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls, deploy_all) {
     var application = {};
     var validated = true; /* Assume model as valid... This may be changed during validation checks... */
 
@@ -720,6 +720,7 @@ ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls) {
             menu['options']['accounting'] = !!jQuery('#' + obj_menu_id + ' div[id^=dialog_menu_settings] #options_accounting').is(':checked');
             menu['options']['linking'] = !!jQuery('#' + obj_menu_id + ' div[id^=dialog_menu_settings] #options_linking').is(':checked');
             menu['options']['hidden'] = !!jQuery('#' + obj_menu_id + ' div[id^=dialog_menu_settings] #options_hidden').is(':checked');
+            menu['options']['deploy'] = !!jQuery('#' + obj_menu_id + ' div[id^=dialog_menu_settings] #options_deploy').is(':checked');
             /* Debug */
             //alert('Options -- Logging: ' + menu['options']['logging'] + ', Accounting: ' + menu['options']['accounting'] + ', Linking: ' + menu['options']['linking']);
 
@@ -818,6 +819,8 @@ ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls) {
                 field['constraints'] = {};
                 field['constraints']['required'] = !!jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #constraint_required').is(':checked');
                 field['constraints']['unique'] = !!jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #constraint_unique').is(':checked');
+                field['constraints']['unique_group'] = jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #constraint_unique_group').val();
+                field['constraints']['index'] = !!jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #constraint_index').is(':checked');
                 field['constraints']['hidden'] = !!jQuery('#' + obj_field_id + ' div[id^=dialog_field_settings] #constraint_hidden').is(':checked');
                 /* Debug */
                 //alert('Field Constraints -- Required: ' + field['constraints']['required'] + ', Unique: ' + field['constraints']['unique'] + ', Hidden: ' + field['constraints']['hidden']);
@@ -953,12 +956,27 @@ ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls) {
                 alert(xhr.responseText);
             }
         });
-    } else if (build == true) {
+    } else if (build == true && deploy_all == false) {
         /* Convert application object to JSON and submit it to application builder */
         jQuery.ajax({
             type: "POST",
             data: JSON.stringify(application),
-            url:  "<?=base_url()?>index.php/builder/deploy_model",
+            url:  "<?=base_url()?>index.php/builder/deploy_model/selective",
+            success: function(data) {
+                ndphp.ui.ready();
+                alert(data);
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                ndphp.ui.ready();
+                alert(xhr.responseText);
+            }
+        });
+    } else if (build == true && deploy_all == true) {
+        /* Convert application object to JSON and submit it to application builder */
+        jQuery.ajax({
+            type: "POST",
+            data: JSON.stringify(application),
+            url:  "<?=base_url()?>index.php/builder/deploy_model/all",
             success: function(data) {
                 ndphp.ui.ready();
                 alert(data);
@@ -1004,21 +1022,25 @@ ndphp.ide.build = function(check, save, build, commit_ctrls, apply_acls) {
 };
 
 ndphp.ide.save = function() {
-    ndphp.ide.build(true /* check */, true /* save */, false /* build */, false /* commit_ctrls */, false /* apply_acls */);
+    ndphp.ide.build(true /* check */, true /* save */, false /* build */, false /* commit_ctrls */, false /* apply_acls */, true /* deploy all */);
 }
 
 ndphp.ide.check = function() {
-    ndphp.ide.build(true /* check */, false /* save */, false /* build */, false /* commit_ctrls */, false /* apply_acls */);
+    ndphp.ide.build(true /* check */, false /* save */, false /* build */, false /* commit_ctrls */, false /* apply_acls */, true /* deploy all */);
 };
 
-ndphp.ide.deploy = function() {
-    ndphp.ide.build(true /* check */, true /* save */, true /* build */, false /* commit_ctrls */, false /* apply_acls */);
+ndphp.ide.deploy_selected = function() {
+    ndphp.ide.build(true /* check */, true /* save */, true /* build */, false /* commit_ctrls */, false /* apply_acls */, false /* deploy all */);
+}
+
+ndphp.ide.deploy_all = function() {
+    ndphp.ide.build(true /* check */, true /* save */, true /* build */, false /* commit_ctrls */, false /* apply_acls */, true /* deploy all */);
 }
 
 ndphp.ide.commit_ctrls = function() {
-    ndphp.ide.build(false /* check */, false /* save */, false /* build */, true /* commit_ctrls */, false /* apply_acls */);
+    ndphp.ide.build(false /* check */, false /* save */, false /* build */, true /* commit_ctrls */, false /* apply_acls */, true /* deploy all */);
 }
 
 ndphp.ide.apply_acls = function() {
-    ndphp.ide.build(false /* check */, false /* save */, false /* build */, false /* commit_ctrls */, true /* apply_acls */);
+    ndphp.ide.build(false /* check */, false /* save */, false /* build */, false /* commit_ctrls */, true /* apply_acls */, true /* deploy all */);
 }

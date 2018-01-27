@@ -197,6 +197,7 @@ define('NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_SMALL', 'Image height too small:
 define('NDPHP_LANG_MOD_INVALID_IMAGE_HEIGHT_TOO_LARGE', 'Image height too large: ');
 define('NDPHP_LANG_MOD_INVALID_IMAGE_FILE_EXTENSION','Invalid file image extension: ');
 define('NDPHP_LANG_MOD_INVALID_USERNAME_CHARS',     'Invalid characters found in username.');
+define('NDPHP_LANG_MOD_INVALID_DEPLOY_TYPE',        'Invalid deploy model type: ');
 
 defined('NDPHP_LANG_MOD_INFO_LOADING')                  || define('NDPHP_LANG_MOD_INFO_LOADING',                'Loading...');
 defined('NDPHP_LANG_MOD_INFO_AUTHENTICATING')           || define('NDPHP_LANG_MOD_INFO_AUTHENTICATING',         'Authenticating...');

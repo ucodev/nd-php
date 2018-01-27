@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2018  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ class UW_Application extends UW_Model {
 	/***************************/
 	private $_default_charset = NDPHP_LANG_MOD_DEFAULT_CHARSET;
 	private $_default_theme = 'Blueish';
+	private $_deploy_type = 'all'; /* By default, all the controllers will be deployed. */
 
 	public function __construct() {
 		parent::__construct();
@@ -257,6 +258,7 @@ class UW_Application extends UW_Model {
 	/************************/
 
 	private $_pp_batch_db_fk = array();
+	private $_pp_batch_db_ucomp = array();
 	private $_pp_batch_db_special_tables = array();
 
 	private function _pp_batch_db_key_foreign_store($src_table, $src_field, $foreign_table, $foreign_field, $cascade_delete = false, $cascade_update = false) {
@@ -269,6 +271,17 @@ class UW_Application extends UW_Model {
 			'cascade_delete' => $cascade_delete,
 			'cascade_update' => $cascade_update
 		));
+	}
+
+	private function _pp_batch_db_composite_unique_append($table, $group, $field) {
+		/* Store and aggregate unique composites in the respective groups */
+		if (!isset($this->_pp_batch_db_ucomp[$table]))
+			$this->_pp_batch_db_ucomp[$table] = array();
+
+		if (!isset($this->_pp_batch_db_ucomp[$table][$group]))
+			$this->_pp_batch_db_ucomp[$table][$group] = array();
+		
+		array_push($this->_pp_batch_db_ucomp[$table][$group], $field);
 	}
 
 	private function _pp_batch_db_special_table_store($table, $type, $op = 'create', $parent_table = NULL) {
@@ -319,6 +332,13 @@ class UW_Application extends UW_Model {
 			}
 
 			$this->db->table_key_column_foreign_add($fkey['src_table'], $fkey['src_field'], $fkey['foreign_table'], $fkey['foreign_field'], $fkey['cascade_delete'], $fkey['cascade_update']);
+		}
+
+		/* Commit unique composites */
+		foreach ($this->_pp_batch_db_ucomp as $table => $v) {
+			foreach ($this->_pp_batch_db_ucomp[$table] as $group => $fields) {
+				$this->db->table_composite_unique_add($table, $group, $fields);
+			}
 		}
 
 		/* All good */
@@ -1155,12 +1175,25 @@ class UW_Application extends UW_Model {
 			/* Always try to remove any old unique key */
 			$this->db->table_column_unique_drop($field_obj['db_table'], $field_obj['db_table_field'], true /* IF EXISTS (equivalent) */, $menu['db']['name'] /* If the table was renamed, force the table name where we need to check for the index */);
 
+			/* Always try to remove any old index */
+			$this->db->table_column_index_drop($field_obj['db_table'], $field_obj['db_table_field'], true /* IF EXISTS (equivalent) */, $menu['db']['name'] /* If the table was renamed, force the table name where we need to check for the index */);
+
 			/* Change the table column (even if there are no changes) */
 			$this->db->table_column_change($menu['db']['name'], $field_obj['db_table_field'], $field['db']['name'], $field['db']['type'], $field['db']['is_nullable'], $field['db']['default'], $field['db']['after']);
 
 			/* If it is unique, add new unique key */
-			if ($field['db']['is_unique']) /* FIXME: WARNING: If the table is already populated, this may cause an error if there isn't data uniqueness */
-				$this->db->table_column_unique_add($menu['db']['name'], $field['db']['name']);
+			if ($field['db']['is_unique']) { /* FIXME: WARNING: If the table is already populated, this may cause an error if there isn't data uniqueness */
+				if (isset($field['db']['unique_group']) && $field['db']['unique_group']) {
+					/* If this field is part of a unique composite, postpone the processing after all fields are aggregated ... */
+					$this->_pp_batch_db_composite_unique_append($menu['db']['name'], $field['db']['unique_group'], $field['db']['name']);
+				} else {
+					/* ... otherwise process the single unique field immediately */
+					$this->db->table_column_unique_add($menu['db']['name'], $field['db']['name']);
+				}
+			} else if ($field['db']['is_index']) {
+				/* Only apply an index if uniqueness isn't set (setting unique will already index the field) */
+				$this->db->table_column_index_add($menu['db']['name'], $field['db']['name']);
+			}
 
 			/* Check if field type is of _file_* and take appropriate actions on the file system based on the changes */
 			if (substr($field_obj['db_table_field'], 0, 6) == '_file_') {
@@ -1227,8 +1260,12 @@ class UW_Application extends UW_Model {
 			$this->db->table_column_create($menu['db']['name'], $field['db']['name'], $field['db']['type'], $field['db']['is_nullable'], $field['db']['default'], $field['db']['after']);
 
 			/* If it is unique, add new unique key */
-			if ($field['db']['is_unique'])
+			if ($field['db']['is_unique']) {
 				$this->db->table_column_unique_add($menu['db']['name'], $field['db']['name']);
+			} else if ($field['db']['is_index']) {
+				/* ... only add index if uniqueness is not set (setting unique will already index the field) */
+				$this->db->table_column_index_add($menu['db']['name'], $field['db']['name']);
+			}
 		}
 
 		/* All good */
@@ -1271,6 +1308,9 @@ class UW_Application extends UW_Model {
 			/* Add new object reference */
 			$this->_object_ref_table_add($menu['obj_id'], $menu['db']['name'], $menu['type']);
 		}
+
+		/* Always try to remove any unique composite. We use the new db table name as at this point all tables to be renamed were already renamed (see condition above) */
+		$this->db->table_composite_unique_remove_all($menu['db']['name']);
 
 		/* All good */
 		return true;
@@ -1968,6 +2008,13 @@ class UW_Application extends UW_Model {
 	private function _process_menus($menus) {
 		/* Process each available menu */
 		foreach ($menus as $menu) {
+			/* Check if this is a selective deploy... */
+			if ($this->_deploy_type == 'selective') {
+				/* ... if so, if this menu object isn't marked to be deployed, ignore it */
+				if (!$menu['constraints']['deploy'])
+					continue;
+			}
+
 			/* If the menu object exists, process changes */
 			if ($this->_object_exists($menu['obj_id'])) {
 				if (!$this->_process_menu_changes($menu)) {
@@ -2165,6 +2212,22 @@ class UW_Application extends UW_Model {
 		return false;
 	}
 
+	private function _field_get_unique_group($field) {
+		return $field['constraints']['unique_group'];
+	}
+
+	private function _field_is_index($field) {
+		if (isset($field['constraints']['index']) && $field['constraints']['index'] === true) {
+			/* Only the following field types can be indexed */
+			switch ($field['type']) {
+				case 'text'		: return true;
+				case 'numeric'	: return true;
+			}
+		}
+
+		return false;
+	}
+
 	private function _create_application_object_list($app_model) {
 		/* Creates an array of all application objects */
 		$obj_list = array();
@@ -2226,6 +2289,10 @@ class UW_Application extends UW_Model {
 				$app_model['menus'][$i]['fields'][$j]['db']['is_nullable'] = $this->_field_is_nullable($app_model['menus'][$i]['fields'][$j]);
 				/* Is this column unique? */
 				$app_model['menus'][$i]['fields'][$j]['db']['is_unique'] = $this->_field_is_unique($app_model['menus'][$i]['fields'][$j]);
+				/* Get column unique group */
+				$app_model['menus'][$i]['fields'][$j]['db']['unique_group'] = $this->_field_get_unique_group($app_model['menus'][$i]['fields'][$j]);
+				/* Is this column an index? */
+				$app_model['menus'][$i]['fields'][$j]['db']['is_index'] = $this->_field_is_index($app_model['menus'][$i]['fields'][$j]);
 
 				/* FIXME: TODO: Set the default value */
 				if (isset($app_model['menus'][$i]['fields'][$j]['properties']['default_value']) &&
@@ -2279,13 +2346,28 @@ class UW_Application extends UW_Model {
 	/*  PUBLIC API  */
 	/****************/
 
-	public function deploy_model($app_model = NULL) {
+	public function deploy_model($app_model = NULL, $type = 'all') {
 		/* No time limit for deployments */
 		set_time_limit(0);
 
 		/* No model, no fun :() */
 		if ($app_model === NULL) {
-			error_log('deploy_model(): $application_model is NULL');
+			error_log('deploy_model(): $app_model is NULL');
+			return false;
+		}
+
+		/* Set deploy type */
+		$this->_deploy_type = $type;
+
+		/*
+		 * $type values:
+		 *
+		 *  * 'all' 		- deploys the entire model
+		 *  * 'selective' 	- deploys only the controllers marked as 'deploy' in their options
+		 * 
+		 */
+		if (($type != 'all') && ($type != 'selective')) {
+			error_log('deploy_model(): Invalid $type value: ' . $type);
 			return false;
 		}
 

@@ -4,7 +4,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2017  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2018  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,8 +152,18 @@ class Builder extends ND_Controller {
 		$this->response->output(ucfirst(NDPHP_LANG_MOD_WORD_SAVED));
 	}
 
-	public function deploy_model() {
+	public function deploy_model($type = 'all') {
 		global $config;
+
+		/*
+		 * $type values:
+		 *
+		 *  * 'all' 		- deploys the entire model
+		 *  * 'selective' 	- deploys only the controllers marked as 'deploy' in their options
+		 * 
+		 */
+		if (($type != 'all') && ($type != 'selective'))
+			$this->response->code('500', NDPHP_LANG_MOD_INVALID_DEPLOY_TYPE . $type, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Since PHP-FPM may have limited script execution time that cannot be overriden by this script, we only allow deploys
 		 * if the PHP_SAPI identifier matches one of the configured values under user/config/base.php for long operations.
@@ -191,7 +201,7 @@ class Builder extends ND_Controller {
 		}
 
 		/* Process the raw application model, deploy it, and receive the complete application model */
-		if (($app_model = $this->application->deploy_model($application)) === false)
+		if (($app_model = $this->application->deploy_model($application, $type)) === false)
 			$this->response->code('500', NDPHP_LANG_MOD_UNABLE_PROCESS_APP_MODEL, $this->config['default_charset'], !$this->request->is_ajax());
 
 		/* Update the new application model with a more complete set of data */

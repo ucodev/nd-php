@@ -10,7 +10,7 @@
  * This file is part of uweb.
  *
  * uWeb - uCodev Low Footprint Web Framework (https://github.com/ucodev/uweb)
- * Copyright (C) 2014-2017  Pedro A. Hortas
+ * Copyright (C) 2014-2018  Pedro A. Hortas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1428,6 +1428,123 @@ class UW_Database extends UW_Base {
 		}
 
 		return $this->query('ALTER TABLE `' . $table . '` DROP INDEX uw_unique_' . $table . '_' . $column);
+	}
+
+	public function table_column_index_add($table, $column, $enforce = true) {
+		if ($enforce) {
+			/* Validate table and column names */
+			if ($this->_has_special($table) || $this->_has_special($column)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_column_index_add(): Enforced function shall not contain comments in it.');
+			}
+
+			$table = str_replace('`', '', $table);
+			$column = str_replace('`', '', $column);
+		}
+
+		return $this->query('ALTER TABLE `' . $table . '` ADD INDEX `uw_idx_' . $table . '_' . $column . '`');
+	}
+
+	public function table_column_index_drop($table, $column, $if_exists = false, $if_exists_from_table = NULL, $enforce = true) {
+		if ($enforce) {
+			/* Validate table and column names */
+			if ($this->_has_special($table) || $this->_has_special($column)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_column_index_drop(): Enforced function shall not contain comments in it.');
+			}
+
+			if ($if_exists_from_table !== NULL && $this->_has_special($if_exists_from_table)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_column_index_drop(): Enforced function shall not contain comments in it.');
+			}
+
+			$table = str_replace('`', '', $table);
+			$column = str_replace('`', '', $column);
+
+			if ($if_exists_from_table !== NULL)
+				$if_exists_from_table = str_replace('`', '', $if_exists_from_table);
+		}
+
+		/* FIXME: MySQL/MariaDB only */
+		if ($if_exists) {
+			$q = $this->query('SHOW INDEX FROM `' . ($if_exists_from_table !== NULL ? $if_exists_from_table : $table) . '` WHERE KEY_NAME = \'uw_idx_' . $table . '_' . $column . '\'');
+
+			if (!$q->num_rows())
+				return true;
+		}
+
+		return $this->query('ALTER TABLE `' . $table . '` DROP INDEX `uw_idx_' . $table . '_' . $column . '`');
+	}
+
+	public function table_composite_unique_add($table, $columns = array(), $group, $enforce = true) {
+		if ($enforce) {
+			/* Validate table and column names */
+			if ($this->_has_special($table) || $this->_has_special($column) || $this->_has_special($group)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_composite_unique_add(): Enforced function shall not contain comments in it.');
+			}
+
+			$table = str_replace('`', '', $table);
+
+			for ($i = 0; $i < count($columns); $i ++)
+				$columns[$i] = str_replace('`', '', $columns[$i]);
+		}
+
+		return $this->query('ALTER TABLE `' . $table . '` ADD CONSTRAINT uw_ucomp_' . $table . '_' . $group . ' UNIQUE (`' . implode('`,`', $columns) . '`)');
+	}
+
+	public function table_composite_unique_drop($table, $group, $if_exists = false, $if_exists_from_table = NULL, $enforce = true) {
+		if ($enforce) {
+			/* Validate table and column names */
+			if ($this->_has_special($table) || $this->_has_special($group)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_composite_unique_drop(): Enforced function shall not contain comments in it.');
+			}
+
+			if ($if_exists_from_table !== NULL && $this->_has_special($if_exists_from_table)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_composite_unique_drop(): Enforced function shall not contain comments in it.');
+			}
+
+			$table = str_replace('`', '', $table);
+			$group = str_replace('`', '', $group);
+
+			if ($if_exists_from_table !== NULL)
+				$if_exists_from_table = str_replace('`', '', $if_exists_from_table);
+		}
+
+		/* FIXME: MySQL/MariaDB only */
+		if ($if_exists) {
+			$q = $this->query('SHOW INDEX FROM `' . ($if_exists_from_table !== NULL ? $if_exists_from_table : $table) . '` WHERE KEY_NAME = \'uw_ucomp_' . $table . '_' . $group . '\'');
+
+			if (!$q->num_rows())
+				return true;
+		}
+
+		return $this->query('ALTER TABLE `' . $table . '` DROP INDEX uw_ucomp_' . $table . '_' . $group);
+	}
+
+	public function table_composite_unique_remove_all($table, $enforce = true) {
+		if ($enforce) {
+			/* Validate table and column names */
+			if ($this->_has_special($table)) {
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500');
+				die('table_composite_unique_remove_all(): Enforced function shall not contain comments in it.');
+			}
+
+			$table = str_replace('`', '', $table);
+		}
+
+		/* FIXME: MySQL/MariaDB only */
+		$q = $this->query('SHOW INDEX FROM `' . $table . '` WHERE Key_name LIKE \'uw_ucomp_%\'');
+
+		if (!$q->num_rows())
+			return true;
+		
+		foreach ($q->result_array() as $row)
+			$this->query('ALTER TABLE `' . $table . '` DROP INDEX ' . $row['Key_name']);
+
+		return true;
 	}
 
 	public function table_key_column_foreign_add($table, $column, $foreign_table, $foreign_column, $cascade_delete = false, $cascade_update = false, $enforce = true) {

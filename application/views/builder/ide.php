@@ -3,7 +3,7 @@
  * This file is part of ND PHP Framework.
  *
  * ND PHP Framework - An handy PHP Framework (www.nd-php.org)
- * Copyright (C) 2015-2016  Pedro A. Hortas (pah@ucodev.org)
+ * Copyright (C) 2015-2018  Pedro A. Hortas (pah@ucodev.org)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,6 +183,7 @@
 													<td class="options_table_head_field">Accounting</td>
 													<td class="options_table_head_field">Linking</td>
 													<td class="options_table_head_field">Hidden</td>
+													<td class="options_table_head_field">Deploy</td>
 												</tr>
 											</thead>
 											<tbody class="options_table_body">
@@ -191,6 +192,7 @@
 													<td class="options_table_field"><input id="options_accounting" type="checkbox" <?=$menu_item['options']['accounting'] ? 'checked="checked"' : ''?> /></td>
 													<td class="options_table_field"><input id="options_linking" type="checkbox" <?=$menu_item['options']['linking'] ? 'checked="checked"' : ''?> /></td>
 													<td class="options_table_field"><input id="options_hidden" type="checkbox" <?=$menu_item['options']['hidden'] ? 'checked="checked"' : ''?> /></td>
+													<td class="options_table_field"><input id="options_deploy" type="checkbox" <?=$menu_item['options']['deploy'] ? 'checked="checked"' : ''?> /></td>
 												</tr>
 											</tbody>
 										</table>
@@ -288,6 +290,8 @@
 													<tr class="contraints_table_row">
 														<td class="constraints_table_head_field">Required</td>
 														<td class="constraints_table_head_field">Unique</td>
+														<td class="constraints_table_head_field">Unique Group</td>
+														<td class="constraints_table_head_field">Index</td>
 														<td class="constraints_table_head_field">Hidden</td>
 													</tr>
 												</thead>
@@ -295,6 +299,8 @@
 													<tr class="contraints_table_row">
 														<td class="constraints_table_field"><input id="constraint_required" type="checkbox" <?=$field_item['constraints']['required'] ? 'checked="checked"' : ''?> /></td>
 														<td class="constraints_table_field"><input id="constraint_unique" type="checkbox" <?=$field_item['constraints']['unique'] ? 'checked="checked"' : ''?> /></td>
+														<td class="constraints_table_field"><input id="constraint_unique_group" type="numeric" value="<?=filter_html($field_item['constraints']['unique_group'], $config['charset'])?>" /></td>
+														<td class="constraints_table_field"><input id="constraint_index" type="checkbox" <?=$field_item['constraints']['index'] ? 'checked="checked"' : ''?> /></td>
 														<td class="constraints_table_field"><input id="constraint_hidden" type="checkbox" <?=$field_item['constraints']['hidden'] ? 'checked="checked"' : ''?> /></td>
 													</tr>
 												</tbody>
@@ -433,7 +439,8 @@
 				&nbsp;
 				<input type="button" class="button_action" onClick="ndphp.ide.check();" value="Check" />
 				<input type="button" class="button_action" onClick="ndphp.ide.save();" value="Save" />
-				<input type="button" class="button_action" onClick="ndphp.ide.deploy();" value="Deploy" />
+				<input type="button" class="button_action" onClick="ndphp.ide.deploy_selected();" value="Deploy Selected" />
+				<input type="button" class="button_action" onClick="ndphp.ide.deploy_all();" value="Deploy All" />
 				&nbsp;
 				<input type="button" class="button_action" onClick="ndphp.ide.commit_ctrls();" value="Commit CTRLs" />
 				<input type="button" class="button_action" onClick="ndphp.ide.apply_acls();" value="Apply ACLs" />
@@ -450,6 +457,7 @@
 						<td class="options_table_head_field">Accounting</td>
 						<td class="options_table_head_field">Linking</td>
 						<td class="options_table_head_field">Hidden</td>
+						<td class="options_table_head_field">Deploy</td>
 					</tr>
 				</thead>
 				<tbody class="options_table_body">
@@ -458,6 +466,7 @@
 						<td class="options_table_field"><input id="options_accounting" type="checkbox" checked="checked" /></td>
 						<td class="options_table_field"><input id="options_linking" type="checkbox" checked="checked" /></td>
 						<td class="options_table_field"><input id="options_hidden" type="checkbox" /></td>
+						<td class="options_table_field"><input id="options_deploy" type="checkbox" /></td>
 					</tr>
 				</tbody>
 			</table>
@@ -535,6 +544,8 @@
 					<tr class="contraints_table_row">
 						<td class="constraints_table_head_field">Required</td>
 						<td class="constraints_table_head_field">Unique</td>
+						<td class="constraints_table_head_field">Unique Group</td>
+						<td class="constraints_table_head_field">Index</td>
 						<td class="constraints_table_head_field">Hidden</td>
 					</tr>
 				</thead>
@@ -542,6 +553,8 @@
 					<tr class="contraints_table_row">
 						<td class="constraints_table_field"><input id="constraint_required" type="checkbox" /></td>
 						<td class="constraints_table_field"><input id="constraint_unique" type="checkbox" /></td>
+						<td class="constraints_table_field"><input id="constraint_unique_group" type="numeric" /></td>
+						<td class="constraints_table_field"><input id="constraint_index" type="checkbox" /></td>
 						<td class="constraints_table_field"><input id="constraint_hidden" type="checkbox" /></td>
 					</tr>
 				</tbody>

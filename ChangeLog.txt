@@ -1,3 +1,12 @@
+v0.6a (2018-01-27):
+
+ - Added support for selective deploys (IDE).
+ - Added support for unique composite groups (IDE)
+ - Added support for field index indication option (IDE).
+ - Updated uWeb.
+ - Updated language files.
+
+
 v0.5b3 (2017-10-29):
 
  - Set headers to lowercase by default.
