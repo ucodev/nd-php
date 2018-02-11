@@ -2011,7 +2011,7 @@ class UW_Application extends UW_Model {
 			/* Check if this is a selective deploy... */
 			if ($this->_deploy_type == 'selective') {
 				/* ... if so, if this menu object isn't marked to be deployed, ignore it */
-				if (!$menu['constraints']['deploy'])
+				if (!$menu['options']['deploy'])
 					continue;
 			}
 
