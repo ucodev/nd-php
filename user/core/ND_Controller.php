@@ -122,7 +122,7 @@ class ND_Controller extends UW_Controller {
 	public $config = array(); /* Will be populated in constructor */
 
 	/* Framework version */
-	protected $_ndphp_version = '0.6a1';
+	protected $_ndphp_version = '0.6a2';
 
 	/* The controller name and view header name */
 	protected $_name;				// Controller segment / Table name (must be lower case)
@@ -931,7 +931,7 @@ class ND_Controller extends UW_Controller {
 		$this->config['scheduler']								= $this->_scheduler;
 
 		$this->config['cache_tables']							= $this->_cache_tables;
-		$this->config['cache_table_desc']						= $This->_cache_table_desc;
+		$this->config['cache_table_desc']						= $this->_cache_table_desc;
 		$this->config['cache_table_fields']						= $this->_cache_table_fields;
 		$this->config['cache_help']								= $this->_cache_help;
 		/* TODO: FIXME: Missing some explicit cache_ key declarations here that are used around the code */

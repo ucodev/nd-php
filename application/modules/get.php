@@ -1377,6 +1377,9 @@ class UW_Get extends UW_Module {
 	/** User input (POST) **/
 
 	public function post_changed_fields_data($table, $id, $POST) {
+		/* Get field basic types */
+		$ftypes = $this->fields_basic_types($table);
+
 		/* Returns a list of fields, including the changed data, whose values differ,
 		 * from the $POST data to the database (stored) data
 		 */
@@ -1494,12 +1497,22 @@ class UW_Get extends UW_Module {
 			} else {
 				/* Check if there was a change for this field... */
 				if ($row[$key] != $value) {
-					/* ... and if so, add it to the result. TODO: FIXME: mixed and multiple relationships not yet supported  */
-					array_push($changed_data, array(
-						'field' => $key,
-						'value_old' => $row[$key],
-						'value_new' => $value
-					));
+					/* ... and if so, add it to the result. */
+					if ($this->request->is_json() && isset($ftypes[$key]) && ($ftypes[$key]['type'] == 'datetime')) {
+						/* Field type datetime requires special handling when requested via JSON encoding (needs to be transformed into ISO format) */
+						array_push($changed_data, array(
+							'field' => $key,
+							'value_old' => $this->timezone->convert($row[$key], $this->config['session_data']['timezone'], $this->config['default_timezone'], DateTime::ATOM),
+							'value_new' => $this->timezone->convert($value, $this->config['session_data']['timezone'], $this->config['default_timezone'], DateTime::ATOM)
+						));
+					} else {
+						/* No special handling for this field type */
+						array_push($changed_data, array(
+							'field' => $key,
+							'value_old' => $row[$key],
+							'value_new' => $value
+						));
+					}
 				}
 			}
 		}
